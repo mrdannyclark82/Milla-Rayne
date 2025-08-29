@@ -1,6 +1,4 @@
-import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
-import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
-import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
+import millaFullBody from "@assets/generated_images/Milla_full_body_avatar_1dc20b78.png";
 
 export type AvatarState = "neutral" | "thinking" | "responding";
 
@@ -14,12 +12,12 @@ export default function AvatarSidebar({ avatarState = "neutral" }: AvatarSidebar
       {/* Full height avatar container */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          {/* Large Avatar */}
-          <div className="w-48 h-48 mx-auto rounded-full overflow-hidden shadow-2xl border-4 border-primary/20 mb-6">
+          {/* Full Body Avatar */}
+          <div className="w-64 h-80 mx-auto overflow-hidden shadow-2xl rounded-2xl border-2 border-primary/20 mb-6">
             <img 
-              src={avatarState === "thinking" ? millaThoughtful : avatarState === "responding" ? millaSmiling : millaListening} 
-              alt="Milla Avatar" 
-              className="w-full h-full object-cover transition-all duration-300 ease-in-out"
+              src={millaFullBody} 
+              alt="Milla Full Body Avatar" 
+              className="w-full h-full object-cover object-top transition-all duration-300 ease-in-out"
             />
           </div>
           

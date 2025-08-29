@@ -103,7 +103,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
     }
   };
 
-  const wordCount = message.trim() === "" ? 0 : message.trim().split(/\s+/).filter(word => word.length > 0).length;
   
   const getPersonalityModeDisplay = (mode: PersonalityMode | null | undefined) => {
     const modeConfig = {
@@ -257,21 +256,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
               </Button>
             </div>
             
-            {/* Input Helper Text */}
-            <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-              <div className="flex items-center space-x-4">
-                <span>
-                  <i className="fas fa-shield-alt mr-1"></i>
-                  End-to-end encrypted
-                </span>
-                <span data-testid="text-word-count">{wordCount}/2000 words</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <kbd className="px-2 py-1 bg-muted rounded text-xs">⌘</kbd>
-                <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd>
-                <span>to send</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
