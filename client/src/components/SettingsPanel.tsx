@@ -133,6 +133,39 @@ export default function SettingsPanel({ children }: SettingsPanelProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Voice Settings Section */}
+          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-white flex items-center">
+                <i className="fas fa-volume-up mr-2 text-green-400"></i>
+                Voice Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-white/80">Voice Responses</span>
+                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                  <i className="fas fa-toggle-off mr-1"></i>
+                  Off
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-white/80">Voice Input</span>
+                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                  <i className="fas fa-microphone mr-1"></i>
+                  Available
+                </Button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-white/80">Speech Rate</span>
+                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                  <i className="fas fa-tachometer-alt mr-1"></i>
+                  Normal
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Separator className="bg-white/20" />

@@ -8,6 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { PersonalityMode } from "@/lib/MillaCore";
 import type { Message } from "@shared/schema";
 import { AvatarState } from "@/components/Sidebar";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 
 interface ChatInterfaceProps {
   onPersonalityModeChange: (mode: PersonalityMode) => void;
@@ -24,6 +26,30 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Voice functionality
+  const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
+  const { speak, isSpeaking } = useTextToSpeech();
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+
+  // Update message when speech transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setMessage(transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
+
+  // Handle action commands
+  const handleActionCommand = (content: string): string | null => {
+    const lowerContent = content.toLowerCase();
+    
+    if (lowerContent.includes('create') && lowerContent.includes('note') && lowerContent.includes('keep')) {
+      return "Functionality to create Keep notes is planned for a future update.";
+    }
+    
+    return null;
+  };
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery<Message[]>({
@@ -126,10 +152,8 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
 
   return (
     <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
-      {/* Semi-transparent scrim for chat area */}
-      <div className="flex-1 bg-black/30 backdrop-blur-sm border-l border-white/10 m-4 rounded-2xl">
-        {/* Conversation Display Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth h-full" data-testid="messages-container">
+      {/* Conversation Display Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth" data-testid="messages-container">
         {isLoading ? (
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -209,6 +233,21 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
                   data-testid="input-message"
                 />
                 
+                {/* Voice Input Button */}
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  className={`absolute right-10 bottom-3 p-2 transition-colors ${
+                    isListening 
+                      ? 'text-red-400 animate-pulse' 
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                  onClick={isListening ? stopListening : startListening}
+                  data-testid="button-voice"
+                >
+                  <i className={`fas ${isListening ? 'fa-stop' : 'fa-microphone'}`}></i>
+                </Button>
+                
                 {/* Attachment Button */}
                 <Button
                   variant="ghost" 
@@ -232,7 +271,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             </div>
             
           </div>
-        </div>
         </div>
       </div>
     </main>

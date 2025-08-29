@@ -25,29 +25,37 @@ export default function Home() {
   };
 
   return (
-    <div 
-      className="flex h-screen overflow-hidden text-white relative" 
-      style={{
-        backgroundImage: `url(${getAvatarImage()})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-      data-testid="app-container"
-    >
-      {/* Settings Panel */}
-      <SettingsPanel>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-4 right-4 z-50 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
-          data-testid="button-settings"
+    <div className="flex h-screen overflow-hidden bg-black text-white" data-testid="app-container">
+      {/* Left Side - Avatar Video Background */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Video Background Placeholder - Will be replaced with actual video */}
+        <div 
+          className="w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${getAvatarImage()})`,
+          }}
         >
-          <i className="fas fa-cog text-sm"></i>
-        </Button>
-      </SettingsPanel>
+          {/* Optional overlay for better video visibility */}
+          <div className="absolute inset-0 bg-black/10"></div>
+        </div>
+        
+        {/* Settings Panel */}
+        <SettingsPanel>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 left-4 z-50 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
+            data-testid="button-settings"
+          >
+            <i className="fas fa-cog text-sm"></i>
+          </Button>
+        </SettingsPanel>
+      </div>
       
-      <ChatInterface onPersonalityModeChange={setCurrentPersonalityMode} onAvatarStateChange={setAvatarState} />
+      {/* Right Side - Dedicated Chat Container */}
+      <div className="w-96 bg-black/60 backdrop-blur-md border-l border-white/10 flex flex-col">
+        <ChatInterface onPersonalityModeChange={setCurrentPersonalityMode} onAvatarStateChange={setAvatarState} />
+      </div>
     </div>
   );
 }
