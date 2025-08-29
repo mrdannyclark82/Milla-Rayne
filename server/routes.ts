@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
+import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all messages
@@ -55,7 +56,39 @@ async function generateAIResponse(userMessage: string): Promise<{ content: strin
   let personalityMode: "coach" | "empathetic" | "strategic" | "creative" = "empathetic";
   let response = "";
   
-  if (message.includes("project") || message.includes("strategy") || message.includes("plan")) {
+  // Check for weather queries first
+  const weatherMatch = message.match(/weather\s+in\s+([a-zA-Z\s]+?)(?:\?|$|\.)/);
+  if (weatherMatch || message.includes("what's the weather") || message.includes("whats the weather")) {
+    personalityMode = "strategic";
+    
+    // Extract city name
+    let cityName = "";
+    if (weatherMatch) {
+      cityName = weatherMatch[1].trim();
+    } else {
+      // Try to extract city from other patterns
+      const cityMatch = message.match(/weather.*(?:in|for)\s+([a-zA-Z\s]+?)(?:\?|$|\.)/);
+      if (cityMatch) {
+        cityName = cityMatch[1].trim();
+      }
+    }
+    
+    if (cityName) {
+      try {
+        const weatherData = await getCurrentWeather(cityName);
+        if (weatherData) {
+          response = `I'll get the current weather information for you!\n\n${formatWeatherResponse(weatherData)}`;
+        } else {
+          response = `I couldn't find weather information for "${cityName}". Please check the city name and try again. Make sure to include the full city name, and optionally the country if it's a smaller city.`;
+        }
+      } catch (error) {
+        console.error("Weather API error:", error);
+        response = "I'm having trouble accessing weather data right now. Please try again in a moment, or let me know if you need help with something else.";
+      }
+    } else {
+      response = "I'd be happy to get weather information for you! Please specify which city you'd like to know about. For example, you can ask: 'What's the weather in London?' or 'Weather in New York?'";
+    }
+  } else if (message.includes("project") || message.includes("strategy") || message.includes("plan")) {
     personalityMode = "strategic";
     response = "I see you're working on something strategic. Let me shift into Strategic Advisor mode to help you think through this systematically. To provide the most valuable guidance, I'll need to understand: What's the core objective you're trying to achieve? Who are your key stakeholders? What resources and constraints are you working within? Once I understand these fundamentals, I can help you develop a comprehensive framework that balances ambition with pragmatism.";
   } else if (message.includes("creative") || message.includes("idea") || message.includes("design")) {
