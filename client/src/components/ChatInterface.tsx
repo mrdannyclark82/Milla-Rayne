@@ -111,6 +111,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       empathetic: { icon: "fas fa-heart", label: "Empathetic Listener", color: "text-pink-500 bg-pink-500/10" },
       strategic: { icon: "fas fa-lightbulb", label: "Strategic Advisor", color: "text-green-500 bg-green-500/10" },
       creative: { icon: "fas fa-palette", label: "Creative Partner", color: "text-purple-500 bg-purple-500/10" },
+      roleplay: { icon: "fas fa-theater-masks", label: "Role-Playing Mode", color: "text-indigo-500 bg-indigo-500/10" },
     };
     
     if (!mode || !modeConfig[mode]) return null;

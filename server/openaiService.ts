@@ -54,7 +54,7 @@ export async function generateAIResponse(
     messages.push({ role: "user", content: userMessage });
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      model: "gpt-4o", // Using gpt-4o as the available model
       messages,
       max_tokens: 800,
       temperature: getTemperatureForMode(context.mode),
