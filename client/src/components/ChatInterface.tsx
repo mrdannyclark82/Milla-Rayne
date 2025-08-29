@@ -1,0 +1,257 @@
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { PersonalityMode } from "@/lib/MillaCore";
+import type { Message } from "@shared/schema";
+
+interface ChatInterfaceProps {
+  onPersonalityModeChange: (mode: PersonalityMode) => void;
+}
+
+export default function ChatInterface({ onPersonalityModeChange }: ChatInterfaceProps) {
+  const [message, setMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch messages
+  const { data: messages = [], isLoading } = useQuery<Message[]>({
+    queryKey: ["/api/messages"],
+  });
+
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (messageContent: string) => {
+      const response = await apiRequest("POST", "/api/messages", {
+        content: messageContent,
+        role: "user",
+        personalityMode: null,
+        userId: null,
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setMessage("");
+      setIsTyping(false);
+      if (data.aiMessage?.personalityMode) {
+        onPersonalityModeChange(data.aiMessage.personalityMode);
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+    },
+    onError: () => {
+      setIsTyping(false);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 128) + "px";
+    }
+  }, [message]);
+
+  // Scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  const handleSendMessage = () => {
+    if (message.trim() && !sendMessageMutation.isPending) {
+      setIsTyping(true);
+      sendMessageMutation.mutate(message.trim());
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && message.trim()) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const wordCount = message.trim() === "" ? 0 : message.trim().split(/\s+/).filter(word => word.length > 0).length;
+  
+  const getPersonalityModeDisplay = (mode: PersonalityMode | null | undefined) => {
+    const modeConfig = {
+      coach: { icon: "fas fa-dumbbell", label: "Coach Mode", color: "text-blue-500 bg-blue-500/10" },
+      empathetic: { icon: "fas fa-heart", label: "Empathetic Listener", color: "text-pink-500 bg-pink-500/10" },
+      strategic: { icon: "fas fa-lightbulb", label: "Strategic Advisor", color: "text-green-500 bg-green-500/10" },
+      creative: { icon: "fas fa-palette", label: "Creative Partner", color: "text-purple-500 bg-purple-500/10" },
+    };
+    
+    if (!mode || !modeConfig[mode]) return null;
+    
+    const config = modeConfig[mode];
+    return (
+      <div className={`${config.color} px-2 py-1 rounded-full text-xs font-medium mb-2`}>
+        <i className={`${config.icon} mr-1`}></i>
+        {config.label}
+      </div>
+    );
+  };
+
+  return (
+    <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
+      {/* Chat Header */}
+      <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
+            <i className="fas fa-robot text-white text-sm"></i>
+          </div>
+          <div>
+            <h2 className="font-semibold text-foreground">Milla Assistant</h2>
+            <p className="text-xs text-muted-foreground">Ready to help • Adaptive personality enabled</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="sm" data-testid="button-settings">
+            <i className="fas fa-cog text-muted-foreground"></i>
+          </Button>
+          <Button variant="ghost" size="sm" data-testid="button-menu">
+            <i className="fas fa-ellipsis-h text-muted-foreground"></i>
+          </Button>
+        </div>
+      </header>
+
+      {/* Conversation Display Area */}
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth" data-testid="messages-container">
+        {isLoading ? (
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <div 
+              key={msg.id} 
+              className="message-fade-in"
+              data-testid={`message-${msg.role}-${msg.id}`}
+            >
+              {msg.role === "assistant" ? (
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <i className="fas fa-robot text-white text-xs"></i>
+                  </div>
+                  <div className="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl">
+                    {getPersonalityModeDisplay(msg.personalityMode)}
+                    <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      <i className="fas fa-clock mr-1"></i>
+                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start space-x-4 justify-end">
+                  <div className="flex-1 bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                    <p className="text-primary-foreground leading-relaxed whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
+                    <div className="mt-3 text-xs text-primary-foreground/70 text-right">
+                      <i className="fas fa-clock mr-1"></i>
+                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    </div>
+                  </div>
+                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <i className="fas fa-user text-muted-foreground text-xs"></i>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+
+        {/* Typing Indicator */}
+        {isTyping && (
+          <div className="typing-animation" data-testid="typing-indicator">
+            <div className="flex items-start space-x-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i className="fas fa-robot text-white text-xs"></i>
+              </div>
+              <Card className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+        
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Chat Input Area */}
+      <div className="bg-card border-t border-border p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative">
+            <div className="flex items-end space-x-4">
+              <div className="flex-1 relative">
+                <Textarea
+                  ref={textareaRef}
+                  placeholder="Type your message to Milla..."
+                  className="w-full bg-input border border-border rounded-2xl px-4 py-3 pr-12 text-foreground placeholder:text-muted-foreground resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  data-testid="input-message"
+                />
+                
+                {/* Attachment Button */}
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  className="absolute right-3 bottom-3 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                  data-testid="button-attachment"
+                >
+                  <i className="fas fa-paperclip"></i>
+                </Button>
+              </div>
+              
+              {/* Send Button */}
+              <Button
+                className="gradient-border rounded-2xl p-3 text-primary-foreground hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleSendMessage}
+                disabled={!message.trim() || sendMessageMutation.isPending}
+                data-testid="button-send"
+              >
+                <i className="fas fa-paper-plane text-lg"></i>
+              </Button>
+            </div>
+            
+            {/* Input Helper Text */}
+            <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+              <div className="flex items-center space-x-4">
+                <span>
+                  <i className="fas fa-shield-alt mr-1"></i>
+                  End-to-end encrypted
+                </span>
+                <span data-testid="text-word-count">{wordCount}/2000 words</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <kbd className="px-2 py-1 bg-muted rounded text-xs">⌘</kbd>
+                <kbd className="px-2 py-1 bg-muted rounded text-xs">Enter</kbd>
+                <span>to send</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
