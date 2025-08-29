@@ -12,8 +12,20 @@ export interface SearchResponse {
   summary: string;
 }
 
+// Simple rate limiting to prevent DuckDuckGo from blocking requests
+let lastSearchTime = 0;
+const SEARCH_DELAY = 2000; // 2 seconds between searches
+
 export async function performWebSearch(query: string): Promise<SearchResponse | null> {
   try {
+    // Rate limiting: ensure at least 2 seconds between searches
+    const now = Date.now();
+    const timeSinceLastSearch = now - lastSearchTime;
+    if (timeSinceLastSearch < SEARCH_DELAY) {
+      await new Promise(resolve => setTimeout(resolve, SEARCH_DELAY - timeSinceLastSearch));
+    }
+    lastSearchTime = Date.now();
+
     // Use DuckDuckGo search with safe search disabled
     const searchResults = await search(query, {
       safeSearch: 0 as any, // DuckDuckGo library expects 0 for off

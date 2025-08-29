@@ -1,4 +1,4 @@
-import FormData from "form-data";
+// Removed FormData import as we're using JSON API instead
 
 export interface ImageGenerationResult {
   success: boolean;
@@ -17,25 +17,30 @@ export async function generateImage(prompt: string): Promise<ImageGenerationResu
   }
 
   try {
-    const formData = new FormData();
-    formData.append("text_prompts[0][text]", prompt);
-    formData.append("text_prompts[0][weight]", "1");
-    formData.append("cfg_scale", "7");
-    formData.append("height", "512");
-    formData.append("width", "512");
-    formData.append("samples", "1");
-    formData.append("steps", "30");
+    const requestBody = {
+      text_prompts: [
+        {
+          text: prompt,
+          weight: 1
+        }
+      ],
+      cfg_scale: 7,
+      height: 512,
+      width: 512,
+      samples: 1,
+      steps: 30
+    };
 
     const response = await fetch(
       "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
       {
         method: "POST",
         headers: {
-          ...formData.getHeaders(),
+          "Content-Type": "application/json",
           Accept: "application/json",
           Authorization: `Bearer ${API_KEY}`,
         },
-        body: formData as any,
+        body: JSON.stringify(requestBody),
       }
     );
 
