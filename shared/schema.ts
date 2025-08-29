@@ -14,7 +14,7 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   role: varchar("role", { enum: ["user", "assistant"] }).notNull(),
   personalityMode: varchar("personality_mode", { 
-    enum: ["coach", "empathetic", "strategic", "creative"] 
+    enum: ["coach", "empathetic", "strategic", "creative", "roleplay"] 
   }),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
   userId: varchar("user_id"),

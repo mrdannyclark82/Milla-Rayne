@@ -52,24 +52,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Simple AI response generator based on message content
+import { generateAIResponse as generateOpenAIResponse, extractRoleCharacter, isRolePlayRequest, PersonalityContext } from "./openaiService";
+
 // Enhanced personality detection and response generation
 interface PersonalityAnalysis {
-  mode: "coach" | "empathetic" | "strategic" | "creative";
+  mode: "coach" | "empathetic" | "strategic" | "creative" | "roleplay";
   confidence: number;
   triggers: string[];
   sentiment: "positive" | "negative" | "neutral";
   urgency: "low" | "medium" | "high";
+  roleCharacter?: string;
 }
 
 function analyzePersonalityNeeds(userMessage: string): PersonalityAnalysis {
   const message = userMessage.toLowerCase();
+  
+  // Check for role-playing first as it's most specific
+  if (isRolePlayRequest(userMessage)) {
+    const roleCharacter = extractRoleCharacter(userMessage);
+    return {
+      mode: "roleplay",
+      confidence: 95,
+      triggers: ["roleplay"],
+      sentiment: "neutral",
+      urgency: "low",
+      roleCharacter: roleCharacter || "assistant"
+    };
+  }
   
   // Enhanced pattern matching with scoring
   const scores = {
     coach: 0,
     empathetic: 0, 
     strategic: 0,
-    creative: 0
+    creative: 0,
+    roleplay: 0
   };
   
   const triggers: string[] = [];
@@ -111,12 +128,21 @@ function analyzePersonalityNeeds(userMessage: string): PersonalityAnalysis {
     { pattern: /(?:overwhelming|uncertain|comfort)/, weight: 1 }
   ];
   
+  // Role-playing patterns 
+  const roleplayPatterns = [
+    { pattern: /(?:roleplay|role-play|act as|be a|pretend)/, weight: 4 },
+    { pattern: /(?:character|persona|embody|simulate)/, weight: 3 },
+    { pattern: /(?:you are|imagine you're|play the role)/, weight: 3 },
+    { pattern: /(?:as if you were|like a|speaking as)/, weight: 2 }
+  ];
+
   // Score each personality mode
   [
     { patterns: strategicPatterns, mode: 'strategic' as const },
     { patterns: creativePatterns, mode: 'creative' as const },
     { patterns: coachPatterns, mode: 'coach' as const },
-    { patterns: empatheticPatterns, mode: 'empathetic' as const }
+    { patterns: empatheticPatterns, mode: 'empathetic' as const },
+    { patterns: roleplayPatterns, mode: 'roleplay' as const }
   ].forEach(({ patterns, mode }) => {
     patterns.forEach(({ pattern, weight }) => {
       const matches = message.match(pattern);
@@ -163,7 +189,7 @@ function analyzePersonalityNeeds(userMessage: string): PersonalityAnalysis {
   // Find the highest scoring mode
   const topMode = Object.entries(scores).reduce((a, b) => 
     scores[a[0] as keyof typeof scores] > scores[b[0] as keyof typeof scores] ? a : b
-  )[0] as "coach" | "empathetic" | "strategic" | "creative";
+  )[0] as "coach" | "empathetic" | "strategic" | "creative" | "roleplay";
   
   const maxScore = Math.max(...Object.values(scores));
   const confidence = Math.min(100, maxScore * 20); // Convert to percentage
@@ -220,13 +246,17 @@ function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage:
         return `${urgentPrefix}Design is where functionality meets beauty, where problems become opportunities for elegant solutions. Let's explore the full creative landscape: What emotions do you want to evoke? What story are you telling? What makes this unique and memorable? Great design solves problems in ways that feel intuitive and inspiring. Tell me more about your vision, and let's bring it to life!`;
       }
       return `${urgentPrefix}I'm energized by creative possibilities! The most innovative solutions come from looking at challenges from entirely new angles. What if we approached this completely differently? What would the most creative person in your field do? Let's explore some unconventional ideas and see where they lead. Sometimes the "impossible" solutions are exactly what we need.`;
+    
+    case 'roleplay':
+      const character = analysis.roleCharacter || "helpful assistant";
+      return `${urgentPrefix}I'm now embodying the character of "${character}". I'll stay in character and respond as they naturally would. How can I help you in this role? If you need me to adjust anything about how I'm portraying this character, just let me know!`;
       
     default:
-      return `${urgentPrefix}I'm here to help in whatever way would be most beneficial for you right now. Whether you need strategic guidance, creative inspiration, emotional support, or practical coaching, I can adapt my approach to meet your needs. What would be most helpful for you at this moment?`;
+      return `${urgentPrefix}I'm here to help in whatever way would be most beneficial for you right now. Whether you need strategic guidance, creative inspiration, emotional support, practical coaching, or even role-playing assistance, I can adapt my approach to meet your needs. What would be most helpful for you at this moment?`;
   }
 }
 
-async function generateAIResponse(userMessage: string): Promise<{ content: string; personalityMode: "coach" | "empathetic" | "strategic" | "creative" }> {
+async function generateAIResponse(userMessage: string): Promise<{ content: string; personalityMode: "coach" | "empathetic" | "strategic" | "creative" | "roleplay" }> {
   const message = userMessage.toLowerCase();
   
   // Check for image generation requests first
@@ -296,9 +326,31 @@ async function generateAIResponse(userMessage: string): Promise<{ content: strin
   
   // Use enhanced personality analysis for general conversation
   const analysis = analyzePersonalityNeeds(userMessage);
-  const response = generatePersonalityResponse(analysis, userMessage);
   
-  console.log(`Personality Analysis - Mode: ${analysis.mode}, Confidence: ${analysis.confidence}%, Triggers: [${analysis.triggers.join(', ')}]`);
+  console.log(`Personality Analysis - Mode: ${analysis.mode}, Confidence: ${analysis.confidence}%, Triggers: [${analysis.triggers.join(', ')}]${analysis.roleCharacter ? `, Character: ${analysis.roleCharacter}` : ''}`);
   
-  return { content: response, personalityMode: analysis.mode };
+  // Use OpenAI for intelligent responses
+  try {
+    const context: PersonalityContext = {
+      mode: analysis.mode,
+      roleCharacter: analysis.roleCharacter,
+      userEmotionalState: analysis.sentiment,
+      urgency: analysis.urgency
+    };
+    
+    const aiResponse = await generateOpenAIResponse(userMessage, context);
+    
+    if (aiResponse.success) {
+      return { content: aiResponse.content, personalityMode: analysis.mode };
+    } else {
+      // Fallback to personality-based response if OpenAI fails
+      const fallbackResponse = generatePersonalityResponse(analysis, userMessage);
+      return { content: fallbackResponse, personalityMode: analysis.mode };
+    }
+  } catch (error) {
+    console.error("AI Response generation error:", error);
+    // Fallback to personality-based response
+    const fallbackResponse = generatePersonalityResponse(analysis, userMessage);
+    return { content: fallbackResponse, personalityMode: analysis.mode };
+  }
 }

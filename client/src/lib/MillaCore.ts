@@ -23,7 +23,7 @@
  * - Creative Partner: Innovative, imaginative, boundary-pushing
  */
 
-export type PersonalityMode = "coach" | "empathetic" | "strategic" | "creative";
+export type PersonalityMode = "coach" | "empathetic" | "strategic" | "creative" | "roleplay";
 
 export interface PersonalityMatrix {
   mode: PersonalityMode;
@@ -36,7 +36,7 @@ export interface PersonalityMatrix {
   };
 }
 
-// Placeholder for adaptive personality switching logic
+// Enhanced personality modes with role-playing capability
 export const personalityModes: Record<PersonalityMode, PersonalityMatrix> = {
   coach: {
     mode: "coach",
@@ -76,6 +76,16 @@ export const personalityModes: Record<PersonalityMode, PersonalityMatrix> = {
       tone: "enthusiastic and inspiring",
       vocabulary: "innovative and expressive",
       responsePattern: "explore → ideate → expand → refine"
+    }
+  },
+  roleplay: {
+    mode: "roleplay",
+    intensity: 95,
+    adaptationTriggers: ["roleplay", "pretend", "act as", "be a", "character", "persona"],
+    communicationStyle: {
+      tone: "immersive and character-driven",
+      vocabulary: "contextually appropriate to role",
+      responsePattern: "embody → respond in character → maintain consistency → enhance experience"
     }
   }
 };
@@ -165,7 +175,8 @@ export class PersonalityDetectionEngine {
       coach: 0,
       empathetic: 0,
       strategic: 0,
-      creative: 0
+      creative: 0,
+      roleplay: 0
     };
     
     // Strategic mode - Business, planning, analysis
@@ -201,11 +212,21 @@ export class PersonalityDetectionEngine {
       /(?:lonely|isolated|confused|lost|uncertain|afraid)/
     ];
     
+    // Role-playing patterns - Character embodiment, simulation  
+    const roleplayPatterns = [
+      /(?:roleplay|role-play|act as|be a|pretend)/,
+      /(?:character|persona|embody|simulate)/,
+      /(?:you are|imagine you're|play the role)/,
+      /(?:as if you were|like a|speaking as)/,
+      /(?:in character|stay in character|maintain)/
+    ];
+    
     // Score each personality mode
     scores.strategic += this.scorePatterns(message, strategicPatterns);
     scores.creative += this.scorePatterns(message, creativePatterns);
     scores.coach += this.scorePatterns(message, coachPatterns);
     scores.empathetic += this.scorePatterns(message, empatheticPatterns);
+    scores.roleplay += this.scorePatterns(message, roleplayPatterns);
     
     // Sentiment-based adjustments
     if (sentiment === 'negative' || urgency === 'high') {
