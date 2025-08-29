@@ -126,9 +126,10 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
 
   return (
     <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
-
-      {/* Conversation Display Area */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth" data-testid="messages-container">
+      {/* Semi-transparent scrim for chat area */}
+      <div className="flex-1 bg-black/30 backdrop-blur-sm border-l border-white/10 m-4 rounded-2xl">
+        {/* Conversation Display Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth h-full" data-testid="messages-container">
         {isLoading ? (
           <div className="flex justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -142,15 +143,12 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             >
               {msg.role === "assistant" ? (
                 <div className="flex items-start space-x-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <i className="fas fa-robot text-white text-xs"></i>
-                  </div>
                   <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
                     {getPersonalityModeDisplay(msg.personalityMode)}
-                    <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                    <p className="text-pink-300 leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>
-                    <div className="mt-3 text-xs text-muted-foreground">
+                    <div className="mt-3 text-xs text-pink-300/70">
                       <i className="fas fa-clock mr-1"></i>
                       {new Date(msg.timestamp).toLocaleTimeString()}
                     </div>
@@ -159,16 +157,16 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
               ) : (
                 <div className="flex items-start space-x-4 justify-end">
                   <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
-                    <p className="text-white leading-relaxed whitespace-pre-wrap">
+                    <p className="text-blue-300 leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>
-                    <div className="mt-3 text-xs text-white/70 text-right">
+                    <div className="mt-3 text-xs text-blue-300/70 text-right">
                       <i className="fas fa-clock mr-1"></i>
                       {new Date(msg.timestamp).toLocaleTimeString()}
                     </div>
                   </div>
-                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <i className="fas fa-user text-muted-foreground text-xs"></i>
+                  <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <i className="fas fa-user text-blue-300 text-xs"></i>
                   </div>
                 </div>
               )}
@@ -176,29 +174,26 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
           ))
         )}
 
-        {/* Typing Indicator */}
-        {isTyping && (
-          <div className="typing-animation" data-testid="typing-indicator">
-            <div className="flex items-start space-x-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <i className="fas fa-robot text-white text-xs"></i>
+          {/* Typing Indicator */}
+          {isTyping && (
+            <div className="typing-animation" data-testid="typing-indicator">
+              <div className="flex items-start space-x-4">
+                <Card className="bg-transparent border-none rounded-2xl rounded-tl-sm px-4 py-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-pink-300/60 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-pink-300/60 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                    <div className="w-2 h-2 bg-pink-300/60 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  </div>
+                </Card>
               </div>
-              <Card className="bg-transparent border-none rounded-2xl rounded-tl-sm px-4 py-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
-                </div>
-              </Card>
             </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
 
-      {/* Chat Input Area */}
-      <div className="bg-transparent p-6">
+        {/* Chat Input Area */}
+        <div className="bg-transparent p-6">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             <div className="flex items-end space-x-4">
@@ -237,6 +232,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             </div>
             
           </div>
+        </div>
         </div>
       </div>
     </main>
