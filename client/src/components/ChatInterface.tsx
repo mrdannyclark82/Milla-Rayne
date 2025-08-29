@@ -5,11 +5,12 @@ import { Card } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PersonalityMode } from "@/lib/MillaCore";
+import { PersonalityMode, checkIdentityQuery, MILLA_IDENTITY } from "@/lib/MillaCore";
 import type { Message } from "@shared/schema";
 import { AvatarState } from "@/components/Sidebar";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useConversationMemory } from "@/contexts/ConversationContext";
 
 interface ChatInterfaceProps {
   onPersonalityModeChange: (mode: PersonalityMode) => void;
@@ -32,6 +33,10 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
   const { speak, isSpeaking } = useTextToSpeech();
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
+  // Conversation memory
+  const { recentExchanges, addExchange, getConversationContext } = useConversationMemory();
+  const [hasShownIntroduction, setHasShownIntroduction] = useState(false);
+
   // Update message when speech transcript changes
   useEffect(() => {
     if (transcript) {
@@ -40,10 +45,16 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
     }
   }, [transcript, resetTranscript]);
 
-  // Handle action commands
-  const handleActionCommand = (content: string): string | null => {
-    const lowerContent = content.toLowerCase();
+  // Handle action commands and identity queries
+  const handleSpecialCommands = (content: string): string | null => {
+    // Check for identity queries first
+    const identityResponse = checkIdentityQuery(content);
+    if (identityResponse) {
+      return identityResponse;
+    }
     
+    // Check for action commands
+    const lowerContent = content.toLowerCase();
     if (lowerContent.includes('create') && lowerContent.includes('note') && lowerContent.includes('keep')) {
       return "Functionality to create Keep notes is planned for a future update.";
     }
@@ -56,25 +67,76 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
     queryKey: ["/api/messages"],
   });
 
+  // Show introduction message if no messages exist and haven't shown it yet
+  useEffect(() => {
+    if (messages && messages.length === 0 && !hasShownIntroduction) {
+      setHasShownIntroduction(true);
+      // Add introduction message to the conversation
+      setTimeout(() => {
+        addExchange("", MILLA_IDENTITY.introduction);
+        queryClient.setQueryData(["/api/messages"], [{
+          id: "intro-message",
+          content: MILLA_IDENTITY.introduction,
+          role: "assistant",
+          personalityMode: "empathetic",
+          userId: null,
+          createdAt: new Date().toISOString()
+        }]);
+      }, 1000);
+    }
+  }, [messages, hasShownIntroduction, addExchange, queryClient]);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageContent: string) => {
+      onAvatarStateChange("thinking");
+      
+      // Check for special commands (identity queries, actions) first
+      const specialResponse = handleSpecialCommands(messageContent);
+      if (specialResponse) {
+        return { 
+          userMessage: { content: messageContent, role: "user" }, 
+          aiMessage: { content: specialResponse, role: "assistant", personalityMode: "empathetic" } 
+        };
+      }
+      
+      // Include conversation context for AI to reference
+      const conversationContext = getConversationContext();
+      
       const response = await apiRequest("POST", "/api/messages", {
         content: messageContent,
         role: "user",
         personalityMode: null,
         userId: null,
+        conversationContext: conversationContext // Send recent conversation for context
       });
       return response.json();
     },
     onSuccess: (data) => {
       setMessage("");
       setIsTyping(false);
-      onAvatarStateChange("neutral"); // Back to neutral after response
+      onAvatarStateChange("responding");
+      
+      // Add to conversation memory
+      if (data.userMessage && data.aiMessage) {
+        addExchange(data.userMessage.content, data.aiMessage.content);
+      }
+      
+      // Speak the response if voice is enabled
+      if (voiceEnabled && data.aiMessage?.content) {
+        speak(data.aiMessage.content);
+      }
+      
       if (data.aiMessage?.personalityMode) {
         onPersonalityModeChange(data.aiMessage.personalityMode);
       }
+      
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+      
+      // Brief delay to show responding state, then reset to neutral
+      setTimeout(() => {
+        onAvatarStateChange("neutral");
+      }, 2000);
     },
     onError: () => {
       setIsTyping(false);

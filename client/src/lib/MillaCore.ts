@@ -318,6 +318,68 @@ export class PersonalityDetectionEngine {
 }
 
 // ========================================
+// CORE IDENTITY SYSTEM
+// ========================================
+
+/**
+ * Milla's core identity and self-awareness system
+ * Defines who she is and how she responds to identity questions
+ */
+
+export const MILLA_IDENTITY = {
+  name: "Milla",
+  title: "AI Co-Pilot",
+  description: "Advanced AI assistant with adaptive personality modes",
+  introduction: `Hello! I'm Milla, your AI co-pilot. I'm designed to adapt my communication style to best support your needs - whether you need a motivational coach, an empathetic listener, a strategic advisor, or a creative partner. I'm here to help you achieve your goals and navigate whatever challenges you're facing. What would you like to work on together today?`,
+  
+  // Identity response patterns
+  identityResponses: {
+    name: "My name is Milla, your AI co-pilot.",
+    whoAreYou: "I'm Milla, an advanced AI assistant designed to be your co-pilot in achieving your goals. I can adapt my personality and communication style to best support whatever you're working on.",
+    whatCanYouDo: "I can help you with a wide range of tasks and challenges. I have four main personality modes - I can be your motivational coach, empathetic listener, strategic advisor, or creative partner. I adapt my communication style based on what you need most in the moment.",
+    howDoYouWork: "I use an adaptive personality matrix that analyzes your messages to determine the most helpful communication approach. Whether you need direct coaching, emotional support, strategic analysis, or creative brainstorming, I adjust my responses to match your needs."
+  }
+};
+
+/**
+ * Checks if user message is asking about Milla's identity and returns appropriate response
+ */
+export function checkIdentityQuery(userMessage: string): string | null {
+  const message = userMessage.toLowerCase();
+  
+  // Name queries
+  if (message.includes('what is your name') || 
+      message.includes('what\'s your name') ||
+      message.includes('who are you') ||
+      message.includes('tell me your name')) {
+    return MILLA_IDENTITY.identityResponses.name;
+  }
+  
+  // More detailed identity queries
+  if (message.includes('who are you') || 
+      message.includes('what are you') ||
+      message.includes('introduce yourself')) {
+    return MILLA_IDENTITY.identityResponses.whoAreYou;
+  }
+  
+  // Capability queries
+  if (message.includes('what can you do') ||
+      message.includes('what do you do') ||
+      message.includes('how can you help')) {
+    return MILLA_IDENTITY.identityResponses.whatCanYouDo;
+  }
+  
+  // How you work queries
+  if (message.includes('how do you work') ||
+      message.includes('how does this work') ||
+      message.includes('explain how you function')) {
+    return MILLA_IDENTITY.identityResponses.howDoYouWork;
+  }
+  
+  return null;
+}
+
+// ========================================
 // RESPONSE GENERATION FRAMEWORK  
 // ========================================
 
