@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
-import Sidebar, { AvatarState } from "@/components/Sidebar";
+import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import { PersonalityMode } from "@/lib/MillaCore";
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground" data-testid="app-container">
-      <Sidebar currentPersonalityMode={currentPersonalityMode} avatarState={avatarState} />
+      <AvatarSidebar avatarState={avatarState} />
       <ChatInterface onPersonalityModeChange={setCurrentPersonalityMode} onAvatarStateChange={setAvatarState} />
     </div>
   );
