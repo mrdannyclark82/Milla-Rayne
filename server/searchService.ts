@@ -1,5 +1,3 @@
-import { search } from "duck-duck-scrape";
-
 export interface SearchResult {
   title: string;
   url: string;
@@ -12,69 +10,79 @@ export interface SearchResponse {
   summary: string;
 }
 
-// Simple rate limiting to prevent DuckDuckGo from blocking requests
-let lastSearchTime = 0;
-const SEARCH_DELAY = 2000; // 2 seconds between searches
-
 export async function performWebSearch(query: string): Promise<SearchResponse | null> {
-  try {
-    // Rate limiting: ensure at least 2 seconds between searches
-    const now = Date.now();
-    const timeSinceLastSearch = now - lastSearchTime;
-    if (timeSinceLastSearch < SEARCH_DELAY) {
-      await new Promise(resolve => setTimeout(resolve, SEARCH_DELAY - timeSinceLastSearch));
-    }
-    lastSearchTime = Date.now();
+  const API_KEY = process.env.PERPLEXITY_API_KEY;
+  
+  if (!API_KEY) {
+    throw new Error("Perplexity API key not found");
+  }
 
-    // Use DuckDuckGo search with safe search disabled
-    const searchResults = await search(query, {
-      safeSearch: 0 as any, // DuckDuckGo library expects 0 for off
-      region: "us-en",
-      count: 3
+  try {
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-sonar-small-128k-online",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful search assistant. Provide accurate, current information and include relevant sources."
+          },
+          {
+            role: "user",
+            content: query
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.2,
+        top_p: 0.9,
+        return_images: false,
+        return_related_questions: false,
+        search_recency_filter: "month",
+        top_k: 0,
+        stream: false,
+        presence_penalty: 0,
+        frequency_penalty: 1
+      })
     });
 
-    if (!searchResults.results || searchResults.results.length === 0) {
-      return null;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Perplexity API error:", response.status, errorText);
+      throw new Error(`Search API error: ${response.status}`);
     }
 
-    // Extract top 3 results
-    const results: SearchResult[] = searchResults.results.slice(0, 3).map((result: any) => ({
-      title: result.title || "No title",
-      url: result.url || "",
-      description: result.description || "No description available"
-    }));
+    const data = await response.json();
+    
+    if (data.choices && data.choices.length > 0) {
+      const content = data.choices[0].message.content;
+      const citations = data.citations || [];
+      
+      // Create mock results from citations for consistency
+      const results: SearchResult[] = citations.slice(0, 3).map((citation: string, index: number) => ({
+        title: `Search Result ${index + 1}`,
+        url: citation,
+        description: "Source from Perplexity search"
+      }));
 
-    // Create a summary of the results
-    const summary = createSearchSummary(query, results);
-
-    return {
-      query,
-      results,
-      summary
-    };
+      return {
+        query,
+        results,
+        summary: content
+      };
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error("Search error:", error);
     throw error;
   }
 }
 
-function createSearchSummary(query: string, results: SearchResult[]): string {
-  if (results.length === 0) {
-    return `I couldn't find any relevant information about "${query}". You might want to try rephrasing your question or being more specific.`;
-  }
-
-  let summary = `Here's what I found about "${query}":\n\n`;
-
-  results.forEach((result, index) => {
-    summary += `**${index + 1}. ${result.title}**\n`;
-    summary += `${result.description}\n`;
-    summary += `🔗 [Read more](${result.url})\n\n`;
-  });
-
-  summary += `These results should help answer your question. If you need more specific information, feel free to ask me to search for something more targeted!`;
-
-  return summary;
-}
+// Removed createSearchSummary function as Perplexity provides direct AI-generated summaries
 
 export function shouldPerformSearch(userMessage: string): boolean {
   const message = userMessage.toLowerCase();
