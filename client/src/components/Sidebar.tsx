@@ -1,11 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { PersonalityMode, getSystemStatus, personalityModes, ETHICAL_FRAMEWORK } from "@/lib/MillaCore";
+import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
+import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
+import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
+
+export type AvatarState = "neutral" | "thinking" | "responding";
 
 interface SidebarProps {
   currentPersonalityMode: PersonalityMode;
+  avatarState?: AvatarState;
 }
 
-export default function Sidebar({ currentPersonalityMode }: SidebarProps) {
+export default function Sidebar({ currentPersonalityMode, avatarState = "neutral" }: SidebarProps) {
   const systemStatus = getSystemStatus();
 
   const personalityModeNames = {
@@ -61,8 +67,12 @@ export default function Sidebar({ currentPersonalityMode }: SidebarProps) {
             <div className="p-6 text-center">
               <div className="mx-auto mb-4 relative">
                 {/* Avatar Circle */}
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg">
-                  <i className="fas fa-robot text-primary-foreground text-2xl"></i>
+                <div className="w-20 h-20 mx-auto rounded-full overflow-hidden shadow-lg border-2 border-primary/20">
+                  <img 
+                    src={avatarState === "thinking" ? millaThoughtful : avatarState === "responding" ? millaSmiling : millaListening} 
+                    alt="Milla Avatar" 
+                    className="w-full h-full object-cover transition-all duration-300 ease-in-out"
+                  />
                 </div>
                 {/* Status Indicator */}
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-card flex items-center justify-center">

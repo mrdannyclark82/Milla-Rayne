@@ -7,14 +7,19 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { PersonalityMode } from "@/lib/MillaCore";
 import type { Message } from "@shared/schema";
+import { AvatarState } from "@/components/Sidebar";
 
 interface ChatInterfaceProps {
   onPersonalityModeChange: (mode: PersonalityMode) => void;
+  onAvatarStateChange: (state: AvatarState) => void;
 }
 
-export default function ChatInterface({ onPersonalityModeChange }: ChatInterfaceProps) {
+export default function ChatInterface({ onPersonalityModeChange, onAvatarStateChange }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  
+  // Track user typing state
+  const [userIsTyping, setUserIsTyping] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -39,6 +44,7 @@ export default function ChatInterface({ onPersonalityModeChange }: ChatInterface
     onSuccess: (data) => {
       setMessage("");
       setIsTyping(false);
+      onAvatarStateChange("neutral"); // Back to neutral after response
       if (data.aiMessage?.personalityMode) {
         onPersonalityModeChange(data.aiMessage.personalityMode);
       }
@@ -46,6 +52,7 @@ export default function ChatInterface({ onPersonalityModeChange }: ChatInterface
     },
     onError: () => {
       setIsTyping(false);
+      onAvatarStateChange("neutral"); // Back to neutral on error
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
@@ -70,7 +77,22 @@ export default function ChatInterface({ onPersonalityModeChange }: ChatInterface
   const handleSendMessage = () => {
     if (message.trim() && !sendMessageMutation.isPending) {
       setIsTyping(true);
+      setUserIsTyping(false); // User stopped typing, now sending
+      onAvatarStateChange("responding"); // Milla is now responding
       sendMessageMutation.mutate(message.trim());
+    }
+  };
+
+  // Handle user typing state changes
+  const handleInputChange = (value: string) => {
+    setMessage(value);
+    
+    if (value.length > 0 && !userIsTyping && !sendMessageMutation.isPending) {
+      setUserIsTyping(true);
+      onAvatarStateChange("thinking"); // Show thinking expression when user types
+    } else if (value.length === 0 && userIsTyping) {
+      setUserIsTyping(false);
+      onAvatarStateChange("neutral"); // Back to neutral when input is cleared
     }
   };
 
@@ -206,7 +228,7 @@ export default function ChatInterface({ onPersonalityModeChange }: ChatInterface
                   placeholder="Type your message to Milla..."
                   className="w-full bg-input border border-border rounded-2xl px-4 py-3 pr-12 text-foreground placeholder:text-muted-foreground resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
                   rows={1}
                   data-testid="input-message"
