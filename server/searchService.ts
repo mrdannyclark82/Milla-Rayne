@@ -11,13 +11,78 @@ export interface SearchResponse {
 }
 
 export async function performWebSearch(query: string): Promise<SearchResponse | null> {
+  const API_KEY = process.env.PERPLEXITY_API_KEY;
+  
+  if (!API_KEY) {
+    console.warn("Perplexity API key not found, falling back to knowledge base");
+    return generateKnowledgeBasedResponse(query);
+  }
+
   try {
-    // Simple knowledge-based search implementation
-    const searchResponse = generateKnowledgeBasedResponse(query);
-    return searchResponse;
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-sonar-small-128k-online",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful search assistant. Provide accurate, current information with clear, concise answers. Focus on being informative and helpful."
+          },
+          {
+            role: "user",
+            content: query
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.2,
+        top_p: 0.9,
+        return_images: false,
+        return_related_questions: false,
+        search_recency_filter: "month",
+        top_k: 0,
+        stream: false,
+        presence_penalty: 0,
+        frequency_penalty: 1
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Perplexity API error:", response.status, errorText);
+      console.log("Falling back to knowledge-based search");
+      return generateKnowledgeBasedResponse(query);
+    }
+
+    const data = await response.json();
+    
+    if (data.choices && data.choices.length > 0) {
+      const content = data.choices[0].message.content;
+      const citations = data.citations || [];
+      
+      // Create results from citations for consistency
+      const results: SearchResult[] = citations.slice(0, 3).map((citation: string, index: number) => ({
+        title: `Source ${index + 1}`,
+        url: citation,
+        description: "Information source from Perplexity search"
+      }));
+
+      return {
+        query,
+        results,
+        summary: content
+      };
+    } else {
+      console.log("No results from Perplexity, falling back to knowledge base");
+      return generateKnowledgeBasedResponse(query);
+    }
   } catch (error) {
     console.error("Search error:", error);
-    throw error;
+    console.log("Falling back to knowledge-based search");
+    return generateKnowledgeBasedResponse(query);
   }
 }
 
