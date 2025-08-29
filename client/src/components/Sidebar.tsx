@@ -12,7 +12,8 @@ export default function Sidebar({ currentPersonalityMode }: SidebarProps) {
     coach: "Coach Mode",
     empathetic: "Empathetic Listener", 
     strategic: "Strategic Advisor",
-    creative: "Creative Partner"
+    creative: "Creative Partner",
+    roleplay: "Role-Playing Mode"
   };
 
   return (

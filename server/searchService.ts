@@ -27,7 +27,7 @@ export async function performWebSearch(query: string): Promise<SearchResponse | 
         "Authorization": `Bearer ${API_KEY.trim()}`,
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-small-128k-online",
+        model: "sonar",
         messages: [
           {
             role: "system",

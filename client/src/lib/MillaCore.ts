@@ -501,7 +501,7 @@ export interface SystemStatus {
 
 export const getSystemStatus = (): SystemStatus => ({
   coreFramework: "active",
-  aiIntegration: "pending", // Will be "online" when AI APIs are integrated
+  aiIntegration: "online", // OpenAI integration is now active
   backendServer: "online",
   personalityMatrix: "enabled", 
   ethicalCompliance: "enforced"
