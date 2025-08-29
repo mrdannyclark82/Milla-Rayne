@@ -54,6 +54,7 @@ export class MemStorage implements IStorage {
       ...insertMessage,
       id,
       timestamp: new Date(),
+      personalityMode: insertMessage.personalityMode || null,
     };
     this.messages.set(id, message);
     return message;
