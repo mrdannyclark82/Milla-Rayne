@@ -126,26 +126,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
 
   return (
     <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
-      {/* Chat Header */}
-      <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
-            <i className="fas fa-robot text-white text-sm"></i>
-          </div>
-          <div>
-            <h2 className="font-semibold text-foreground">Milla Assistant</h2>
-            <p className="text-xs text-muted-foreground">Ready to help • Adaptive personality enabled</p>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" data-testid="button-settings">
-            <i className="fas fa-cog text-muted-foreground"></i>
-          </Button>
-          <Button variant="ghost" size="sm" data-testid="button-menu">
-            <i className="fas fa-ellipsis-h text-muted-foreground"></i>
-          </Button>
-        </div>
-      </header>
 
       {/* Conversation Display Area */}
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth" data-testid="messages-container">
@@ -165,7 +145,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
                   <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                     <i className="fas fa-robot text-white text-xs"></i>
                   </div>
-                  <div className="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl">
+                  <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
                     {getPersonalityModeDisplay(msg.personalityMode)}
                     <p className="text-foreground leading-relaxed whitespace-pre-wrap">
                       {msg.content}
@@ -178,11 +158,11 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
                 </div>
               ) : (
                 <div className="flex items-start space-x-4 justify-end">
-                  <div className="flex-1 bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
-                    <p className="text-primary-foreground leading-relaxed whitespace-pre-wrap">
+                  <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                    <p className="text-white leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>
-                    <div className="mt-3 text-xs text-primary-foreground/70 text-right">
+                    <div className="mt-3 text-xs text-white/70 text-right">
                       <i className="fas fa-clock mr-1"></i>
                       {new Date(msg.timestamp).toLocaleTimeString()}
                     </div>
@@ -203,11 +183,11 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
               <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
                 <i className="fas fa-robot text-white text-xs"></i>
               </div>
-              <Card className="bg-card border border-border rounded-2xl rounded-tl-sm px-4 py-3">
+              <Card className="bg-transparent border-none rounded-2xl rounded-tl-sm px-4 py-3">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
                 </div>
               </Card>
             </div>
@@ -218,7 +198,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       </div>
 
       {/* Chat Input Area */}
-      <div className="bg-card border-t border-border p-6">
+      <div className="bg-transparent p-6">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             <div className="flex items-end space-x-4">
@@ -226,7 +206,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
                 <Textarea
                   ref={textareaRef}
                   placeholder="Type your message to Milla..."
-                  className="w-full bg-input border border-border rounded-2xl px-4 py-3 pr-12 text-foreground placeholder:text-muted-foreground resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-12 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -238,7 +218,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
                 <Button
                   variant="ghost" 
                   size="sm"
-                  className="absolute right-3 bottom-3 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 bottom-3 p-2 text-white/60 hover:text-white transition-colors"
                   data-testid="button-attachment"
                 >
                   <i className="fas fa-paperclip"></i>
@@ -247,7 +227,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
               
               {/* Send Button */}
               <Button
-                className="gradient-border rounded-2xl p-3 text-primary-foreground hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-2xl p-3 text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSendMessage}
                 disabled={!message.trim() || sendMessageMutation.isPending}
                 data-testid="button-send"
