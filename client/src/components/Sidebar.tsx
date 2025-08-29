@@ -56,49 +56,25 @@ export default function Sidebar({ currentPersonalityMode }: SidebarProps) {
             </div>
           </Card>
 
-          {/* Ethical Framework */}
+          {/* Milla Avatar */}
           <Card className="bg-muted/10 border border-border">
-            <div className="p-4">
-              <h3 className="text-sm font-semibold text-primary mb-3">
-                <i className="fas fa-shield-alt mr-2"></i>Ethical Framework
-              </h3>
-              <ul className="space-y-2 text-xs text-muted-foreground">
-                <li className="flex items-start">
-                  <i className="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
-                  <span>{ETHICAL_FRAMEWORK.privacy.principle}</span>
-                </li>
-                <li className="flex items-start">
-                  <i className="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
-                  <span>{ETHICAL_FRAMEWORK.wellbeing.principle}</span>
-                </li>
-                <li className="flex items-start">
-                  <i className="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
-                  <span>{ETHICAL_FRAMEWORK.communication.principle}</span>
-                </li>
-              </ul>
-            </div>
-          </Card>
-
-          {/* Project Leadership */}
-          <Card className="bg-muted/10 border border-border">
-            <div className="p-4">
-              <h3 className="text-sm font-semibold text-primary mb-3">
-                <i className="fas fa-users mr-2"></i>Project Leadership
-              </h3>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-user-circle text-primary"></i>
-                  <div>
-                    <p className="font-medium text-foreground">Danny Clark</p>
-                    <p className="text-xs">CEO / Visionary</p>
-                  </div>
+            <div className="p-6 text-center">
+              <div className="mx-auto mb-4 relative">
+                {/* Avatar Circle */}
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg">
+                  <i className="fas fa-robot text-primary-foreground text-2xl"></i>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-user-circle text-primary"></i>
-                  <div>
-                    <p className="font-medium text-foreground">Gem</p>
-                    <p className="text-xs">COO / Strategist</p>
-                  </div>
+                {/* Status Indicator */}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-card flex items-center justify-center">
+                  <i className="fas fa-check text-white text-xs"></i>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Milla</h3>
+                <p className="text-sm text-muted-foreground mb-2">Advanced AI Assistant</p>
+                <div className="flex items-center justify-center space-x-1 text-xs text-green-500">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span>Active & Learning</span>
                 </div>
               </div>
             </div>
