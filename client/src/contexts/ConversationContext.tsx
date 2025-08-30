@@ -70,6 +70,7 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
 
   // Extract user name from message patterns
   const extractAndSetUserName = (message: string) => {
+    console.log('Attempting to extract name from:', message); // Debug log
     const namePatterns = [
       /my name is ([a-zA-Z]+)/i,
       /i'm ([a-zA-Z]+)/i,
@@ -82,8 +83,10 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       const match = message.match(pattern);
       if (match && match[1]) {
         const extractedName = match[1].trim();
+        console.log('Name extracted:', extractedName); // Debug log
         if (extractedName.length > 1 && extractedName.length < 20) { // Reasonable name length
           setUserName(extractedName);
+          console.log('userName set to:', extractedName); // Debug log
           break;
         }
       }

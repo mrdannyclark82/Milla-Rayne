@@ -158,11 +158,18 @@ function generateKnowledgeBasedResponse(query: string): SearchResponse {
 export function shouldPerformSearch(userMessage: string): boolean {
   const message = userMessage.toLowerCase();
   
-  // Don't search for weather, image generation, or other specific commands
+  // Don't search for weather, image generation, personal queries, or other specific commands
   if (message.includes("weather") || 
       message.includes("create an image") || 
       message.includes("draw a picture") ||
-      message.includes("generate an image")) {
+      message.includes("generate an image") ||
+      // Don't search for personal name queries
+      message.includes("what is my name") ||
+      message.includes("what's my name") ||
+      message.includes("my name is") ||
+      // Don't search for identity queries about Milla
+      message.includes("what is your name") ||
+      message.includes("who are you")) {
     return false;
   }
 

@@ -55,7 +55,9 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
     
     // Check for name queries
     const lowerContent = content.toLowerCase();
-    if ((lowerContent.includes('what is my name') || lowerContent.includes('what\'s my name') || lowerContent.includes('my name')) && lowerContent.includes('?')) {
+    if (lowerContent.includes('what is my name') || lowerContent.includes('what\'s my name') || 
+        (lowerContent.includes('my name') && lowerContent.includes('?'))) {
+      console.log('Name query detected. Current userName:', userName); // Debug log
       if (userName) {
         return `Your name is ${userName}.`;
       } else {
