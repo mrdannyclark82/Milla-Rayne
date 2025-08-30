@@ -7,10 +7,13 @@ interface UseTextToSpeechReturn {
   stop: () => void;
   pause: () => void;
   resume: () => void;
+  rate: number;
+  setRate: (rate: number) => void;
 }
 
 export const useTextToSpeech = (): UseTextToSpeechReturn => {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [rate, setRate] = useState(0.9);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const isSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -48,7 +51,7 @@ export const useTextToSpeech = (): UseTextToSpeechReturn => {
     utteranceRef.current = utterance;
 
     // Configure voice settings
-    utterance.rate = 0.9; // Slightly slower for better clarity
+    utterance.rate = rate; // Use configurable rate
     utterance.pitch = 1.1; // Slightly higher pitch for more pleasant female voice
     utterance.volume = 0.8;
 
@@ -98,5 +101,7 @@ export const useTextToSpeech = (): UseTextToSpeechReturn => {
     stop,
     pause,
     resume,
+    rate,
+    setRate,
   };
 };

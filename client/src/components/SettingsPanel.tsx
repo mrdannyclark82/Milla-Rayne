@@ -6,10 +6,35 @@ import { Separator } from "@/components/ui/separator";
 
 interface SettingsPanelProps {
   children?: React.ReactNode;
+  voiceEnabled?: boolean;
+  onVoiceToggle?: (enabled: boolean) => void;
+  speechRate?: number;
+  onSpeechRateChange?: (rate: number) => void;
 }
 
-export default function SettingsPanel({ children }: SettingsPanelProps) {
+export default function SettingsPanel({ 
+  children, 
+  voiceEnabled = false, 
+  onVoiceToggle,
+  speechRate = 1.0,
+  onSpeechRateChange 
+}: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleVoiceToggle = () => {
+    onVoiceToggle?.(!voiceEnabled);
+  };
+
+  const handleSpeechRateChange = () => {
+    const newRate = speechRate >= 1.5 ? 0.75 : speechRate + 0.25;
+    onSpeechRateChange?.(newRate);
+  };
+
+  const getSpeechRateLabel = () => {
+    if (speechRate <= 0.75) return "Slow";
+    if (speechRate >= 1.5) return "Fast";
+    return "Normal";
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -145,9 +170,15 @@ export default function SettingsPanel({ children }: SettingsPanelProps) {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Voice Responses</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-toggle-off mr-1"></i>
-                  Off
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className={`border-white/30 text-white/70 hover:text-white ${voiceEnabled ? 'bg-green-600/20 border-green-400/50 text-green-300' : ''}`}
+                  onClick={handleVoiceToggle}
+                  data-testid="button-voice-toggle"
+                >
+                  <i className={`fas ${voiceEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+                  {voiceEnabled ? 'On' : 'Off'}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
@@ -159,9 +190,15 @@ export default function SettingsPanel({ children }: SettingsPanelProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Speech Rate</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-white/30 text-white/70 hover:text-white"
+                  onClick={handleSpeechRateChange}
+                  data-testid="button-speech-rate"
+                >
                   <i className="fas fa-tachometer-alt mr-1"></i>
-                  Normal
+                  {getSpeechRateLabel()}
                 </Button>
               </div>
             </CardContent>

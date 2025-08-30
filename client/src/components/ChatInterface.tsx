@@ -15,9 +15,11 @@ import { useConversationMemory } from "@/contexts/ConversationContext";
 interface ChatInterfaceProps {
   onPersonalityModeChange: (mode: PersonalityMode) => void;
   onAvatarStateChange: (state: AvatarState) => void;
+  voiceEnabled?: boolean;
+  speechRate?: number;
 }
 
-export default function ChatInterface({ onPersonalityModeChange, onAvatarStateChange }: ChatInterfaceProps) {
+export default function ChatInterface({ onPersonalityModeChange, onAvatarStateChange, voiceEnabled = false, speechRate = 1.0 }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   
@@ -30,8 +32,12 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
 
   // Voice functionality
   const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
-  const { speak, isSpeaking } = useTextToSpeech();
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const { speak, isSpeaking, setRate } = useTextToSpeech();
+  
+  // Set speech rate when prop changes
+  useEffect(() => {
+    setRate(speechRate);
+  }, [speechRate, setRate]);
 
   // Conversation memory
   const { recentExchanges, userName, addExchange, getConversationContext, getRecentMessages, extractAndSetUserName } = useConversationMemory();
@@ -148,7 +154,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             role: "user" as const,
             personalityMode: null,
             userId: null,
-            createdAt: new Date().toISOString()
+            timestamp: new Date()
           };
           
           // Add assistant message
@@ -158,7 +164,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             role: "assistant" as const,
             personalityMode: data.aiMessage.personalityMode,
             userId: null,
-            createdAt: new Date().toISOString()
+            timestamp: new Date()
           };
           
           newMessages.push(userMessage, assistantMessage);
