@@ -107,7 +107,8 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       if (specialResponse) {
         return { 
           userMessage: { content: messageContent, role: "user" }, 
-          aiMessage: { content: specialResponse, role: "assistant", personalityMode: "empathetic" } 
+          aiMessage: { content: specialResponse, role: "assistant", personalityMode: "empathetic" },
+          isSpecialCommand: true
         };
       }
       
@@ -135,6 +136,37 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       // Add to conversation memory
       if (data.userMessage && data.aiMessage) {
         addExchange(data.userMessage.content, data.aiMessage.content);
+        
+        // For special commands (local responses), manually add to message cache
+        if (data.isSpecialCommand) {
+          const newMessages = [...(queryClient.getQueryData(["/api/messages"]) as Message[] || [])];
+          
+          // Add user message
+          const userMessage = {
+            id: `user-${Date.now()}`,
+            content: data.userMessage.content,
+            role: "user" as const,
+            personalityMode: null,
+            userId: null,
+            createdAt: new Date().toISOString()
+          };
+          
+          // Add assistant message
+          const assistantMessage = {
+            id: `assistant-${Date.now()}`,
+            content: data.aiMessage.content,
+            role: "assistant" as const,
+            personalityMode: data.aiMessage.personalityMode,
+            userId: null,
+            createdAt: new Date().toISOString()
+          };
+          
+          newMessages.push(userMessage, assistantMessage);
+          queryClient.setQueryData(["/api/messages"], newMessages);
+        } else {
+          // For API responses, invalidate to refetch
+          queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+        }
       }
       
       // Speak the response if voice is enabled
@@ -145,8 +177,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       if (data.aiMessage?.personalityMode) {
         onPersonalityModeChange(data.aiMessage.personalityMode);
       }
-      
-      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
       
       // Brief delay to show responding state, then reset to neutral
       setTimeout(() => {
