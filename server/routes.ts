@@ -21,12 +21,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new message
   app.post("/api/messages", async (req, res) => {
     try {
-      const validatedData = insertMessageSchema.parse(req.body);
+      const { conversationHistory, userName, ...messageData } = req.body;
+      const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
       
       // Simulate AI response based on user message
       if (message.role === "user") {
-        const aiResponse = await generateAIResponse(message.content);
+        const aiResponse = await generateAIResponse(message.content, conversationHistory, userName);
         const aiMessage = await storage.createMessage({
           content: aiResponse.content,
           role: "assistant",
@@ -256,7 +257,11 @@ function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage:
   }
 }
 
-async function generateAIResponse(userMessage: string): Promise<{ content: string; personalityMode: "coach" | "empathetic" | "strategic" | "creative" | "roleplay" }> {
+async function generateAIResponse(
+  userMessage: string, 
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  userName?: string
+): Promise<{ content: string; personalityMode: "coach" | "empathetic" | "strategic" | "creative" | "roleplay" }> {
   const message = userMessage.toLowerCase();
   
   // Check for image generation requests first
@@ -335,7 +340,9 @@ async function generateAIResponse(userMessage: string): Promise<{ content: strin
       mode: analysis.mode,
       roleCharacter: analysis.roleCharacter,
       userEmotionalState: analysis.sentiment,
-      urgency: analysis.urgency
+      urgency: analysis.urgency,
+      conversationHistory: conversationHistory,
+      userName: userName
     };
     
     const aiResponse = await generateOpenAIResponse(userMessage, context);

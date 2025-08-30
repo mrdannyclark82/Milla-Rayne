@@ -34,7 +34,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
   const [voiceEnabled, setVoiceEnabled] = useState(false);
 
   // Conversation memory
-  const { recentExchanges, addExchange, getConversationContext } = useConversationMemory();
+  const { recentExchanges, userName, addExchange, getConversationContext, getRecentMessages, extractAndSetUserName } = useConversationMemory();
   const [hasShownIntroduction, setHasShownIntroduction] = useState(false);
 
   // Update message when speech transcript changes
@@ -53,8 +53,17 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       return identityResponse;
     }
     
-    // Check for action commands
+    // Check for name queries
     const lowerContent = content.toLowerCase();
+    if ((lowerContent.includes('what is my name') || lowerContent.includes('what\'s my name') || lowerContent.includes('my name')) && lowerContent.includes('?')) {
+      if (userName) {
+        return `Your name is ${userName}.`;
+      } else {
+        return "I don't recall you telling me your name yet. What would you like me to call you?";
+      }
+    }
+    
+    // Check for action commands
     if (lowerContent.includes('create') && lowerContent.includes('note') && lowerContent.includes('keep')) {
       return "Functionality to create Keep notes is planned for a future update.";
     }
@@ -100,15 +109,19 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
         };
       }
       
-      // Include conversation context for AI to reference
-      const conversationContext = getConversationContext();
+      // Extract user name if provided in this message
+      extractAndSetUserName(messageContent);
+      
+      // Include conversation context for AI to reference (last 4 messages)
+      const recentMessages = getRecentMessages();
       
       const response = await apiRequest("POST", "/api/messages", {
         content: messageContent,
         role: "user",
         personalityMode: null,
         userId: null,
-        conversationContext: conversationContext // Send recent conversation for context
+        conversationHistory: recentMessages,
+        userName: userName // Send current known user name
       });
       return response.json();
     },

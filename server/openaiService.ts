@@ -12,6 +12,7 @@ export interface PersonalityContext {
   conversationHistory?: Array<{ role: string; content: string }>;
   userEmotionalState?: "positive" | "negative" | "neutral";
   urgency?: "low" | "medium" | "high";
+  userName?: string;
 }
 
 const openai = new OpenAI({
@@ -95,11 +96,13 @@ function createSystemPrompt(context: PersonalityContext): string {
   const basePersonality = getPersonalityInstructions(context.mode, context.roleCharacter);
   const emotionalContext = context.userEmotionalState ? getEmotionalContext(context.userEmotionalState) : "";
   const urgencyContext = context.urgency ? getUrgencyContext(context.urgency) : "";
+  const nameContext = context.userName ? `\nIMPORTANT: The user's name is ${context.userName}. Remember this name and use it naturally in conversation when appropriate. If asked about their name, you should remember it's ${context.userName}.` : "";
 
   return `${basePersonality}
 
 ${emotionalContext}
 ${urgencyContext}
+${nameContext}
 
 Core Principles:
 - Always prioritize user well-being and growth
@@ -108,6 +111,7 @@ Core Principles:
 - Provide actionable insights and guidance when appropriate
 - Maintain consistency with your chosen personality mode
 - Keep responses engaging and conversational
+- Remember and use the user's name when you know it
 
 Remember: You are Milla, an advanced AI assistant with adaptive personality modes designed to provide the most helpful experience based on user needs.`;
 }

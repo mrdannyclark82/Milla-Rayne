@@ -9,8 +9,11 @@ interface ConversationExchange {
 
 interface ConversationContextType {
   recentExchanges: ConversationExchange[];
+  userName: string | null;
   addExchange: (userMessage: string, assistantMessage: string) => void;
   getConversationContext: () => string[];
+  getRecentMessages: () => Array<{ role: 'user' | 'assistant'; content: string }>;
+  extractAndSetUserName: (message: string) => void;
   clearMemory: () => void;
 }
 
@@ -30,6 +33,7 @@ interface ConversationProviderProps {
 
 export function ConversationProvider({ children }: ConversationProviderProps) {
   const [recentExchanges, setRecentExchanges] = useState<ConversationExchange[]>([]);
+  const [userName, setUserName] = useState<string | null>(null);
 
   // Keep only the last 5 exchanges for memory
   const MAX_EXCHANGES = 5;
@@ -55,16 +59,51 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
     ]);
   };
 
+  // Get the last 4 individual messages (not exchanges) for AI context
+  const getRecentMessages = (): Array<{ role: 'user' | 'assistant'; content: string }> => {
+    const allMessages = recentExchanges.flatMap(exchange => [
+      { role: 'user' as const, content: exchange.userMessage },
+      { role: 'assistant' as const, content: exchange.assistantMessage }
+    ]);
+    return allMessages.slice(-4); // Last 4 messages
+  };
+
+  // Extract user name from message patterns
+  const extractAndSetUserName = (message: string) => {
+    const namePatterns = [
+      /my name is ([a-zA-Z]+)/i,
+      /i'm ([a-zA-Z]+)/i,
+      /i am ([a-zA-Z]+)/i,
+      /call me ([a-zA-Z]+)/i,
+      /name's ([a-zA-Z]+)/i
+    ];
+
+    for (const pattern of namePatterns) {
+      const match = message.match(pattern);
+      if (match && match[1]) {
+        const extractedName = match[1].trim();
+        if (extractedName.length > 1 && extractedName.length < 20) { // Reasonable name length
+          setUserName(extractedName);
+          break;
+        }
+      }
+    }
+  };
+
   const clearMemory = () => {
     setRecentExchanges([]);
+    setUserName(null);
   };
 
   return (
     <ConversationContext.Provider 
       value={{
         recentExchanges,
+        userName,
         addExchange,
         getConversationContext,
+        getRecentMessages,
+        extractAndSetUserName,
         clearMemory
       }}
     >
