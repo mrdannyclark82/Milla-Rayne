@@ -149,6 +149,7 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
             id: `user-${Date.now()}`,
             content: data.userMessage.content,
             role: "user" as const,
+            personalityMode: null,
             userId: null,
             timestamp: new Date()
           };
@@ -158,6 +159,7 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
             id: `assistant-${Date.now()}`,
             content: data.aiMessage.content,
             role: "assistant" as const,
+            personalityMode: null,
             userId: null,
             timestamp: new Date()
           };
@@ -228,9 +230,21 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && message.trim()) {
+    if (e.key === "Enter" && !e.shiftKey && message.trim()) {
       e.preventDefault();
       handleSendMessage();
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      const textarea = e.currentTarget as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newValue = message.substring(0, start) + "\n" + message.substring(end);
+      setMessage(newValue);
+      
+      // Set cursor position after the inserted newline
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
     }
   };
 
