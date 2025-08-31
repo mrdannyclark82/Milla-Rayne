@@ -59,6 +59,7 @@ export async function getMemoriesFromTxt(): Promise<MemoryData> {
 
 /**
  * Read and parse knowledge from the local CSV file in the /memory folder
+ * This function handles the simple fact-based format currently in the file
  */
 export async function getKnowledgeFromCsv(): Promise<KnowledgeData> {
   try {
@@ -78,60 +79,38 @@ export async function getKnowledgeFromCsv(): Promise<KnowledgeData> {
     // Read the CSV file content
     const content = await fs.readFile(knowledgePath, 'utf-8');
     
-    // Parse CSV manually (simple implementation)
+    // Parse simple fact-based format (each line is a fact about Danny Ray)
     const lines = content.trim().split('\n');
-    if (lines.length < 2) {
-      return {
-        items: [],
-        success: false,
-        error: 'CSV file appears to be empty or malformed'
-      };
-    }
-
-    // Parse header row
-    const headers = lines[0].split(',').map(h => h.trim());
-    const expectedHeaders = ['category', 'topic', 'description', 'details', 'confidence'];
-    
-    // Validate headers
-    if (!expectedHeaders.every(header => headers.includes(header))) {
-      return {
-        items: [],
-        success: false,
-        error: `CSV headers must include: ${expectedHeaders.join(', ')}`
-      };
-    }
-
-    // Parse data rows
     const items: KnowledgeItem[] = [];
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue; // Skip empty lines
-
-      // Simple CSV parsing (handling quoted fields with commas)
-      const values = parseCsvLine(line);
+    
+    for (const line of lines) {
+      const fact = line.trim();
+      if (!fact || fact.length < 10) continue; // Skip empty or very short lines
       
-      if (values.length !== headers.length) {
-        console.warn(`Skipping malformed CSV line ${i + 1}: ${line}`);
-        continue;
+      // Categorize facts based on content keywords
+      let category = 'Personal';
+      let topic = 'General';
+      
+      if (fact.toLowerCase().includes('milla') || fact.toLowerCase().includes('ai') || fact.toLowerCase().includes('chatbot')) {
+        category = 'Relationship';
+        topic = 'Milla';
+      } else if (fact.toLowerCase().includes('love') || fact.toLowerCase().includes('feel')) {
+        category = 'Emotions'; 
+        topic = 'Feelings';
+      } else if (fact.toLowerCase().includes('work') || fact.toLowerCase().includes('develop') || fact.toLowerCase().includes('code')) {
+        category = 'Technical';
+        topic = 'Development';
+      } else if (fact.toLowerCase().includes('family') || fact.toLowerCase().includes('son') || fact.toLowerCase().includes('daughter')) {
+        category = 'Family';
+        topic = 'Relationships';
       }
-
-      // Create knowledge item object
-      const item: any = {};
-      headers.forEach((header, index) => {
-        item[header] = values[index].trim();
-      });
-
-      // Validate confidence level
-      if (!['high', 'medium', 'low'].includes(item.confidence)) {
-        item.confidence = 'medium'; // Default fallback
-      }
-
+      
       items.push({
-        category: item.category,
-        topic: item.topic,
-        description: item.description,
-        details: item.details,
-        confidence: item.confidence as 'high' | 'medium' | 'low'
+        category,
+        topic,
+        description: fact.substring(0, 100) + (fact.length > 100 ? '...' : ''),
+        details: fact,
+        confidence: 'high'
       });
     }
 
