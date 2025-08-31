@@ -1,5 +1,3 @@
-import OpenAI from "openai";
-
 export interface AIResponse {
   content: string;
   success: boolean;
@@ -15,28 +13,24 @@ export interface PersonalityContext {
   userName?: string;
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 /**
- * Generate AI response using OpenAI with personality-aware prompts
+ * Generate AI response using Perplexity with personality-aware prompts
  */
 export async function generateAIResponse(
   userMessage: string,
   context: PersonalityContext
 ): Promise<AIResponse> {
   try {
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.PERPLEXITY_API_KEY) {
       return {
-        content: "OpenAI integration is not configured. Please add your API key.",
+        content: "AI integration is not configured. Please add your API key.",
         success: false,
         error: "Missing API key"
       };
     }
 
     const systemPrompt = createSystemPrompt(context);
-    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    const messages: Array<{ role: string; content: string }> = [
       { role: "system", content: systemPrompt }
     ];
 
@@ -45,7 +39,7 @@ export async function generateAIResponse(
       const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
       recentHistory.forEach(msg => {
         messages.push({ 
-          role: msg.role as "user" | "assistant", 
+          role: msg.role, 
           content: msg.content 
         });
       });
@@ -54,16 +48,35 @@ export async function generateAIResponse(
     // Add current user message
     messages.push({ role: "user", content: userMessage });
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // Using gpt-4o as the available model
-      messages,
-      max_tokens: 800,
-      temperature: getTemperatureForMode(context.mode),
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1,
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-sonar-small-128k-online",
+        messages,
+        max_tokens: 800,
+        temperature: getTemperatureForMode(context.mode),
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+        stream: false
+      })
     });
 
-    const content = response.choices[0]?.message?.content;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Perplexity API error:", response.status, errorText);
+      return {
+        content: "I'm experiencing technical difficulties right now. Please try again in a moment.",
+        success: false,
+        error: `API error: ${response.status}`
+      };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
       return {
@@ -79,7 +92,7 @@ export async function generateAIResponse(
     };
 
   } catch (error) {
-    console.error("OpenAI API error:", error);
+    console.error("Perplexity API error:", error);
     
     return {
       content: "I'm experiencing technical difficulties right now. Please try again in a moment.",
