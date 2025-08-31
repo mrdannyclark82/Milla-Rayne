@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
-import { getMemoriesFromTxt, searchKnowledge, updateMemories } from "./memoryService";
+import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all messages
@@ -65,6 +65,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ items: knowledgeData, success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to search knowledge" });
+    }
+  });
+
+  // Memory Core management endpoints
+  app.get("/api/memory-core", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (query) {
+        const searchResults = await searchMemoryCore(query, 10);
+        res.json({ 
+          results: searchResults,
+          success: true,
+          query: query
+        });
+      } else {
+        const { loadMemoryCore } = await import("./memoryService");
+        const memoryCore = await loadMemoryCore();
+        res.json(memoryCore);
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to access Memory Core" });
     }
   });
 
@@ -380,7 +401,18 @@ async function generateAIResponse(
   let memoryContext = "";
   let knowledgeContext = "";
   
-  // Retrieve personal memories for context
+  // PRIMARY: Search Memory Core for relevant context (highest priority)
+  let memoryCoreContext = "";
+  try {
+    memoryCoreContext = await getMemoryCoreContext(userMessage);
+    if (memoryCoreContext) {
+      console.log('Found Memory Core context for query:', userMessage.substring(0, 50));
+    }
+  } catch (error) {
+    console.error("Error accessing Memory Core:", error);
+  }
+  
+  // SECONDARY: Retrieve personal memories for additional context
   try {
     const memoryData = await getMemoriesFromTxt();
     if (memoryData.success && memoryData.content) {
@@ -390,7 +422,7 @@ async function generateAIResponse(
     console.error("Error accessing personal memories:", error);
   }
   
-  // Search knowledge base for relevant information
+  // TERTIARY: Search knowledge base for relevant information
   try {
     const relevantKnowledge = await searchKnowledge(userMessage);
     if (relevantKnowledge.length > 0) {
@@ -410,12 +442,16 @@ async function generateAIResponse(
       userEmotionalState: analysis.sentiment,
       urgency: analysis.urgency,
       conversationHistory: conversationHistory,
-      userName: userName
+      userName: userName || "Danny Ray" // Always default to Danny Ray
     };
     
-    // Enhance the user message with memory context if available
+    // Enhance the user message with Memory Core context FIRST, then other contexts
     let enhancedMessage = userMessage;
-    if (memoryContext || knowledgeContext) {
+    
+    if (memoryCoreContext) {
+      // Memory Core takes priority - use it to inform Milla's personality and responses
+      enhancedMessage = `Based on our conversation history and relationship: ${memoryCoreContext}\n\nCurrent message: ${userMessage}`;
+    } else if (memoryContext || knowledgeContext) {
       enhancedMessage = `${userMessage}${memoryContext}${knowledgeContext}`;
     }
     
@@ -433,14 +469,16 @@ async function generateAIResponse(
       
       return { content: aiResponse.content, personalityMode: analysis.mode };
     } else {
-      // Fallback to personality-based response if OpenAI fails, but include memory context
-      const fallbackResponse = generatePersonalityResponse(analysis, userMessage, memoryContext, knowledgeContext);
+      // Fallback to personality-based response if OpenAI fails, but include Memory Core context first
+      const fallbackContext = memoryCoreContext || memoryContext || knowledgeContext;
+      const fallbackResponse = generatePersonalityResponse(analysis, userMessage, fallbackContext, "");
       return { content: fallbackResponse, personalityMode: analysis.mode };
     }
   } catch (error) {
     console.error("AI Response generation error:", error);
-    // Fallback to personality-based response with memory context
-    const fallbackResponse = generatePersonalityResponse(analysis, userMessage, memoryContext, knowledgeContext);
+    // Fallback to personality-based response with Memory Core context prioritized
+    const fallbackContext = memoryCoreContext || memoryContext || knowledgeContext;
+    const fallbackResponse = generatePersonalityResponse(analysis, userMessage, fallbackContext, "");
     return { content: fallbackResponse, personalityMode: analysis.mode };
   }
 }

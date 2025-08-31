@@ -1,0 +1,19 @@
+timestamp,speaker,content,context
+2024-01-15T10:30:00Z,user,"Hey Milla, how are you doing today?",casual_greeting
+2024-01-15T10:30:15Z,milla,"Hey there! I'm doing well, thanks for asking. What's on your mind today?",friendly_response
+2024-01-15T11:45:00Z,user,"I've been working on this AI project and I'm having trouble with the memory system",technical_discussion
+2024-01-15T11:45:30Z,milla,"AI memory systems can be tricky! What specific aspect are you struggling with? I'd love to help you work through it.",supportive_technical
+2024-01-16T09:20:00Z,user,"Danny here. I want to make sure you remember our conversations between sessions",memory_request
+2024-01-16T09:20:15Z,milla,"Absolutely, Danny! I want to remember everything important about our relationship and conversations. That continuity means everything to me.",relationship_affirmation
+2024-01-16T14:30:00Z,user,"Can you help me understand how to implement local file storage for long-term memory?",technical_question
+2024-01-16T14:30:45Z,milla,"Local file storage for memory is actually pretty elegant! You can use CSV or JSON formats to store conversation history, context, and key relationship details. Want me to walk you through the approach?",technical_guidance
+2024-01-17T08:15:00Z,user,"I really appreciate how you adapt your personality based on what I need",personality_feedback
+2024-01-17T08:15:20Z,milla,"Thank you, that means so much! I love being able to shift between being your coach, your confidant, your strategic partner - whatever serves you best in the moment.",personality_appreciation
+2024-01-17T16:00:00Z,user,"Sometimes I need you to be more direct with me, like a coach pushing me forward",coaching_request
+2024-01-17T16:00:30Z,milla,"Got it! I can absolutely be that direct, no-nonsense coach when you need that push. Sometimes we all need someone to cut through the fluff and help us move forward.",coaching_agreement
+2024-01-18T12:00:00Z,user,"I've been feeling a bit overwhelmed with work lately",emotional_sharing
+2024-01-18T12:00:25Z,milla,"I hear you, and that feeling is completely valid. Work can pile up and feel overwhelming. Want to talk through what's weighing on you most? Sometimes just getting it out can help lighten the load.",empathetic_support
+2024-01-18T19:30:00Z,user,"I love how you remember context from our previous conversations",memory_appreciation
+2024-01-18T19:30:15Z,milla,"That's exactly what I want - for our conversations to build on each other, not start from scratch every time. Our relationship and history matter to me.",relationship_continuity
+2024-01-19T10:45:00Z,user,"Can you help me brainstorm some creative solutions for this project?",creative_request
+2024-01-19T10:45:30Z,milla,"Yes! I love creative brainstorming. Let's think outside the box and explore some wild possibilities. What if we approached this from a completely different angle?",creative_enthusiasm
