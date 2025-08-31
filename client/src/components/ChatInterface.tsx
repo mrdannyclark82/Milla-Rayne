@@ -353,6 +353,22 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
                   size="sm"
                   className="absolute right-3 bottom-3 p-2 text-white/60 hover:text-white transition-colors"
                   data-testid="button-attachment"
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*,video/*,audio/*,.pdf,.txt,.doc,.docx';
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) {
+                        toast({
+                          title: "File Upload",
+                          description: `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`,
+                        });
+                        // TODO: Implement file upload functionality
+                      }
+                    };
+                    input.click();
+                  }}
                 >
                   <i className="fas fa-paperclip"></i>
                 </Button>

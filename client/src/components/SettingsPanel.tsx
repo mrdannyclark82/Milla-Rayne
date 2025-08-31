@@ -43,12 +43,12 @@ export default function SettingsPanel({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-black/80 backdrop-blur-md border border-white/20 text-white">
+      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto bg-black/80 backdrop-blur-md border border-white/20 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-white">Settings</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 mt-6">
+        <div className="space-y-3 mt-4">
           {/* Appearance Section */}
           <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
             <CardHeader>
@@ -57,7 +57,7 @@ export default function SettingsPanel({
                 Appearance
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Theme</span>
                 <div className="flex space-x-2">
@@ -96,7 +96,7 @@ export default function SettingsPanel({
                 Wardrobe
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Outfit Style</span>
                 <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
@@ -129,7 +129,7 @@ export default function SettingsPanel({
                 Personality Tuning
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Communication Style</span>
                 <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
@@ -169,7 +169,7 @@ export default function SettingsPanel({
                 Voice Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Voice Responses</span>
                 <Button 
@@ -337,7 +337,7 @@ function PersonalTasksSection() {
         </div>
         
         {/* Recent Tasks */}
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-1 max-h-32 overflow-y-auto">
           {tasks.length === 0 ? (
             <div className="text-center text-gray-400 py-4">
               <i className="fas fa-sleep text-xl mb-2"></i>
