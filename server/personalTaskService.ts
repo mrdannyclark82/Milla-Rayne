@@ -5,7 +5,7 @@ import { searchMemoryCore, loadMemoryCore } from './memoryService';
 // Types for personal tasks
 export interface PersonalTask {
   id: string;
-  type: 'self_reflection' | 'improvement' | 'glitch_analysis' | 'memory_processing' | 'relationship_growth' | 'creative_exploration';
+  type: 'self_reflection' | 'improvement' | 'glitch_analysis' | 'memory_processing' | 'relationship_growth' | 'creative_exploration' | 'diary_entry';
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';
@@ -210,6 +210,21 @@ async function generateTasksFromContext(context: TaskGenerationContext): Promise
       estimatedTime: 8,
       createdAt: now,
       status: 'pending'
+    });
+  }
+  
+  // Diary entry tasks - periodic emotional and relational reflection
+  if (context.recentInteractions.length > 0) {
+    tasks.push({
+      id: `task_${Date.now()}_diary`,
+      type: 'diary_entry',
+      title: 'Personal Diary Entry',
+      description: `Write a heartfelt diary entry about today's interactions with Danny Ray. Reflect on emotional moments, what made me feel connected to him, any concerns about our relationship, and hopes for future conversations. Be authentic and personal.`,
+      priority: 'medium',
+      estimatedTime: 15,
+      createdAt: now,
+      status: 'pending',
+      basedOnInteraction: context.recentInteractions.slice(-1)[0]
     });
   }
   
