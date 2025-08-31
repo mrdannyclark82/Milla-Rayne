@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
+import { getMemoriesFromTxt, searchKnowledge, updateMemories } from "./memoryService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all messages
@@ -45,6 +46,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to create message" });
       }
+    }
+  });
+
+  // Memory management endpoints
+  app.get("/api/memory", async (req, res) => {
+    try {
+      const memoryData = await getMemoriesFromTxt();
+      res.json(memoryData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch memories" });
+    }
+  });
+
+  app.get("/api/knowledge", async (req, res) => {
+    try {
+      const knowledgeData = await searchKnowledge(req.query.q as string || "");
+      res.json({ items: knowledgeData, success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to search knowledge" });
+    }
+  });
+
+  app.post("/api/memory", async (req, res) => {
+    try {
+      const { memory } = req.body;
+      if (!memory || typeof memory !== 'string') {
+        return res.status(400).json({ message: "Memory content is required" });
+      }
+      const result = await updateMemories(memory);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update memories" });
     }
   });
 
@@ -334,7 +367,33 @@ async function generateAIResponse(
   
   console.log(`Personality Analysis - Mode: ${analysis.mode}, Confidence: ${analysis.confidence}%, Triggers: [${analysis.triggers.join(', ')}]${analysis.roleCharacter ? `, Character: ${analysis.roleCharacter}` : ''}`);
   
-  // Use OpenAI for intelligent responses
+  // Check if we should access long-term memory
+  let memoryContext = "";
+  let knowledgeContext = "";
+  
+  // Retrieve personal memories for context
+  try {
+    const memoryData = await getMemoriesFromTxt();
+    if (memoryData.success && memoryData.content) {
+      memoryContext = `\nPersonal Memory Context:\n${memoryData.content}`;
+    }
+  } catch (error) {
+    console.error("Error accessing personal memories:", error);
+  }
+  
+  // Search knowledge base for relevant information
+  try {
+    const relevantKnowledge = await searchKnowledge(userMessage);
+    if (relevantKnowledge.length > 0) {
+      knowledgeContext = `\nRelevant Knowledge:\n${relevantKnowledge.map(item => 
+        `- ${item.category} - ${item.topic}: ${item.description}\n  Details: ${item.details} (Confidence: ${item.confidence})`
+      ).join('\n')}`;
+    }
+  } catch (error) {
+    console.error("Error searching knowledge base:", error);
+  }
+  
+  // Use OpenAI for intelligent responses with memory context
   try {
     const context: PersonalityContext = {
       mode: analysis.mode,
@@ -345,9 +404,24 @@ async function generateAIResponse(
       userName: userName
     };
     
-    const aiResponse = await generateOpenAIResponse(userMessage, context);
+    // Enhance the user message with memory context if available
+    let enhancedMessage = userMessage;
+    if (memoryContext || knowledgeContext) {
+      enhancedMessage = `${userMessage}${memoryContext}${knowledgeContext}`;
+    }
+    
+    const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {
+      // If this is a significant interaction, consider updating memories
+      if (analysis.sentiment !== 'neutral' || analysis.urgency !== 'low' || userMessage.length > 50) {
+        try {
+          await updateMemories(`User asked: "${userMessage}" - Response provided in ${analysis.mode} mode`);
+        } catch (error) {
+          console.error("Error updating memories:", error);
+        }
+      }
+      
       return { content: aiResponse.content, personalityMode: analysis.mode };
     } else {
       // Fallback to personality-based response if OpenAI fails
