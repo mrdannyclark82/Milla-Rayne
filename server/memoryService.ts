@@ -200,7 +200,26 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
       return memoryCoreCache;
     }
 
-    console.log('Loading Memory Core from backup files...');
+    console.log('Loading Memory Core from memories.txt as primary source...');
+    
+    // Try to load from memories.txt first (primary source)
+    try {
+      const result = await loadMemoryCoreFromExistingFiles();
+      if (result.success && result.entries.length > 0) {
+        console.log(`Successfully loaded Memory Core from memories.txt: ${result.entries.length} entries`);
+        
+        // Cache the result
+        memoryCoreCache = result;
+        memoryCoreLastLoaded = now;
+        
+        return result;
+      }
+    } catch (error) {
+      console.log('Failed to load from memories.txt, trying backup files...');
+    }
+
+    // Fallback to backup files if memories.txt is not available or empty
+    console.log('Loading Memory Core from backup files as fallback...');
     const memoryPath = join(process.cwd(), 'memory');
     
     // Try to find backup files in order of preference
@@ -221,7 +240,7 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
         const filePath = join(memoryPath, filename);
         await fs.access(filePath);
         backupContent = await fs.readFile(filePath, 'utf-8');
-        console.log(`Successfully loaded Memory Core from: ${filename}`);
+        console.log(`Successfully loaded Memory Core from backup file: ${filename}`);
         foundBackupFile = true;
         break;
       } catch (error) {
@@ -230,10 +249,14 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
       }
     }
     
-    // If no backup file found, use existing memory files as fallback
+    // If no backup file found either, return empty memory core
     if (!foundBackupFile) {
-      console.log('No backup file found, using existing memory files as Memory Core');
-      return await loadMemoryCoreFromExistingFiles();
+      console.log('No memory files found, starting with empty Memory Core');
+      return {
+        entries: [],
+        totalEntries: 0,
+        success: true
+      };
     }
 
     // Parse the backup content
@@ -249,15 +272,19 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
     memoryCoreCache = result;
     memoryCoreLastLoaded = now;
     
-    console.log(`Memory Core loaded: ${entries.length} entries`);
+    console.log(`Memory Core loaded from backup: ${entries.length} entries`);
     return result;
     
   } catch (error) {
     console.error('Error loading Memory Core:', error);
     
-    // Fallback to existing files
-    console.log('Falling back to existing memory files...');
-    return await loadMemoryCoreFromExistingFiles();
+    // Final fallback - empty memory core
+    return {
+      entries: [],
+      totalEntries: 0,
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
 }
 
