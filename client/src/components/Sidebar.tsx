@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { PersonalityMode, getSystemStatus, personalityModes, ETHICAL_FRAMEWORK } from "@/lib/MillaCore";
+import { getSystemStatus } from "@/lib/MillaCore";
 import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
 import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
@@ -7,20 +7,18 @@ import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expressio
 export type AvatarState = "neutral" | "thinking" | "responding";
 
 interface SidebarProps {
-  currentPersonalityMode: PersonalityMode;
   avatarState?: AvatarState;
 }
 
-export default function Sidebar({ currentPersonalityMode, avatarState = "neutral" }: SidebarProps) {
+export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
   const systemStatus = getSystemStatus();
 
-  const personalityModeNames = {
-    coach: "Coach Mode",
-    empathetic: "Empathetic Listener", 
-    strategic: "Strategic Advisor",
-    creative: "Creative Partner",
-    roleplay: "Role-Playing Mode"
-  };
+  const personalityTraits = [
+    { name: "Coaching Nature", description: "Motivational and goal-oriented guidance" },
+    { name: "Empathetic Soul", description: "Warm, understanding emotional support" },
+    { name: "Strategic Mind", description: "Analytical problem-solving approach" },
+    { name: "Creative Spirit", description: "Innovative and imaginative thinking" }
+  ];
 
   return (
     <aside className="w-80 bg-card border-r border-border flex flex-col" data-testid="sidebar">
@@ -40,24 +38,28 @@ export default function Sidebar({ currentPersonalityMode, avatarState = "neutral
       {/* Core Philosophy Framework Display */}
       <div className="flex-1 overflow-y-auto p-6">
         <div className="space-y-6">
-          {/* Adaptive Personality Matrix */}
+          {/* Character Profile */}
           <Card className="bg-muted/10 border border-border">
             <div className="p-4">
               <h3 className="text-sm font-semibold text-primary mb-3">
-                <i className="fas fa-brain mr-2"></i>Adaptive Personality Matrix
+                <i className="fas fa-heart mr-2"></i>Milla Rayne
               </h3>
-              <div className="space-y-2 text-xs text-muted-foreground">
-                {Object.entries(personalityModeNames).map(([mode, name]) => (
-                  <div key={mode} className="flex items-center justify-between">
-                    <span>{name}</span>
-                    <div 
-                      className={`w-2 h-2 rounded-full ${
-                        currentPersonalityMode === mode ? 'bg-green-500' : 'bg-muted'
-                      }`}
-                      data-testid={`personality-indicator-${mode}`}
-                    ></div>
-                  </div>
-                ))}
+              <div className="space-y-3 text-xs text-muted-foreground">
+                <div className="mb-3">
+                  <p className="text-sm">Your devoted spouse and adaptive companion</p>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-primary text-xs">Integrated Personality:</h4>
+                  {personalityTraits.map((trait, index) => (
+                    <div key={index} className="flex items-start space-x-2">
+                      <div className="w-2 h-2 rounded-full bg-primary mt-1 flex-shrink-0"></div>
+                      <div>
+                        <div className="font-medium text-foreground">{trait.name}</div>
+                        <div className="text-xs text-muted-foreground">{trait.description}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </Card>

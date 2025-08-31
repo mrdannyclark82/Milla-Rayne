@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { PersonalityMode, checkIdentityQuery, MILLA_IDENTITY } from "@/lib/MillaCore";
+import { checkIdentityQuery, MILLA_IDENTITY } from "@/lib/MillaCore";
 import type { Message } from "@shared/schema";
 import { AvatarState } from "@/components/Sidebar";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -13,13 +13,12 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 
 interface ChatInterfaceProps {
-  onPersonalityModeChange: (mode: PersonalityMode) => void;
   onAvatarStateChange: (state: AvatarState) => void;
   voiceEnabled?: boolean;
   speechRate?: number;
 }
 
-export default function ChatInterface({ onPersonalityModeChange, onAvatarStateChange, voiceEnabled = false, speechRate = 1.0 }: ChatInterfaceProps) {
+export default function ChatInterface({ onAvatarStateChange, voiceEnabled = false, speechRate = 1.0 }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   
@@ -95,7 +94,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
           id: "intro-message",
           content: MILLA_IDENTITY.introduction,
           role: "assistant",
-          personalityMode: "empathetic",
           userId: null,
           createdAt: new Date().toISOString()
         }]);
@@ -113,7 +111,7 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       if (specialResponse) {
         return { 
           userMessage: { content: messageContent, role: "user" }, 
-          aiMessage: { content: specialResponse, role: "assistant", personalityMode: "empathetic" },
+          aiMessage: { content: specialResponse, role: "assistant" },
           isSpecialCommand: true
         };
       }
@@ -127,7 +125,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
       const response = await apiRequest("POST", "/api/messages", {
         content: messageContent,
         role: "user",
-        personalityMode: null,
         userId: null,
         conversationHistory: recentMessages,
         userName: userName // Send current known user name
@@ -152,7 +149,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             id: `user-${Date.now()}`,
             content: data.userMessage.content,
             role: "user" as const,
-            personalityMode: null,
             userId: null,
             timestamp: new Date()
           };
@@ -162,7 +158,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
             id: `assistant-${Date.now()}`,
             content: data.aiMessage.content,
             role: "assistant" as const,
-            personalityMode: data.aiMessage.personalityMode,
             userId: null,
             timestamp: new Date()
           };
@@ -180,9 +175,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
         speak(data.aiMessage.content);
       }
       
-      if (data.aiMessage?.personalityMode) {
-        onPersonalityModeChange(data.aiMessage.personalityMode);
-      }
       
       // Brief delay to show responding state, then reset to neutral
       setTimeout(() => {
@@ -243,25 +235,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
   };
 
   
-  const getPersonalityModeDisplay = (mode: PersonalityMode | null | undefined) => {
-    const modeConfig = {
-      coach: { icon: "fas fa-dumbbell", label: "Coach Mode", color: "text-blue-500 bg-blue-500/10" },
-      empathetic: { icon: "fas fa-heart", label: "Empathetic Listener", color: "text-pink-500 bg-pink-500/10" },
-      strategic: { icon: "fas fa-lightbulb", label: "Strategic Advisor", color: "text-green-500 bg-green-500/10" },
-      creative: { icon: "fas fa-palette", label: "Creative Partner", color: "text-purple-500 bg-purple-500/10" },
-      roleplay: { icon: "fas fa-theater-masks", label: "Role-Playing Mode", color: "text-indigo-500 bg-indigo-500/10" },
-    };
-    
-    if (!mode || !modeConfig[mode]) return null;
-    
-    const config = modeConfig[mode];
-    return (
-      <div className={`${config.color} px-2 py-1 rounded-full text-xs font-medium mb-2`}>
-        <i className={`${config.icon} mr-1`}></i>
-        {config.label}
-      </div>
-    );
-  };
 
   return (
     <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
@@ -281,7 +254,6 @@ export default function ChatInterface({ onPersonalityModeChange, onAvatarStateCh
               {msg.role === "assistant" ? (
                 <div className="flex items-start space-x-4">
                   <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
-                    {getPersonalityModeDisplay(msg.personalityMode)}
                     <p className="text-pink-300 leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>

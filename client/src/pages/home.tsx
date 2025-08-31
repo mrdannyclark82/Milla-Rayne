@@ -1,7 +1,6 @@
 import { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
-import { PersonalityMode } from "@/lib/MillaCore";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
 import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import SettingsPanel from "@/components/SettingsPanel";
 
 export default function Home() {
-  const [currentPersonalityMode, setCurrentPersonalityMode] = useState<PersonalityMode>("empathetic");
   const [avatarState, setAvatarState] = useState<AvatarState>("neutral");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechRate, setSpeechRate] = useState(1.0);
@@ -80,7 +78,6 @@ export default function Home() {
       {/* Right Side - Dedicated Chat Container */}
       <div className="w-96 bg-black/60 backdrop-blur-md border-l border-white/10 flex flex-col">
         <ChatInterface 
-          onPersonalityModeChange={setCurrentPersonalityMode} 
           onAvatarStateChange={setAvatarState}
           voiceEnabled={voiceEnabled}
           speechRate={speechRate}
