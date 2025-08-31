@@ -332,7 +332,7 @@ async function generateAIResponse(
       // If this is a significant interaction, consider updating memories
       if (analysis.sentiment !== 'neutral' || analysis.urgency !== 'low' || userMessage.length > 50) {
         try {
-          await updateMemories(`User asked: "${userMessage}" - Milla responded`);
+          await updateMemories(`User asked: "${userMessage}" - Milla responded: "${aiResponse.content}"`);
         } catch (error) {
           console.error("Error updating memories:", error);
         }
