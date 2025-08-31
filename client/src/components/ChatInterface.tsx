@@ -46,36 +46,45 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
   // Camera functions
   const startCamera = async () => {
     try {
+      console.log("Requesting camera access...");
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: 'user',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }, 
+        video: true,
         audio: false 
       });
+      
+      console.log("Camera stream obtained:", stream);
+      console.log("Video tracks:", stream.getVideoTracks());
+      
       setCameraStream(stream);
       setIsCameraActive(true);
       
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        // Ensure video starts playing
-        try {
-          await videoRef.current.play();
-        } catch (playError) {
-          console.log("Video autoplay blocked, user interaction required");
+      // Wait a moment for state to update, then set the video source
+      setTimeout(() => {
+        if (videoRef.current && stream) {
+          console.log("Setting video source...");
+          videoRef.current.srcObject = stream;
+          
+          videoRef.current.onloadedmetadata = () => {
+            console.log("Video metadata loaded, attempting to play...");
+            if (videoRef.current) {
+              videoRef.current.play()
+                .then(() => console.log("Video playing successfully"))
+                .catch(e => console.error("Video play failed:", e));
+            }
+          };
         }
-      }
+      }, 100);
       
       toast({
-        title: "Camera Active",
-        description: "Milla can now see you through your camera",
+        title: "Camera Access Granted",
+        description: "Setting up video preview...",
       });
     } catch (error) {
       console.error("Camera access error:", error);
       toast({
         title: "Camera Error", 
-        description: "Failed to access camera. Please check permissions and try again.",
+        description: `Failed to access camera: ${error.message}. Please allow camera permissions.`,
         variant: "destructive",
       });
     }
@@ -448,20 +457,31 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
 
         {/* Camera Preview */}
         {isCameraActive && (
-          <div className="fixed bottom-4 right-4 w-48 h-36 bg-black/80 border border-white/20 rounded-lg overflow-hidden backdrop-blur-sm z-50">
+          <div className="fixed bottom-4 right-4 w-64 h-48 bg-black border-2 border-green-400 rounded-lg overflow-hidden backdrop-blur-sm z-50">
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
-              className="w-full h-full object-cover"
-              onLoadedMetadata={() => {
-                // Ensure video plays when metadata is loaded
+              className="w-full h-full object-cover bg-gray-800"
+              style={{ transform: 'scaleX(-1)' }} // Mirror the video like a selfie
+              onCanPlay={() => {
+                console.log("Video can play");
                 if (videoRef.current) {
-                  videoRef.current.play().catch(e => console.log("Video play error:", e));
+                  videoRef.current.play().catch(e => console.error("Auto-play failed:", e));
                 }
               }}
+              onError={(e) => {
+                console.error("Video element error:", e);
+              }}
             />
+            {/* Status indicator */}
+            <div className="absolute top-2 left-2">
+              <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-green-400 text-xs">LIVE</span>
+              </div>
+            </div>
             <div className="absolute top-2 right-2 flex space-x-1">
               <Button
                 variant="ghost" 
