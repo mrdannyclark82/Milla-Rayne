@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeMemoryCore } from "./memoryService";
+import { initializePersonalTaskSystem } from "./personalTaskService";
 
 const app = express();
 app.use(express.json());
@@ -40,6 +41,9 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
+  
+  // Initialize Personal Task system
+  await initializePersonalTaskSystem();
   
   const server = await registerRoutes(app);
 

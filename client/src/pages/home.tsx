@@ -8,12 +8,14 @@ import avatarVideo from "@assets/generated_images/AI_assistant_avatar_video_8218
 import millaPortraitVideo from "@assets/Creating_a_Living_Portrait_Animation_1756641116784.mp4";
 import { Button } from "@/components/ui/button";
 import SettingsPanel from "@/components/SettingsPanel";
+import PersonalTasksPanel from "@/components/PersonalTasksPanel";
 
 export default function Home() {
   const [avatarState, setAvatarState] = useState<AvatarState>("neutral");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [useVideo, setUseVideo] = useState(true);
+  const [showPersonalTasks, setShowPersonalTasks] = useState(false);
   
   // Get the appropriate avatar image based on state
   const getAvatarImage = () => {
@@ -106,13 +108,19 @@ export default function Home() {
       </div>
       
       {/* Right Side - Dedicated Chat Container */}
-      <div className="w-96 bg-black/60 backdrop-blur-md border-l border-white/10 flex flex-col">
+      <div className="w-96 bg-transparent border-l border-white/10 flex flex-col">
         <ChatInterface 
           onAvatarStateChange={setAvatarState}
           voiceEnabled={voiceEnabled}
           speechRate={speechRate}
         />
       </div>
+      
+      {/* Personal Tasks Panel */}
+      <PersonalTasksPanel 
+        isOpen={showPersonalTasks}
+        onToggle={() => setShowPersonalTasks(!showPersonalTasks)}
+      />
     </div>
   );
 }

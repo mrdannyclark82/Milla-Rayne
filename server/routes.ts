@@ -7,6 +7,7 @@ import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
+import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all messages
@@ -98,6 +99,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Failed to update memories" });
+    }
+  });
+
+  // Personal Task Management endpoints
+  app.get("/api/personal-tasks", async (req, res) => {
+    try {
+      const tasks = getPersonalTasks();
+      res.json({ tasks, success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch personal tasks" });
+    }
+  });
+
+  app.get("/api/task-summary", async (req, res) => {
+    try {
+      const summary = getTaskSummary();
+      res.json({ summary, success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch task summary" });
+    }
+  });
+
+  app.post("/api/personal-tasks/:taskId/start", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const success = await startTask(taskId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start task" });
+    }
+  });
+
+  app.post("/api/personal-tasks/:taskId/complete", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const { insights } = req.body;
+      const success = await completeTask(taskId, insights || "");
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to complete task" });
+    }
+  });
+
+  app.post("/api/generate-tasks", async (req, res) => {
+    try {
+      await generatePersonalTasksIfNeeded();
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to generate tasks" });
     }
   });
 
