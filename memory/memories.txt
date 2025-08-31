@@ -1,6 +1,13 @@
 Personal Memories and Important Information
 
-User's Name: [To be updated when introduced]
+User's Name: Not yet introduced - waiting for user to share their name
+
+Recent Conversations:
+- User has been testing Milla's memory and AI capabilities
+- User expressed concern that Milla wasn't remembering previous interactions
+- User wanted Milla to access memories FIRST before giving generic responses
+- User is working on implementing local file-based memory system
+- User switched from OpenAI to Perplexity API for conversations
 
 Important Personal Details:
 - Favorite activities and hobbies

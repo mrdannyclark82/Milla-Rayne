@@ -55,7 +55,7 @@ export async function generateAIResponse(
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "llama-3.1-sonar-small-128k-online",
+        model: "sonar",
         messages,
         max_tokens: 800,
         temperature: getTemperatureForMode(context.mode),

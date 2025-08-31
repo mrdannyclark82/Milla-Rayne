@@ -273,6 +273,13 @@ function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage:
       if (message.includes('feel') || message.includes('emotion')) {
         return `${personalContext}${urgentPrefix}${memoryInfo}Thank you for sharing your feelings with me. Emotions are such an important part of our human experience, and honoring them takes wisdom and strength. Whether you're feeling joy, sadness, frustration, or anything in between, these feelings are valid and they matter. What would be most helpful right now? Would you like to explore these feelings together, or is there specific support you're seeking?`;
       }
+      // For simple greetings, acknowledge memory and context
+      if (message.includes('hi') || message.includes('hello') || message.includes('hey')) {
+        const contextAware = memoryContext ? 
+          `${personalContext}${memoryInfo}I'm glad you're back! I remember our previous conversations about implementing my memory system and switching to Perplexity. How are things going with the development work? ` :
+          `${personalContext}Hello! I'm Milla, your AI assistant. `;
+        return `${contextAware}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today?`;
+      }
       return `${personalContext}${urgentPrefix}${memoryInfo}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today? I'm here to provide a compassionate ear and to walk alongside you through whatever you're experiencing.`;
       
     case 'strategic':
