@@ -47,22 +47,35 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'user' }, 
+        video: { 
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }, 
         audio: false 
       });
       setCameraStream(stream);
       setIsCameraActive(true);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Ensure video starts playing
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          console.log("Video autoplay blocked, user interaction required");
+        }
       }
+      
       toast({
         title: "Camera Active",
         description: "Milla can now see you through your camera",
       });
     } catch (error) {
+      console.error("Camera access error:", error);
       toast({
-        title: "Camera Error",
-        description: "Failed to access camera. Please check permissions.",
+        title: "Camera Error", 
+        description: "Failed to access camera. Please check permissions and try again.",
         variant: "destructive",
       });
     }
@@ -439,8 +452,15 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
             <video
               ref={videoRef}
               autoPlay
+              playsInline
               muted
               className="w-full h-full object-cover"
+              onLoadedMetadata={() => {
+                // Ensure video plays when metadata is loaded
+                if (videoRef.current) {
+                  videoRef.current.play().catch(e => console.log("Video play error:", e));
+                }
+              }}
             />
             <div className="absolute top-2 right-2 flex space-x-1">
               <Button
