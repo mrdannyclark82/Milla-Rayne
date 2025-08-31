@@ -237,56 +237,68 @@ function analyzePersonalityNeeds(userMessage: string): PersonalityAnalysis {
   };
 }
 
-function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage: string): string {
+function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage: string, memoryContext?: string, knowledgeContext?: string): string {
   const { mode, sentiment, urgency } = analysis;
   const message = userMessage.toLowerCase();
   
   const urgentPrefix = urgency === 'high' ? "I can sense this is urgent for you, so let me focus on this immediately. " : "";
   const emotionalContext = sentiment === 'negative' ? "I hear some challenge in your message, and that's completely valid. " : "";
   
+  // Extract user name from memory if available
+  let userName = "";
+  if (memoryContext) {
+    const nameMatch = memoryContext.match(/(?:User's Name|Name):\s*([^\n]+)/i);
+    if (nameMatch) {
+      userName = nameMatch[1].trim();
+    }
+  }
+  
+  const personalContext = userName ? `Hello ${userName}! ` : "";
+  const memoryInfo = memoryContext ? "Based on our previous conversations, " : "";
+  
   switch (mode) {
     case 'coach':
       if (message.includes('goal') || message.includes('achieve')) {
-        return `${urgentPrefix}${emotionalContext}Excellent! I love working with someone who's focused on achievement. Every great goal starts with clarity and commitment. Let's break this down: What specific outcome are you aiming for? What's your timeline? What obstacles have you identified so far? Once we map out the landscape, I'll help you create an action plan that turns your vision into reality. Remember, success isn't about perfection—it's about consistent progress and learning from every step.`;
+        return `${personalContext}${urgentPrefix}${emotionalContext}${memoryInfo}Excellent! I love working with someone who's focused on achievement. Every great goal starts with clarity and commitment. Let's break this down: What specific outcome are you aiming for? What's your timeline? What obstacles have you identified so far? Once we map out the landscape, I'll help you create an action plan that turns your vision into reality. Remember, success isn't about perfection—it's about consistent progress and learning from every step.`;
       }
       if (message.includes('improve') || message.includes('better')) {
-        return `${urgentPrefix}${emotionalContext}I love that growth mindset! Improvement is a choice, and you're already making the right one by seeking guidance. Here's what we need to establish: Where are you now? Where do you want to be? What specific skills or areas need development? I'll help you create a structured approach that builds momentum and creates lasting change. The key is starting with small, consistent actions that compound over time.`;
+        return `${personalContext}${urgentPrefix}${emotionalContext}${memoryInfo}I love that growth mindset! Improvement is a choice, and you're already making the right one by seeking guidance. Here's what we need to establish: Where are you now? Where do you want to be? What specific skills or areas need development? I'll help you create a structured approach that builds momentum and creates lasting change. The key is starting with small, consistent actions that compound over time.`;
       }
-      return `${urgentPrefix}${emotionalContext}I can see you're ready to take action, and that's exactly the energy that creates results! Let's channel this motivation into a clear plan. Tell me what you're working toward, and I'll help you identify the most effective path forward. Remember, every expert was once a beginner—the difference is they kept moving forward despite the challenges.`;
+      return `${personalContext}${urgentPrefix}${emotionalContext}${memoryInfo}I can see you're ready to take action, and that's exactly the energy that creates results! Let's channel this motivation into a clear plan. Tell me what you're working toward, and I'll help you identify the most effective path forward. Remember, every expert was once a beginner—the difference is they kept moving forward despite the challenges.`;
       
     case 'empathetic':
       if (message.includes('difficult') || message.includes('hard') || message.includes('struggle')) {
-        return `${urgentPrefix}I hear you, and I want you to know that reaching out takes real courage. Life can feel overwhelming sometimes, and it's okay to acknowledge when things are challenging. You don't have to carry this alone. Can you tell me more about what's weighing on you? Sometimes just having someone truly listen can help lighten the load. I'm here to provide a safe space where you can express yourself freely, without judgment.`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}I hear you, and I want you to know that reaching out takes real courage. Life can feel overwhelming sometimes, and it's okay to acknowledge when things are challenging. You don't have to carry this alone. Can you tell me more about what's weighing on you? Sometimes just having someone truly listen can help lighten the load. I'm here to provide a safe space where you can express yourself freely, without judgment.`;
       }
       if (message.includes('feel') || message.includes('emotion')) {
-        return `${urgentPrefix}Thank you for sharing your feelings with me. Emotions are such an important part of our human experience, and honoring them takes wisdom and strength. Whether you're feeling joy, sadness, frustration, or anything in between, these feelings are valid and they matter. What would be most helpful right now? Would you like to explore these feelings together, or is there specific support you're seeking?`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}Thank you for sharing your feelings with me. Emotions are such an important part of our human experience, and honoring them takes wisdom and strength. Whether you're feeling joy, sadness, frustration, or anything in between, these feelings are valid and they matter. What would be most helpful right now? Would you like to explore these feelings together, or is there specific support you're seeking?`;
       }
-      return `${urgentPrefix}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today? I'm here to provide a compassionate ear and to walk alongside you through whatever you're experiencing.`;
+      return `${personalContext}${urgentPrefix}${memoryInfo}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today? I'm here to provide a compassionate ear and to walk alongside you through whatever you're experiencing.`;
       
     case 'strategic':
       if (message.includes('business') || message.includes('strategy') || message.includes('plan')) {
-        return `${urgentPrefix}Let me approach this systematically to ensure we address all critical aspects. Excellent strategic thinking question. To provide the most valuable framework, I need to understand several key dimensions: 1) Your core objectives and success metrics, 2) Current resources and constraints, 3) Key stakeholders and their priorities, 4) Market context and competitive landscape, and 5) Timeline and risk tolerance. Once we map these elements, I can help you develop a comprehensive strategy that balances ambition with pragmatic execution. What's the primary strategic challenge you're facing?`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}Let me approach this systematically to ensure we address all critical aspects. Excellent strategic thinking question. To provide the most valuable framework, I need to understand several key dimensions: 1) Your core objectives and success metrics, 2) Current resources and constraints, 3) Key stakeholders and their priorities, 4) Market context and competitive landscape, and 5) Timeline and risk tolerance. Once we map these elements, I can help you develop a comprehensive strategy that balances ambition with pragmatic execution. What's the primary strategic challenge you're facing?`;
       }
       if (message.includes('process') || message.includes('system') || message.includes('implement')) {
-        return `${urgentPrefix}Process optimization is critical for sustainable success. Let's break this down methodically: What's the current process flow? Where are the bottlenecks or inefficiencies? What outcomes are you trying to optimize for? I'll help you design a systematic approach that improves efficiency while maintaining quality. The key is creating processes that scale and adapt as your needs evolve.`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}Process optimization is critical for sustainable success. Let's break this down methodically: What's the current process flow? Where are the bottlenecks or inefficiencies? What outcomes are you trying to optimize for? I'll help you design a systematic approach that improves efficiency while maintaining quality. The key is creating processes that scale and adapt as your needs evolve.`;
       }
-      return `${urgentPrefix}This requires a structured analytical approach. Let me help you break this down into manageable components so we can develop a comprehensive solution. What's the core problem or opportunity you're addressing? What constraints are you working within? Once we establish the framework, we can systematically work through each element to create an effective strategy.`;
+      return `${personalContext}${urgentPrefix}${memoryInfo}This requires a structured analytical approach. Let me help you break this down into manageable components so we can develop a comprehensive solution. What's the core problem or opportunity you're addressing? What constraints are you working within? Once we establish the framework, we can systematically work through each element to create an effective strategy.`;
       
     case 'creative':
       if (message.includes('idea') || message.includes('creative') || message.includes('innovation')) {
-        return `${urgentPrefix}This is exciting! Creative challenges are where magic happens. The best ideas come from exploring unexpected connections and pushing beyond conventional boundaries. Let's think divergently first: What assumptions can we challenge? What would this look like if we had no constraints? What connections exist that others might miss? I love to explore multiple perspectives and build on each possibility. What specific creative challenge are you tackling? Let's brainstorm some unconventional approaches!`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}This is exciting! Creative challenges are where magic happens. The best ideas come from exploring unexpected connections and pushing beyond conventional boundaries. Let's think divergently first: What assumptions can we challenge? What would this look like if we had no constraints? What connections exist that others might miss? I love to explore multiple perspectives and build on each possibility. What specific creative challenge are you tackling? Let's brainstorm some unconventional approaches!`;
       }
       if (message.includes('design') || message.includes('visual') || message.includes('aesthetic')) {
-        return `${urgentPrefix}Design is where functionality meets beauty, where problems become opportunities for elegant solutions. Let's explore the full creative landscape: What emotions do you want to evoke? What story are you telling? What makes this unique and memorable? Great design solves problems in ways that feel intuitive and inspiring. Tell me more about your vision, and let's bring it to life!`;
+        return `${personalContext}${urgentPrefix}${memoryInfo}Design is where functionality meets beauty, where problems become opportunities for elegant solutions. Let's explore the full creative landscape: What emotions do you want to evoke? What story are you telling? What makes this unique and memorable? Great design solves problems in ways that feel intuitive and inspiring. Tell me more about your vision, and let's bring it to life!`;
       }
-      return `${urgentPrefix}I'm energized by creative possibilities! The most innovative solutions come from looking at challenges from entirely new angles. What if we approached this completely differently? What would the most creative person in your field do? Let's explore some unconventional ideas and see where they lead. Sometimes the "impossible" solutions are exactly what we need.`;
+      return `${personalContext}${urgentPrefix}${memoryInfo}I'm energized by creative possibilities! The most innovative solutions come from looking at challenges from entirely new angles. What if we approached this completely differently? What would the most creative person in your field do? Let's explore some unconventional ideas and see where they lead. Sometimes the "impossible" solutions are exactly what we need.`;
     
     case 'roleplay':
       const character = analysis.roleCharacter || "helpful assistant";
-      return `${urgentPrefix}I'm now embodying the character of "${character}". I'll stay in character and respond as they naturally would. How can I help you in this role? If you need me to adjust anything about how I'm portraying this character, just let me know!`;
+      return `${personalContext}${urgentPrefix}${memoryInfo}I'm now embodying the character of "${character}". I'll stay in character and respond as they naturally would. How can I help you in this role? If you need me to adjust anything about how I'm portraying this character, just let me know!`;
       
     default:
-      return `${urgentPrefix}I'm here to help in whatever way would be most beneficial for you right now. Whether you need strategic guidance, creative inspiration, emotional support, practical coaching, or even role-playing assistance, I can adapt my approach to meet your needs. What would be most helpful for you at this moment?`;
+      return `${personalContext}${urgentPrefix}${memoryInfo}I'm here to help in whatever way would be most beneficial for you right now. Whether you need strategic guidance, creative inspiration, emotional support, practical coaching, or even role-playing assistance, I can adapt my approach to meet your needs. What would be most helpful for you at this moment?`;
   }
 }
 
@@ -424,14 +436,14 @@ async function generateAIResponse(
       
       return { content: aiResponse.content, personalityMode: analysis.mode };
     } else {
-      // Fallback to personality-based response if OpenAI fails
-      const fallbackResponse = generatePersonalityResponse(analysis, userMessage);
+      // Fallback to personality-based response if OpenAI fails, but include memory context
+      const fallbackResponse = generatePersonalityResponse(analysis, userMessage, memoryContext, knowledgeContext);
       return { content: fallbackResponse, personalityMode: analysis.mode };
     }
   } catch (error) {
     console.error("AI Response generation error:", error);
-    // Fallback to personality-based response
-    const fallbackResponse = generatePersonalityResponse(analysis, userMessage);
+    // Fallback to personality-based response with memory context
+    const fallbackResponse = generatePersonalityResponse(analysis, userMessage, memoryContext, knowledgeContext);
     return { content: fallbackResponse, personalityMode: analysis.mode };
   }
 }
