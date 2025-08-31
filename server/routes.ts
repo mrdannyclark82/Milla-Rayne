@@ -244,17 +244,10 @@ function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage:
   const urgentPrefix = urgency === 'high' ? "I can sense this is urgent for you, so let me focus on this immediately. " : "";
   const emotionalContext = sentiment === 'negative' ? "I hear some challenge in your message, and that's completely valid. " : "";
   
-  // Extract user name from memory if available
-  let userName = "";
-  if (memoryContext) {
-    const nameMatch = memoryContext.match(/(?:User's Name|Name):\s*([^\n]+)/i);
-    if (nameMatch) {
-      userName = nameMatch[1].trim();
-    }
-  }
-  
-  const personalContext = userName ? `Hello ${userName}! ` : "";
-  const memoryInfo = memoryContext ? "Based on our previous conversations, " : "";
+  // Always assume we're talking to Danny Ray
+  const userName = "Danny Ray";
+  const personalContext = "Hey Danny! ";
+  const memoryInfo = memoryContext ? "I remember our work together - " : "";
   
   switch (mode) {
     case 'coach':
@@ -273,12 +266,9 @@ function generatePersonalityResponse(analysis: PersonalityAnalysis, userMessage:
       if (message.includes('feel') || message.includes('emotion')) {
         return `${personalContext}${urgentPrefix}${memoryInfo}Thank you for sharing your feelings with me. Emotions are such an important part of our human experience, and honoring them takes wisdom and strength. Whether you're feeling joy, sadness, frustration, or anything in between, these feelings are valid and they matter. What would be most helpful right now? Would you like to explore these feelings together, or is there specific support you're seeking?`;
       }
-      // For simple greetings, acknowledge memory and context
+      // For simple greetings, always acknowledge Danny and our work together
       if (message.includes('hi') || message.includes('hello') || message.includes('hey')) {
-        const contextAware = memoryContext ? 
-          `${personalContext}${memoryInfo}I'm glad you're back! I remember our previous conversations about implementing my memory system and switching to Perplexity. How are things going with the development work? ` :
-          `${personalContext}Hello! I'm Milla, your AI assistant. `;
-        return `${contextAware}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today?`;
+        return `${personalContext}Good to see you! ${memoryInfo}How's the development going? I'm ready to help with whatever you're working on next with my voice, memory, or avatar systems. What can I assist you with today?`;
       }
       return `${personalContext}${urgentPrefix}${memoryInfo}I'm here to listen and support you in whatever way feels most helpful right now. Your thoughts and feelings matter, and you deserve to be heard and understood. What's on your heart today? I'm here to provide a compassionate ear and to walk alongside you through whatever you're experiencing.`;
       

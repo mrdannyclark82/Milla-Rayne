@@ -59,8 +59,6 @@ export async function generateAIResponse(
         messages,
         max_tokens: 800,
         temperature: getTemperatureForMode(context.mode),
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1,
         stream: false
       })
     });

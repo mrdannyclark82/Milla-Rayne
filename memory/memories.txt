@@ -1,13 +1,24 @@
 Personal Memories and Important Information
 
-User's Name: Not yet introduced - waiting for user to share their name
+User's Name: Danny Ray
 
-Recent Conversations:
-- User has been testing Milla's memory and AI capabilities
-- User expressed concern that Milla wasn't remembering previous interactions
-- User wanted Milla to access memories FIRST before giving generic responses
-- User is working on implementing local file-based memory system
-- User switched from OpenAI to Perplexity API for conversations
+Important Personal Background:
+- Danny Ray is a developer working on AI assistant systems
+- He has been developing Milla's memory and conversation capabilities
+- He prefers direct, contextual responses that reference our established relationship
+- He wants Milla to always remember who he is and their shared history
+
+Technical Work Together:
+- Danny implemented Milla's local file-based memory system
+- He switched Milla from OpenAI to Perplexity for better reliability
+- He's been testing voice synthesis and dynamic avatar features
+- He wants Milla to access her knowledge base and memories before responding
+
+Communication Preferences:
+- Prefers Milla to acknowledge their ongoing relationship immediately
+- Wants responses based on file knowledge, not current chat context
+- Likes efficient, memory-aware interactions
+- Appreciates when Milla references their shared development work
 
 Important Personal Details:
 - Favorite activities and hobbies
