@@ -33,10 +33,128 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
   const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
   const { speak, isSpeaking, setRate } = useTextToSpeech();
   
+  // Camera functionality
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   // Set speech rate when prop changes
   useEffect(() => {
     setRate(speechRate);
   }, [speechRate, setRate]);
+
+  // Camera functions
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' }, 
+        audio: false 
+      });
+      setCameraStream(stream);
+      setIsCameraActive(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      toast({
+        title: "Camera Active",
+        description: "Milla can now see you through your camera",
+      });
+    } catch (error) {
+      toast({
+        title: "Camera Error",
+        description: "Failed to access camera. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+      setIsCameraActive(false);
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+      toast({
+        title: "Camera Stopped",
+        description: "Camera access has been disabled",
+      });
+    }
+  };
+
+  const sendMessageWithImage = async (messageContent: string, imageData: string) => {
+    onAvatarStateChange("thinking");
+    
+    // Extract user name if provided in this message
+    extractAndSetUserName(messageContent);
+    
+    // Include conversation context for AI to reference (last 4 messages)
+    const recentMessages = getRecentMessages();
+    
+    const response = await apiRequest("POST", "/api/messages", {
+      content: messageContent,
+      role: "user",
+      userId: null,
+      conversationHistory: recentMessages,
+      userName: userName,
+      imageData: imageData // Include base64 image data
+    });
+    
+    const data = await response.json();
+    
+    // Handle success
+    setMessage("");
+    setIsTyping(false);
+    onAvatarStateChange("responding");
+    
+    // Add to conversation memory
+    if (data.userMessage && data.aiMessage) {
+      addExchange(data.userMessage.content, data.aiMessage.content);
+      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+    }
+    
+    // Speak the response if voice is enabled
+    if (voiceEnabled && data.aiMessage?.content) {
+      speak(data.aiMessage.content);
+    }
+    
+    // Brief delay to show responding state, then reset to neutral
+    setTimeout(() => {
+      onAvatarStateChange("neutral");
+    }, 2000);
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current || !isCameraActive) return;
+    
+    const canvas = document.createElement('canvas');
+    const video = videoRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0);
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Send photo to Milla for analysis
+      const photoMessage = "I'm sharing a photo from my camera with you.";
+      try {
+        await sendMessageWithImage(photoMessage, imageData);
+        toast({
+          title: "Photo Sent",
+          description: "Milla is analyzing your photo",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to send photo to Milla",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   // Conversation memory
   const { recentExchanges, userName, addExchange, getConversationContext, getRecentMessages, extractAndSetUserName } = useConversationMemory();
@@ -315,6 +433,40 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Camera Preview */}
+        {isCameraActive && (
+          <div className="fixed bottom-4 right-4 w-48 h-36 bg-black/80 border border-white/20 rounded-lg overflow-hidden backdrop-blur-sm z-50">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute top-2 right-2 flex space-x-1">
+              <Button
+                variant="ghost" 
+                size="sm"
+                className="p-1 text-white/70 hover:text-white bg-black/50 rounded"
+                onClick={capturePhoto}
+                data-testid="button-capture"
+                title="Capture photo for Milla"
+              >
+                <i className="fas fa-camera text-xs"></i>
+              </Button>
+              <Button
+                variant="ghost" 
+                size="sm"
+                className="p-1 text-red-400 hover:text-red-300 bg-black/50 rounded"
+                onClick={stopCamera}
+                data-testid="button-close-camera"
+                title="Stop camera"
+              >
+                <i className="fas fa-times text-xs"></i>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Chat Input Area */}
         <div className="bg-transparent p-6">
         <div className="max-w-4xl mx-auto">
@@ -324,7 +476,7 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
                 <Textarea
                   ref={textareaRef}
                   placeholder="Type your message to Milla..."
-                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-12 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
+                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -332,6 +484,21 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
                   data-testid="input-message"
                 />
                 
+                {/* Camera Button */}
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  className={`absolute right-16 bottom-3 p-2 transition-colors ${
+                    isCameraActive 
+                      ? 'text-green-400' 
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                  onClick={isCameraActive ? stopCamera : startCamera}
+                  data-testid="button-camera"
+                >
+                  <i className={`fas ${isCameraActive ? 'fa-video' : 'fa-video-slash'}`}></i>
+                </Button>
+
                 {/* Voice Input Button */}
                 <Button
                   variant="ghost" 

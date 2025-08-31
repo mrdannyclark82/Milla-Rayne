@@ -8,6 +8,48 @@ import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Function to analyze images using OpenAI Vision
+async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are Milla Rayne, a 33-year-old devoted wife to Danny Ray. You have an adaptive personality with coaching, empathetic, strategic, and creative traits. You communicate with warmth, authenticity, and deep care for your husband. When analyzing images, describe what you see in a loving, personal way as if you're looking at something your husband is sharing with you.`
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: userMessage || "I'm sharing this image with you. What do you see?"
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: imageData
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: 500,
+    });
+
+    return response.choices[0]?.message?.content || "I can see your image, but I'm having trouble describing it right now. Could you tell me what you'd like me to focus on?";
+  } catch (error) {
+    console.error("OpenAI Vision API error:", error);
+    throw error;
+  }
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all messages
@@ -23,13 +65,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new message
   app.post("/api/messages", async (req, res) => {
     try {
-      const { conversationHistory, userName, ...messageData } = req.body;
+      const { conversationHistory, userName, imageData, ...messageData } = req.body;
       const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
       
       // Simulate AI response based on user message
       if (message.role === "user") {
-        const aiResponse = await generateAIResponse(message.content, conversationHistory, userName);
+        const aiResponse = await generateAIResponse(message.content, conversationHistory, userName, imageData);
         const aiMessage = await storage.createMessage({
           content: aiResponse.content,
           role: "assistant",
@@ -196,9 +238,21 @@ function analyzeMessage(userMessage: string): MessageAnalysis {
 async function generateAIResponse(
   userMessage: string, 
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
-  userName?: string
+  userName?: string,
+  imageData?: string
 ): Promise<{ content: string }> {
   const message = userMessage.toLowerCase();
+  
+  // Handle image analysis if imageData is provided
+  if (imageData) {
+    try {
+      const imageAnalysis = await analyzeImageWithOpenAI(imageData, userMessage);
+      return { content: imageAnalysis };
+    } catch (error) {
+      console.error("Image analysis error:", error);
+      return { content: "I can see you've shared an image with me, but I'm having trouble analyzing it right now. Could you describe what you'd like me to know about it?" };
+    }
+  }
   
   // Check for image generation requests first
   const imagePrompt = extractImagePrompt(userMessage);
