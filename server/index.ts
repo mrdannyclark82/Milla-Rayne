@@ -45,6 +45,10 @@ app.use((req, res, next) => {
   // Initialize Personal Task system
   await initializePersonalTaskSystem();
   
+  // Initialize Visual Recognition system
+  const { initializeFaceRecognition } = await import("./visualRecognitionService");
+  await initializeFaceRecognition();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

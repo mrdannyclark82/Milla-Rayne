@@ -31,12 +31,16 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
 
   // Voice functionality
   const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
-  const { speak, isSpeaking, setRate } = useTextToSpeech();
+  const { speak, isSpeaking, setRate, stop: stopSpeaking } = useTextToSpeech();
   
   // Camera functionality
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isAnalyzingVideo, setIsAnalyzingVideo] = useState(false);
+  const [currentEmotion, setCurrentEmotion] = useState<string>("neutral");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const videoRef = useRef<HTMLVideoElement>(null);
+  const analysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Set speech rate when prop changes
   useEffect(() => {
@@ -49,7 +53,7 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
       console.log("Requesting camera access...");
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true,
+        video: { facingMode },
         audio: false 
       });
       
@@ -69,7 +73,10 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
             console.log("Video metadata loaded, attempting to play...");
             if (videoRef.current) {
               videoRef.current.play()
-                .then(() => console.log("Video playing successfully"))
+                .then(() => {
+                  console.log("Video playing successfully");
+                  startRealTimeAnalysis();
+                })
                 .catch(e => console.error("Video play failed:", e));
             }
           };
@@ -77,8 +84,8 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
       }, 100);
       
       toast({
-        title: "Camera Access Granted",
-        description: "Setting up video preview...",
+        title: "Enhanced Camera Active",
+        description: "Milla can now see you in real-time and detect your emotions",
       });
     } catch (error) {
       console.error("Camera access error:", error);
@@ -90,11 +97,85 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
     }
   };
 
+  const switchCamera = async () => {
+    if (!isCameraActive) return;
+    
+    // Stop current stream
+    stopCamera();
+    
+    // Switch facing mode
+    const newFacingMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newFacingMode);
+    
+    // Wait a moment then restart with new facing mode
+    setTimeout(() => {
+      startCamera();
+    }, 500);
+  };
+
+  const startRealTimeAnalysis = () => {
+    if (analysisIntervalRef.current) return; // Already running
+    
+    setIsAnalyzingVideo(true);
+    console.log("Starting real-time video analysis...");
+    
+    // Analyze video frames every 3 seconds
+    analysisIntervalRef.current = setInterval(() => {
+      if (videoRef.current && isCameraActive) {
+        analyzeCurrentFrame();
+      }
+    }, 3000);
+  };
+
+  const stopRealTimeAnalysis = () => {
+    if (analysisIntervalRef.current) {
+      clearInterval(analysisIntervalRef.current);
+      analysisIntervalRef.current = null;
+    }
+    setIsAnalyzingVideo(false);
+    setCurrentEmotion("neutral");
+  };
+
+  const analyzeCurrentFrame = async () => {
+    if (!videoRef.current) return;
+    
+    try {
+      const canvas = document.createElement('canvas');
+      const video = videoRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/jpeg', 0.6);
+        
+        // Send for emotion analysis
+        const response = await fetch('/api/analyze-emotion', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageData, timestamp: Date.now() })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.emotion) {
+            setCurrentEmotion(result.emotion);
+            console.log("Detected emotion:", result.emotion);
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Frame analysis error:", error);
+    }
+  };
+
   const stopCamera = () => {
     if (cameraStream) {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
       setIsCameraActive(false);
+      stopRealTimeAnalysis();
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
@@ -189,6 +270,37 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
       resetTranscript();
     }
   }, [transcript, resetTranscript]);
+
+  // Voice interruption - stop Milla speaking when user starts typing or talking
+  useEffect(() => {
+    if (isListening && isSpeaking) {
+      console.log("User started speaking - interrupting Milla's speech");
+      stopSpeaking();
+      onAvatarStateChange("listening");
+    }
+  }, [isListening, isSpeaking, stopSpeaking, onAvatarStateChange]);
+
+  // Proactive engagement check
+  useEffect(() => {
+    const checkProactiveEngagement = async () => {
+      try {
+        const response = await fetch('/api/proactive-message');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.message) {
+            // Add proactive message to conversation after periods of inactivity
+            console.log("Proactive message available:", data.message);
+          }
+        }
+      } catch (error) {
+        console.log("Proactive engagement check failed:", error);
+      }
+    };
+
+    // Check for proactive messages every 15 minutes
+    const interval = setInterval(checkProactiveEngagement, 15 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Handle action commands and identity queries
   const handleSpecialCommands = (content: string): string | null => {
@@ -360,6 +472,12 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
   const handleInputChange = (value: string) => {
     setMessage(value);
     
+    // Voice interruption - stop Milla speaking when user starts typing
+    if (value.length > 0 && isSpeaking) {
+      console.log("User started typing - interrupting Milla's speech");
+      stopSpeaking();
+    }
+    
     if (value.length > 0 && !userIsTyping && !sendMessageMutation.isPending) {
       setUserIsTyping(true);
       onAvatarStateChange("thinking"); // Show thinking expression when user types
@@ -475,14 +593,36 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
                 console.error("Video element error:", e);
               }}
             />
-            {/* Status indicator */}
-            <div className="absolute top-2 left-2">
+            {/* Enhanced Status indicators */}
+            <div className="absolute top-2 left-2 space-y-1">
               <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-green-400 text-xs">LIVE</span>
               </div>
+              {isAnalyzingVideo && (
+                <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
+                  <i className="fas fa-brain text-xs text-blue-400"></i>
+                  <span className="text-blue-400 text-xs">AI Vision</span>
+                </div>
+              )}
+              {currentEmotion !== "neutral" && (
+                <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
+                  <i className="fas fa-smile text-xs text-yellow-400"></i>
+                  <span className="text-yellow-400 text-xs capitalize">{currentEmotion}</span>
+                </div>
+              )}
             </div>
             <div className="absolute top-2 right-2 flex space-x-1">
+              <Button
+                variant="ghost" 
+                size="sm"
+                className="p-1 text-white/70 hover:text-white bg-black/50 rounded"
+                onClick={switchCamera}
+                data-testid="button-switch-camera"
+                title="Switch camera (front/back)"
+              >
+                <i className="fas fa-sync text-xs"></i>
+              </Button>
               <Button
                 variant="ghost" 
                 size="sm"

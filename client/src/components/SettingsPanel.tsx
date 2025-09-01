@@ -5,6 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { AvatarCustomizer } from "./AvatarCustomizer";
+
+type AvatarSettings = {
+  style: 'realistic' | 'anime' | 'artistic' | 'minimal';
+  hairColor: string;
+  eyeColor: string;
+  skinTone: string;
+  outfit: 'casual' | 'elegant' | 'professional' | 'intimate';
+  expression: 'loving' | 'playful' | 'mysterious' | 'gentle';
+  background: 'gradient' | 'solid' | 'nature' | 'abstract';
+  lighting: number;
+  glow: number;
+};
 
 interface SettingsPanelProps {
   children?: React.ReactNode;
@@ -22,6 +35,17 @@ export default function SettingsPanel({
   onSpeechRateChange 
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
+    style: 'realistic',
+    hairColor: 'auburn',
+    eyeColor: 'green',
+    skinTone: 'warm',
+    outfit: 'elegant',
+    expression: 'loving',
+    background: 'gradient',
+    lighting: 75,
+    glow: 60
+  });
 
   const handleVoiceToggle = () => {
     onVoiceToggle?.(!voiceEnabled);
@@ -88,38 +112,13 @@ export default function SettingsPanel({
             </CardContent>
           </Card>
 
-          {/* Wardrobe Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-tshirt mr-2 text-pink-400"></i>
-                Wardrobe
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Outfit Style</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-user-tie mr-1"></i>
-                  Professional
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Color Scheme</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-palette mr-1"></i>
-                  Customize
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Accessories</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-glasses mr-1"></i>
-                  None
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Avatar Customization Section */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
+            <AvatarCustomizer 
+              currentSettings={avatarSettings}
+              onSettingsChange={setAvatarSettings}
+            />
+          </div>
 
           {/* Personality Tuning Section */}
           <Card className="bg-white/10 backdrop-blur-sm border border-white/20">

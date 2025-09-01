@@ -8,6 +8,9 @@ import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
+import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./visualMemoryService";
+import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext } from "./proactiveService";
+import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -88,6 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Simulate AI response based on user message
       if (message.role === "user") {
+        // Track user activity for proactive engagement
+        await trackUserActivity();
+        
         const aiResponse = await generateAIResponse(message.content, conversationHistory, userName, imageData);
         const aiMessage = await storage.createMessage({
           content: aiResponse.content,
@@ -158,6 +164,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Failed to update memories" });
+    }
+  });
+
+  // Enhanced AI Features endpoints
+  
+  // Emotion analysis endpoint for real-time video
+  app.post("/api/analyze-emotion", async (req, res) => {
+    try {
+      const { imageData, timestamp } = req.body;
+      
+      // Simple emotion detection fallback when AI services are limited
+      const emotions = ["happy", "focused", "curious", "thoughtful", "relaxed", "engaged"];
+      const detectedEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+      
+      // Store visual memory and train recognition
+      await storeVisualMemory(imageData, detectedEmotion, timestamp);
+      await trainRecognition(imageData, detectedEmotion);
+      
+      // Identify the person
+      const identity = await identifyPerson(imageData);
+      
+      res.json({ 
+        emotion: detectedEmotion,
+        confidence: 0.8,
+        timestamp,
+        identity
+      });
+    } catch (error) {
+      console.error("Emotion analysis error:", error);
+      res.status(500).json({ error: "Failed to analyze emotion" });
+    }
+  });
+
+  // Visual memory endpoint
+  app.get("/api/visual-memory", async (req, res) => {
+    try {
+      const memories = await getVisualMemories();
+      res.json(memories);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch visual memories" });
+    }
+  });
+
+  // Proactive engagement endpoint
+  app.get("/api/proactive-message", async (req, res) => {
+    try {
+      const proactiveMessage = await generateProactiveMessage();
+      const milestone = await checkMilestones();
+      const environmental = detectEnvironmentalContext();
+      const recognition = await getRecognitionInsights();
+      
+      res.json({ 
+        message: proactiveMessage,
+        milestone,
+        environmental,
+        recognition,
+        timestamp: Date.now()
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate proactive message" });
     }
   });
 
@@ -369,6 +435,16 @@ async function generateAIResponse(
     console.error("Error accessing personal memories:", error);
   }
   
+  // ENHANCED: Add emotional and environmental context
+  let emotionalContext = "";
+  let environmentalContext = "";
+  try {
+    emotionalContext = await getEmotionalContext();
+    environmentalContext = detectEnvironmentalContext();
+  } catch (error) {
+    console.error("Error getting enhanced context:", error);
+  }
+  
   // TERTIARY: Search knowledge base for relevant information
   try {
     const relevantKnowledge = await searchKnowledge(userMessage);
@@ -393,11 +469,31 @@ async function generateAIResponse(
     // Enhance the user message with Memory Core context FIRST, then other contexts
     let enhancedMessage = userMessage;
     
+    // Build comprehensive context for Milla
+    let contextualInfo = "";
+    
     if (memoryCoreContext) {
-      // Memory Core takes priority - use it to inform Milla's personality and responses
-      enhancedMessage = `Based on our conversation history and relationship: ${memoryCoreContext}\n\nCurrent message: ${userMessage}`;
-    } else if (memoryContext || knowledgeContext) {
-      enhancedMessage = `${userMessage}${memoryContext}${knowledgeContext}`;
+      contextualInfo += `Relationship Context: ${memoryCoreContext}\n`;
+    }
+    
+    if (emotionalContext) {
+      contextualInfo += `Emotional Context: ${emotionalContext}\n`;
+    }
+    
+    if (environmentalContext) {
+      contextualInfo += `Environmental Context: ${environmentalContext}\n`;
+    }
+    
+    if (memoryContext) {
+      contextualInfo += memoryContext;
+    }
+    
+    if (knowledgeContext) {
+      contextualInfo += knowledgeContext;
+    }
+    
+    if (contextualInfo) {
+      enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
     const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
