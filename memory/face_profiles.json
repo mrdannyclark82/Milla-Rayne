@@ -7,11 +7,19 @@
       "hairColor": "unknown",
       "faceShape": "unknown",
       "expressions": [
-        "neutral"
+        "neutral",
+        "curious",
+        "relaxed",
+        "thoughtful",
+        "happy",
+        "focused",
+        "engaged"
       ]
     },
-    "samples": [],
-    "lastSeen": 1756691079863,
-    "confidence": 1
+    "samples": [
+      "/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQ"
+    ],
+    "lastSeen": 1756691319937,
+    "confidence": 0.6
   }
 ]
