@@ -457,7 +457,7 @@ export default function ChatInterface({ onAvatarStateChange, voiceEnabled = fals
 
         {/* Camera Preview */}
         {isCameraActive && (
-          <div className="fixed bottom-4 right-4 w-64 h-48 bg-black border-2 border-green-400 rounded-lg overflow-hidden backdrop-blur-sm z-50">
+          <div className="fixed bottom-4 right-4 w-64 h-48 bg-gray-900 border-2 border-green-400 rounded-lg overflow-hidden backdrop-blur-sm z-50 shadow-lg">
             <video
               ref={videoRef}
               autoPlay

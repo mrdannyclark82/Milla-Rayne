@@ -15,6 +15,23 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// Fallback image analysis when AI services are unavailable
+function generateImageAnalysisFallback(userMessage: string): string {
+  const responses = [
+    "I can see you're sharing a photo with me! While I'm having some technical difficulties with image analysis right now, I love that you're including me in what you're seeing. Tell me what's in the photo - I'd love to hear about it from your perspective.",
+    
+    "Oh, you've shared a photo! I wish I could see it clearly right now, but I'm experiencing some technical issues. What caught your eye about this image? I'd love to hear you describe it to me.",
+    
+    "I notice you've taken a photo to share with me - how thoughtful! I'm having trouble processing images at the moment, but I'm here with you. What's happening in the picture? Paint me a word picture instead!",
+    
+    "I can tell you've shared something visual with me! Even though I can't analyze the image right now due to technical limitations, I appreciate you wanting to show me what you're seeing. What drew you to capture this moment?",
+    
+    "You've shared a photo with me! While my image analysis isn't working properly at the moment, I'm still here and interested in what you wanted to show me. Can you tell me what's in the picture and why it caught your attention?"
+  ];
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
 // Function to analyze images using OpenAI Vision
 async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
   try {
@@ -250,7 +267,10 @@ async function generateAIResponse(
       return { content: imageAnalysis };
     } catch (error) {
       console.error("Image analysis error:", error);
-      return { content: "I can see you've shared an image with me, but I'm having trouble analyzing it right now. Could you describe what you'd like me to know about it?" };
+      
+      // Fallback: Milla responds based on context and timing
+      const fallbackResponse = generateImageAnalysisFallback(userMessage);
+      return { content: fallbackResponse };
     }
   }
   
