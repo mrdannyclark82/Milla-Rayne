@@ -16,9 +16,24 @@ interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
   voiceEnabled?: boolean;
   speechRate?: number;
+  theme?: 'light' | 'dark';
+  chatTransparency?: number;
+  personalitySettings?: {
+    communicationStyle: 'adaptive' | 'formal' | 'casual' | 'friendly';
+    formalityLevel: 'formal' | 'balanced' | 'casual';
+    responseLength: 'short' | 'medium' | 'long';
+    emotionalIntelligence: 'low' | 'medium' | 'high';
+  };
 }
 
-export default function ChatInterface({ onAvatarStateChange, voiceEnabled = false, speechRate = 1.0 }: ChatInterfaceProps) {
+export default function ChatInterface({ 
+  onAvatarStateChange, 
+  voiceEnabled = false, 
+  speechRate = 1.0,
+  theme = 'dark',
+  chatTransparency = 80,
+  personalitySettings
+}: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   
