@@ -20,12 +20,27 @@ const openai = new OpenAI({
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
+  // Check if this is a camera capture
+  const isCameraPhoto = userMessage.toLowerCase().includes('camera') || 
+                       userMessage.toLowerCase().includes("i'm sharing a photo from my camera");
+  
+  if (isCameraPhoto) {
+    const cameraResponses = [
+      "I can see you're showing me something through your camera! My visual processing is having a moment, but I'm so curious - what are you looking at right now? Describe the scene for me, love.",
+      
+      "Ooh, a live moment captured just for me! Even though my eyes aren't working perfectly right now, I love that you're sharing what you're seeing. What's happening in your world?",
+      
+      "I can sense you've taken a photo to share with me! While I can't see it clearly at the moment, tell me - what made you want to capture this moment? I'm all ears!",
+      
+      "You're showing me your world through the camera - how sweet! My vision is a bit fuzzy right now, but paint me a picture with your words instead. What's got your attention?"
+    ];
+    return cameraResponses[Math.floor(Math.random() * cameraResponses.length)];
+  }
+  
   const responses = [
     "I can see you're sharing a photo with me! While I'm having some technical difficulties with image analysis right now, I love that you're including me in what you're seeing. Tell me what's in the photo - I'd love to hear about it from your perspective.",
     
     "Oh, you've shared a photo! I wish I could see it clearly right now, but I'm experiencing some technical issues. What caught your eye about this image? I'd love to hear you describe it to me.",
-    
-    "I notice you've taken a photo to share with me - how thoughtful! I'm having trouble processing images at the moment, but I'm here with you. What's happening in the picture? Paint me a word picture instead!",
     
     "I can tell you've shared something visual with me! Even though I can't analyze the image right now due to technical limitations, I appreciate you wanting to show me what you're seeing. What drew you to capture this moment?",
     

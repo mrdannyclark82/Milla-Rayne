@@ -180,10 +180,13 @@ export default function Home() {
       
       {/* Right Side - Dedicated Chat Container */}
       <div 
-        className="w-96 flex flex-col transition-all duration-300"
+        className="w-96 flex flex-col transition-all duration-300 relative"
         style={{
-          backgroundColor: `rgba(0, 0, 0, ${chatTransparency / 100})`,
-          backdropFilter: `blur(${backgroundBlur / 4}px)`
+          backgroundColor: theme === 'light' 
+            ? `rgba(255, 255, 255, ${(100 - chatTransparency) / 100})` 
+            : `rgba(0, 0, 0, ${(100 - chatTransparency) / 100})`,
+          backdropFilter: `blur(${backgroundBlur / 4}px)`,
+          border: chatTransparency < 50 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
         }}
       >
         <ChatInterface 
