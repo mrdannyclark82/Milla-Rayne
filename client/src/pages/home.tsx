@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
+import { DynamicAvatar } from "@/components/DynamicAvatar";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
 import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
@@ -9,11 +10,35 @@ import millaPortraitVideo from "@assets/Creating_a_Living_Portrait_Animation_175
 import { Button } from "@/components/ui/button";
 import SettingsPanel from "@/components/SettingsPanel";
 
+type AvatarSettings = {
+  style: 'realistic' | 'anime' | 'artistic' | 'minimal';
+  hairColor: string;
+  eyeColor: string;
+  skinTone: string;
+  outfit: 'casual' | 'elegant' | 'professional' | 'intimate';
+  expression: 'loving' | 'playful' | 'mysterious' | 'gentle';
+  background: 'gradient' | 'solid' | 'nature' | 'abstract';
+  lighting: number;
+  glow: number;
+};
+
 export default function Home() {
   const [avatarState, setAvatarState] = useState<AvatarState>("neutral");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [useVideo, setUseVideo] = useState(true);
+  const [useCustomAvatar, setUseCustomAvatar] = useState(false);
+  const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
+    style: 'realistic',
+    hairColor: 'auburn',
+    eyeColor: 'green',
+    skinTone: 'warm',
+    outfit: 'elegant',
+    expression: 'loving',
+    background: 'gradient',
+    lighting: 75,
+    glow: 60
+  });
   
   // Get the appropriate avatar image based on state
   const getAvatarImage = () => {
@@ -31,9 +56,15 @@ export default function Home() {
     <div className="flex h-screen overflow-hidden bg-black text-white" data-testid="app-container">
       {/* Left Side - Dynamic Avatar Video */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Dynamic Avatar with Video/Image */}
+        {/* Dynamic Avatar with Video/Image/Custom */}
         <div className="relative w-full h-full overflow-hidden">
-          {useVideo ? (
+          {useCustomAvatar ? (
+            <DynamicAvatar
+              avatarState={avatarState}
+              settings={avatarSettings}
+              useVideo={false}
+            />
+          ) : useVideo ? (
             <video
               src={millaPortraitVideo}
               autoPlay
@@ -82,6 +113,8 @@ export default function Home() {
           onVoiceToggle={setVoiceEnabled}
           speechRate={speechRate}
           onSpeechRateChange={setSpeechRate}
+          avatarSettings={avatarSettings}
+          onAvatarSettingsChange={setAvatarSettings}
         >
           <Button
             variant="ghost"
@@ -93,16 +126,29 @@ export default function Home() {
           </Button>
         </SettingsPanel>
         
-        {/* Video/Image Toggle Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-4 right-4 z-50 bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
-          onClick={() => setUseVideo(!useVideo)}
-          data-testid="button-toggle-avatar"
-        >
-          <i className={`fas ${useVideo ? 'fa-image' : 'fa-video'} text-sm`}></i>
-        </Button>
+        {/* Avatar Mode Toggle Buttons */}
+        <div className="absolute top-4 right-4 z-50 flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useCustomAvatar ? 'bg-purple-500/20 text-purple-300' : ''}`}
+            onClick={() => setUseCustomAvatar(!useCustomAvatar)}
+            data-testid="button-toggle-custom"
+            title="Toggle Custom Avatar"
+          >
+            <i className="fas fa-palette text-sm"></i>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
+            onClick={() => setUseVideo(!useVideo)}
+            data-testid="button-toggle-avatar"
+            title={useVideo ? "Switch to Image" : "Switch to Video"}
+          >
+            <i className={`fas ${useVideo ? 'fa-image' : 'fa-video'} text-sm`}></i>
+          </Button>
+        </div>
       </div>
       
       {/* Right Side - Dedicated Chat Container */}

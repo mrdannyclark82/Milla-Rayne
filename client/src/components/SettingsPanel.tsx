@@ -25,6 +25,8 @@ interface SettingsPanelProps {
   onVoiceToggle?: (enabled: boolean) => void;
   speechRate?: number;
   onSpeechRateChange?: (rate: number) => void;
+  avatarSettings?: AvatarSettings;
+  onAvatarSettingsChange?: (settings: AvatarSettings) => void;
 }
 
 export default function SettingsPanel({ 
@@ -32,10 +34,13 @@ export default function SettingsPanel({
   voiceEnabled = false, 
   onVoiceToggle,
   speechRate = 1.0,
-  onSpeechRateChange 
+  onSpeechRateChange,
+  avatarSettings: externalAvatarSettings,
+  onAvatarSettingsChange
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
+  
+  const defaultAvatarSettings: AvatarSettings = {
     style: 'realistic',
     hairColor: 'auburn',
     eyeColor: 'green',
@@ -45,7 +50,9 @@ export default function SettingsPanel({
     background: 'gradient',
     lighting: 75,
     glow: 60
-  });
+  };
+  
+  const avatarSettings = externalAvatarSettings || defaultAvatarSettings;
 
   const handleVoiceToggle = () => {
     onVoiceToggle?.(!voiceEnabled);
@@ -116,7 +123,7 @@ export default function SettingsPanel({
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
             <AvatarCustomizer 
               currentSettings={avatarSettings}
-              onSettingsChange={setAvatarSettings}
+              onSettingsChange={onAvatarSettingsChange || (() => {})}
             />
           </div>
 
