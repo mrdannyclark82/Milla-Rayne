@@ -40,6 +40,17 @@ export default function Home() {
     glow: 60
   });
   
+  // New settings state
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [backgroundBlur, setBackgroundBlur] = useState(75);
+  const [chatTransparency, setChatTransparency] = useState(80);
+  const [personalitySettings, setPersonalitySettings] = useState({
+    communicationStyle: 'adaptive' as 'adaptive' | 'formal' | 'casual' | 'friendly',
+    formalityLevel: 'balanced' as 'formal' | 'balanced' | 'casual',
+    responseLength: 'medium' as 'short' | 'medium' | 'long',
+    emotionalIntelligence: 'high' as 'low' | 'medium' | 'high'
+  });
+  
   // Get the appropriate avatar image based on state
   const getAvatarImage = () => {
     switch (avatarState) {
@@ -53,7 +64,15 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-black text-white" data-testid="app-container">
+    <div 
+      className={`flex h-screen overflow-hidden transition-all duration-500 ${
+        theme === 'light' ? 'bg-gray-100 text-gray-900' : 'bg-black text-white'
+      }`} 
+      data-testid="app-container"
+      style={{
+        backdropFilter: `blur(${backgroundBlur}px)`
+      }}
+    >
       {/* Left Side - Dynamic Avatar Video */}
       <div className="flex-1 relative overflow-hidden">
         {/* Dynamic Avatar with Video/Image/Custom */}
@@ -115,6 +134,14 @@ export default function Home() {
           onSpeechRateChange={setSpeechRate}
           avatarSettings={avatarSettings}
           onAvatarSettingsChange={setAvatarSettings}
+          theme={theme}
+          onThemeChange={setTheme}
+          backgroundBlur={backgroundBlur}
+          onBackgroundBlurChange={setBackgroundBlur}
+          chatTransparency={chatTransparency}
+          onChatTransparencyChange={setChatTransparency}
+          personalitySettings={personalitySettings}
+          onPersonalitySettingsChange={setPersonalitySettings}
         >
           <Button
             variant="ghost"
@@ -152,11 +179,20 @@ export default function Home() {
       </div>
       
       {/* Right Side - Dedicated Chat Container */}
-      <div className="w-96 bg-transparent flex flex-col">
+      <div 
+        className="w-96 flex flex-col transition-all duration-300"
+        style={{
+          backgroundColor: `rgba(0, 0, 0, ${chatTransparency / 100})`,
+          backdropFilter: `blur(${backgroundBlur / 4}px)`
+        }}
+      >
         <ChatInterface 
           onAvatarStateChange={setAvatarState}
           voiceEnabled={voiceEnabled}
           speechRate={speechRate}
+          theme={theme}
+          chatTransparency={chatTransparency}
+          personalitySettings={personalitySettings}
         />
       </div>
     </div>

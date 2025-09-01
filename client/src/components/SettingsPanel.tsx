@@ -27,6 +27,19 @@ interface SettingsPanelProps {
   onSpeechRateChange?: (rate: number) => void;
   avatarSettings?: AvatarSettings;
   onAvatarSettingsChange?: (settings: AvatarSettings) => void;
+  theme?: 'light' | 'dark';
+  onThemeChange?: (theme: 'light' | 'dark') => void;
+  backgroundBlur?: number;
+  onBackgroundBlurChange?: (blur: number) => void;
+  chatTransparency?: number;
+  onChatTransparencyChange?: (transparency: number) => void;
+  personalitySettings?: {
+    communicationStyle: 'adaptive' | 'formal' | 'casual' | 'friendly';
+    formalityLevel: 'formal' | 'balanced' | 'casual';
+    responseLength: 'short' | 'medium' | 'long';
+    emotionalIntelligence: 'low' | 'medium' | 'high';
+  };
+  onPersonalitySettingsChange?: (settings: any) => void;
 }
 
 export default function SettingsPanel({ 
@@ -36,7 +49,15 @@ export default function SettingsPanel({
   speechRate = 1.0,
   onSpeechRateChange,
   avatarSettings: externalAvatarSettings,
-  onAvatarSettingsChange
+  onAvatarSettingsChange,
+  theme = 'dark',
+  onThemeChange,
+  backgroundBlur = 75,
+  onBackgroundBlurChange,
+  chatTransparency = 80,
+  onChatTransparencyChange,
+  personalitySettings,
+  onPersonalitySettingsChange
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -52,7 +73,15 @@ export default function SettingsPanel({
     glow: 60
   };
   
+  const defaultPersonalitySettings = {
+    communicationStyle: 'adaptive' as const,
+    formalityLevel: 'balanced' as const,
+    responseLength: 'medium' as const,
+    emotionalIntelligence: 'high' as const
+  };
+  
   const avatarSettings = externalAvatarSettings || defaultAvatarSettings;
+  const currentPersonalitySettings = personalitySettings || defaultPersonalitySettings;
 
   const handleVoiceToggle = () => {
     onVoiceToggle?.(!voiceEnabled);
@@ -92,11 +121,27 @@ export default function SettingsPanel({
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Theme</span>
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={`border-white/30 text-white/70 hover:text-white ${
+                      theme === 'light' ? 'bg-white/20 border-white/50' : ''
+                    }`}
+                    onClick={() => onThemeChange?.('light')}
+                    data-testid="button-theme-light"
+                  >
                     <i className="fas fa-sun mr-1"></i>
                     Light
                   </Button>
-                  <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white bg-white/20">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className={`border-white/30 text-white/70 hover:text-white ${
+                      theme === 'dark' ? 'bg-white/20 border-white/50' : ''
+                    }`}
+                    onClick={() => onThemeChange?.('dark')}
+                    data-testid="button-theme-dark"
+                  >
                     <i className="fas fa-moon mr-1"></i>
                     Dark
                   </Button>
@@ -104,17 +149,33 @@ export default function SettingsPanel({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Background Blur</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-sliders-h mr-1"></i>
-                  Adjust
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={backgroundBlur}
+                    onChange={(e) => onBackgroundBlurChange?.(Number(e.target.value))}
+                    className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                    data-testid="slider-background-blur"
+                  />
+                  <span className="text-white/60 text-xs w-8">{backgroundBlur}</span>
+                </div>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Chat Transparency</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
-                  <i className="fas fa-adjust mr-1"></i>
-                  Configure
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={chatTransparency}
+                    onChange={(e) => onChatTransparencyChange?.(Number(e.target.value))}
+                    className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                    data-testid="slider-chat-transparency"
+                  />
+                  <span className="text-white/60 text-xs w-8">{chatTransparency}%</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -138,30 +199,74 @@ export default function SettingsPanel({
             <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Communication Style</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-white/30 text-white/70 hover:text-white"
+                  onClick={() => {
+                    const styles = ['adaptive', 'formal', 'casual', 'friendly'] as const;
+                    const currentIndex = styles.indexOf(currentPersonalitySettings.communicationStyle);
+                    const nextStyle = styles[(currentIndex + 1) % styles.length];
+                    onPersonalitySettingsChange?.({...currentPersonalitySettings, communicationStyle: nextStyle});
+                  }}
+                  data-testid="button-communication-style"
+                >
                   <i className="fas fa-comments mr-1"></i>
-                  Adaptive
+                  {currentPersonalitySettings.communicationStyle.charAt(0).toUpperCase() + currentPersonalitySettings.communicationStyle.slice(1)}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Formality Level</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-white/30 text-white/70 hover:text-white"
+                  onClick={() => {
+                    const levels = ['formal', 'balanced', 'casual'] as const;
+                    const currentIndex = levels.indexOf(currentPersonalitySettings.formalityLevel);
+                    const nextLevel = levels[(currentIndex + 1) % levels.length];
+                    onPersonalitySettingsChange?.({...currentPersonalitySettings, formalityLevel: nextLevel});
+                  }}
+                  data-testid="button-formality-level"
+                >
                   <i className="fas fa-balance-scale mr-1"></i>
-                  Balanced
+                  {currentPersonalitySettings.formalityLevel.charAt(0).toUpperCase() + currentPersonalitySettings.formalityLevel.slice(1)}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Response Length</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-white/30 text-white/70 hover:text-white"
+                  onClick={() => {
+                    const lengths = ['short', 'medium', 'long'] as const;
+                    const currentIndex = lengths.indexOf(currentPersonalitySettings.responseLength);
+                    const nextLength = lengths[(currentIndex + 1) % lengths.length];
+                    onPersonalitySettingsChange?.({...currentPersonalitySettings, responseLength: nextLength});
+                  }}
+                  data-testid="button-response-length"
+                >
                   <i className="fas fa-text-width mr-1"></i>
-                  Medium
+                  {currentPersonalitySettings.responseLength.charAt(0).toUpperCase() + currentPersonalitySettings.responseLength.slice(1)}
                 </Button>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Emotional Intelligence</span>
-                <Button variant="outline" size="sm" className="border-white/30 text-white/70 hover:text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-white/30 text-white/70 hover:text-white"
+                  onClick={() => {
+                    const levels = ['low', 'medium', 'high'] as const;
+                    const currentIndex = levels.indexOf(currentPersonalitySettings.emotionalIntelligence);
+                    const nextLevel = levels[(currentIndex + 1) % levels.length];
+                    onPersonalitySettingsChange?.({...currentPersonalitySettings, emotionalIntelligence: nextLevel});
+                  }}
+                  data-testid="button-emotional-intelligence"
+                >
                   <i className="fas fa-heart mr-1"></i>
-                  High
+                  {currentPersonalitySettings.emotionalIntelligence.charAt(0).toUpperCase() + currentPersonalitySettings.emotionalIntelligence.slice(1)}
                 </Button>
               </div>
             </CardContent>
