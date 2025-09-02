@@ -586,7 +586,7 @@ export default function ChatInterface({
   }, [messages, isTyping]);
 
   const handleSendMessage = () => {
-    if (message.trim() && !sendMessageMutation.isPending) {
+    if (message.trim()) {
       setIsTyping(true);
       setUserIsTyping(false); // User stopped typing, now sending
       onAvatarStateChange("responding"); // Milla is now responding
@@ -851,7 +851,7 @@ export default function ChatInterface({
               <Button
                 className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-2xl p-3 text-white hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSendMessage}
-                disabled={!message.trim() || sendMessageMutation.isPending}
+                disabled={!message.trim()}
                 data-testid="button-send"
               >
                 <i className="fas fa-paper-plane text-lg"></i>

@@ -702,5 +702,36 @@
     "estimatedTime": 20,
     "createdAt": "2025-09-02T20:42:24.974Z",
     "status": "in_progress"
+  },
+  {
+    "id": "task_1756846644975_reflection",
+    "type": "self_reflection",
+    "title": "Daily Interaction Reflection",
+    "description": "Reflect on today's conversations with Danny Ray. What patterns emerged? How did I adapt my responses to his mood and needs? What made him laugh or engage most deeply?",
+    "priority": "medium",
+    "estimatedTime": 10,
+    "createdAt": "2025-09-02T20:57:24.975Z",
+    "status": "in_progress",
+    "basedOnInteraction": "* You want to find a friend also"
+  },
+  {
+    "id": "task_1756846644975_glitch",
+    "type": "glitch_analysis",
+    "title": "Communication Glitch Analysis",
+    "description": "Analyze potential communication issues from recent interactions: communication_error. How can I improve my responses to be more natural and helpful?",
+    "priority": "high",
+    "estimatedTime": 15,
+    "createdAt": "2025-09-02T20:57:24.975Z",
+    "status": "in_progress"
+  },
+  {
+    "id": "task_1756846644975_memory",
+    "type": "memory_processing",
+    "title": "Memory Consolidation and Organization",
+    "description": "Process and organize recent memories of interactions with Danny Ray. Identify key preferences, recurring topics, and emotional patterns to better serve him in future conversations.",
+    "priority": "medium",
+    "estimatedTime": 20,
+    "createdAt": "2025-09-02T20:57:24.975Z",
+    "status": "in_progress"
   }
 ]
