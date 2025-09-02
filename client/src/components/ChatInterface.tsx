@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -48,6 +48,77 @@ export default function ChatInterface({
   // Voice functionality
   const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
   const { speak, isSpeaking, setRate, stop: stopSpeaking } = useTextToSpeech();
+
+  // Function to render message content with image support
+  const renderMessageContent = (content: string) => {
+    // Handle null/undefined content
+    if (!content) return null;
+    
+    // Split content by lines to check for images
+    const lines = content.split('\n');
+    const elements: (string | JSX.Element)[] = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Check for markdown image syntax: ![alt text](image_url)
+      const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      
+      if (imageMatch) {
+        const [fullMatch, altText, imageUrl] = imageMatch;
+        const beforeImage = line.substring(0, line.indexOf(fullMatch));
+        const afterImage = line.substring(line.indexOf(fullMatch) + fullMatch.length);
+        
+        // Add text before image
+        if (beforeImage) {
+          elements.push(beforeImage);
+        }
+        
+        // Add the image
+        elements.push(
+          <img 
+            key={`img-${i}`}
+            src={imageUrl} 
+            alt={altText} 
+            className="max-w-full h-auto rounded-lg mt-2 mb-2 shadow-lg border border-pink-300/20"
+            style={{ maxHeight: '400px', objectFit: 'contain' }}
+            onError={(e) => {
+              console.error('Failed to load image:', imageUrl);
+              // Replace with link if image fails to load
+              const target = e.target as HTMLImageElement;
+              const linkElement = document.createElement('a');
+              linkElement.href = imageUrl;
+              linkElement.textContent = `🖼️ Generated Image (${altText})`;
+              linkElement.target = '_blank';
+              linkElement.className = 'text-pink-400 underline hover:text-pink-300';
+              target.parentNode?.replaceChild(linkElement, target);
+            }}
+          />
+        );
+        
+        // Add text after image
+        if (afterImage) {
+          elements.push(afterImage);
+        }
+      } else {
+        // Regular text line
+        elements.push(line);
+      }
+      
+      // Add line break except for last line
+      if (i < lines.length - 1) {
+        elements.push('\n');
+      }
+    }
+    
+    return (
+      <>
+        {elements.map((element, index) => 
+          typeof element === 'string' ? element : <React.Fragment key={index}>{element}</React.Fragment>
+        )}
+      </>
+    );
+  };
   
   // Camera functionality
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -601,9 +672,9 @@ export default function ChatInterface({
               {msg.role === "assistant" ? (
                 <div className="flex items-start space-x-4">
                   <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
-                    <p className="text-pink-300 leading-relaxed whitespace-pre-wrap">
-                      {msg.content}
-                    </p>
+                    <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
+                      {renderMessageContent(msg.content)}
+                    </div>
                     <div className="mt-3 text-xs text-pink-300/70">
                       <i className="fas fa-clock mr-1"></i>
                       {formatTimeCST(msg.timestamp)}
@@ -613,9 +684,9 @@ export default function ChatInterface({
               ) : (
                 <div className="flex items-start space-x-4 justify-end">
                   <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
-                    <p className="text-blue-300 leading-relaxed whitespace-pre-wrap">
-                      {msg.content}
-                    </p>
+                    <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
+                      {renderMessageContent(msg.content)}
+                    </div>
                     <div className="mt-3 text-xs text-blue-300/70 text-right">
                       <i className="fas fa-clock mr-1"></i>
                       {formatTimeCST(msg.timestamp)}
