@@ -311,7 +311,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Simple AI response generator based on message content
-import { generateXAIResponse as generateOpenAIResponse, extractRoleCharacter, isRolePlayRequest, PersonalityContext } from "./xaiService";
+import { generateAIResponse as generateOpenAIResponse, PersonalityContext } from "./openaiService";
+import { extractRoleCharacter, isRolePlayRequest } from "./xaiService";
 
 // Simplified message analysis for Milla Rayne's unified personality
 interface MessageAnalysis {
