@@ -52,72 +52,52 @@ export default function ChatInterface({
   // Function to render message content with image support
   const renderMessageContent = (content: string) => {
     // Handle null/undefined content
-    if (!content) return null;
+    if (!content) return content;
     
-    // Split content by lines to check for images
-    const lines = content.split('\n');
-    const elements: (string | JSX.Element)[] = [];
+    // Simple approach: detect image markdown and replace with img tags
+    const imageMarkdownPattern = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g;
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      
-      // Check for markdown image syntax: ![alt text](image_url)
-      const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-      
-      if (imageMatch) {
-        const [fullMatch, altText, imageUrl] = imageMatch;
-        const beforeImage = line.substring(0, line.indexOf(fullMatch));
-        const afterImage = line.substring(line.indexOf(fullMatch) + fullMatch.length);
-        
-        // Add text before image
-        if (beforeImage) {
-          elements.push(beforeImage);
+    // Check if content contains image markdown
+    if (!imageMarkdownPattern.test(content)) {
+      return content;
+    }
+    
+    // Reset regex lastIndex for reuse
+    imageMarkdownPattern.lastIndex = 0;
+    
+    // Split content and replace images
+    const parts = content.split(imageMarkdownPattern);
+    const elements: React.ReactNode[] = [];
+    
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 3 === 0) {
+        // Text content
+        if (parts[i]) {
+          elements.push(<span key={i}>{parts[i]}</span>);
         }
-        
-        // Add the image
+      } else if (i % 3 === 1) {
+        // Alt text (skip this part)
+        continue;
+      } else if (i % 3 === 2) {
+        // Image URL
+        const altText = parts[i - 1] || "Generated Image";
+        const imageUrl = parts[i];
         elements.push(
-          <img 
-            key={`img-${i}`}
-            src={imageUrl} 
-            alt={altText} 
-            className="max-w-full h-auto rounded-lg mt-2 mb-2 shadow-lg border border-pink-300/20"
-            style={{ maxHeight: '400px', objectFit: 'contain' }}
-            onError={(e) => {
-              console.error('Failed to load image:', imageUrl);
-              // Replace with link if image fails to load
-              const target = e.target as HTMLImageElement;
-              const linkElement = document.createElement('a');
-              linkElement.href = imageUrl;
-              linkElement.textContent = `🖼️ Generated Image (${altText})`;
-              linkElement.target = '_blank';
-              linkElement.className = 'text-pink-400 underline hover:text-pink-300';
-              target.parentNode?.replaceChild(linkElement, target);
-            }}
-          />
+          <div key={i} className="my-3">
+            <img 
+              src={imageUrl}
+              alt={altText}
+              className="max-w-full h-auto rounded-lg shadow-lg border border-pink-300/20"
+              style={{ maxHeight: '400px', objectFit: 'contain' }}
+              onLoad={() => console.log('✅ Image loaded:', imageUrl)}
+              onError={() => console.error('❌ Image failed to load:', imageUrl)}
+            />
+          </div>
         );
-        
-        // Add text after image
-        if (afterImage) {
-          elements.push(afterImage);
-        }
-      } else {
-        // Regular text line
-        elements.push(line);
-      }
-      
-      // Add line break except for last line
-      if (i < lines.length - 1) {
-        elements.push('\n');
       }
     }
     
-    return (
-      <>
-        {elements.map((element, index) => 
-          typeof element === 'string' ? element : <React.Fragment key={index}>{element}</React.Fragment>
-        )}
-      </>
-    );
+    return <div className="whitespace-pre-wrap">{elements}</div>;
   };
   
   // Camera functionality
