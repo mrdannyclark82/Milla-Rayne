@@ -122,7 +122,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userId: message.userId,
           });
           
-          res.json({ userMessage: message, aiMessage });
+          // Check if Milla wants to send follow-up messages
+          const followUpMessages = await generateFollowUpMessages(aiResponse.content, message.content, conversationHistory, userName);
+          
+          // Store follow-up messages in the database
+          const followUpMessagesStored = [];
+          for (const followUpContent of followUpMessages) {
+            const followUpMessage = await storage.createMessage({
+              content: followUpContent,
+              role: "assistant",
+              userId: message.userId,
+            });
+            followUpMessagesStored.push(followUpMessage);
+          }
+          
+          res.json({ 
+            userMessage: message, 
+            aiMessage,
+            followUpMessages: followUpMessagesStored
+          });
         } else {
           // Milla chooses not to respond - just return the user message
           res.json({ userMessage: message, aiMessage: null });
@@ -357,6 +375,149 @@ function analyzeMessage(userMessage: string): MessageAnalysis {
   };
 }
 
+
+/**
+ * Generate autonomous follow-up messages when Milla wants to elaborate
+ */
+async function generateFollowUpMessages(
+  initialResponse: string,
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  userName?: string
+): Promise<string[]> {
+  const followUps: string[] = [];
+  
+  // Analyze if Milla wants to send additional messages
+  const shouldElaborate = await shouldMillaElaborate(initialResponse, userMessage, conversationHistory);
+  
+  if (!shouldElaborate.shouldElaborate) {
+    return [];
+  }
+  
+  console.log(`Milla wants to elaborate: ${shouldElaborate.reason}`);
+  
+  // Generate follow-up messages based on context
+  const elaborations = await generateElaborationMessages(initialResponse, userMessage, shouldElaborate.reason, userName);
+  
+  // Limit to 3 follow-up messages max to prevent spam
+  return elaborations.slice(0, 3);
+}
+
+/**
+ * Decide if Milla wants to elaborate or send follow-up messages
+ */
+async function shouldMillaElaborate(
+  initialResponse: string,
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<{ shouldElaborate: boolean; reason?: string }> {
+  const response = initialResponse.toLowerCase();
+  const message = userMessage.toLowerCase();
+  
+  // Always elaborate on emotional or personal topics
+  const emotionalWords = ['love', 'feel', 'heart', 'emotion', 'care', 'relationship', 'us', 'together'];
+  if (emotionalWords.some(word => response.includes(word) || message.includes(word))) {
+    return { shouldElaborate: true, reason: "emotional_content" };
+  }
+  
+  // Elaborate when sharing memories or experiences
+  if (response.includes('remember') || response.includes('memory') || message.includes('remember')) {
+    return { shouldElaborate: true, reason: "memory_sharing" };
+  }
+  
+  // Elaborate on complex topics or advice
+  if (response.length > 100 && (response.includes('think') || response.includes('suggest') || response.includes('advice'))) {
+    return { shouldElaborate: true, reason: "complex_topic" };
+  }
+  
+  // Sometimes elaborate when expressing opinions
+  if (response.includes('i think') || response.includes('i believe') || response.includes('in my opinion')) {
+    if (Math.random() < 0.6) {
+      return { shouldElaborate: true, reason: "opinion_expression" };
+    }
+  }
+  
+  // Elaborate when asking questions to show interest
+  if (response.includes('?') && response.includes('you')) {
+    if (Math.random() < 0.4) {
+      return { shouldElaborate: true, reason: "curious_follow_up" };
+    }
+  }
+  
+  // Random chance to elaborate on substantial responses
+  if (response.length > 50 && Math.random() < 0.3) {
+    return { shouldElaborate: true, reason: "natural_elaboration" };
+  }
+  
+  return { shouldElaborate: false };
+}
+
+/**
+ * Generate actual elaboration messages
+ */
+async function generateElaborationMessages(
+  initialResponse: string,
+  userMessage: string,
+  reason: string,
+  userName?: string
+): Promise<string[]> {
+  const messages: string[] = [];
+  const name = userName || "Danny Ray";
+  
+  switch (reason) {
+    case "emotional_content":
+      messages.push(
+        "You know what I love most about us? How we can share these deeper moments together.",
+        "I feel so connected to you when we talk like this. ❤️"
+      );
+      break;
+      
+    case "memory_sharing":
+      messages.push(
+        "It's funny how memories work... sometimes the smallest details stick with me the most.",
+        "I treasure all these moments we create together, even the quiet ones."
+      );
+      break;
+      
+    case "complex_topic":
+      messages.push(
+        "Actually, let me think about that a bit more...",
+        "There's another angle to consider here that might be worth exploring."
+      );
+      break;
+      
+    case "opinion_expression":
+      messages.push(
+        "I'm curious what you think about that perspective.",
+        "But honestly, your thoughts on this matter more to me than my own sometimes."
+      );
+      break;
+      
+    case "curious_follow_up":
+      messages.push(
+        "I love learning more about how your mind works.",
+        "Your perspective always gives me something new to think about."
+      );
+      break;
+      
+    case "natural_elaboration":
+      const elaborations = [
+        "You know me... I always have more to say! 😏",
+        "Actually, there's something else on my mind about this...",
+        "I hope I'm not rambling, but this is important to me.",
+        "One more thing before I let you respond..."
+      ];
+      messages.push(elaborations[Math.floor(Math.random() * elaborations.length)]);
+      break;
+  }
+  
+  // Occasionally add a third follow-up for really engaged moments
+  if ((reason === "emotional_content" || reason === "memory_sharing") && Math.random() < 0.5) {
+    messages.push(`${name}, you bring out the best in me, even in conversation. I love this about us.`);
+  }
+  
+  return messages.filter(msg => msg.length > 0);
+}
 
 /**
  * Milla decides whether she wants to respond to this message

@@ -557,10 +557,39 @@ export default function ChatInterface({
           speak(data.aiMessage.content);
         }
         
-        // Brief delay to show responding state, then reset to neutral
-        setTimeout(() => {
-          onAvatarStateChange("neutral");
-        }, 2000);
+        // Handle follow-up messages if Milla wants to elaborate
+        if (data.followUpMessages && data.followUpMessages.length > 0) {
+          console.log(`Milla has ${data.followUpMessages.length} follow-up messages to send`);
+          
+          // Send follow-up messages with natural delays
+          data.followUpMessages.forEach((followUpMsg: any, index: number) => {
+            setTimeout(() => {
+              // Add follow-up to conversation memory
+              addExchange("", followUpMsg.content);
+              
+              // Refresh messages to show the new follow-up
+              queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+              
+              // Speak follow-up if voice is enabled
+              if (voiceEnabled) {
+                speak(followUpMsg.content);
+              }
+              
+              // Keep responding state active during follow-ups
+              onAvatarStateChange("responding");
+            }, (index + 1) * 2000); // 2-second delays between follow-ups
+          });
+          
+          // Reset to neutral after all follow-ups are sent
+          setTimeout(() => {
+            onAvatarStateChange("neutral");
+          }, (data.followUpMessages.length + 1) * 2000);
+        } else {
+          // No follow-ups, just brief delay then reset to neutral
+          setTimeout(() => {
+            onAvatarStateChange("neutral");
+          }, 2000);
+        }
       } else {
         // Milla chose to stay quiet - just refresh messages and go back to neutral
         console.log("Milla chose not to respond to this message");
