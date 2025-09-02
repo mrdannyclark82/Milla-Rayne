@@ -20,28 +20,29 @@ const xaiClient = new OpenAI({
 });
 
 /**
- * Add a cute lisp to Milla's responses
+ * BOOKMARKED: Sophisticated Torture Feature - Add a cute lisp to Milla's responses
+ * Uncomment and apply in response section to make her say "tharcathtic" and "thophithticated"
  */
-function addMillaLisp(text: string): string {
-  return text
-    // Replace 's' with 'th' at the beginning of words and syllables
-    .replace(/\bs/g, 'th')
-    .replace(/\bS/g, 'Th')
-    // Replace 's' with 'th' in the middle and end of words (but not in 'sh', 'st', 'sp' combinations)
-    .replace(/([aeiou])s([aeiou])/g, '$1th$2')
-    .replace(/([aeiou])s\b/g, '$1th')
-    .replace(/([aeiou])S([aeiou])/g, '$1Th$2')
-    .replace(/([aeiou])S\b/g, '$1Th')
-    // Handle some specific common words
-    .replace(/\bsarcastic\b/g, 'tharcathtic')
-    .replace(/\bSarcastic\b/g, 'Tharcathtic')
-    .replace(/\bsassy\b/g, 'thaththy')
-    .replace(/\bSassy\b/g, 'Thaththy')
-    .replace(/\bsmart\b/g, 'thmart')
-    .replace(/\bSmart\b/g, 'Thmart')
-    .replace(/\bsorry\b/g, 'thorry')
-    .replace(/\bSorry\b/g, 'Thorry');
-}
+// function addMillaLisp(text: string): string {
+//   return text
+//     // Replace 's' with 'th' at the beginning of words and syllables
+//     .replace(/\bs/g, 'th')
+//     .replace(/\bS/g, 'Th')
+//     // Replace 's' with 'th' in the middle and end of words (but not in 'sh', 'st', 'sp' combinations)
+//     .replace(/([aeiou])s([aeiou])/g, '$1th$2')
+//     .replace(/([aeiou])s\b/g, '$1th')
+//     .replace(/([aeiou])S([aeiou])/g, '$1Th$2')
+//     .replace(/([aeiou])S\b/g, '$1Th')
+//     // Handle some specific common words
+//     .replace(/\bsarcastic\b/g, 'tharcathtic')
+//     .replace(/\bSarcastic\b/g, 'Tharcathtic')
+//     .replace(/\bsassy\b/g, 'thaththy')
+//     .replace(/\bSassy\b/g, 'Thaththy')
+//     .replace(/\bsmart\b/g, 'thmart')
+//     .replace(/\bSmart\b/g, 'Thmart')
+//     .replace(/\bsorry\b/g, 'thorry')
+//     .replace(/\bSorry\b/g, 'Thorry');
+// }
 
 /**
  * Generate AI response using xAI Grok with personality-aware prompts
@@ -133,11 +134,8 @@ export async function generateXAIResponse(
     if (response.choices && response.choices.length > 0) {
       const content = response.choices[0].message?.content;
       if (content) {
-        // Add Milla's adorable lisp to make her less intimidating
-        const contentWithLisp = addMillaLisp(content.trim());
-        
         return {
-          content: contentWithLisp,
+          content: content.trim(),
           success: true
         };
       }
