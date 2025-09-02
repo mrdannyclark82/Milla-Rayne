@@ -36,9 +36,14 @@ export class FileStorage implements IStorage {
         const fileContent = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
         // Check if the file content is valid JSON
         if (fileContent.trim().startsWith('[') || fileContent.trim().startsWith('{')) {
-          const messages: Message[] = JSON.parse(fileContent);
+          const messages: any[] = JSON.parse(fileContent);
           messages.forEach(msg => {
-            this.messages.set(msg.id, msg);
+            // Ensure timestamp is converted to Date object
+            const processedMessage: Message = {
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            };
+            this.messages.set(msg.id, processedMessage);
           });
           console.log(`Loaded ${this.messages.size} messages from file.`);
         } else {
@@ -104,11 +109,22 @@ export class FileStorage implements IStorage {
   }
 
   async getMessages(userId?: string): Promise<Message[]> {
-    const allMessages = Array.from(this.messages.values());
-    if (userId) {
-      return allMessages.filter(message => message.userId === userId || message.userId === null);
+    try {
+      const allMessages = Array.from(this.messages.values());
+      if (userId) {
+        return allMessages.filter(message => message.userId === userId || message.userId === null);
+      }
+      // Ensure timestamps are Date objects before sorting
+      return allMessages.sort((a, b) => {
+        const timestampA = a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
+        const timestampB = b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp);
+        return timestampA.getTime() - timestampB.getTime();
+      });
+    } catch (error) {
+      console.error('Error in getMessages:', error);
+      // Return empty array as fallback
+      return [];
     }
-    return allMessages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
   async getMessageById(id: string): Promise<Message | undefined> {
