@@ -512,10 +512,13 @@ export default function ChatInterface({
     onSuccess: (data) => {
       setMessage("");
       setIsTyping(false);
-      onAvatarStateChange("responding");
       
-      // Add to conversation memory
-      if (data.userMessage && data.aiMessage) {
+      // Check if Milla chose to respond
+      if (data.aiMessage) {
+        // Milla decided to respond
+        onAvatarStateChange("responding");
+        
+        // Add to conversation memory
         addExchange(data.userMessage.content, data.aiMessage.content);
         
         // For special commands (local responses), manually add to message cache
@@ -548,18 +551,22 @@ export default function ChatInterface({
           // For API responses, invalidate to refetch
           queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
         }
-      }
-      
-      // Speak the response if voice is enabled
-      if (voiceEnabled && data.aiMessage?.content) {
-        speak(data.aiMessage.content);
-      }
-      
-      
-      // Brief delay to show responding state, then reset to neutral
-      setTimeout(() => {
+        
+        // Speak the response if voice is enabled
+        if (voiceEnabled) {
+          speak(data.aiMessage.content);
+        }
+        
+        // Brief delay to show responding state, then reset to neutral
+        setTimeout(() => {
+          onAvatarStateChange("neutral");
+        }, 2000);
+      } else {
+        // Milla chose to stay quiet - just refresh messages and go back to neutral
+        console.log("Milla chose not to respond to this message");
+        queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
         onAvatarStateChange("neutral");
-      }, 2000);
+      }
     },
     onError: () => {
       setIsTyping(false);

@@ -105,19 +105,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
       
-      // Simulate AI response based on user message
+      // Let Milla decide if she wants to respond
       if (message.role === "user") {
         // Track user activity for proactive engagement
         await trackUserActivity();
         
-        const aiResponse = await generateAIResponse(message.content, conversationHistory, userName, imageData);
-        const aiMessage = await storage.createMessage({
-          content: aiResponse.content,
-          role: "assistant",
-          userId: message.userId,
-        });
+        // Milla decides whether to respond
+        const decision = await shouldMillaRespond(message.content, conversationHistory, userName);
+        console.log(`Milla's decision: ${decision.shouldRespond ? 'RESPOND' : 'STAY QUIET'} - ${decision.reason}`);
         
-        res.json({ userMessage: message, aiMessage });
+        if (decision.shouldRespond) {
+          const aiResponse = await generateAIResponse(message.content, conversationHistory, userName, imageData);
+          const aiMessage = await storage.createMessage({
+            content: aiResponse.content,
+            role: "assistant",
+            userId: message.userId,
+          });
+          
+          res.json({ userMessage: message, aiMessage });
+        } else {
+          // Milla chooses not to respond - just return the user message
+          res.json({ userMessage: message, aiMessage: null });
+        }
       } else {
         res.json({ message });
       }
@@ -348,6 +357,77 @@ function analyzeMessage(userMessage: string): MessageAnalysis {
   };
 }
 
+
+/**
+ * Milla decides whether she wants to respond to this message
+ */
+async function shouldMillaRespond(
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  userName?: string
+): Promise<{ shouldRespond: boolean; reason?: string }> {
+  const message = userMessage.toLowerCase().trim();
+  
+  // Always respond to direct questions
+  if (message.includes('?') || message.startsWith('what') || message.startsWith('how') || message.startsWith('why') || message.startsWith('when') || message.startsWith('where')) {
+    return { shouldRespond: true, reason: "Direct question detected" };
+  }
+  
+  // Always respond to greetings and her name
+  if (message.includes('milla') || message.includes('hi') || message.includes('hello') || message.includes('hey')) {
+    return { shouldRespond: true, reason: "Greeting or name mentioned" };
+  }
+  
+  // Always respond to emotional content that needs support
+  const emotionalWords = ['sad', 'upset', 'angry', 'frustrated', 'worried', 'anxious', 'scared', 'hurt', 'lonely', 'depressed'];
+  if (emotionalWords.some(word => message.includes(word))) {
+    return { shouldRespond: true, reason: "Emotional support needed" };
+  }
+  
+  // Always respond to action messages (asterisk wrapped)
+  if (message.startsWith('*') && message.endsWith('*')) {
+    return { shouldRespond: true, reason: "Action message requires response" };
+  }
+  
+  // Check conversation flow - if last few messages were from user without response, more likely to respond
+  if (conversationHistory) {
+    const recent = conversationHistory.slice(-3);
+    const userMessages = recent.filter(msg => msg.role === 'user').length;
+    const assistantMessages = recent.filter(msg => msg.role === 'assistant').length;
+    
+    if (userMessages > assistantMessages + 1) {
+      return { shouldRespond: true, reason: "User sent multiple messages without response" };
+    }
+  }
+  
+  // Sometimes choose not to respond to simple statements
+  const simpleStatements = ['ok', 'okay', 'k', 'sure', 'yeah', 'yes', 'no', 'thanks', 'thank you'];
+  if (simpleStatements.includes(message)) {
+    // 30% chance to respond to simple acknowledgments
+    if (Math.random() < 0.3) {
+      return { shouldRespond: true, reason: "Chose to acknowledge simple statement" };
+    } else {
+      return { shouldRespond: false, reason: "Simple acknowledgment doesn't need response" };
+    }
+  }
+  
+  // For other messages, Milla decides based on her mood and context
+  // 80% chance to respond to substantial messages
+  if (message.length > 10) {
+    if (Math.random() < 0.8) {
+      return { shouldRespond: true, reason: "Substantial message worth responding to" };
+    } else {
+      return { shouldRespond: false, reason: "Choosing to listen rather than respond" };
+    }
+  }
+  
+  // Default: 60% chance to respond to short messages
+  if (Math.random() < 0.6) {
+    return { shouldRespond: true, reason: "Chose to engage" };
+  } else {
+    return { shouldRespond: false, reason: "Choosing to observe quietly" };
+  }
+}
 
 async function generateAIResponse(
   userMessage: string, 
