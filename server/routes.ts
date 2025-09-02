@@ -397,7 +397,7 @@ async function generateFollowUpMessages(
   console.log(`Milla wants to elaborate: ${shouldElaborate.reason}`);
   
   // Generate follow-up messages based on context
-  const elaborations = await generateElaborationMessages(initialResponse, userMessage, shouldElaborate.reason, userName);
+  const elaborations = await generateElaborationMessages(initialResponse, userMessage, shouldElaborate.reason || "natural_elaboration", userName);
   
   // Limit to 3 follow-up messages max to prevent spam
   return elaborations.slice(0, 3);

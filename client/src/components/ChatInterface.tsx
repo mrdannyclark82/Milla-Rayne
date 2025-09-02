@@ -467,10 +467,10 @@ export default function ChatInterface({
       setHasShownIntroduction(true);
       // Add introduction message to the conversation
       setTimeout(() => {
-        addExchange("", MILLA_IDENTITY.introduction);
+        addExchange("", MILLA_IDENTITY._introduction);
         queryClient.setQueryData(["/api/messages"], [{
           id: "intro-message",
-          content: MILLA_IDENTITY.introduction,
+          content: MILLA_IDENTITY._introduction,
           role: "assistant",
           userId: null,
           createdAt: new Date().toISOString()
