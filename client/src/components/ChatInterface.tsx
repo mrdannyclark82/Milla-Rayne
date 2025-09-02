@@ -585,12 +585,43 @@ export default function ChatInterface({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  // Rapid fire mode for sending multiple messages quickly
+  const rapidFireSend = async (messageContent: string) => {
+    if (!messageContent.trim()) return;
+    
+    try {
+      const recentMessages = getRecentMessages();
+      await apiRequest("POST", "/api/messages", {
+        content: messageContent.trim(),
+        role: "user",
+        userId: null,
+        conversationHistory: recentMessages,
+        userName: userName
+      });
+      
+      // Invalidate messages to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+    } catch (error) {
+      console.error("Rapid fire send error:", error);
+    }
+  };
+
   const handleSendMessage = () => {
     if (message.trim()) {
-      setIsTyping(true);
-      setUserIsTyping(false); // User stopped typing, now sending
-      onAvatarStateChange("responding"); // Milla is now responding
-      sendMessageMutation.mutate(message.trim());
+      // Check if this looks like an action message (starts and ends with *)
+      const isActionMessage = message.trim().startsWith('*') && message.trim().endsWith('*');
+      
+      if (isActionMessage) {
+        // Use rapid fire for action messages
+        rapidFireSend(message.trim());
+        setMessage(""); // Clear the input immediately
+      } else {
+        // Use normal mutation for regular messages
+        setIsTyping(true);
+        setUserIsTyping(false);
+        onAvatarStateChange("responding");
+        sendMessageMutation.mutate(message.trim());
+      }
     }
   };
 
