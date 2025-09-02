@@ -8,6 +8,7 @@ import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
+import { getMillaMoodData } from "./moodService";
 import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./visualMemoryService";
 import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
@@ -288,6 +289,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to generate tasks" });
+    }
+  });
+
+  // Milla's mood endpoint
+  app.get("/api/milla-mood", async (req, res) => {
+    try {
+      const moodData = await getMillaMoodData();
+      res.json({ mood: moodData, success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch mood data" });
     }
   });
 

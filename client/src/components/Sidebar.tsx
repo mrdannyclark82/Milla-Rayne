@@ -3,8 +3,24 @@ import { getSystemStatus } from "@/lib/MillaCore";
 import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
 import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
+import { useQuery } from "@tanstack/react-query";
 
 export type AvatarState = "neutral" | "thinking" | "responding";
+
+interface MillaMood {
+  primary: string;
+  intensity: 'low' | 'medium' | 'high';
+  description: string;
+  emoji: string;
+  color: string;
+  factors: string[];
+  lastUpdated: string;
+}
+
+interface MoodResponse {
+  mood: MillaMood;
+  success: boolean;
+}
 
 interface SidebarProps {
   avatarState?: AvatarState;
@@ -12,6 +28,13 @@ interface SidebarProps {
 
 export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
   const systemStatus = getSystemStatus();
+  
+  // Fetch Milla's current mood
+  const { data: moodData } = useQuery<MoodResponse>({
+    queryKey: ["/api/milla-mood"],
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 20000 // Consider data stale after 20 seconds
+  });
 
   const personalityTraits = [
     { name: "Coaching Nature", description: "Motivational and goal-oriented guidance" },
@@ -89,6 +112,73 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
                   <span>Active & Learning</span>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          {/* Milla's Current Mood */}
+          <Card className="bg-muted/10 border border-border">
+            <div className="p-4">
+              <h3 className="text-sm font-semibold text-primary mb-3">
+                <i className="fas fa-heart mr-2"></i>Current Mood
+              </h3>
+              {moodData?.mood ? (
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="text-2xl"
+                      style={{ color: moodData.mood.color }}
+                      data-testid="mood-emoji"
+                    >
+                      {moodData.mood.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <span 
+                          className="font-medium text-sm capitalize"
+                          style={{ color: moodData.mood.color }}
+                          data-testid="mood-primary"
+                        >
+                          {moodData.mood.primary}
+                        </span>
+                        <div className={`px-2 py-1 rounded-full text-xs ${
+                          moodData.mood.intensity === 'high' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          moodData.mood.intensity === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        }`} data-testid="mood-intensity">
+                          {moodData.mood.intensity}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1" data-testid="mood-description">
+                        {moodData.mood.description}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {moodData.mood.factors && moodData.mood.factors.length > 0 && (
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-medium text-muted-foreground">Contributing factors:</h4>
+                      <div className="space-y-1">
+                        {moodData.mood.factors.slice(0, 2).map((factor: string, index: number) => (
+                          <div key={index} className="flex items-start space-x-2">
+                            <div className="w-1 h-1 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                            <span className="text-xs text-muted-foreground">{factor}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-muted-foreground/70 pt-2 border-t border-border/50">
+                    <i className="fas fa-clock mr-1"></i>
+                    Updated {new Date(moodData.mood.lastUpdated).toLocaleTimeString()}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-xs text-muted-foreground">Reading mood...</span>
+                </div>
+              )}
             </div>
           </Card>
 
