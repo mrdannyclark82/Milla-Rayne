@@ -28,23 +28,45 @@ export async function generateAIResponse(
     }
 
     const systemPrompt = createSystemPrompt(context);
-    const messages: Array<{ role: string; content: string }> = [
-      { role: "system", content: systemPrompt }
-    ];
+    const messages: Array<{ role: string; content: string }> = [];
+    
+    // Add system prompt only if it has content
+    if (systemPrompt && systemPrompt.trim().length > 0) {
+      messages.push({ role: "system", content: systemPrompt.trim() });
+    }
 
     // Add conversation history if available
     if (context.conversationHistory) {
       const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
       recentHistory.forEach(msg => {
-        messages.push({ 
-          role: msg.role, 
-          content: msg.content 
-        });
+        // Only add messages with valid content
+        if (msg.content && msg.content.trim().length > 0) {
+          messages.push({ 
+            role: msg.role, 
+            content: msg.content.trim()
+          });
+        }
       });
     }
 
-    // Add current user message
-    messages.push({ role: "user", content: userMessage });
+    // Add current user message (ensure it has content)
+    if (userMessage && userMessage.trim().length > 0) {
+      messages.push({ role: "user", content: userMessage.trim() });
+    } else {
+      return {
+        content: "I didn't receive a message from you. Could you please try again?",
+        success: false,
+        error: "Empty user message"
+      };
+    }
+
+    // Debug: Log the messages array to ensure all have content
+    console.log('Sending messages to Perplexity API:', messages.map((msg, index) => ({ 
+      index, 
+      role: msg.role, 
+      hasContent: !!msg.content, 
+      contentLength: msg.content ? msg.content.length : 0 
+    })));
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
