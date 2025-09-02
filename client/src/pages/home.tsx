@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
@@ -155,6 +156,16 @@ export default function Home() {
         
         {/* Avatar Mode Toggle Buttons */}
         <div className="absolute top-4 right-4 z-50 flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
+            onClick={() => window.location.href = "/api/logout"}
+            data-testid="button-logout"
+            title="Log Out"
+          >
+            <i className="fas fa-sign-out-alt text-sm"></i>
+          </Button>
           <Button
             variant="ghost"
             size="sm"

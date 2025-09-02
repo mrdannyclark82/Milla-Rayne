@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+// TODO: Add proper Replit Auth when dependencies are resolved
+// import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
@@ -88,22 +90,51 @@ async function analyzeImageWithOpenAI(imageData: string, userMessage: string): P
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all messages
-  app.get("/api/messages", async (req, res) => {
+  // TODO: Enable proper authentication when dependencies are resolved
+  // For now, using placeholder authentication
+
+  // Temporary auth check
+  const tempAuthCheck = (req: any, res: any, next: any) => {
+    // For development, assume user is authenticated with default user ID
+    req.user = { claims: { sub: "default-user" } };
+    next();
+  };
+
+  // Auth routes (placeholder)
+  app.get('/api/auth/user', tempAuthCheck, async (req: any, res) => {
     try {
-      const messages = await storage.getMessages();
+      const userId = req.user.claims.sub;
+      // Return a default user for now
+      res.json({ 
+        id: userId, 
+        email: "user@example.com", 
+        firstName: "Danny", 
+        lastName: "Ray" 
+      });
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Get all messages (protected)
+  app.get("/api/messages", tempAuthCheck, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const messages = await storage.getMessagesByUser(userId);
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });
     }
   });
 
-  // Create a new message
-  app.post("/api/messages", async (req, res) => {
+  // Create a new message (protected)
+  app.post("/api/messages", tempAuthCheck, async (req: any, res) => {
     try {
       const { conversationHistory, userName, imageData, ...messageData } = req.body;
-      const validatedData = insertMessageSchema.parse(messageData);
-      const message = await storage.createMessage(validatedData);
+      const userId = req.user.claims.sub;
+      const validatedData = insertMessageSchema.parse({ ...messageData, userId });
+      const message = await storage.insertMessage(validatedData);
       
       // Simulate AI response based on user message
       if (message.role === "user") {
@@ -111,10 +142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await trackUserActivity();
         
         const aiResponse = await generateAIResponse(message.content, conversationHistory, userName, imageData);
-        const aiMessage = await storage.createMessage({
+        const aiMessage = await storage.insertMessage({
           content: aiResponse.content,
           role: "assistant",
-          userId: message.userId,
+          userId: userId,
         });
         
         res.json({ userMessage: message, aiMessage });
@@ -130,8 +161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Memory management endpoints
-  app.get("/api/memory", async (req, res) => {
+  // Memory management endpoints (protected)
+  app.get("/api/memory", tempAuthCheck, async (req, res) => {
     try {
       const memoryData = await getMemoriesFromTxt();
       res.json(memoryData);
@@ -140,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/knowledge", async (req, res) => {
+  app.get("/api/knowledge", tempAuthCheck, async (req, res) => {
     try {
       const knowledgeData = await searchKnowledge(req.query.q as string || "");
       res.json({ items: knowledgeData, success: true });
@@ -149,8 +180,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Memory Core management endpoints
-  app.get("/api/memory-core", async (req, res) => {
+  // Memory Core management endpoints (protected)
+  app.get("/api/memory-core", tempAuthCheck, async (req, res) => {
     try {
       const query = req.query.q as string;
       if (query) {
@@ -170,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/memory", async (req, res) => {
+  app.post("/api/memory", tempAuthCheck, async (req, res) => {
     try {
       const { memory } = req.body;
       if (!memory || typeof memory !== 'string') {
@@ -186,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced AI Features endpoints
   
   // Emotion analysis endpoint for real-time video
-  app.post("/api/analyze-emotion", async (req, res) => {
+  app.post("/api/analyze-emotion", tempAuthCheck, async (req, res) => {
     try {
       const { imageData, timestamp } = req.body;
       
@@ -214,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Visual memory endpoint
-  app.get("/api/visual-memory", async (req, res) => {
+  app.get("/api/visual-memory", tempAuthCheck, async (req, res) => {
     try {
       const memories = await getVisualMemories();
       res.json(memories);
@@ -247,8 +278,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Personal Task Management endpoints
-  app.get("/api/personal-tasks", async (req, res) => {
+  // Personal Task Management endpoints (protected)
+  app.get("/api/personal-tasks", tempAuthCheck, async (req, res) => {
     try {
       const tasks = getPersonalTasks();
       res.json({ tasks, success: true });
@@ -257,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/task-summary", async (req, res) => {
+  app.get("/api/task-summary", tempAuthCheck, async (req, res) => {
     try {
       const summary = getTaskSummary();
       res.json({ summary, success: true });
@@ -266,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/personal-tasks/:taskId/start", async (req, res) => {
+  app.post("/api/personal-tasks/:taskId/start", tempAuthCheck, async (req, res) => {
     try {
       const { taskId } = req.params;
       const success = await startTask(taskId);
@@ -276,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/personal-tasks/:taskId/complete", async (req, res) => {
+  app.post("/api/personal-tasks/:taskId/complete", tempAuthCheck, async (req, res) => {
     try {
       const { taskId } = req.params;
       const { insights } = req.body;
@@ -287,7 +318,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/generate-tasks", async (req, res) => {
+  app.post("/api/generate-tasks", tempAuthCheck, async (req, res) => {
     try {
       await generatePersonalTasksIfNeeded();
       res.json({ success: true });
@@ -296,8 +327,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Milla's mood endpoint
-  app.get("/api/milla-mood", async (req, res) => {
+  // Milla's mood endpoint (protected)
+  app.get("/api/milla-mood", tempAuthCheck, async (req, res) => {
     try {
       const moodData = await getMillaMoodData();
       res.json({ mood: moodData, success: true });
