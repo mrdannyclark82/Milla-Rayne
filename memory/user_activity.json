@@ -1,6 +1,8 @@
 {
-  "lastInteraction": 1756824910002,
+  "lastInteraction": 1756825747000,
   "sessionStart": 1756691243703,
-  "messageCount": 250,
-  "averageSessionLength": 0
+  "messageCount": 252,
+  "averageSessionLength": 0,
+  "continuousActivityStart": 1756825593509,
+  "lastBreakTaken": 1756824910002
 }

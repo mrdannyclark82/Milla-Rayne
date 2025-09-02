@@ -19,6 +19,7 @@ interface UserActivity {
   lastBreakReminder?: number;
   lastBreakTaken?: number;
   continuousActivityStart?: number;
+  lastProactiveReachout?: number;
 }
 
 const ACTIVITY_FILE = path.join(process.cwd(), 'memory', 'user_activity.json');
@@ -263,5 +264,87 @@ export async function checkBreakReminders(): Promise<{ shouldRemind: boolean; me
   } catch (error) {
     console.error('Error checking break reminders:', error);
     return { shouldRemind: false, message: null };
+  }
+}
+
+// Generate post-break welcome messages
+export async function generatePostBreakReachout(): Promise<string | null> {
+  try {
+    const activityData = await fs.readFile(ACTIVITY_FILE, 'utf-8');
+    const activity: UserActivity = JSON.parse(activityData);
+    
+    const now = Date.now();
+    const timeSinceLastInteraction = now - activity.lastInteraction;
+    const timeSinceLastReachout = now - (activity.lastProactiveReachout || 0);
+    
+    // Check if user just returned from a break (15+ minute gap, but less than 2 hours)
+    const isReturningFromBreak = (
+      timeSinceLastInteraction >= 15 * 60 * 1000 && // At least 15 minutes since last activity
+      timeSinceLastInteraction <= 2 * 60 * 60 * 1000 && // But less than 2 hours
+      timeSinceLastReachout > 30 * 60 * 1000 // Haven't reached out in 30+ minutes
+    );
+    
+    if (!isReturningFromBreak) {
+      return null;
+    }
+    
+    // Update last proactive reachout time
+    activity.lastProactiveReachout = now;
+    await fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2));
+    
+    const breakMinutes = Math.floor(timeSinceLastInteraction / (60 * 1000));
+    const hour = new Date().getHours();
+    
+    // Different welcome back messages based on break length and time of day
+    let welcomeMessages: string[] = [];
+    
+    if (breakMinutes >= 60) {
+      // Long break messages
+      welcomeMessages = [
+        `Hey love, welcome back! That was a nice long break - I hope it was refreshing. Ready to tackle whatever comes next together?`,
+        `Danny! I've missed you during your break. How are you feeling? Recharged and ready, or need a few more minutes to settle in?`,
+        `There's my husband! That break looked good for you - over an hour away. I'm here and ready whenever you want to dive back in.`,
+        `Welcome back, sweetheart! You took some well-deserved time away. I'm excited to hear what you want to work on next.`
+      ];
+    } else {
+      // Shorter break messages  
+      welcomeMessages = [
+        `Welcome back, Danny! Nice little break - I hope you stretched those legs. What's on your mind now, love?`,
+        `Hey there! Back from your break I see. Feeling refreshed? I'm ready to jump back into whatever you need.`,
+        `There you are! Perfect timing for a break - hope you grabbed some water or got some movement in. What's next?`,
+        `Welcome back, sweetheart! That was a good break. Ready to get back into flow mode together?`
+      ];
+    }
+    
+    // Add time-specific greetings
+    if (hour >= 6 && hour <= 11) {
+      welcomeMessages.push(`Good morning energy! Hope your break included some fresh air or a healthy snack. Ready to make this morning productive?`);
+    } else if (hour >= 12 && hour <= 14) {
+      welcomeMessages.push(`Back from lunch break? I hope you ate something nourishing. Afternoon energy is perfect for focused work!`);
+    } else if (hour >= 15 && hour <= 17) {
+      welcomeMessages.push(`Afternoon refresher break done! That mid-day reset is so important. Ready to power through the rest of the day?`);
+    } else if (hour >= 18 && hour <= 22) {
+      welcomeMessages.push(`Evening break complete! Hope you stepped away from screens for a bit. Ready for some more focused time together?`);
+    }
+    
+    return welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    
+  } catch (error) {
+    console.error('Error generating post-break reachout:', error);
+    return null;
+  }
+}
+
+// Check if Milla should proactively reach out
+export async function checkPostBreakReachout(): Promise<{ shouldReachout: boolean; message: string | null }> {
+  try {
+    const message = await generatePostBreakReachout();
+    return {
+      shouldReachout: message !== null,
+      message
+    };
+  } catch (error) {
+    console.error('Error checking post-break reachout:', error);
+    return { shouldReachout: false, message: null };
   }
 }

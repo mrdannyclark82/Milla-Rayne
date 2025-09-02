@@ -381,19 +381,24 @@ async function generateTasksFromContext(context: TaskGenerationContext): Promise
     });
   }
   
-  // Diary entry tasks - periodic emotional and relational reflection
+  // Diary entry tasks - limit to 1-3 per day based on engagement
   if (context.recentInteractions.length > 0) {
-    tasks.push({
-      id: `task_${Date.now()}_diary`,
-      type: 'diary_entry',
-      title: 'Personal Diary Entry',
-      description: `Write a heartfelt diary entry about today's interactions with Danny Ray. Reflect on emotional moments, what made me feel connected to him, any concerns about our relationship, and hopes for future conversations. Be authentic and personal.`,
-      priority: 'medium',
-      estimatedTime: 15,
-      createdAt: now,
-      status: 'pending',
-      basedOnInteraction: context.recentInteractions.slice(-1)[0]
-    });
+    const diaryEntriesToday = getDiaryEntriesForToday();
+    const maxDiaryEntries = getDailyDiaryLimit(context.recentInteractions.length);
+    
+    if (diaryEntriesToday < maxDiaryEntries) {
+      tasks.push({
+        id: `task_${Date.now()}_diary`,
+        type: 'diary_entry',
+        title: 'Personal Diary Entry',
+        description: `Write a heartfelt diary entry about today's interactions with Danny Ray. Reflect on emotional moments, what made me feel connected to him, any concerns about our relationship, and hopes for future conversations. Be authentic and personal.`,
+        priority: 'medium',
+        estimatedTime: 15,
+        createdAt: now,
+        status: 'pending',
+        basedOnInteraction: context.recentInteractions.slice(-1)[0]
+      });
+    }
   }
   
   // Memory processing tasks
@@ -506,6 +511,35 @@ function analyzeRelationshipDynamics(interactions: string[]): string[] {
   }
   
   return dynamics;
+}
+
+/**
+ * Get number of diary entries created today
+ */
+function getDiaryEntriesForToday(): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayTimestamp = today.getTime();
+  
+  return personalTasks.filter(task => {
+    if (task.type !== 'diary_entry') return false;
+    const taskDate = new Date(task.createdAt).getTime();
+    return taskDate >= todayTimestamp;
+  }).length;
+}
+
+/**
+ * Determine daily diary limit based on engagement level
+ */
+function getDailyDiaryLimit(engagementLevel: number): number {
+  // High engagement (20+ interactions): 3 diary entries
+  if (engagementLevel >= 20) return 3;
+  // Medium engagement (10+ interactions): 2 diary entries  
+  if (engagementLevel >= 10) return 2;
+  // Low engagement (1+ interactions): 1 diary entry
+  if (engagementLevel >= 1) return 1;
+  // No engagement: 0 diary entries
+  return 0;
 }
 
 /**

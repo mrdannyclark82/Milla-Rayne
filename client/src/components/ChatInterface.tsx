@@ -303,7 +303,7 @@ export default function ChatInterface({
         if (response.ok) {
           const data = await response.json();
           
-          // Handle break reminders with higher priority
+          // Handle break reminders with highest priority
           if (data.breakReminder) {
             // Show break reminder as a toast notification
             toast({
@@ -328,6 +328,33 @@ export default function ChatInterface({
             queryClient.setQueryData(["/api/messages"], [...currentMessages, breakMessage]);
             
             console.log("Break reminder shown:", data.breakReminder);
+          }
+          
+          // Handle post-break welcome messages (high priority)
+          else if (data.postBreakReachout) {
+            // Show as toast notification
+            toast({
+              title: "💕 Welcome Back!",
+              description: data.postBreakReachout,
+              duration: 8000, // Show for 8 seconds
+            });
+            
+            // Also add to conversation as a system message
+            const welcomeMessage = {
+              id: `welcome-back-${Date.now()}`,
+              content: data.postBreakReachout,
+              role: "assistant" as const,
+              personalityMode: null,
+              userId: null,
+              timestamp: new Date()
+            };
+            
+            // Add to conversation memory and update query cache
+            addExchange("", data.postBreakReachout);
+            const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
+            queryClient.setQueryData(["/api/messages"], [...currentMessages, welcomeMessage]);
+            
+            console.log("Post-break reachout shown:", data.postBreakReachout);
           }
           
           // Handle regular proactive messages (lower priority)
