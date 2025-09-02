@@ -32,6 +32,13 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
   // Fetch Milla's current mood
   const { data: moodData, isLoading: moodLoading, error: moodError } = useQuery<MoodResponse>({
     queryKey: ["/api/milla-mood"],
+    queryFn: async () => {
+      const response = await fetch("/api/milla-mood");
+      if (!response.ok) {
+        throw new Error("Failed to fetch mood data");
+      }
+      return response.json();
+    },
     refetchInterval: 30000, // Refresh every 30 seconds
     staleTime: 20000, // Consider data stale after 20 seconds  
     gcTime: 60000, // Keep in cache for 1 minute
@@ -120,7 +127,7 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
           </Card>
 
           {/* Milla's Current Mood */}
-          <Card className="bg-muted/10 border border-border">
+          <Card className="bg-muted/10 border border-border" data-testid="mood-card">
             <div className="p-4">
               <h3 className="text-sm font-semibold text-primary mb-3">
                 <i className="fas fa-heart mr-2"></i>Current Mood
