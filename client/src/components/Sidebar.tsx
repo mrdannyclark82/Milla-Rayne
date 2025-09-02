@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { getSystemStatus } from "@/lib/MillaCore";
+import { formatTimeCST } from "@/lib/timeUtils";
 import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
 import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
@@ -191,7 +192,7 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
                   
                   <div className="text-xs text-muted-foreground/70 pt-2 border-t border-border/50">
                     <i className="fas fa-clock mr-1"></i>
-                    Updated {new Date(moodData.mood.lastUpdated).toLocaleTimeString()}
+                    Updated {formatTimeCST(moodData.mood.lastUpdated)}
                   </div>
                 </div>
               ) : (

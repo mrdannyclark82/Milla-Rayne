@@ -43,8 +43,13 @@ export async function storeVisualMemory(
       emotion,
       confidence: 0.8,
       imageHash: generateImageHash(imageData),
-      date: new Date(timestamp).toLocaleDateString(),
-      timeOfDay: new Date(timestamp).toLocaleTimeString()
+      date: new Date(timestamp).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }),
+      timeOfDay: new Date(timestamp).toLocaleTimeString('en-US', { 
+        timeZone: 'America/Chicago', 
+        hour12: true,
+        hour: 'numeric',
+        minute: '2-digit'
+      })
     };
 
     let memories: VisualMemory[] = [];
@@ -66,7 +71,7 @@ export async function storeVisualMemory(
     await fs.writeFile(VISUAL_MEMORY_FILE, JSON.stringify(memories, null, 2));
     
     // Also add to main memory stream
-    const memoryText = `Visual Memory: Detected ${emotion} emotion at ${new Date(timestamp).toLocaleString()}. Danny Ray was expressing ${emotion} feelings during our video interaction.`;
+    const memoryText = `Visual Memory: Detected ${emotion} emotion at ${new Date(timestamp).toLocaleString('en-US', { timeZone: 'America/Chicago' })}. Danny Ray was expressing ${emotion} feelings during our video interaction.`;
     
     const { updateMemories } = await import('./memoryService');
     await updateMemories(memoryText);

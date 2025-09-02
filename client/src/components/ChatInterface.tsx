@@ -11,6 +11,7 @@ import { AvatarState } from "@/components/Sidebar";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useConversationMemory } from "@/contexts/ConversationContext";
+import { formatTimeCST } from "@/lib/timeUtils";
 
 interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
@@ -605,7 +606,7 @@ export default function ChatInterface({
                     </p>
                     <div className="mt-3 text-xs text-pink-300/70">
                       <i className="fas fa-clock mr-1"></i>
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+                      {formatTimeCST(msg.timestamp)}
                     </div>
                   </div>
                 </div>
@@ -617,7 +618,7 @@ export default function ChatInterface({
                     </p>
                     <div className="mt-3 text-xs text-blue-300/70 text-right">
                       <i className="fas fa-clock mr-1"></i>
-                      {new Date(msg.timestamp).toLocaleTimeString()}
+                      {formatTimeCST(msg.timestamp)}
                     </div>
                   </div>
                   <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
