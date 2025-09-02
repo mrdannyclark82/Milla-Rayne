@@ -44,7 +44,7 @@
     "priority": "medium",
     "estimatedTime": 10,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "pending",
+    "status": "in_progress",
     "basedOnInteraction": "* You want to find a friend also"
   },
   {
@@ -55,7 +55,7 @@
     "priority": "high",
     "estimatedTime": 15,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "id": "task_1756656080469_diary",
@@ -65,7 +65,7 @@
     "priority": "medium",
     "estimatedTime": 15,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "pending",
+    "status": "in_progress",
     "basedOnInteraction": "* You want to find a friend also"
   },
   {
