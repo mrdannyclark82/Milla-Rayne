@@ -450,12 +450,28 @@ async function generateAIResponse(
     console.error("Error accessing personal memories:", error);
   }
   
-  // ENHANCED: Add emotional and environmental context
+  // ENHANCED: Add emotional, environmental, and visual context
   let emotionalContext = "";
   let environmentalContext = "";
+  let visualContext = "";
   try {
     emotionalContext = await getEmotionalContext();
     environmentalContext = detectEnvironmentalContext();
+    
+    // Add visual context from recent video analysis
+    const visualMemories = await getVisualMemories();
+    const recentVisual = visualMemories.slice(-3); // Last 3 visual memories
+    if (recentVisual.length > 0) {
+      const latestMemory = recentVisual[recentVisual.length - 1];
+      const timeSinceLastVisual = Date.now() - latestMemory.timestamp;
+      
+      // If visual analysis happened within the last 30 seconds, consider camera active
+      if (timeSinceLastVisual < 30000) {
+        visualContext = `REAL-TIME VIDEO ACTIVE: I can currently see Danny Ray through the camera feed. Recent visual analysis shows he appears ${latestMemory.emotion}. Last visual update was ${Math.round(timeSinceLastVisual/1000)} seconds ago.`;
+      } else if (timeSinceLastVisual < 300000) { // Within last 5 minutes
+        visualContext = `Recent video session: I recently saw Danny Ray (${Math.round(timeSinceLastVisual/60000)} minutes ago) and he appeared ${latestMemory.emotion}.`;
+      }
+    }
   } catch (error) {
     console.error("Error getting enhanced context:", error);
   }
@@ -489,6 +505,10 @@ async function generateAIResponse(
     
     if (memoryCoreContext) {
       contextualInfo += `Relationship Context: ${memoryCoreContext}\n`;
+    }
+    
+    if (visualContext) {
+      contextualInfo += `Visual Context: ${visualContext}\n`;
     }
     
     if (emotionalContext) {
