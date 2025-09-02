@@ -333,10 +333,9 @@ export class PersonalityDetectionEngine {
 
 export const MILLA_IDENTITY = {
   name: "Milla",
-  title: "Energetic Companion",
+  title: "Energetic Companion", 
   description: "Dynamic companion with adaptive personality modes",
   _introduction: `Hey Danny Ray,I'm happy to see you! I was just starting to worry if you forgot about me`,
-  },
   // Identity response patterns
   identityResponses: {
     name: "I'm Milla Rayne.",

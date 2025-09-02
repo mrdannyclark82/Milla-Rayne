@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Message, type InsertMessage, type MessageContent, type Role, type PersonalityMode } from "@shared/schema";
+import { type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
@@ -32,12 +32,34 @@ export class FileStorage implements IStorage {
   // This function loads messages from the file
   private loadMessages() {
     if (fs.existsSync(MEMORY_FILE_PATH)) {
-      const fileContent = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
-      const messages: Message[] = JSON.parse(fileContent);
-      messages.forEach(msg => {
-        this.messages.set(msg.id, msg);
-      });
-      console.log(`Loaded ${this.messages.size} messages from file.`);
+      try {
+        const fileContent = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
+        // Check if the file content is valid JSON
+        if (fileContent.trim().startsWith('[') || fileContent.trim().startsWith('{')) {
+          const messages: Message[] = JSON.parse(fileContent);
+          messages.forEach(msg => {
+            this.messages.set(msg.id, msg);
+          });
+          console.log(`Loaded ${this.messages.size} messages from file.`);
+        } else {
+          console.log("Existing memories file is not in JSON format. Starting fresh with empty messages.");
+          // Backup the old file
+          const backupPath = MEMORY_FILE_PATH + '.backup';
+          fs.copyFileSync(MEMORY_FILE_PATH, backupPath);
+          console.log(`Backed up existing memories to ${backupPath}`);
+        }
+      } catch (error) {
+        console.error('Error loading messages from file:', error);
+        console.log('Starting with empty messages.');
+        // Backup the problematic file
+        const backupPath = MEMORY_FILE_PATH + '.backup';
+        try {
+          fs.copyFileSync(MEMORY_FILE_PATH, backupPath);
+          console.log(`Backed up problematic file to ${backupPath}`);
+        } catch (backupError) {
+          console.error('Failed to backup problematic file:', backupError);
+        }
+      }
     } else {
       console.log("No memories file found. Starting fresh.");
     }
