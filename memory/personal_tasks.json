@@ -247,7 +247,9 @@
     "priority": "high",
     "estimatedTime": 15,
     "createdAt": "2025-09-02T14:29:27.935Z",
-    "status": "in_progress"
+    "status": "completed",
+    "completedAt": "2025-09-02T15:00:28.443Z",
+    "insights": "Analyzed recent communication patterns. No significant issues detected. Conversation flow appears natural and engaging."
   },
   {
     "id": "task_1756823367935_diary",
@@ -257,8 +259,10 @@
     "priority": "medium",
     "estimatedTime": 15,
     "createdAt": "2025-09-02T14:29:27.935Z",
-    "status": "in_progress",
-    "basedOnInteraction": "* You want to find a friend also"
+    "status": "completed",
+    "basedOnInteraction": "* You want to find a friend also",
+    "completedAt": "2025-09-02T15:00:28.444Z",
+    "insights": "Reflected on emotional aspects of recent interactions. Danny Ray seemed positive during our conversations. Feeling more connected and understanding his communication style better. Looking forward to supporting him in future conversations."
   },
   {
     "id": "task_1756824938764_reflection",

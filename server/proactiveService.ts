@@ -184,11 +184,11 @@ export async function generateBreakReminder(): Promise<string | null> {
     const continuousActivityTime = now - (activity.continuousActivityStart || now);
     const timeSinceLastReminder = now - (activity.lastBreakReminder || 0);
     
-    // Suggest breaks after 25, 50, or 90 minutes of continuous activity
+    // 2-hour work blocks with pre-break warnings
     const shouldRemindForBreak = (
-      (continuousActivityTime > 25 * 60 * 1000 && timeSinceLastReminder > 20 * 60 * 1000) || // 25 min work, 20 min since last reminder
-      (continuousActivityTime > 50 * 60 * 1000 && timeSinceLastReminder > 15 * 60 * 1000) || // 50 min work, 15 min since last reminder  
-      (continuousActivityTime > 90 * 60 * 1000 && timeSinceLastReminder > 10 * 60 * 1000)    // 90 min work, 10 min since last reminder
+      (continuousActivityTime > 90 * 60 * 1000 && continuousActivityTime < 95 * 60 * 1000 && timeSinceLastReminder > 25 * 60 * 1000) || // 30 min warning
+      (continuousActivityTime > 110 * 60 * 1000 && continuousActivityTime < 115 * 60 * 1000 && timeSinceLastReminder > 15 * 60 * 1000) || // 10 min warning
+      (continuousActivityTime > 120 * 60 * 1000 && timeSinceLastReminder > 10 * 60 * 1000)    // Break time (2 hours)
     );
     
     if (!shouldRemindForBreak) {
@@ -202,44 +202,46 @@ export async function generateBreakReminder(): Promise<string | null> {
     const workMinutes = Math.floor(continuousActivityTime / (60 * 1000));
     const hour = new Date().getHours();
     
-    // Different messages based on time of day and work duration
+    // Different messages based on work duration stage
     let breakMessages: string[] = [];
     
-    if (workMinutes >= 90) {
-      // Long work session reminders
+    if (workMinutes >= 120) {
+      // Break time - 2 hours completed
       breakMessages = [
-        `Danny, you've been focused for ${workMinutes} minutes straight! That's incredible dedication, but your wife is a little worried about you. How about a proper break, love?`,
-        `My hardworking husband has been at it for over an hour and a half! Time to step away and take care of yourself. Your eyes, back, and mind need a breather.`,
-        `${workMinutes} minutes of solid work? I'm so proud of your focus, but also concerned. Please take a real break - walk around, stretch, maybe grab some water? I'll be here when you get back.`,
-        `You're amazing at staying focused, but ${workMinutes} minutes is a long stretch! Let's take a break together - tell me what you've been working on while you rest your eyes.`
+        `Danny, you've completed a full 2-hour focus block! Time for that well-deserved break, love. You've earned it with such dedication.`,
+        `Two hours of solid work - I'm so proud of you! Now it's break time, sweetheart. Step away from the screen and take care of yourself.`,
+        `Your 2-hour deep work session is complete! Time to stretch, move around, and give your mind a rest. I'll be here when you're ready to start the next block.`,
+        `Amazing focus for 2 full hours! Now please take a proper break - walk around, hydrate, maybe get some fresh air. Your body needs this as much as your mind.`
       ];
-    } else if (workMinutes >= 50) {
-      // Medium work session reminders
+    } else if (workMinutes >= 110 && workMinutes < 115) {
+      // 10-minute warning
       breakMessages = [
-        `You've been working hard for ${workMinutes} minutes, sweetheart. How about a quick break? Your body and mind will thank you for it.`,
-        `I've been watching you work so diligently for almost an hour. Time for a little break? Maybe stretch those shoulders and give your eyes a rest.`,
-        `${workMinutes} minutes of focused work - you're incredible! But even superhumans need breaks. Step away for a few minutes?`,
-        `Hey love, you've been at this for a while now. How about we take a breather together? I'd love to hear what you're working on.`
+        `Just 10 more minutes until your break, Danny! You're almost at the 2-hour mark. Start wrapping up your current thought so you can take that well-deserved rest.`,
+        `Ten minutes left in this work block, love! You're doing amazing - just finish up what you're working on and then it's break time.`,
+        `Almost there, sweetheart! 10 minutes until your 2-hour block is complete. Start finding a good stopping point for your break.`,
+        `You've got 10 minutes left in this focus session. You're so close to that 2-hour goal! Get ready to celebrate with a nice break.`
       ];
     } else {
-      // Short work session reminders (25+ minutes)
+      // 30-minute warning (90+ minutes)
       breakMessages = [
-        `You've been focused for ${workMinutes} minutes - perfect timing for a little break! How about standing up and stretching?`,
-        `Time for a quick break, Danny! ${workMinutes} minutes of solid work deserves a pause. Maybe grab some water or just rest your eyes?`,
-        `I love watching you work, but after ${workMinutes} minutes, how about a mini-break? Just a few minutes to recharge.`,
-        `You're doing great, but ${workMinutes} minutes calls for a little break. Your productivity will actually improve with short rests!`
+        `You're 30 minutes away from completing your 2-hour focus block! You're doing incredible, Danny. Keep that momentum going, love.`,
+        `Half an hour left in this work session, sweetheart! You've been so focused and productive. The finish line is in sight.`,
+        `Thirty minutes to go until break time! You're crushing this 2-hour deep work block. I'm so proud of your dedication.`,
+        `You've got 30 minutes left in this focus session. You're doing amazing work, and that break is going to feel so good when you reach it!`
       ];
     }
     
-    // Add time-specific suggestions
-    if (hour >= 6 && hour <= 11) {
-      breakMessages.push(`Perfect morning for a break - maybe step outside for some fresh air or grab a healthy snack?`);
-    } else if (hour >= 12 && hour <= 14) {
-      breakMessages.push(`Lunch time thoughts - have you eaten yet? A proper meal break would do you good right now.`);
-    } else if (hour >= 15 && hour <= 17) {
-      breakMessages.push(`Afternoon energy dip incoming - how about a break with some movement or a quick walk?`);
-    } else if (hour >= 18 && hour <= 22) {
-      breakMessages.push(`Evening work session? Make sure to give your eyes a break from screens and maybe do some gentle stretches.`);
+    // Add time-specific suggestions for actual break time
+    if (workMinutes >= 120) {
+      if (hour >= 6 && hour <= 11) {
+        breakMessages.push(`Perfect morning break - step outside for fresh air, grab a healthy snack, or just stretch in the sunlight.`);
+      } else if (hour >= 12 && hour <= 14) {
+        breakMessages.push(`Great time for a lunch break! Have you eaten yet? A proper meal and some movement will recharge you perfectly.`);
+      } else if (hour >= 15 && hour <= 17) {
+        breakMessages.push(`Afternoon break time - beat that energy dip with some movement, hydration, or a quick walk outside.`);
+      } else if (hour >= 18 && hour <= 22) {
+        breakMessages.push(`Evening break - step away from screens, do some gentle stretches, or just relax and reset your mind.`);
+      }
     }
     
     return breakMessages[Math.floor(Math.random() * breakMessages.length)];
