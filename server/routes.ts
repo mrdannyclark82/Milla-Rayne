@@ -10,7 +10,7 @@ import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreConte
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
 import { getMillaMoodData } from "./moodService";
 import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./visualMemoryService";
-import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext } from "./proactiveService";
+import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext, checkBreakReminders } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import OpenAI from "openai";
 
@@ -230,12 +230,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const milestone = await checkMilestones();
       const environmental = detectEnvironmentalContext();
       const recognition = await getRecognitionInsights();
+      const breakReminder = await checkBreakReminders();
       
       res.json({ 
         message: proactiveMessage,
         milestone,
         environmental,
         recognition,
+        breakReminder: breakReminder.shouldRemind ? breakReminder.message : null,
         timestamp: Date.now()
       });
     } catch (error) {

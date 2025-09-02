@@ -295,15 +295,43 @@ export default function ChatInterface({
     }
   }, [isListening, isSpeaking, stopSpeaking, onAvatarStateChange]);
 
-  // Proactive engagement check
+  // Proactive engagement and break reminders check
   useEffect(() => {
     const checkProactiveEngagement = async () => {
       try {
         const response = await fetch('/api/proactive-message');
         if (response.ok) {
           const data = await response.json();
-          if (data.message) {
-            // Add proactive message to conversation after periods of inactivity
+          
+          // Handle break reminders with higher priority
+          if (data.breakReminder) {
+            // Show break reminder as a toast notification
+            toast({
+              title: "💜 Break Time Reminder",
+              description: data.breakReminder,
+              duration: 10000, // Show for 10 seconds
+            });
+            
+            // Also add to conversation as a system message
+            const breakMessage = {
+              id: `break-reminder-${Date.now()}`,
+              content: data.breakReminder,
+              role: "assistant" as const,
+              personalityMode: null,
+              userId: null,
+              timestamp: new Date()
+            };
+            
+            // Add to conversation memory and update query cache
+            addExchange("", data.breakReminder);
+            const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
+            queryClient.setQueryData(["/api/messages"], [...currentMessages, breakMessage]);
+            
+            console.log("Break reminder shown:", data.breakReminder);
+          }
+          
+          // Handle regular proactive messages (lower priority)
+          else if (data.message) {
             console.log("Proactive message available:", data.message);
           }
         }
@@ -312,10 +340,14 @@ export default function ChatInterface({
       }
     };
 
-    // Check for proactive messages every 15 minutes
-    const interval = setInterval(checkProactiveEngagement, 15 * 60 * 1000);
+    // Check for proactive messages and break reminders every 5 minutes
+    const interval = setInterval(checkProactiveEngagement, 5 * 60 * 1000);
+    
+    // Also check immediately on component mount
+    setTimeout(checkProactiveEngagement, 2000);
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [toast, addExchange, queryClient]);
 
   // Handle action commands and identity queries
   const handleSpecialCommands = (content: string): string | null => {

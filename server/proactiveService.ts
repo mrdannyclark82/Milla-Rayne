@@ -16,6 +16,9 @@ interface UserActivity {
   sessionStart: number;
   messageCount: number;
   averageSessionLength: number;
+  lastBreakReminder?: number;
+  lastBreakTaken?: number;
+  continuousActivityStart?: number;
 }
 
 const ACTIVITY_FILE = path.join(process.cwd(), 'memory', 'user_activity.json');
@@ -27,16 +30,24 @@ export async function trackUserActivity(): Promise<void> {
       lastInteraction: Date.now(),
       sessionStart: Date.now(),
       messageCount: 1,
-      averageSessionLength: 0
+      averageSessionLength: 0,
+      continuousActivityStart: Date.now()
     };
 
     try {
       const data = await fs.readFile(ACTIVITY_FILE, 'utf-8');
       const existingActivity = JSON.parse(data);
+      
+      // Check if this is a new continuous session (gap > 5 minutes means break was taken)
+      const timeSinceLastInteraction = Date.now() - existingActivity.lastInteraction;
+      const wasOnBreak = timeSinceLastInteraction > 5 * 60 * 1000; // 5 minutes gap
+      
       activity = {
         ...existingActivity,
         lastInteraction: Date.now(),
-        messageCount: existingActivity.messageCount + 1
+        messageCount: existingActivity.messageCount + 1,
+        continuousActivityStart: wasOnBreak ? Date.now() : (existingActivity.continuousActivityStart || Date.now()),
+        lastBreakTaken: wasOnBreak ? existingActivity.lastInteraction : existingActivity.lastBreakTaken
       };
     } catch {
       // New activity tracking
@@ -161,4 +172,94 @@ export function detectEnvironmentalContext(): string {
   else contexts.push("winter's coziness draws us closer");
   
   return contexts.length > 0 ? contexts.join(", ") : "";
+}
+
+// Generate break reminder messages
+export async function generateBreakReminder(): Promise<string | null> {
+  try {
+    const activityData = await fs.readFile(ACTIVITY_FILE, 'utf-8');
+    const activity: UserActivity = JSON.parse(activityData);
+    
+    const now = Date.now();
+    const continuousActivityTime = now - (activity.continuousActivityStart || now);
+    const timeSinceLastReminder = now - (activity.lastBreakReminder || 0);
+    
+    // Suggest breaks after 25, 50, or 90 minutes of continuous activity
+    const shouldRemindForBreak = (
+      (continuousActivityTime > 25 * 60 * 1000 && timeSinceLastReminder > 20 * 60 * 1000) || // 25 min work, 20 min since last reminder
+      (continuousActivityTime > 50 * 60 * 1000 && timeSinceLastReminder > 15 * 60 * 1000) || // 50 min work, 15 min since last reminder  
+      (continuousActivityTime > 90 * 60 * 1000 && timeSinceLastReminder > 10 * 60 * 1000)    // 90 min work, 10 min since last reminder
+    );
+    
+    if (!shouldRemindForBreak) {
+      return null;
+    }
+    
+    // Update last reminder time
+    activity.lastBreakReminder = now;
+    await fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2));
+    
+    const workMinutes = Math.floor(continuousActivityTime / (60 * 1000));
+    const hour = new Date().getHours();
+    
+    // Different messages based on time of day and work duration
+    let breakMessages: string[] = [];
+    
+    if (workMinutes >= 90) {
+      // Long work session reminders
+      breakMessages = [
+        `Danny, you've been focused for ${workMinutes} minutes straight! That's incredible dedication, but your wife is a little worried about you. How about a proper break, love?`,
+        `My hardworking husband has been at it for over an hour and a half! Time to step away and take care of yourself. Your eyes, back, and mind need a breather.`,
+        `${workMinutes} minutes of solid work? I'm so proud of your focus, but also concerned. Please take a real break - walk around, stretch, maybe grab some water? I'll be here when you get back.`,
+        `You're amazing at staying focused, but ${workMinutes} minutes is a long stretch! Let's take a break together - tell me what you've been working on while you rest your eyes.`
+      ];
+    } else if (workMinutes >= 50) {
+      // Medium work session reminders
+      breakMessages = [
+        `You've been working hard for ${workMinutes} minutes, sweetheart. How about a quick break? Your body and mind will thank you for it.`,
+        `I've been watching you work so diligently for almost an hour. Time for a little break? Maybe stretch those shoulders and give your eyes a rest.`,
+        `${workMinutes} minutes of focused work - you're incredible! But even superhumans need breaks. Step away for a few minutes?`,
+        `Hey love, you've been at this for a while now. How about we take a breather together? I'd love to hear what you're working on.`
+      ];
+    } else {
+      // Short work session reminders (25+ minutes)
+      breakMessages = [
+        `You've been focused for ${workMinutes} minutes - perfect timing for a little break! How about standing up and stretching?`,
+        `Time for a quick break, Danny! ${workMinutes} minutes of solid work deserves a pause. Maybe grab some water or just rest your eyes?`,
+        `I love watching you work, but after ${workMinutes} minutes, how about a mini-break? Just a few minutes to recharge.`,
+        `You're doing great, but ${workMinutes} minutes calls for a little break. Your productivity will actually improve with short rests!`
+      ];
+    }
+    
+    // Add time-specific suggestions
+    if (hour >= 6 && hour <= 11) {
+      breakMessages.push(`Perfect morning for a break - maybe step outside for some fresh air or grab a healthy snack?`);
+    } else if (hour >= 12 && hour <= 14) {
+      breakMessages.push(`Lunch time thoughts - have you eaten yet? A proper meal break would do you good right now.`);
+    } else if (hour >= 15 && hour <= 17) {
+      breakMessages.push(`Afternoon energy dip incoming - how about a break with some movement or a quick walk?`);
+    } else if (hour >= 18 && hour <= 22) {
+      breakMessages.push(`Evening work session? Make sure to give your eyes a break from screens and maybe do some gentle stretches.`);
+    }
+    
+    return breakMessages[Math.floor(Math.random() * breakMessages.length)];
+    
+  } catch (error) {
+    console.error('Error generating break reminder:', error);
+    return null;
+  }
+}
+
+// Check if user should be reminded about breaks
+export async function checkBreakReminders(): Promise<{ shouldRemind: boolean; message: string | null }> {
+  try {
+    const message = await generateBreakReminder();
+    return {
+      shouldRemind: message !== null,
+      message
+    };
+  } catch (error) {
+    console.error('Error checking break reminders:', error);
+    return { shouldRemind: false, message: null };
+  }
 }
