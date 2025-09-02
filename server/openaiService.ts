@@ -35,23 +35,45 @@ export async function generateAIResponse(
       messages.push({ role: "system", content: systemPrompt.trim() });
     }
 
-    // Add conversation history if available
+    // Add conversation history if available - ensure proper alternation
     if (context.conversationHistory) {
       const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
-      recentHistory.forEach(msg => {
-        // Only add messages with valid content
-        if (msg.content && msg.content.trim().length > 0) {
+      
+      // Filter and structure messages to ensure proper alternation
+      const validMessages = recentHistory.filter(msg => 
+        msg.content && msg.content.trim().length > 0
+      );
+      
+      // Find the start of a proper user->assistant pattern
+      let startIndex = 0;
+      for (let i = 0; i < validMessages.length; i++) {
+        if (validMessages[i].role === 'user') {
+          startIndex = i;
+          break;
+        }
+      }
+      
+      // Add messages starting from proper user message, maintaining alternation
+      let expectedRole = 'user';
+      for (let i = startIndex; i < validMessages.length; i++) {
+        const msg = validMessages[i];
+        if (msg.role === expectedRole) {
           messages.push({ 
             role: msg.role, 
             content: msg.content.trim()
           });
+          expectedRole = expectedRole === 'user' ? 'assistant' : 'user';
         }
-      });
+      }
     }
 
-    // Add current user message (ensure it has content)
+    // Add current user message (ensure it has content and proper alternation)
     if (userMessage && userMessage.trim().length > 0) {
-      messages.push({ role: "user", content: userMessage.trim() });
+      // Check if the last message in our array is from user - if so, don't duplicate
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage || lastMessage.role !== 'user' || lastMessage.content !== userMessage.trim()) {
+        messages.push({ role: "user", content: userMessage.trim() });
+      }
     } else {
       return {
         content: "I didn't receive a message from you. Could you please try again?",
