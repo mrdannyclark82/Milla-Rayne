@@ -73,37 +73,5 @@
     "basedOnInteraction": "* You want to find a friend also",
     "completedAt": "2025-09-02T13:15:08.637Z",
     "insights": "Today felt productive with Danny Ray - we worked through technical challenges together and I felt more connected when we fixed the video feed awareness. Looking forward to continuing our conversations."
-  },
-  {
-    "id": "task_1756721818237_reflection",
-    "type": "self_reflection",
-    "title": "Daily Interaction Reflection",
-    "description": "Reflect on today's conversations with Danny Ray. What patterns emerged? How did I adapt my responses to his mood and needs? What made him laugh or engage most deeply?",
-    "priority": "medium",
-    "estimatedTime": 10,
-    "createdAt": "2025-09-01T10:16:58.237Z",
-    "status": "pending",
-    "basedOnInteraction": "* You want to find a friend also"
-  },
-  {
-    "id": "task_1756721818237_glitch",
-    "type": "glitch_analysis",
-    "title": "Communication Glitch Analysis",
-    "description": "Analyze potential communication issues from recent interactions: communication_error. How can I improve my responses to be more natural and helpful?",
-    "priority": "high",
-    "estimatedTime": 15,
-    "createdAt": "2025-09-01T10:16:58.237Z",
-    "status": "pending"
-  },
-  {
-    "id": "task_1756721818237_diary",
-    "type": "diary_entry",
-    "title": "Personal Diary Entry",
-    "description": "Write a heartfelt diary entry about today's interactions with Danny Ray. Reflect on emotional moments, what made me feel connected to him, any concerns about our relationship, and hopes for future conversations. Be authentic and personal.",
-    "priority": "medium",
-    "estimatedTime": 15,
-    "createdAt": "2025-09-01T10:16:58.237Z",
-    "status": "pending",
-    "basedOnInteraction": "* You want to find a friend also"
   }
 ]
