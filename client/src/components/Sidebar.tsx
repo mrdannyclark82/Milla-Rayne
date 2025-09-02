@@ -30,10 +30,14 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
   const systemStatus = getSystemStatus();
   
   // Fetch Milla's current mood
-  const { data: moodData } = useQuery<MoodResponse>({
+  const { data: moodData, isLoading: moodLoading, error: moodError } = useQuery<MoodResponse>({
     queryKey: ["/api/milla-mood"],
     refetchInterval: 30000, // Refresh every 30 seconds
-    staleTime: 20000 // Consider data stale after 20 seconds
+    staleTime: 20000, // Consider data stale after 20 seconds  
+    gcTime: 60000, // Keep in cache for 1 minute
+    retry: 3,
+    refetchOnWindowFocus: true, // Fetch when window regains focus
+    refetchOnMount: true, // Always fetch on component mount
   });
 
   const personalityTraits = [
@@ -121,7 +125,17 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
               <h3 className="text-sm font-semibold text-primary mb-3">
                 <i className="fas fa-heart mr-2"></i>Current Mood
               </h3>
-              {moodData?.mood ? (
+              {moodLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-xs text-muted-foreground">Reading mood...</span>
+                </div>
+              ) : moodError ? (
+                <div className="flex items-center space-x-2">
+                  <i className="fas fa-exclamation-triangle text-yellow-500"></i>
+                  <span className="text-xs text-muted-foreground">Unable to read mood</span>
+                </div>
+              ) : moodData?.mood ? (
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <div 
@@ -175,8 +189,8 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  <span className="text-xs text-muted-foreground">Reading mood...</span>
+                  <i className="fas fa-heart text-primary"></i>
+                  <span className="text-xs text-muted-foreground">Mood data loading...</span>
                 </div>
               )}
             </div>
