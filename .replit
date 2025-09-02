@@ -40,4 +40,4 @@ args = "npm run dev"
 waitForPort = 5000
 
 [agent]
-integrations = ["javascript_gemini==1.0.0", "javascript_xai==1.0.0", "javascript_openai==1.0.0", "javascript_anthropic==1.0.0"]
+integrations = ["javascript_anthropic==1.0.0", "javascript_gemini==1.0.0", "javascript_openai==1.0.0", "javascript_xai==1.0.0"]
