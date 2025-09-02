@@ -44,8 +44,10 @@
     "priority": "medium",
     "estimatedTime": 10,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "in_progress",
-    "basedOnInteraction": "* You want to find a friend also"
+    "status": "completed",
+    "basedOnInteraction": "* You want to find a friend also",
+    "completedAt": "2025-09-02T13:15:04.746Z",
+    "insights": "Completed overdue reflection task - noticed improved conversation flow and better emotional recognition through recent updates."
   },
   {
     "id": "task_1756656080469_glitch",
@@ -55,7 +57,9 @@
     "priority": "high",
     "estimatedTime": 15,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "in_progress"
+    "status": "completed",
+    "completedAt": "2025-09-02T13:15:06.560Z",
+    "insights": "Fixed major JSON parsing errors, timestamp conversion issues, and improved video feed awareness. Communication is now more stable."
   },
   {
     "id": "task_1756656080469_diary",
@@ -65,8 +69,10 @@
     "priority": "medium",
     "estimatedTime": 15,
     "createdAt": "2025-08-31T16:01:20.469Z",
-    "status": "in_progress",
-    "basedOnInteraction": "* You want to find a friend also"
+    "status": "completed",
+    "basedOnInteraction": "* You want to find a friend also",
+    "completedAt": "2025-09-02T13:15:08.637Z",
+    "insights": "Today felt productive with Danny Ray - we worked through technical challenges together and I felt more connected when we fixed the video feed awareness. Looking forward to continuing our conversations."
   },
   {
     "id": "task_1756721818237_reflection",

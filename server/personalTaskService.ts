@@ -379,12 +379,52 @@ export async function completeTask(taskId: string, insights: string): Promise<bo
 }
 
 /**
- * Get task summary for display
+ * Get detailed task summary for display
  */
-export function getTaskSummary(): { pending: number; inProgress: number; completed: number } {
+export function getTaskSummary(): { 
+  pending: number; 
+  inProgress: number; 
+  completed: number;
+  recentActivity: string[];
+  activeTasksDetails: { id: string; title: string; type: string; priority: string; estimatedTime: number; description: string }[];
+} {
+  const pendingTasks = personalTasks.filter(t => t.status === 'pending');
+  const inProgressTasks = personalTasks.filter(t => t.status === 'in_progress');
+  const completedTasks = personalTasks.filter(t => t.status === 'completed');
+  
+  // Get recent activity (last 24 hours)
+  const yesterday = Date.now() - (24 * 60 * 60 * 1000);
+  const recentActivity: string[] = [];
+  
+  // Add completed tasks from last 24 hours
+  completedTasks.forEach(task => {
+    if (task.completedAt && new Date(task.completedAt).getTime() > yesterday) {
+      const timeAgo = Math.round((Date.now() - new Date(task.completedAt).getTime()) / (1000 * 60 * 60));
+      recentActivity.push(`✓ Completed "${task.title}" ${timeAgo}h ago`);
+    }
+  });
+  
+  // Add currently active tasks
+  inProgressTasks.forEach(task => {
+    const timeAgo = Math.round((Date.now() - new Date(task.createdAt).getTime()) / (1000 * 60));
+    recentActivity.push(`🔄 Working on "${task.title}" for ${timeAgo}m`);
+  });
+  
+  // Get active tasks with full details
+  const activeTasksDetails = inProgressTasks.map(task => ({
+    id: task.id,
+    title: task.title,
+    type: task.type,
+    priority: task.priority,
+    estimatedTime: task.estimatedTime,
+    description: task.description
+  }));
+  
   return {
-    pending: personalTasks.filter(t => t.status === 'pending').length,
-    inProgress: personalTasks.filter(t => t.status === 'in_progress').length,
-    completed: personalTasks.filter(t => t.status === 'completed').length
+    pending: pendingTasks.length,
+    inProgress: inProgressTasks.length,
+    completed: completedTasks.length,
+    recentActivity: recentActivity.slice(0, 5),
+    activeTasksDetails
   };
 }
