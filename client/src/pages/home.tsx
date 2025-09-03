@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
+import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
@@ -35,6 +36,8 @@ export default function Home() {
   const { voices: availableVoices } = useSpeechSynthesis();
   const [useVideo, setUseVideo] = useState(true);
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
+  const [useInteractiveAvatar, setUseInteractiveAvatar] = useState(true);
+  const [lastGesture, setLastGesture] = useState<GestureType | null>(null);
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
     style: 'realistic',
     hairColor: 'auburn',
@@ -74,6 +77,22 @@ export default function Home() {
   const handleVoiceChange = (voice: SpeechSynthesisVoice | null) => {
     // Voice is passed directly
     setSelectedVoice(voice);
+  };
+
+  // Gesture feedback system
+  const handleAvatarGesture = (gesture: GestureType) => {
+    setLastGesture(gesture);
+    
+    // Log gesture for user feedback
+    console.log(`🎭 Milla performed gesture: ${gesture}`);
+    
+    // Optional: Trigger voice response for certain gestures
+    if (voiceEnabled && gesture === 'heart') {
+      // Could trigger a loving response here
+    }
+    
+    // Clear gesture after delay
+    setTimeout(() => setLastGesture(null), 3000);
   };
   
   const handleVoicePitchChange = () => {
@@ -130,7 +149,13 @@ export default function Home() {
       <div className="flex-1 relative overflow-hidden">
         {/* Dynamic Avatar with Video/Image/Custom */}
         <div className="relative w-full h-full overflow-hidden">
-          {useCustomAvatar ? (
+          {useInteractiveAvatar ? (
+            <InteractiveAvatar
+              avatarState={avatarState}
+              onGesture={handleAvatarGesture}
+              personalityMode={personalitySettings.communicationStyle}
+            />
+          ) : useCustomAvatar ? (
             <DynamicAvatar
               avatarState={avatarState}
               settings={avatarSettings}
@@ -177,6 +202,16 @@ export default function Home() {
               'bg-purple-500/3'
             }`}
           />
+
+          {/* Gesture Feedback Display */}
+          {useInteractiveAvatar && lastGesture && (
+            <div className="absolute bottom-4 left-4 z-20">
+              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white/90 text-sm font-medium animate-pulse border border-pink-400/30">
+                <i className="fas fa-sparkles mr-2 text-pink-400"></i>
+                Last gesture: <span className="text-pink-300 font-semibold capitalize">{lastGesture}</span>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Settings Panel */}
@@ -215,6 +250,16 @@ export default function Home() {
         
         {/* Avatar Mode Toggle Buttons */}
         <div className="absolute top-4 right-4 z-50 flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useInteractiveAvatar ? 'bg-green-500/20 text-green-300' : ''}`}
+            onClick={() => setUseInteractiveAvatar(!useInteractiveAvatar)}
+            data-testid="button-toggle-interactive"
+            title="Toggle Interactive Avatar"
+          >
+            <i className="fas fa-hand-pointer text-sm"></i>
+          </Button>
           <Button
             variant="ghost"
             size="sm"

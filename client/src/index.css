@@ -73,6 +73,67 @@
   scroll-behavior: smooth;
 }
 
+/* Interactive Avatar Gesture Animations */
+@keyframes wave-gesture {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+@keyframes nod-gesture {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes wink-gesture {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.8); }
+}
+
+@keyframes heart-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes surprised-bounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  100% { transform: scale(1.02); }
+}
+
+@keyframes shy-sway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1deg); }
+  75% { transform: rotate(1deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gentle-breathing {
+  0%, 100% { transform: scale(1) translateY(0px); }
+  50% { transform: scale(1.02) translateY(-2px); }
+}
+
+@keyframes playful-bounce {
+  0%, 100% { transform: translateY(0px); }
+  25% { transform: translateY(-3px); }
+  75% { transform: translateY(-1px); }
+}
+
+@keyframes mysterious-sway {
+  0%, 100% { transform: translateX(0px) rotate(0deg); }
+  33% { transform: translateX(2px) rotate(0.5deg); }
+  66% { transform: translateX(-2px) rotate(-0.5deg); }
+}
+
+@keyframes gentle-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.1); }
+}
+
 .message-fade-in {
   animation: fadeInUp 0.3s ease-out;
 }
