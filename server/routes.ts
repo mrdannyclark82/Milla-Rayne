@@ -527,8 +527,8 @@ async function shouldMillaElaborate(
     return { shouldElaborate: true, reason: "emotional_content" };
   }
   
-  // Elaborate when sharing memories or experiences
-  if (response.includes('remember') || response.includes('memory') || message.includes('remember')) {
+  // Rarely elaborate when sharing memories or experiences (much more selective)
+  if ((response.includes('remember') || response.includes('memory') || message.includes('remember')) && Math.random() < 0.15) {
     return { shouldElaborate: true, reason: "memory_sharing" };
   }
   
@@ -544,9 +544,9 @@ async function shouldMillaElaborate(
     }
   }
   
-  // Elaborate when asking questions to show interest
+  // Rarely elaborate when asking questions to show interest
   if (response.includes('?') && response.includes('you')) {
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.1) {
       return { shouldElaborate: true, reason: "curious_follow_up" };
     }
   }
@@ -618,8 +618,8 @@ async function generateElaborationMessages(
       break;
   }
   
-  // Occasionally add a third follow-up for really engaged moments
-  if ((reason === "emotional_content" || reason === "memory_sharing") && Math.random() < 0.5) {
+  // Very rarely add a third follow-up for really engaged moments
+  if ((reason === "emotional_content" || reason === "memory_sharing") && Math.random() < 0.1) {
     messages.push(`${name}, you bring out the best in me, even in conversation. I love this about us.`);
   }
   
