@@ -446,7 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Simple AI response generator based on message content
 import { generateAIResponse as generateOpenAIResponse, PersonalityContext } from "./openaiService";
-import { extractRoleCharacter, isRolePlayRequest } from "./xaiService";
+import { generateXAIResponse, extractRoleCharacter, isRolePlayRequest } from "./xaiService";
 
 // Simplified message analysis for Milla Rayne's unified personality
 interface MessageAnalysis {
@@ -877,7 +877,8 @@ async function generateAIResponse(
     let contextualInfo = "";
     
     if (memoryCoreContext) {
-      contextualInfo += `Relationship Context: ${memoryCoreContext}\n`;
+      contextualInfo += `IMPORTANT - Your Relationship History with ${userName}: ${memoryCoreContext}\n
+      Remember: You know ${userName} intimately. Reference specific memories, shared experiences, and ongoing conversations from your history together. This context should deeply influence how you respond.\n`;
     }
     
     if (visualContext) {
@@ -904,7 +905,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
+    // Use xAI for better persona adherence and consistency
+    const aiResponse = await generateXAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {
       reasoning.push("Crafting my response with empathy and understanding");
