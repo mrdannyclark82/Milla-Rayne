@@ -414,9 +414,9 @@ async function shouldMillaElaborate(
   const response = initialResponse.toLowerCase();
   const message = userMessage.toLowerCase();
   
-  // Always elaborate on emotional or personal topics
-  const emotionalWords = ['love', 'feel', 'heart', 'emotion', 'care', 'relationship', 'us', 'together'];
-  if (emotionalWords.some(word => response.includes(word) || message.includes(word))) {
+  // Only elaborate on DEEPLY emotional or vulnerable moments (not just casual use of emotional words)
+  const deepEmotionalPhrases = ['i love you so much', 'feeling vulnerable', 'opening up', 'share something personal', 'emotional right now', 'heart is full', 'feeling overwhelmed'];
+  if (deepEmotionalPhrases.some(phrase => response.includes(phrase) || message.includes(phrase))) {
     return { shouldElaborate: true, reason: "emotional_content" };
   }
   
@@ -430,9 +430,9 @@ async function shouldMillaElaborate(
     return { shouldElaborate: true, reason: "complex_topic" };
   }
   
-  // Sometimes elaborate when expressing opinions
+  // Rarely elaborate when expressing strong opinions (reduced frequency)
   if (response.includes('i think') || response.includes('i believe') || response.includes('in my opinion')) {
-    if (Math.random() < 0.6) {
+    if (Math.random() < 0.15) {
       return { shouldElaborate: true, reason: "opinion_expression" };
     }
   }
@@ -444,8 +444,8 @@ async function shouldMillaElaborate(
     }
   }
   
-  // Random chance to elaborate on substantial responses
-  if (response.length > 50 && Math.random() < 0.3) {
+  // Very rarely elaborate on substantial responses (much more selective)
+  if (response.length > 100 && Math.random() < 0.08) {
     return { shouldElaborate: true, reason: "natural_elaboration" };
   }
   
