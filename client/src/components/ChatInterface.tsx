@@ -12,6 +12,7 @@ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
+import VideoAnalyzer from "@/components/VideoAnalyzer";
 
 interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
@@ -47,6 +48,7 @@ export default function ChatInterface({
   const [isTyping, setIsTyping] = useState(false);
   const [showThinking, setShowThinking] = useState(false);
   const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
+  const [showVideoAnalyzer, setShowVideoAnalyzer] = useState(false);
   
   // Track user typing state
   const [userIsTyping, setUserIsTyping] = useState(false);
@@ -943,7 +945,7 @@ export default function ChatInterface({
                 <Textarea
                   ref={textareaRef}
                   placeholder="Type your message to Milla..."
-                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-20 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
+                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-44 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -955,7 +957,7 @@ export default function ChatInterface({
                 <Button
                   variant="ghost" 
                   size="sm"
-                  className={`absolute right-16 bottom-3 p-2 transition-colors ${
+                  className={`absolute right-36 bottom-3 p-2 transition-colors ${
                     isCameraActive 
                       ? 'text-green-400' 
                       : 'text-white/60 hover:text-white'
@@ -970,7 +972,7 @@ export default function ChatInterface({
                 <Button
                   variant="ghost" 
                   size="sm"
-                  className={`absolute right-10 bottom-3 p-2 transition-colors ${
+                  className={`absolute right-24 bottom-3 p-2 transition-colors ${
                     isListening 
                       ? 'text-red-400 animate-pulse' 
                       : 'text-white/60 hover:text-white'
@@ -981,6 +983,22 @@ export default function ChatInterface({
                   <i className={`fas ${isListening ? 'fa-stop' : 'fa-microphone'}`}></i>
                 </Button>
                 
+                {/* Video Analysis Button */}
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  className={`absolute right-10 bottom-3 p-2 transition-colors ${
+                    showVideoAnalyzer 
+                      ? 'text-purple-400' 
+                      : 'text-white/60 hover:text-white'
+                  }`}
+                  onClick={() => setShowVideoAnalyzer(!showVideoAnalyzer)}
+                  data-testid="button-video-analysis"
+                  title="Video Analysis"
+                >
+                  <i className="fas fa-video"></i>
+                </Button>
+
                 {/* Attachment Button */}
                 <Button
                   variant="ghost" 
@@ -1021,6 +1039,29 @@ export default function ChatInterface({
             
           </div>
         </div>
+
+        {/* Video Analyzer */}
+        {showVideoAnalyzer && (
+          <div className="bg-black/20 backdrop-blur-sm border-t border-white/10 p-6">
+            <div className="max-w-4xl mx-auto">
+              <VideoAnalyzer 
+                onAnalysisComplete={(result) => {
+                  // Add video analysis to the chat
+                  const analysisMessage = `🎬 **Video Analysis Complete!**\n\n**Summary:** ${result.summary}\n\n**Milla's Insights:** ${result.insights || "I found your video interesting!"}`;
+                  
+                  rapidFireSend(analysisMessage);
+                  setShowVideoAnalyzer(false);
+                  
+                  toast({
+                    title: "Video Analyzed",
+                    description: "Milla has analyzed your video and shared her insights!",
+                  });
+                }}
+                className="max-w-2xl"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

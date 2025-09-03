@@ -12,6 +12,7 @@ import { getMillaMoodData } from "./moodService";
 import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./visualMemoryService";
 import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext, checkBreakReminders, checkPostBreakReachout } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
+import { analyzeVideo, generateVideoInsights } from "./gemini";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -331,6 +332,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ mood: moodData, success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch mood data" });
+    }
+  });
+
+  // Video analysis endpoint
+  app.post("/api/analyze-video", async (req, res) => {
+    try {
+      let videoBuffer: Buffer;
+      let mimeType: string;
+
+      // Handle different content types
+      const contentType = req.headers['content-type'] || '';
+      
+      if (contentType.includes('multipart/form-data')) {
+        // For form data uploads, we'll need to parse manually
+        const chunks: Buffer[] = [];
+        
+        req.on('data', (chunk: Buffer) => {
+          chunks.push(chunk);
+        });
+        
+        await new Promise<void>((resolve, reject) => {
+          req.on('end', () => resolve());
+          req.on('error', reject);
+        });
+        
+        const fullBuffer = Buffer.concat(chunks);
+        const boundary = contentType.split('boundary=')[1];
+        
+        // Simple multipart parsing to extract video data
+        const parts = fullBuffer.toString('binary').split(`--${boundary}`);
+        let videoData: string = '';
+        mimeType = 'video/mp4'; // Default fallback
+        
+        for (const part of parts) {
+          if (part.includes('Content-Type: video/') && part.includes('filename=')) {
+            const contentTypeMatch = part.match(/Content-Type: (video\/[^\r\n]+)/);
+            if (contentTypeMatch) {
+              mimeType = contentTypeMatch[1];
+            }
+            
+            // Extract binary data after the headers
+            const dataStart = part.indexOf('\r\n\r\n') + 4;
+            if (dataStart > 3) {
+              videoData = part.substring(dataStart);
+              break;
+            }
+          }
+        }
+        
+        if (!videoData) {
+          return res.status(400).json({ 
+            error: "No video file found in the upload." 
+          });
+        }
+        
+        videoBuffer = Buffer.from(videoData, 'binary');
+        mimeType = mimeType || 'video/mp4';
+      } else {
+        // Handle direct binary upload
+        const chunks: Buffer[] = [];
+        
+        req.on('data', (chunk: Buffer) => {
+          chunks.push(chunk);
+        });
+        
+        await new Promise<void>((resolve, reject) => {
+          req.on('end', () => resolve());
+          req.on('error', reject);
+        });
+        
+        videoBuffer = Buffer.concat(chunks);
+        mimeType = contentType.split(';')[0] || 'video/mp4';
+      }
+      
+      // Validate it's a video file
+      if (!mimeType.startsWith('video/')) {
+        return res.status(400).json({ 
+          error: "Invalid file type. Please upload a video file." 
+        });
+      }
+      
+      // Check file size (limit to 50MB)
+      if (videoBuffer.length > 50 * 1024 * 1024) {
+        return res.status(400).json({ 
+          error: "Video file is too large. Please use a smaller file (under 50MB)." 
+        });
+      }
+      
+      console.log(`Analyzing video: ${videoBuffer.length} bytes, type: ${mimeType}`);
+      
+      // Analyze video with Gemini
+      const analysis = await analyzeVideo(videoBuffer, mimeType);
+      
+      // Generate Milla's personal insights
+      const insights = await generateVideoInsights(analysis);
+      
+      res.json({
+        ...analysis,
+        insights
+      });
+    } catch (error) {
+      console.error("Video analysis error:", error);
+      res.status(500).json({ 
+        error: "I had trouble analyzing your video, sweetheart. Could you try a different format or smaller file size?" 
+      });
     }
   });
 

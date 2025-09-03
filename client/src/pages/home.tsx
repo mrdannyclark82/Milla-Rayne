@@ -5,6 +5,7 @@ import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
 import LivingAvatar from "@/components/LivingAvatar";
 import Avatar3D from "@/components/Avatar3D";
+import VideoAnalyzer from "@/components/VideoAnalyzer";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
 import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
