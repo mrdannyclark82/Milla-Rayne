@@ -9,7 +9,7 @@ import { checkIdentityQuery, MILLA_IDENTITY } from "@/lib/MillaCore";
 import type { Message } from "@shared/schema";
 import { AvatarState } from "@/components/Sidebar";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
 
@@ -17,6 +17,9 @@ interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
   voiceEnabled?: boolean;
   speechRate?: number;
+  voicePitch?: number;
+  voiceVolume?: number;
+  selectedVoice?: SpeechSynthesisVoice | null;
   theme?: 'light' | 'dark';
   chatTransparency?: number;
   personalitySettings?: {
@@ -31,6 +34,9 @@ export default function ChatInterface({
   onAvatarStateChange, 
   voiceEnabled = false, 
   speechRate = 1.0,
+  voicePitch = 1.1,
+  voiceVolume = 0.8,
+  selectedVoice = null,
   theme = 'dark',
   chatTransparency = 80,
   personalitySettings
@@ -49,7 +55,35 @@ export default function ChatInterface({
 
   // Voice functionality
   const { transcript, isListening, startListening, stopListening, resetTranscript } = useSpeechRecognition();
-  const { speak, isSpeaking, setRate, stop: stopSpeaking } = useTextToSpeech();
+  const { 
+    speak, 
+    speaking: isSpeaking, 
+    cancel: stopSpeaking, 
+    voice,
+    setVoice,
+    rate,
+    setRate,
+    pitch,
+    setPitch,
+    volume,
+    setVolume
+  } = useSpeechSynthesis();
+  
+  // Sync voice settings from props
+  useEffect(() => {
+    if (selectedVoice && voice !== selectedVoice) {
+      setVoice(selectedVoice);
+    }
+    if (rate !== speechRate) {
+      setRate(speechRate);
+    }
+    if (pitch !== voicePitch) {
+      setPitch(voicePitch);
+    }
+    if (volume !== voiceVolume) {
+      setVolume(voiceVolume);
+    }
+  }, [selectedVoice, speechRate, voicePitch, voiceVolume, setVoice, setRate, setPitch, setVolume, voice, rate, pitch, volume]);
 
   // Function to render message content with image support
   const renderMessageContent = (content: string) => {

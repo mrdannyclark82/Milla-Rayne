@@ -25,6 +25,13 @@ interface SettingsPanelProps {
   onVoiceToggle?: (enabled: boolean) => void;
   speechRate?: number;
   onSpeechRateChange?: (rate: number) => void;
+  voicePitch?: number;
+  onVoicePitchChange?: (pitch: number) => void;
+  voiceVolume?: number;
+  onVoiceVolumeChange?: (volume: number) => void;
+  selectedVoice?: SpeechSynthesisVoice | null;
+  onVoiceChange?: (voice: SpeechSynthesisVoice | null) => void;
+  availableVoices?: SpeechSynthesisVoice[];
   avatarSettings?: AvatarSettings;
   onAvatarSettingsChange?: (settings: AvatarSettings) => void;
   theme?: 'light' | 'dark';
@@ -48,6 +55,13 @@ export default function SettingsPanel({
   onVoiceToggle,
   speechRate = 1.0,
   onSpeechRateChange,
+  voicePitch = 1.1,
+  onVoicePitchChange,
+  voiceVolume = 0.8,
+  onVoiceVolumeChange,
+  selectedVoice = null,
+  onVoiceChange,
+  availableVoices = [],
   avatarSettings: externalAvatarSettings,
   onAvatarSettingsChange,
   theme = 'dark',
@@ -96,6 +110,39 @@ export default function SettingsPanel({
     if (speechRate <= 0.75) return "Slow";
     if (speechRate >= 1.5) return "Fast";
     return "Normal";
+  };
+  
+  const handleVoicePitchChange = () => {
+    const newPitch = voicePitch >= 1.5 ? 0.8 : voicePitch + 0.1;
+    onVoicePitchChange?.(Math.round(newPitch * 10) / 10);
+  };
+  
+  const getVoicePitchLabel = () => {
+    if (voicePitch <= 0.8) return "Low";
+    if (voicePitch >= 1.4) return "High";
+    return "Normal";
+  };
+  
+  const handleVoiceVolumeChange = () => {
+    const newVolume = voiceVolume >= 1.0 ? 0.3 : voiceVolume + 0.2;
+    onVoiceVolumeChange?.(Math.round(newVolume * 10) / 10);
+  };
+  
+  const getVoiceVolumeLabel = () => {
+    if (voiceVolume <= 0.4) return "Quiet";
+    if (voiceVolume >= 0.9) return "Loud";
+    return "Normal";
+  };
+  
+  const handleVoiceChange = (voiceName: string) => {
+    const voice = availableVoices.find(v => v.name === voiceName) || null;
+    onVoiceChange?.(voice);
+  };
+  
+  const getVoiceDisplayName = () => {
+    if (!selectedVoice) return "Auto (Female)";
+    const shortName = selectedVoice.name.split(' ')[0] || selectedVoice.name;
+    return shortName.length > 12 ? shortName.substring(0, 12) + '...' : shortName;
   };
 
   return (
@@ -318,7 +365,7 @@ export default function SettingsPanel({
           </Card>
 
           {/* Personal Tasks Section */}
-          <PersonalTasksSection />
+\n\n          <PersonalTasksSection />
         </div>
 
         <Separator className="bg-white/20" />

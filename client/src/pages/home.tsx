@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
@@ -9,6 +9,7 @@ import avatarVideo from "@assets/generated_images/AI_assistant_avatar_video_8218
 import millaPortraitVideo from "@assets/Creating_a_Living_Portrait_Animation_1756641116784.mp4";
 import { Button } from "@/components/ui/button";
 import SettingsPanel from "@/components/SettingsPanel";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -26,6 +27,12 @@ export default function Home() {
   const [avatarState, setAvatarState] = useState<AvatarState>("neutral");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechRate, setSpeechRate] = useState(1.0);
+  const [voicePitch, setVoicePitch] = useState(1.1);
+  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  
+  // Get available voices for voice picker
+  const { voices: availableVoices } = useSpeechSynthesis();
   const [useVideo, setUseVideo] = useState(true);
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
@@ -61,6 +68,52 @@ export default function Home() {
       default:
         return millaRealistic;
     }
+  };
+  
+  // Voice control handlers
+  const handleVoiceChange = (voiceName: string) => {
+    const voice = availableVoices.find(v => v.name === voiceName);
+    setSelectedVoice(voice || null);
+  };
+  
+  const handleVoicePitchChange = () => {
+    const pitches = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4];
+    const currentIndex = pitches.indexOf(voicePitch);
+    const nextIndex = (currentIndex + 1) % pitches.length;
+    setVoicePitch(pitches[nextIndex]);
+  };
+  
+  const handleVoiceVolumeChange = () => {
+    const volumes = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+    const currentIndex = volumes.indexOf(voiceVolume);
+    const nextIndex = (currentIndex + 1) % volumes.length;
+    setVoiceVolume(volumes[nextIndex]);
+  };
+  
+  // Voice display helpers
+  const getVoiceDisplayName = () => {
+    if (!selectedVoice) return 'Default';
+    return selectedVoice.name.split(' ')[0] || 'Default';
+  };
+  
+  const getVoicePitchLabel = () => {
+    if (voicePitch === 0.8) return 'Lower';
+    if (voicePitch === 0.9) return 'Low';
+    if (voicePitch === 1.0) return 'Normal';
+    if (voicePitch === 1.1) return 'Sweet';
+    if (voicePitch === 1.2) return 'High';
+    if (voicePitch === 1.3) return 'Higher';
+    if (voicePitch === 1.4) return 'Highest';
+    return 'Custom';
+  };
+  
+  const getVoiceVolumeLabel = () => {
+    if (voiceVolume === 0.3) return 'Whisper';
+    if (voiceVolume === 0.5) return 'Soft';
+    if (voiceVolume === 0.7) return 'Normal';
+    if (voiceVolume === 0.8) return 'Clear';
+    if (voiceVolume === 1.0) return 'Loud';
+    return Math.round(voiceVolume * 100) + '%';
   };
 
   return (
@@ -132,6 +185,16 @@ export default function Home() {
           onVoiceToggle={setVoiceEnabled}
           speechRate={speechRate}
           onSpeechRateChange={setSpeechRate}
+          voicePitch={voicePitch}
+          voiceVolume={voiceVolume}
+          selectedVoice={selectedVoice}
+          availableVoices={availableVoices}
+          handleVoiceChange={handleVoiceChange}
+          handleVoicePitchChange={handleVoicePitchChange}
+          handleVoiceVolumeChange={handleVoiceVolumeChange}
+          getVoiceDisplayName={getVoiceDisplayName}
+          getVoicePitchLabel={getVoicePitchLabel}
+          getVoiceVolumeLabel={getVoiceVolumeLabel}
           avatarSettings={avatarSettings}
           onAvatarSettingsChange={setAvatarSettings}
           theme={theme}
