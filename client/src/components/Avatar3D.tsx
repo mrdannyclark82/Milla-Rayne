@@ -221,25 +221,17 @@ export default function Avatar3D({
     }
   };
 
-  // Get dynamic colors based on emotion and personality
+  // Get dynamic colors based on emotion and personality - Customized for reference image
   const getAvatarColors = () => {
-    const emotionHue = {
-      'loving': 340,
-      'happy': 50,
-      'thoughtful': 220,
-      'excited': 30,
-      'calm': 200,
-      'playful': 280,
-      'surprised': 60
-    }[emotion] || 340;
-    
+    // Base colors inspired by the reference image
     return {
-      skin: `hsl(${emotionHue + 80}, 35%, 82%)`,
-      hair: `hsl(${emotionHue + 30}, 45%, 25%)`,
-      eyes: emotion === 'loving' ? '#4FC3F7' : emotion === 'thoughtful' ? '#607D8B' : '#2E7D32',
-      lips: `hsl(${emotionHue}, 60%, 70%)`,
-      blush: `hsl(${emotionHue}, 70%, 80%)`,
-      shadow: `hsl(${emotionHue + 20}, 30%, 20%)`
+      skin: 'hsl(25, 45%, 88%)', // Fair, warm peachy skin tone
+      hair: 'hsl(15, 65%, 45%)', // Reddish-auburn copper hair color
+      eyes: '#4A9B7E', // Green eyes with slight blue undertone
+      lips: 'hsl(345, 55%, 75%)', // Natural pink lips
+      blush: 'hsl(15, 60%, 85%)', // Warm peachy blush
+      shadow: 'hsl(25, 25%, 25%)', // Soft brown shadows
+      freckles: 'hsl(25, 40%, 70%)' // Freckle color
     };
   };
 
@@ -284,7 +276,7 @@ export default function Avatar3D({
           <div 
             className="absolute w-full h-64 rounded-full"
             style={{
-              background: `linear-gradient(135deg, ${colors.skin}, ${colors.skin}dd)`,
+              background: `linear-gradient(135deg, ${colors.skin}, hsl(28, 50%, 85%))`,
               transform: 'translateZ(0px)',
               boxShadow: `
                 0 20px 40px ${colors.shadow}40,
@@ -294,14 +286,34 @@ export default function Avatar3D({
             }}
             onClick={(e) => handleFaceClick('face', e)}
           >
-            {/* Hair Layer */}
+            {/* Hair Layer - Auburn/Copper hair with texture */}
             <div 
               className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-56 h-40 rounded-t-full"
               style={{ 
-                background: `linear-gradient(145deg, ${colors.hair}, ${colors.hair}bb)`,
+                background: `linear-gradient(145deg, ${colors.hair}, hsl(18, 70%, 40%))`,
                 transform: 'translateZ(10px)',
                 clipPath: 'ellipse(85% 100% at 50% 100%)',
                 boxShadow: `0 10px 30px ${colors.shadow}30`
+              }}
+            >
+              {/* Hair highlights and texture */}
+              <div 
+                className="absolute inset-0 rounded-t-full opacity-60"
+                style={{
+                  background: 'linear-gradient(160deg, transparent 20%, hsl(20, 80%, 55%) 40%, transparent 60%)',
+                  clipPath: 'ellipse(85% 100% at 50% 100%)'
+                }}
+              />
+            </div>
+            
+            {/* Hair Bangs - Framing the face */}
+            <div 
+              className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-48 h-20"
+              style={{
+                background: `linear-gradient(180deg, ${colors.hair}, transparent)`,
+                transform: 'translateZ(12px)',
+                clipPath: 'polygon(20% 0%, 80% 0%, 90% 100%, 10% 100%)',
+                opacity: 0.8
               }}
             />
             
@@ -315,6 +327,34 @@ export default function Avatar3D({
               }}
               onClick={(e) => handleFaceClick('forehead', e)}
             />
+
+            {/* Freckles scattered across face */}
+            {[...Array(18)].map((_, i) => {
+              const positions = [
+                { left: '25%', top: '35%' }, { left: '75%', top: '32%' }, { left: '30%', top: '42%' },
+                { left: '70%', top: '40%' }, { left: '35%', top: '48%' }, { left: '65%', top: '45%' },
+                { left: '28%', top: '52%' }, { left: '72%', top: '50%' }, { left: '45%', top: '38%' },
+                { left: '55%', top: '36%' }, { left: '40%', top: '44%' }, { left: '60%', top: '42%' },
+                { left: '32%', top: '56%' }, { left: '68%', top: '54%' }, { left: '48%', top: '48%' },
+                { left: '52%', top: '46%' }, { left: '38%', top: '38%' }, { left: '62%', top: '35%' }
+              ];
+              
+              return (
+                <div
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    left: positions[i]?.left || '50%',
+                    top: positions[i]?.top || '50%',
+                    width: `${1 + Math.random() * 2}px`,
+                    height: `${1 + Math.random() * 2}px`,
+                    background: colors.freckles || colors.shadow,
+                    opacity: 0.4 + Math.random() * 0.3,
+                    transform: 'translateZ(3px)'
+                  }}
+                />
+              );
+            })}
             
             {/* Eyebrows with 3D depth */}
             <div className="absolute top-12 left-1/2 transform -translate-x-1/2 flex space-x-8">
