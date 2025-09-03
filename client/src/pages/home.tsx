@@ -4,6 +4,7 @@ import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
 import LivingAvatar from "@/components/LivingAvatar";
+import Avatar3D from "@/components/Avatar3D";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
 import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
@@ -38,7 +39,8 @@ export default function Home() {
   const [useVideo, setUseVideo] = useState(false);
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
   const [useInteractiveAvatar, setUseInteractiveAvatar] = useState(false);
-  const [useLivingAvatar, setUseLivingAvatar] = useState(true);
+  const [useLivingAvatar, setUseLivingAvatar] = useState(false);
+  const [use3DAvatar, setUse3DAvatar] = useState(true);
   const [lastGesture, setLastGesture] = useState<GestureType | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
@@ -152,7 +154,15 @@ export default function Home() {
       <div className="flex-1 relative overflow-hidden">
         {/* Dynamic Avatar with Video/Image/Custom */}
         <div className="relative w-full h-full overflow-hidden">
-          {useLivingAvatar ? (
+          {use3DAvatar ? (
+            <Avatar3D
+              avatarState={avatarState}
+              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
+              isSpeaking={isSpeaking}
+              personalityMode={personalitySettings.communicationStyle}
+              onInteraction={(type) => console.log(`3D Avatar interaction: ${type}`)}
+            />
+          ) : useLivingAvatar ? (
             <LivingAvatar
               avatarState={avatarState}
               emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
@@ -260,19 +270,36 @@ export default function Home() {
         </SettingsPanel>
         
         {/* Avatar Mode Toggle Buttons */}
-        <div className="absolute top-4 right-4 z-50 flex space-x-2">
+        <div className="absolute top-4 right-4 z-50 flex space-x-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${use3DAvatar ? 'bg-cyan-500/20 text-cyan-300' : ''}`}
+            onClick={() => {
+              setUse3DAvatar(true);
+              setUseLivingAvatar(false);
+              setUseInteractiveAvatar(false);
+              setUseCustomAvatar(false);
+              setUseVideo(false);
+            }}
+            data-testid="button-toggle-3d"
+            title="3D Interactive Avatar"
+          >
+            <i className="fas fa-cube text-sm"></i>
+          </Button>
           <Button
             variant="ghost"
             size="sm"
             className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useLivingAvatar ? 'bg-pink-500/20 text-pink-300' : ''}`}
             onClick={() => {
               setUseLivingAvatar(true);
+              setUse3DAvatar(false);
               setUseInteractiveAvatar(false);
               setUseCustomAvatar(false);
               setUseVideo(false);
             }}
             data-testid="button-toggle-living"
-            title="Living Avatar (Recommended)"
+            title="Living Avatar"
           >
             <i className="fas fa-smile text-sm"></i>
           </Button>
@@ -282,6 +309,7 @@ export default function Home() {
             className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useInteractiveAvatar ? 'bg-green-500/20 text-green-300' : ''}`}
             onClick={() => {
               setUseInteractiveAvatar(true);
+              setUse3DAvatar(false);
               setUseLivingAvatar(false);
               setUseCustomAvatar(false);
               setUseVideo(false);
@@ -297,6 +325,7 @@ export default function Home() {
             className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useCustomAvatar ? 'bg-purple-500/20 text-purple-300' : ''}`}
             onClick={() => {
               setUseCustomAvatar(true);
+              setUse3DAvatar(false);
               setUseLivingAvatar(false);
               setUseInteractiveAvatar(false);
               setUseVideo(false);
@@ -312,6 +341,7 @@ export default function Home() {
             className="bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
             onClick={() => {
               setUseVideo(true);
+              setUse3DAvatar(false);
               setUseLivingAvatar(false);
               setUseInteractiveAvatar(false);
               setUseCustomAvatar(false);
