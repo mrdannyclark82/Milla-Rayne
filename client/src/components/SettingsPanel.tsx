@@ -361,6 +361,69 @@ export default function SettingsPanel({
                   {getSpeechRateLabel()}
                 </Button>
               </div>
+              
+              {voiceEnabled && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Voice Selection</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-white/30 text-white/70 hover:text-white"
+                      onClick={() => {
+                        const femaleVoices = availableVoices.filter(v => 
+                          v.lang.startsWith('en') && 
+                          (v.name.toLowerCase().includes('female') ||
+                           v.name.toLowerCase().includes('woman') ||
+                           v.name.toLowerCase().includes('zira') ||
+                           v.name.toLowerCase().includes('hazel') ||
+                           v.name.toLowerCase().includes('samantha'))
+                        );
+                        const allEnglishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+                        const voicesToCycle = femaleVoices.length > 0 ? femaleVoices : allEnglishVoices;
+                        
+                        if (voicesToCycle.length === 0) return;
+                        
+                        const currentIndex = selectedVoice ? voicesToCycle.findIndex(v => v.name === selectedVoice.name) : -1;
+                        const nextIndex = (currentIndex + 1) % voicesToCycle.length;
+                        onVoiceChange?.(voicesToCycle[nextIndex]);
+                      }}
+                      data-testid="button-voice-picker"
+                    >
+                      <i className="fas fa-user-circle mr-1"></i>
+                      {getVoiceDisplayName()}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Voice Pitch</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-white/30 text-white/70 hover:text-white"
+                      onClick={handleVoicePitchChange}
+                      data-testid="button-voice-pitch"
+                    >
+                      <i className="fas fa-music mr-1"></i>
+                      {getVoicePitchLabel()}
+                    </Button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/80">Voice Volume</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="border-white/30 text-white/70 hover:text-white"
+                      onClick={handleVoiceVolumeChange}
+                      data-testid="button-voice-volume"
+                    >
+                      <i className="fas fa-volume-up mr-1"></i>
+                      {getVoiceVolumeLabel()}
+                    </Button>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
