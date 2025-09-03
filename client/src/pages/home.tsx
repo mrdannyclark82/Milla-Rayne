@@ -61,7 +61,7 @@ export default function Home() {
   const [backgroundBlur, setBackgroundBlur] = useState(75);
   const [chatTransparency, setChatTransparency] = useState(80);
   const [personalitySettings, setPersonalitySettings] = useState({
-    communicationStyle: 'adaptive' as 'adaptive' | 'formal' | 'casual' | 'friendly',
+    communicationStyle: 'adaptive' as 'adaptive' | 'formal' | 'casual' | 'flirty',
     formalityLevel: 'balanced' as 'formal' | 'balanced' | 'casual',
     responseLength: 'medium' as 'short' | 'medium' | 'long',
     emotionalIntelligence: 'high' as 'low' | 'medium' | 'high'
