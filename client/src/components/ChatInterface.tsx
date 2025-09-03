@@ -15,6 +15,7 @@ import { formatTimeCST } from "@/lib/timeUtils";
 
 interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
+  onSpeakingStateChange?: (isSpeaking: boolean) => void;
   voiceEnabled?: boolean;
   speechRate?: number;
   voicePitch?: number;
@@ -32,6 +33,7 @@ interface ChatInterfaceProps {
 
 export default function ChatInterface({ 
   onAvatarStateChange, 
+  onSpeakingStateChange,
   voiceEnabled = false, 
   speechRate = 1.0,
   voicePitch = 1.1,
@@ -382,6 +384,11 @@ export default function ChatInterface({
       onAvatarStateChange("neutral");
     }
   }, [isListening, isSpeaking, stopSpeaking, onAvatarStateChange]);
+
+  // Update avatar speaking state when voice synthesis state changes
+  useEffect(() => {
+    onSpeakingStateChange?.(isSpeaking);
+  }, [isSpeaking, onSpeakingStateChange]);
 
   // Proactive engagement and break reminders check
   useEffect(() => {

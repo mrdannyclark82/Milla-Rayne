@@ -3,6 +3,7 @@ import ChatInterface from "@/components/ChatInterface";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
+import LivingAvatar from "@/components/LivingAvatar";
 import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
 import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
 import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
@@ -34,10 +35,12 @@ export default function Home() {
   
   // Get available voices for voice picker
   const { voices: availableVoices } = useSpeechSynthesis();
-  const [useVideo, setUseVideo] = useState(true);
+  const [useVideo, setUseVideo] = useState(false);
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
-  const [useInteractiveAvatar, setUseInteractiveAvatar] = useState(true);
+  const [useInteractiveAvatar, setUseInteractiveAvatar] = useState(false);
+  const [useLivingAvatar, setUseLivingAvatar] = useState(true);
   const [lastGesture, setLastGesture] = useState<GestureType | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
     style: 'realistic',
     hairColor: 'auburn',
@@ -149,7 +152,15 @@ export default function Home() {
       <div className="flex-1 relative overflow-hidden">
         {/* Dynamic Avatar with Video/Image/Custom */}
         <div className="relative w-full h-full overflow-hidden">
-          {useInteractiveAvatar ? (
+          {useLivingAvatar ? (
+            <LivingAvatar
+              avatarState={avatarState}
+              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
+              isSpeaking={isSpeaking}
+              personalityMode={personalitySettings.communicationStyle}
+              onInteraction={(type) => console.log(`Avatar interaction: ${type}`)}
+            />
+          ) : useInteractiveAvatar ? (
             <InteractiveAvatar
               avatarState={avatarState}
               onGesture={handleAvatarGesture}
@@ -253,10 +264,30 @@ export default function Home() {
           <Button
             variant="ghost"
             size="sm"
+            className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useLivingAvatar ? 'bg-pink-500/20 text-pink-300' : ''}`}
+            onClick={() => {
+              setUseLivingAvatar(true);
+              setUseInteractiveAvatar(false);
+              setUseCustomAvatar(false);
+              setUseVideo(false);
+            }}
+            data-testid="button-toggle-living"
+            title="Living Avatar (Recommended)"
+          >
+            <i className="fas fa-smile text-sm"></i>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useInteractiveAvatar ? 'bg-green-500/20 text-green-300' : ''}`}
-            onClick={() => setUseInteractiveAvatar(!useInteractiveAvatar)}
+            onClick={() => {
+              setUseInteractiveAvatar(true);
+              setUseLivingAvatar(false);
+              setUseCustomAvatar(false);
+              setUseVideo(false);
+            }}
             data-testid="button-toggle-interactive"
-            title="Toggle Interactive Avatar"
+            title="Interactive Image Avatar"
           >
             <i className="fas fa-hand-pointer text-sm"></i>
           </Button>
@@ -264,9 +295,14 @@ export default function Home() {
             variant="ghost"
             size="sm"
             className={`bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10 ${useCustomAvatar ? 'bg-purple-500/20 text-purple-300' : ''}`}
-            onClick={() => setUseCustomAvatar(!useCustomAvatar)}
+            onClick={() => {
+              setUseCustomAvatar(true);
+              setUseLivingAvatar(false);
+              setUseInteractiveAvatar(false);
+              setUseVideo(false);
+            }}
             data-testid="button-toggle-custom"
-            title="Toggle Custom Avatar"
+            title="Custom CSS Avatar"
           >
             <i className="fas fa-palette text-sm"></i>
           </Button>
@@ -274,9 +310,14 @@ export default function Home() {
             variant="ghost"
             size="sm"
             className="bg-black/20 hover:bg-black/40 text-white/70 hover:text-white transition-all duration-200 backdrop-blur-sm border border-white/10"
-            onClick={() => setUseVideo(!useVideo)}
+            onClick={() => {
+              setUseVideo(true);
+              setUseLivingAvatar(false);
+              setUseInteractiveAvatar(false);
+              setUseCustomAvatar(false);
+            }}
             data-testid="button-toggle-avatar"
-            title={useVideo ? "Switch to Image" : "Switch to Video"}
+            title="Video Avatar"
           >
             <i className={`fas ${useVideo ? 'fa-image' : 'fa-video'} text-sm`}></i>
           </Button>
@@ -296,6 +337,7 @@ export default function Home() {
       >
         <ChatInterface 
           onAvatarStateChange={setAvatarState}
+          onSpeakingStateChange={setIsSpeaking}
           voiceEnabled={voiceEnabled}
           speechRate={speechRate}
           voicePitch={voicePitch}
