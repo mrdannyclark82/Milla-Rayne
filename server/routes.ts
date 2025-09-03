@@ -905,8 +905,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use xAI for better persona adherence and consistency
-    const aiResponse = await generateXAIResponse(enhancedMessage, context);
+    // Use OpenAI for reliable responses (xAI is out of credits)
+    const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {
       reasoning.push("Crafting my response with empathy and understanding");
