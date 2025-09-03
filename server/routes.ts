@@ -905,7 +905,7 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use OpenAI for reliable responses (xAI is out of credits)
+    // Use OpenAI for reliable responses (xAI still showing credit issues)
     const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {

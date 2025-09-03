@@ -41,7 +41,7 @@ export default function Home() {
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
   const [useInteractiveAvatar, setUseInteractiveAvatar] = useState(false);
   const [useLivingAvatar, setUseLivingAvatar] = useState(false);
-  const [use3DAvatar, setUse3DAvatar] = useState(true);
+  const [use3DAvatar, setUse3DAvatar] = useState(false);
   const [lastGesture, setLastGesture] = useState<GestureType | null>(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [avatarSettings, setAvatarSettings] = useState<AvatarSettings>({
