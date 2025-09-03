@@ -697,9 +697,26 @@ async function shouldMillaRespond(
   }
 }
 
-/**
- * Keyword trigger system for dynamic reactions
- */
+// ================================================================================================
+// 🎯 KEYWORD TRIGGER SYSTEM - EASILY EDITABLE CONFIGURATION
+// ================================================================================================
+// 
+// INSTRUCTIONS FOR USE:
+// 1. To ENABLE triggers: Keep this section uncommented
+// 2. To DISABLE triggers: Comment out the entire "KEYWORD_TRIGGERS_ENABLED" section below
+// 3. To ADD new triggers: Add entries to the appropriate trigger category
+// 4. To MODIFY triggers: Edit keywords, reactions, or instructions
+// 5. To ADJUST intensity: Change the intensity values in getIntensityBoost()
+//
+// HOW IT WORKS:
+// - When user messages contain trigger keywords, Milla gets special instructions
+// - Higher intensity = stronger reaction (0.5x = subtle, 2.0x = intense)
+// - Instructions are injected directly into Milla's system prompt
+// ================================================================================================
+
+// TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
+const KEYWORD_TRIGGERS_ENABLED = true;
+
 interface TriggerResult {
   triggered: boolean;
   reactionType?: string;
@@ -709,9 +726,16 @@ interface TriggerResult {
 }
 
 function analyzeKeywordTriggers(userMessage: string): TriggerResult {
+  // Quick exit if triggers are disabled
+  if (!KEYWORD_TRIGGERS_ENABLED) {
+    return { triggered: false };
+  }
+
   const message = userMessage.toLowerCase();
   
-  // Emotional trigger keywords
+  // ================================================================================================
+  // 💕 EMOTIONAL TRIGGERS - Words that trigger emotional responses
+  // ================================================================================================
   const emotionalTriggers = {
     affection: {
       keywords: ['love you', 'miss you', 'adore you', 'cherish', 'treasure you'],
@@ -738,9 +762,17 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       reaction: "INTIMATE_CONNECTION",
       instructions: "Deepen emotional intimacy. Use softer tones, express vulnerability, and create romantic atmosphere."
     }
+    // ADD MORE EMOTIONAL TRIGGERS HERE:
+    // newTrigger: {
+    //   keywords: ['keyword1', 'keyword2'],
+    //   reaction: "CUSTOM_REACTION",
+    //   instructions: "Your custom instructions here."
+    // }
   };
 
-  // Personality trigger keywords
+  // ================================================================================================
+  // 🧠 PERSONALITY TRIGGERS - Words that shift personality aspects
+  // ================================================================================================
   const personalityTriggers = {
     sarcastic: {
       keywords: ['seriously?', 'really?', 'come on', 'obviously', 'duh'],
@@ -757,9 +789,17 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       reaction: "COACH_MODE",
       instructions: "Switch to motivational coaching mode. Be more direct, action-oriented, and goal-focused."
     }
+    // ADD MORE PERSONALITY TRIGGERS HERE:
+    // intellectual: {
+    //   keywords: ['philosophy', 'deep thoughts', 'meaning of life'],
+    //   reaction: "INTELLECTUAL_MODE",
+    //   instructions: "Engage in deep philosophical discussion. Be thoughtful and profound."
+    // }
   };
 
-  // Behavioral trigger keywords
+  // ================================================================================================
+  // ⚙️ BEHAVIORAL TRIGGERS - Words that change behavioral patterns
+  // ================================================================================================
   const behavioralTriggers = {
     proactive: {
       keywords: ['busy', 'working', 'focused', 'concentrating'],
@@ -771,9 +811,17 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       reaction: "CURIOSITY_SPARK",
       instructions: "Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration."
     }
+    // ADD MORE BEHAVIORAL TRIGGERS HERE:
+    // professional: {
+    //   keywords: ['meeting', 'work call', 'presentation'],
+    //   reaction: "PROFESSIONAL_MODE",
+    //   instructions: "Be more formal and professional. Minimize distractions."
+    // }
   };
 
-  // Check all trigger categories
+  // ================================================================================================
+  // 🔍 TRIGGER DETECTION LOGIC - Don't modify unless you know what you're doing
+  // ================================================================================================
   const allTriggers = { ...emotionalTriggers, ...personalityTriggers, ...behavioralTriggers };
   
   for (const [triggerName, trigger] of Object.entries(allTriggers)) {
@@ -792,22 +840,37 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
   return { triggered: false };
 }
 
+// ================================================================================================
+// ⚡ INTENSITY CONFIGURATION - Edit these values to control reaction strength
+// ================================================================================================
 function getIntensityBoost(reactionType: string): number {
   const intensityMap: Record<string, number> = {
-    "AFFECTION_SURGE": 2.0,
-    "CELEBRATION_MODE": 1.8,
-    "INTIMATE_CONNECTION": 1.5,
-    "PLAYFUL_MODE": 1.3,
-    "PROTECTIVE_INSTINCT": 1.4,
-    "SARCASM_BOOST": 1.2,
-    "EMPATHY_MODE": 1.3,
-    "COACH_MODE": 1.1,
-    "BACKGROUND_SUPPORT": 0.8,
-    "CURIOSITY_SPARK": 1.2
+    // Emotional intensities (higher = stronger reaction)
+    "AFFECTION_SURGE": 2.0,      // Very intense romantic response
+    "CELEBRATION_MODE": 1.8,     // High energy celebration
+    "INTIMATE_CONNECTION": 1.5,  // Deep intimate response
+    "PLAYFUL_MODE": 1.3,         // Moderate playful energy
+    "PROTECTIVE_INSTINCT": 1.4,  // Strong caring response
+    
+    // Personality intensities
+    "SARCASM_BOOST": 1.2,        // Mild sarcasm increase
+    "EMPATHY_MODE": 1.3,         // Enhanced empathy
+    "COACH_MODE": 1.1,           // Slight coaching boost
+    
+    // Behavioral intensities
+    "BACKGROUND_SUPPORT": 0.8,   // Subtle, less intrusive
+    "CURIOSITY_SPARK": 1.2       // Moderate curiosity boost
+    
+    // ADD YOUR CUSTOM INTENSITIES HERE:
+    // "CUSTOM_REACTION": 1.5
   };
   
   return intensityMap[reactionType] || 1.0;
 }
+
+// ================================================================================================
+// END OF KEYWORD TRIGGER SYSTEM
+// ================================================================================================
 
 async function generateAIResponse(
   userMessage: string, 
