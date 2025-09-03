@@ -71,9 +71,9 @@ export default function Home() {
   };
   
   // Voice control handlers
-  const handleVoiceChange = (voiceName: string) => {
-    const voice = availableVoices.find(v => v.name === voiceName);
-    setSelectedVoice(voice || null);
+  const handleVoiceChange = (voice: SpeechSynthesisVoice | null) => {
+    // Voice is passed directly
+    setSelectedVoice(voice);
   };
   
   const handleVoicePitchChange = () => {
@@ -189,12 +189,9 @@ export default function Home() {
           voiceVolume={voiceVolume}
           selectedVoice={selectedVoice}
           availableVoices={availableVoices}
-          handleVoiceChange={handleVoiceChange}
-          handleVoicePitchChange={handleVoicePitchChange}
-          handleVoiceVolumeChange={handleVoiceVolumeChange}
-          getVoiceDisplayName={getVoiceDisplayName}
-          getVoicePitchLabel={getVoicePitchLabel}
-          getVoiceVolumeLabel={getVoiceVolumeLabel}
+          onVoiceChange={handleVoiceChange}
+          onVoicePitchChange={handleVoicePitchChange}
+          onVoiceVolumeChange={handleVoiceVolumeChange}
           avatarSettings={avatarSettings}
           onAvatarSettingsChange={setAvatarSettings}
           theme={theme}
@@ -256,6 +253,9 @@ export default function Home() {
           onAvatarStateChange={setAvatarState}
           voiceEnabled={voiceEnabled}
           speechRate={speechRate}
+          voicePitch={voicePitch}
+          voiceVolume={voiceVolume}
+          selectedVoice={selectedVoice}
           theme={theme}
           chatTransparency={chatTransparency}
           personalitySettings={personalitySettings}
