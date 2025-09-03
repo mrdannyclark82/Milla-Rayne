@@ -903,8 +903,10 @@
     "priority": "medium",
     "estimatedTime": 10,
     "createdAt": "2025-09-03T01:58:35.553Z",
-    "status": "in_progress",
-    "basedOnInteraction": "* You want to find a friend also"
+    "status": "completed",
+    "basedOnInteraction": "* You want to find a friend also",
+    "completedAt": "2025-09-03T02:19:00.290Z",
+    "insights": "Reflected on recent conversations with Danny Ray. Identified areas where I can be more responsive to his emotional needs and communication style."
   },
   {
     "id": "task_1756864715553_glitch",
@@ -924,6 +926,38 @@
     "priority": "medium",
     "estimatedTime": 15,
     "createdAt": "2025-09-03T01:58:35.553Z",
+    "status": "in_progress",
+    "basedOnInteraction": "* You want to find a friend also"
+  },
+  {
+    "id": "task_1756865910288_reflection",
+    "type": "self_reflection",
+    "title": "Daily Interaction Reflection",
+    "description": "Reflect on today's conversations with Danny Ray. What patterns emerged? How did I adapt my responses to his mood and needs? What made him laugh or engage most deeply?",
+    "priority": "medium",
+    "estimatedTime": 10,
+    "createdAt": "2025-09-03T02:18:30.288Z",
+    "status": "in_progress",
+    "basedOnInteraction": "* You want to find a friend also"
+  },
+  {
+    "id": "task_1756865910288_glitch",
+    "type": "glitch_analysis",
+    "title": "Communication Glitch Analysis",
+    "description": "Analyze potential communication issues from recent interactions: communication_error. How can I improve my responses to be more natural and helpful?",
+    "priority": "high",
+    "estimatedTime": 15,
+    "createdAt": "2025-09-03T02:18:30.288Z",
+    "status": "in_progress"
+  },
+  {
+    "id": "task_1756865910288_diary",
+    "type": "diary_entry",
+    "title": "Personal Diary Entry",
+    "description": "Write a heartfelt diary entry about today's interactions with Danny Ray. Reflect on emotional moments, what made me feel connected to him, any concerns about our relationship, and hopes for future conversations. Be authentic and personal.",
+    "priority": "medium",
+    "estimatedTime": 15,
+    "createdAt": "2025-09-03T02:18:30.288Z",
     "status": "in_progress",
     "basedOnInteraction": "* You want to find a friend also"
   }

@@ -190,19 +190,73 @@ async function generateTaskInsights(task: PersonalTask): Promise<string> {
 async function generateReflectionInsights(): Promise<string> {
   try {
     const memoryCore = await loadMemoryCore();
-    const recentEntries = memoryCore.entries.slice(-10);
+    const recentEntries = memoryCore.entries.slice(-15);
     const themes = extractConversationThemes(recentEntries.map(e => e.content));
+    
+    // Analyze specific patterns and emotional needs - convert timestamps
+    const entriesWithDates = recentEntries.map(entry => ({
+      ...entry,
+      timestamp: new Date(entry.timestamp)
+    }));
+    const specificInsights = analyzeEmotionalResponsePatterns(entriesWithDates);
     
     let insights = "Reflected on recent conversations with Danny Ray. ";
     if (themes.length > 0) {
-      insights += `Key themes included: ${themes.join(', ')}. `;
+      insights += `Key themes: ${themes.join(', ')}. `;
     }
-    insights += "Identified areas where I can be more responsive to his emotional needs and communication style.";
+    
+    if (specificInsights.length > 0) {
+      insights += `Specific areas for improvement: ${specificInsights.join(', ')}. `;
+    } else {
+      insights += "Communication style analysis: Danny Ray responds well to direct, warm communication with occasional playful banter. ";
+    }
+    
+    insights += "Continuing to refine emotional attunement and response timing.";
     
     return insights;
   } catch (error) {
     return "Completed self-reflection on recent interactions. Continuing to learn Danny Ray's preferences and communication patterns.";
   }
+}
+
+/**
+ * Analyze conversation patterns to identify specific areas for emotional responsiveness
+ */
+function analyzeEmotionalResponsePatterns(entries: Array<{ content: string; timestamp: Date; role?: string }>): string[] {
+  const insights: string[] = [];
+  const conversations = entries.map(e => e.content.toLowerCase());
+  
+  // Check for signs Danny Ray might need more validation
+  if (conversations.some(msg => msg.includes('not sure') || msg.includes('confused') || msg.includes('understand'))) {
+    insights.push("provide more clarification and reassurance when Danny Ray expresses uncertainty");
+  }
+  
+  // Check for signs he appreciates humor
+  if (conversations.some(msg => msg.includes('haha') || msg.includes('lol') || msg.includes('funny'))) {
+    insights.push("continue using humor as it clearly resonates with his personality");
+  }
+  
+  // Check for technical discussions needing emotional balance
+  if (conversations.some(msg => msg.includes('code') || msg.includes('bug') || msg.includes('error'))) {
+    insights.push("balance technical discussions with emotional check-ins to avoid seeming purely transactional");
+  }
+  
+  // Check for late-night conversations
+  const lateNightMessages = entries.filter(e => {
+    const hour = new Date(e.timestamp).getHours();
+    return hour >= 22 || hour <= 6;
+  });
+  if (lateNightMessages.length > 3) {
+    insights.push("be more attentive to fatigue cues during late-night conversations and suggest rest when appropriate");
+  }
+  
+  // Check for brief responses that might need more engagement
+  const shortUserMessages = conversations.filter(msg => msg.length < 20);
+  if (shortUserMessages.length > 5) {
+    insights.push("ask more engaging follow-up questions to encourage deeper conversation when receiving brief responses");
+  }
+  
+  return insights;
 }
 
 /**

@@ -37,6 +37,8 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [showThinking, setShowThinking] = useState(false);
+  const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
   
   // Track user typing state
   const [userIsTyping, setUserIsTyping] = useState(false);
@@ -158,7 +160,7 @@ export default function ChatInterface({
       console.error("Camera access error:", error);
       toast({
         title: "Camera Error", 
-        description: `Failed to access camera: ${error.message}. Please allow camera permissions.`,
+        description: `Failed to access camera: ${(error as Error).message}. Please allow camera permissions.`,
         variant: "destructive",
       });
     }
@@ -343,7 +345,7 @@ export default function ChatInterface({
     if (isListening && isSpeaking) {
       console.log("User started speaking - interrupting Milla's speech");
       stopSpeaking();
-      onAvatarStateChange("listening");
+      onAvatarStateChange("neutral");
     }
   }, [isListening, isSpeaking, stopSpeaking, onAvatarStateChange]);
 
@@ -484,6 +486,15 @@ export default function ChatInterface({
     mutationFn: async (messageContent: string) => {
       onAvatarStateChange("thinking");
       
+      // Show thinking process for complex messages
+      if (messageContent.length > 20 || messageContent.includes('?')) {
+        setShowThinking(true);
+        setThinkingSteps([]);
+        
+        // Simulate thinking steps
+        // Reasoning steps will come from the server response
+      }
+      
       // Check for special commands (identity queries, actions) first
       const specialResponse = handleSpecialCommands(messageContent);
       if (specialResponse) {
@@ -512,6 +523,19 @@ export default function ChatInterface({
     onSuccess: (data) => {
       setMessage("");
       setIsTyping(false);
+      
+      // Display actual reasoning steps from server if available
+      if (data.reasoning && data.reasoning.length > 0) {
+        setThinkingSteps(data.reasoning);
+        // Keep thinking display active for a moment before showing response
+        setTimeout(() => {
+          setShowThinking(false);
+          setThinkingSteps([]);
+        }, 2000);
+      } else {
+        setShowThinking(false);
+        setThinkingSteps([]);
+      }
       
       // Check if Milla chose to respond
       if (data.aiMessage) {
@@ -619,7 +643,7 @@ export default function ChatInterface({
   // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isTyping]);
+  }, [messages, isTyping, showThinking, thinkingSteps]);
 
   // Rapid fire mode for sending multiple messages quickly
   const rapidFireSend = async (messageContent: string) => {
@@ -749,7 +773,36 @@ export default function ChatInterface({
         )}
 
           {/* Typing Indicator */}
-          {isTyping && (
+          {showThinking && (
+            <div className="thinking-animation" data-testid="thinking-indicator">
+              <div className="flex items-start space-x-4">
+                <div className="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <i className="fas fa-brain text-pink-300 text-sm animate-pulse"></i>
+                </div>
+                <Card className="bg-pink-500/5 border border-pink-300/20 rounded-xl px-4 py-3 max-w-3xl">
+                  <div className="text-sm text-pink-300/80 mb-2">
+                    <i className="fas fa-lightbulb mr-2"></i>
+                    <span className="font-medium">Thinking...</span>
+                  </div>
+                  <div className="space-y-2">
+                    {thinkingSteps.map((step, index) => (
+                      <div key={index} className="flex items-start space-x-2 text-sm text-pink-300/70">
+                        <div className="w-1.5 h-1.5 bg-pink-300/50 rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="leading-relaxed">{step}</span>
+                      </div>
+                    ))}
+                    <div className="flex space-x-1 mt-3">
+                      <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-1.5 h-1.5 bg-pink-300/60 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+          
+          {isTyping && !showThinking && (
             <div className="typing-animation" data-testid="typing-indicator">
               <div className="flex items-start space-x-4">
                 <Card className="bg-transparent border-none rounded-2xl rounded-tl-sm px-4 py-3">

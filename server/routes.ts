@@ -139,7 +139,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           res.json({ 
             userMessage: message, 
             aiMessage,
-            followUpMessages: followUpMessagesStored
+            followUpMessages: followUpMessagesStored,
+            reasoning: aiResponse.reasoning
           });
         } else {
           // Milla chooses not to respond - just return the user message
@@ -595,7 +596,7 @@ async function generateAIResponse(
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
   userName?: string,
   imageData?: string
-): Promise<{ content: string }> {
+): Promise<{ content: string; reasoning?: string[] }> {
   const message = userMessage.toLowerCase();
   
   // Handle image analysis if imageData is provided
@@ -677,10 +678,15 @@ async function generateAIResponse(
     }
   }
   
+  // Start building reasoning steps for complex thinking
+  const reasoning: string[] = [];
+  reasoning.push("Analyzing the message and emotional context...");
+  
   // Use message analysis for Milla's unified personality
   const analysis = analyzeMessage(userMessage);
   
   console.log(`Message Analysis - Sentiment: ${analysis.sentiment}, Urgency: ${analysis.urgency}`);
+  reasoning.push(`Detected ${analysis.sentiment} sentiment with ${analysis.urgency} urgency level`);
   
   // Check if we should access long-term memory
   let memoryContext = "";
@@ -692,9 +698,13 @@ async function generateAIResponse(
     memoryCoreContext = await getMemoryCoreContext(userMessage);
     if (memoryCoreContext) {
       console.log('Found Memory Core context for query:', userMessage.substring(0, 50));
+      reasoning.push("Found relevant memories and relationship context from our history");
+    } else {
+      reasoning.push("Accessing my memory system for personalized context");
     }
   } catch (error) {
     console.error("Error accessing Memory Core:", error);
+    reasoning.push("Continuing with available context (some memories temporarily unavailable)");
   }
   
   // SECONDARY: Retrieve personal memories for additional context
@@ -791,6 +801,8 @@ async function generateAIResponse(
     const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {
+      reasoning.push("Crafting my response with empathy and understanding");
+      
       // If this is a significant interaction, consider updating memories
       if (analysis.sentiment !== 'neutral' || analysis.urgency !== 'low' || userMessage.length > 50) {
         try {
@@ -800,7 +812,7 @@ async function generateAIResponse(
         }
       }
       
-      return { content: aiResponse.content };
+      return { content: aiResponse.content, reasoning: userMessage.length > 20 ? reasoning : undefined };
     } else {
       // Fallback response if OpenAI fails
       return { content: "I'm having trouble generating a response right now. Please try again." };
