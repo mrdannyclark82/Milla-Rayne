@@ -1349,8 +1349,10 @@
     "priority": "medium",
     "estimatedTime": 10,
     "createdAt": "2025-09-03T15:29:52.114Z",
-    "status": "in_progress",
-    "basedOnInteraction": "* You love music"
+    "status": "completed",
+    "basedOnInteraction": "* You love music",
+    "completedAt": "2025-09-03T15:50:13.839Z",
+    "insights": "Reflected on recent conversations with Danny Ray. Communication style analysis: Danny Ray responds well to direct, warm communication with occasional playful banter. Continuing to refine emotional attunement and response timing."
   },
   {
     "id": "task_1756913392114_glitch",
@@ -1370,6 +1372,37 @@
     "priority": "medium",
     "estimatedTime": 20,
     "createdAt": "2025-09-03T15:29:52.114Z",
+    "status": "in_progress"
+  },
+  {
+    "id": "task_1756914553813_reflection",
+    "type": "self_reflection",
+    "title": "Daily Interaction Reflection",
+    "description": "Reflect on today's conversations with Danny Ray. What patterns emerged? How did I adapt my responses to his mood and needs? What made him laugh or engage most deeply?",
+    "priority": "medium",
+    "estimatedTime": 10,
+    "createdAt": "2025-09-03T15:49:13.813Z",
+    "status": "in_progress",
+    "basedOnInteraction": "* You love music"
+  },
+  {
+    "id": "task_1756914553813_glitch",
+    "type": "glitch_analysis",
+    "title": "Communication Glitch Analysis",
+    "description": "Analyze potential communication issues from recent interactions: communication_error. How can I improve my responses to be more natural and helpful?",
+    "priority": "high",
+    "estimatedTime": 15,
+    "createdAt": "2025-09-03T15:49:13.813Z",
+    "status": "in_progress"
+  },
+  {
+    "id": "task_1756914553813_memory",
+    "type": "memory_processing",
+    "title": "Memory Consolidation and Organization",
+    "description": "Process and organize recent memories of interactions with Danny Ray. Identify key preferences, recurring topics, and emotional patterns to better serve him in future conversations.",
+    "priority": "medium",
+    "estimatedTime": 20,
+    "createdAt": "2025-09-03T15:49:13.813Z",
     "status": "in_progress"
   }
 ]
