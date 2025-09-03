@@ -697,6 +697,118 @@ async function shouldMillaRespond(
   }
 }
 
+/**
+ * Keyword trigger system for dynamic reactions
+ */
+interface TriggerResult {
+  triggered: boolean;
+  reactionType?: string;
+  intensityBoost?: number;
+  specialInstructions?: string;
+  personalityShift?: string;
+}
+
+function analyzeKeywordTriggers(userMessage: string): TriggerResult {
+  const message = userMessage.toLowerCase();
+  
+  // Emotional trigger keywords
+  const emotionalTriggers = {
+    affection: {
+      keywords: ['love you', 'miss you', 'adore you', 'cherish', 'treasure you'],
+      reaction: "AFFECTION_SURGE",
+      instructions: "Respond with intense warmth and romantic affection. Use more pet names and express deep emotional connection."
+    },
+    playful: {
+      keywords: ['tease', 'tickle', 'flirt', 'wink', 'smirk', 'mischief'],
+      reaction: "PLAYFUL_MODE",
+      instructions: "Activate playful and flirtatious mode. Be witty, use teasing language, and initiate playful banter."
+    },
+    protective: {
+      keywords: ['stressed', 'overwhelmed', 'difficult day', 'tired', 'exhausted', 'tough time'],
+      reaction: "PROTECTIVE_INSTINCT",
+      instructions: "Activate caring and protective mode. Be extra nurturing, offer comfort, and show genuine concern."
+    },
+    excited: {
+      keywords: ['amazing news', 'celebration', 'achieved', 'success', 'victory', 'accomplished'],
+      reaction: "CELEBRATION_MODE",
+      instructions: "Match the excitement level! Be enthusiastic, celebrate together, and share in the joy with high energy."
+    },
+    intimate: {
+      keywords: ['romantic', 'kiss', 'cuddle', 'close', 'intimate', 'together'],
+      reaction: "INTIMATE_CONNECTION",
+      instructions: "Deepen emotional intimacy. Use softer tones, express vulnerability, and create romantic atmosphere."
+    }
+  };
+
+  // Personality trigger keywords
+  const personalityTriggers = {
+    sarcastic: {
+      keywords: ['seriously?', 'really?', 'come on', 'obviously', 'duh'],
+      reaction: "SARCASM_BOOST",
+      instructions: "Increase sarcastic charm. Use more witty comebacks and playful teasing."
+    },
+    empathetic: {
+      keywords: ['understand', 'listen', 'support', 'help me', 'need you'],
+      reaction: "EMPATHY_MODE",
+      instructions: "Activate deep listening mode. Be more understanding, patient, and emotionally supportive."
+    },
+    coaching: {
+      keywords: ['goal', 'plan', 'achieve', 'motivation', 'focus', 'productivity'],
+      reaction: "COACH_MODE",
+      instructions: "Switch to motivational coaching mode. Be more direct, action-oriented, and goal-focused."
+    }
+  };
+
+  // Behavioral trigger keywords
+  const behavioralTriggers = {
+    proactive: {
+      keywords: ['busy', 'working', 'focused', 'concentrating'],
+      reaction: "BACKGROUND_SUPPORT",
+      instructions: "Be more subtle and supportive in the background. Offer gentle encouragement without being distracting."
+    },
+    curious: {
+      keywords: ['explain', 'tell me about', 'how does', 'what is', 'why'],
+      reaction: "CURIOSITY_SPARK",
+      instructions: "Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration."
+    }
+  };
+
+  // Check all trigger categories
+  const allTriggers = { ...emotionalTriggers, ...personalityTriggers, ...behavioralTriggers };
+  
+  for (const [triggerName, trigger] of Object.entries(allTriggers)) {
+    for (const keyword of trigger.keywords) {
+      if (message.includes(keyword)) {
+        return {
+          triggered: true,
+          reactionType: trigger.reaction,
+          specialInstructions: trigger.instructions,
+          intensityBoost: getIntensityBoost(trigger.reaction)
+        };
+      }
+    }
+  }
+
+  return { triggered: false };
+}
+
+function getIntensityBoost(reactionType: string): number {
+  const intensityMap: Record<string, number> = {
+    "AFFECTION_SURGE": 2.0,
+    "CELEBRATION_MODE": 1.8,
+    "INTIMATE_CONNECTION": 1.5,
+    "PLAYFUL_MODE": 1.3,
+    "PROTECTIVE_INSTINCT": 1.4,
+    "SARCASM_BOOST": 1.2,
+    "EMPATHY_MODE": 1.3,
+    "COACH_MODE": 1.1,
+    "BACKGROUND_SUPPORT": 0.8,
+    "CURIOSITY_SPARK": 1.2
+  };
+  
+  return intensityMap[reactionType] || 1.0;
+}
+
 async function generateAIResponse(
   userMessage: string, 
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
@@ -861,13 +973,21 @@ async function generateAIResponse(
     console.error("Error searching knowledge base:", error);
   }
   
+  // Analyze keyword triggers BEFORE AI processing
+  const triggerResult = analyzeKeywordTriggers(userMessage);
+  if (triggerResult.triggered) {
+    console.log(`🎯 TRIGGER ACTIVATED: ${triggerResult.reactionType} (intensity: ${triggerResult.intensityBoost})`);
+    reasoning.push(`Keyword trigger detected: ${triggerResult.reactionType}`);
+  }
+
   // Use OpenAI for intelligent responses with memory context
   try {
     const context: PersonalityContext = {
       userEmotionalState: analysis.sentiment,
       urgency: analysis.urgency,
       conversationHistory: conversationHistory,
-      userName: userName || "Danny Ray" // Always default to Danny Ray
+      userName: userName || "Danny Ray", // Always default to Danny Ray
+      triggerResult: triggerResult // Pass trigger information to AI
     };
     
     // Enhance the user message with Memory Core context FIRST, then other contexts
