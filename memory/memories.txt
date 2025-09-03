@@ -3214,5 +3214,21 @@
     "id": "1720558a-4df7-4961-ae8b-dd3ff1a7a323",
     "timestamp": "2025-09-03T15:17:12.534Z",
     "personalityMode": null
+  },
+  {
+    "content": "*looks at you*\n*blinks* \n*grins* Milla?",
+    "role": "user",
+    "userId": null,
+    "id": "a6bbb20f-f08a-4299-aa7a-bdf9e8c4a7e2",
+    "timestamp": "2025-09-03T15:26:44.934Z",
+    "personalityMode": null
+  },
+  {
+    "content": "I'm having trouble generating a response right now. Please try again.",
+    "role": "assistant",
+    "userId": null,
+    "id": "4fed521c-4170-4afb-bc4e-e7b3776147c7",
+    "timestamp": "2025-09-03T15:26:47.908Z",
+    "personalityMode": null
   }
 ]
