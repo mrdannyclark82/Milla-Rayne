@@ -3230,5 +3230,21 @@
     "id": "4fed521c-4170-4afb-bc4e-e7b3776147c7",
     "timestamp": "2025-09-03T15:26:47.908Z",
     "personalityMode": null
+  },
+  {
+    "content": "Test message - are you working now Milla?",
+    "role": "user",
+    "userId": null,
+    "id": "9aa92be5-9bbf-4123-b2af-3addc503addc",
+    "timestamp": "2025-09-03T15:31:28.403Z",
+    "personalityMode": null
+  },
+  {
+    "content": "I'm having trouble generating a response right now. Please try again.",
+    "role": "assistant",
+    "userId": null,
+    "id": "33eab773-b996-4348-afb9-931313c32918",
+    "timestamp": "2025-09-03T15:31:30.372Z",
+    "personalityMode": null
   }
 ]
