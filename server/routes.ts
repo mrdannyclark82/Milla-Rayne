@@ -277,54 +277,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Personal Task Management endpoints
-  app.get("/api/personal-tasks", async (req, res) => {
-    try {
-      const tasks = getPersonalTasks();
-      res.json({ tasks, success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch personal tasks" });
-    }
-  });
-
-  app.get("/api/task-summary", async (req, res) => {
-    try {
-      const summary = getTaskSummary();
-      res.json({ summary, success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch task summary" });
-    }
-  });
-
-  app.post("/api/personal-tasks/:taskId/start", async (req, res) => {
-    try {
-      const { taskId } = req.params;
-      const success = await startTask(taskId);
-      res.json({ success });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to start task" });
-    }
-  });
-
-  app.post("/api/personal-tasks/:taskId/complete", async (req, res) => {
-    try {
-      const { taskId } = req.params;
-      const { insights } = req.body;
-      const success = await completeTask(taskId, insights || "");
-      res.json({ success });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to complete task" });
-    }
-  });
-
-  app.post("/api/generate-tasks", async (req, res) => {
-    try {
-      await generatePersonalTasksIfNeeded();
-      res.json({ success: true });
-    } catch (error) {
-      res.status(500).json({ message: "Failed to generate tasks" });
-    }
-  });
+  // REMOVED - Personal Task Management endpoints (user rarely used them)
+  // app.get("/api/personal-tasks", async (req, res) => { ... });
+  // app.get("/api/task-summary", async (req, res) => { ... });  
+  // app.post("/api/personal-tasks/:taskId/start", async (req, res) => { ... });
+  // app.post("/api/personal-tasks/:taskId/complete", async (req, res) => { ... });
+  // app.post("/api/generate-tasks", async (req, res) => { ... });
 
   // Milla's mood endpoint
   app.get("/api/milla-mood", async (req, res) => {
@@ -643,7 +601,7 @@ async function shouldMillaRespond(
 // ================================================================================================
 
 // TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
-const KEYWORD_TRIGGERS_ENABLED = false; // DISABLED for performance
+const KEYWORD_TRIGGERS_ENABLED = true; // RE-ENABLED - lightweight personality system
 
 interface TriggerResult {
   triggered: boolean;

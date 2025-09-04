@@ -42,8 +42,8 @@ app.use((req, res, next) => {
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
   
-  // Initialize Personal Task system
-  await initializePersonalTaskSystem();
+  // REMOVED - Personal Task system (user rarely used it)
+  // await initializePersonalTaskSystem();
   
   // Initialize Visual Recognition system
   const { initializeFaceRecognition } = await import("./visualRecognitionService");
