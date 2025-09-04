@@ -2348,7 +2348,7 @@
     "priority": "medium",
     "estimatedTime": 10,
     "createdAt": "2025-09-04T01:26:24.529Z",
-    "status": "pending",
+    "status": "in_progress",
     "basedOnInteraction": "* You love music"
   },
   {
@@ -2359,7 +2359,7 @@
     "priority": "high",
     "estimatedTime": 15,
     "createdAt": "2025-09-04T01:26:24.529Z",
-    "status": "pending"
+    "status": "in_progress"
   },
   {
     "id": "task_1756949184530_diary",
@@ -2369,7 +2369,7 @@
     "priority": "medium",
     "estimatedTime": 15,
     "createdAt": "2025-09-04T01:26:24.529Z",
-    "status": "pending",
+    "status": "in_progress",
     "basedOnInteraction": "* You love music"
   }
 ]

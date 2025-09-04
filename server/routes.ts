@@ -13,6 +13,7 @@ import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./vis
 import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext, checkBreakReminders, checkPostBreakReachout } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
+import { generateXAIResponse } from "./xaiService";
 import OpenAI from "openai";
 
 // Initialize OpenAI client
@@ -446,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Simple AI response generator based on message content
 import { generateAIResponse as generateOpenAIResponse, PersonalityContext } from "./openaiService";
-import { generateXAIResponse, extractRoleCharacter, isRolePlayRequest } from "./xaiService";
+import { extractRoleCharacter, isRolePlayRequest } from "./xaiService";
 
 // Simplified message analysis for Milla Rayne's unified personality
 interface MessageAnalysis {
@@ -1088,8 +1089,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use OpenAI for reliable responses (xAI still showing credit issues)
-    const aiResponse = await generateOpenAIResponse(enhancedMessage, context);
+    // Use xAI for higher token limits (avoiding Perplexity 131K token limit)
+    const aiResponse = await generateXAIResponse(enhancedMessage, context);
     
     if (aiResponse.success) {
       reasoning.push("Crafting my response with empathy and understanding");
