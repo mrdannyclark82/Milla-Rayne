@@ -70,7 +70,7 @@ export async function generateXAIResponse(
 
     // Add conversation history if available - ensure proper alternation
     if (context.conversationHistory) {
-      const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
+      const recentHistory = context.conversationHistory.slice(-3); // Last 3 messages for context to save tokens
       
       // Filter and structure messages to ensure proper alternation
       const validMessages = recentHistory.filter(msg => 

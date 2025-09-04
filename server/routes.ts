@@ -1057,32 +1057,50 @@ async function generateAIResponse(
     // Enhance the user message with Memory Core context FIRST, then other contexts
     let enhancedMessage = userMessage;
     
-    // Build comprehensive context for Milla
+    // Build comprehensive context for Milla with token limits
     let contextualInfo = "";
+    const maxContextLength = 50000; // Limit context to ~50K chars to prevent token issues
     
     if (memoryCoreContext) {
-      contextualInfo += `IMPORTANT - Your Relationship History with ${userName}: ${memoryCoreContext}\n
+      // Truncate Memory Core context if it's too long
+      const truncatedMemoryCore = memoryCoreContext.length > 30000 
+        ? memoryCoreContext.substring(0, 30000) + "...[context truncated for performance]"
+        : memoryCoreContext;
+      
+      contextualInfo += `IMPORTANT - Your Relationship History with ${userName}: ${truncatedMemoryCore}\n
       Remember: You know ${userName} intimately. Reference specific memories, shared experiences, and ongoing conversations from your history together. This context should deeply influence how you respond.\n`;
     }
     
-    if (visualContext) {
+    if (visualContext && contextualInfo.length < maxContextLength) {
       contextualInfo += `Visual Context: ${visualContext}\n`;
     }
     
-    if (emotionalContext) {
+    if (emotionalContext && contextualInfo.length < maxContextLength) {
       contextualInfo += `Emotional Context: ${emotionalContext}\n`;
     }
     
-    if (environmentalContext) {
+    if (environmentalContext && contextualInfo.length < maxContextLength) {
       contextualInfo += `Environmental Context: ${environmentalContext}\n`;
     }
     
-    if (memoryContext) {
-      contextualInfo += memoryContext;
+    // Skip memory and knowledge context if we're already at the limit
+    if (memoryContext && contextualInfo.length < maxContextLength - 10000) {
+      const truncatedMemory = memoryContext.length > 10000 
+        ? memoryContext.substring(0, 10000) + "...[truncated]"
+        : memoryContext;
+      contextualInfo += truncatedMemory;
     }
     
-    if (knowledgeContext) {
-      contextualInfo += knowledgeContext;
+    if (knowledgeContext && contextualInfo.length < maxContextLength - 5000) {
+      const truncatedKnowledge = knowledgeContext.length > 5000 
+        ? knowledgeContext.substring(0, 5000) + "...[truncated]"
+        : knowledgeContext;
+      contextualInfo += truncatedKnowledge;
+    }
+    
+    // Final safety check - truncate if still too long
+    if (contextualInfo.length > maxContextLength) {
+      contextualInfo = contextualInfo.substring(0, maxContextLength) + "...[context truncated to fit token limits]";
     }
     
     if (contextualInfo) {
