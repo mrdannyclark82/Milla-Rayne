@@ -601,7 +601,7 @@ async function shouldMillaRespond(
 // ================================================================================================
 
 // TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
-const KEYWORD_TRIGGERS_ENABLED = true; // RE-ENABLED - lightweight personality system
+const KEYWORD_TRIGGERS_ENABLED = false; // DISABLED - causing lag and repetitive responses
 
 interface TriggerResult {
   triggered: boolean;
