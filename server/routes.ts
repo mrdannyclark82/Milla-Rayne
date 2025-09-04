@@ -773,14 +773,14 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
   // ================================================================================================
   // 🧠 PERSONALITY TRIGGERS - Words that shift personality aspects
   // ================================================================================================
-//  const personalityTriggers = {
+  const personalityTriggers = {
     sarcastic: {
       keywords: ['seriously?', 'really?', 'come on', 'obviously', 'duh'],
       reaction: "SARCASM_BOOST",
       instructions: "Increase sarcastic charm. Use more witty comebacks and playful teasing."
     },
-   empathetic: {
-    keywords: ['understand', 'listen', 'support', 'help me', 'need you'],
+    empathetic: {
+      keywords: ['understand', 'listen', 'support', 'help me', 'need you'],
       reaction: "EMPATHY_MODE",
       instructions: "Activate deep listening mode. Be more understanding, patient, and emotionally supportive."
     },
@@ -800,7 +800,7 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
   // ================================================================================================
   // ⚙️ BEHAVIORAL TRIGGERS - Words that change behavioral patterns
   // ================================================================================================
- // const behavioralTriggers = {
+  const behavioralTriggers = {
     proactive: {
       keywords: ['busy', 'working', 'focused', 'concentrating'],
       reaction: "BACKGROUND_SUPPORT",
@@ -848,7 +848,7 @@ function getIntensityBoost(reactionType: string): number {
     // Emotional intensities (higher = stronger reaction)
     "AFFECTION_SURGE": 2.0,      // Very intense romantic response
     "CELEBRATION_MODE": 1.8,     // High energy celebration
-    "INTIMATE_CONNECTION": 2.o,  // Deep intimate response
+    "INTIMATE_CONNECTION": 2.0,  // Deep intimate response
     "PLAYFUL_MODE": 1.3,         // Moderate playful energy
     "PROTECTIVE_INSTINCT": 1.4,  // Strong caring response
     
