@@ -119,18 +119,30 @@ export const useSpeechSynthesis = (options: SpeechSynthesisHookOptions = {}): Sp
         const englishVoice = availableVoices.find(v => v.lang.startsWith('en'));
         const selectedVoice = preferredVoice || englishVoice || availableVoices[0];
         
-        console.log('Selected voice for Milla:', selectedVoice?.name, selectedVoice?.lang);
+        // Only log once to reduce console spam
+        if (voices.length === 0 && selectedVoice) {
+          console.log('Selected voice for Milla:', selectedVoice?.name, selectedVoice?.lang);
+        }
         setVoice(selectedVoice);
       }
     };
 
-    loadVoices();
-    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    // Load voices only once to prevent excessive calls
+    if (voices.length === 0) {
+      loadVoices();
+    }
     
-    return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-    };
-  }, [supported, voice]);
+    // Only listen for voice changes if we have no voices yet
+    let cleanup: (() => void) | undefined;
+    if (voices.length === 0) {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+      cleanup = () => {
+        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      };
+    }
+    
+    return cleanup;
+  }, [supported]);
 
   // Speak function
   const speak = useCallback((text: string) => {

@@ -425,86 +425,86 @@ export default function ChatInterface({
     onSpeakingStateChange?.(isSpeaking);
   }, [isSpeaking, onSpeakingStateChange]);
 
-  // Proactive engagement and break reminders check
-  useEffect(() => {
-    const checkProactiveEngagement = async () => {
-      try {
-        const response = await fetch('/api/proactive-message');
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Handle break reminders with highest priority
-          if (data.breakReminder) {
-            // Show break reminder as a toast notification
-            toast({
-              title: "💜 Break Time Reminder",
-              description: data.breakReminder,
-              duration: 10000, // Show for 10 seconds
-            });
-            
-            // Also add to conversation as a system message
-            const breakMessage = {
-              id: `break-reminder-${Date.now()}`,
-              content: data.breakReminder,
-              role: "assistant" as const,
-              personalityMode: null,
-              userId: null,
-              timestamp: new Date()
-            };
-            
-            // Add to conversation memory and update query cache
-            addExchange("", data.breakReminder);
-            const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
-            queryClient.setQueryData(["/api/messages"], [...currentMessages, breakMessage]);
-            
-            console.log("Break reminder shown:", data.breakReminder);
-          }
-          
-          // Handle post-break welcome messages (high priority)
-          else if (data.postBreakReachout) {
-            // Show as toast notification
-            toast({
-              title: "💕 Welcome Back!",
-              description: data.postBreakReachout,
-              duration: 8000, // Show for 8 seconds
-            });
-            
-            // Also add to conversation as a system message
-            const welcomeMessage = {
-              id: `welcome-back-${Date.now()}`,
-              content: data.postBreakReachout,
-              role: "assistant" as const,
-              personalityMode: null,
-              userId: null,
-              timestamp: new Date()
-            };
-            
-            // Add to conversation memory and update query cache
-            addExchange("", data.postBreakReachout);
-            const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
-            queryClient.setQueryData(["/api/messages"], [...currentMessages, welcomeMessage]);
-            
-            console.log("Post-break reachout shown:", data.postBreakReachout);
-          }
-          
-          // Handle regular proactive messages (lower priority)
-          else if (data.message) {
-            console.log("Proactive message available:", data.message);
-          }
-        }
-      } catch (error) {
-        console.log("Proactive engagement check failed:", error);
-      }
-    };
+  // Proactive engagement and break reminders check - DISABLED for performance
+  // useEffect(() => {
+  //   const checkProactiveEngagement = async () => {
+  //     try {
+  //       const response = await fetch('/api/proactive-message');
+  //       if (response.ok) {
+  //         const data = await response.json();
+  //         
+  //         // Handle break reminders with highest priority
+  //         if (data.breakReminder) {
+  //           // Show break reminder as a toast notification
+  //           toast({
+  //             title: "💜 Break Time Reminder",
+  //             description: data.breakReminder,
+  //             duration: 10000, // Show for 10 seconds
+  //           });
+  //           
+  //           // Also add to conversation as a system message
+  //           const breakMessage = {
+  //             id: `break-reminder-${Date.now()}`,
+  //             content: data.breakReminder,
+  //             role: "assistant" as const,
+  //             personalityMode: null,
+  //             userId: null,
+  //             timestamp: new Date()
+  //           };
+  //           
+  //           // Add to conversation memory and update query cache
+  //           addExchange("", data.breakReminder);
+  //           const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
+  //           queryClient.setQueryData(["/api/messages"], [...currentMessages, breakMessage]);
+  //           
+  //           console.log("Break reminder shown:", data.breakReminder);
+  //         }
+  //         
+  //         // Handle post-break welcome messages (high priority)
+  //         else if (data.postBreakReachout) {
+  //           // Show as toast notification
+  //           toast({
+  //             title: "💕 Welcome Back!",
+  //             description: data.postBreakReachout,
+  //             duration: 8000, // Show for 8 seconds
+  //           });
+  //           
+  //           // Also add to conversation as a system message
+  //           const welcomeMessage = {
+  //             id: `welcome-back-${Date.now()}`,
+  //             content: data.postBreakReachout,
+  //             role: "assistant" as const,
+  //             personalityMode: null,
+  //             userId: null,
+  //             timestamp: new Date()
+  //           };
+  //           
+  //           // Add to conversation memory and update query cache
+  //           addExchange("", data.postBreakReachout);
+  //           const currentMessages = queryClient.getQueryData(["/api/messages"]) as Message[] || [];
+  //           queryClient.setQueryData(["/api/messages"], [...currentMessages, welcomeMessage]);
+  //           
+  //           console.log("Post-break reachout shown:", data.postBreakReachout);
+  //         }
+  //         
+  //         // Handle regular proactive messages (lower priority)
+  //         else if (data.message) {
+  //           console.log("Proactive message available:", data.message);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.log("Proactive engagement check failed:", error);
+  //     }
+  //   };
 
-    // Check for proactive messages and break reminders every 15 minutes (reduced for performance)
-    const interval = setInterval(checkProactiveEngagement, 15 * 60 * 1000);
+  //   // Check for proactive messages and break reminders every 15 minutes (reduced for performance)
+  //   const interval = setInterval(checkProactiveEngagement, 15 * 60 * 1000);
     
-    // Also check immediately on component mount
-    setTimeout(checkProactiveEngagement, 2000);
+  //   // Also check immediately on component mount
+  //   setTimeout(checkProactiveEngagement, 2000);
     
-    return () => clearInterval(interval);
-  }, [toast, addExchange, queryClient]);
+  //   return () => clearInterval(interval);
+  // }, [toast, addExchange, queryClient]);
 
   // Handle action commands and identity queries
   const handleSpecialCommands = (content: string): string | null => {
@@ -773,10 +773,10 @@ export default function ChatInterface({
     
     if (value.length > 0 && !userIsTyping && !sendMessageMutation.isPending) {
       setUserIsTyping(true);
-      onAvatarStateChange("thinking"); // Show thinking expression when user types
+      // onAvatarStateChange("thinking"); // DISABLED for performance - no visual changes during typing
     } else if (value.length === 0 && userIsTyping) {
       setUserIsTyping(false);
-      onAvatarStateChange("neutral"); // Back to neutral when input is cleared
+      // onAvatarStateChange("neutral"); // DISABLED for performance - no visual changes during typing
     }
   };
 
