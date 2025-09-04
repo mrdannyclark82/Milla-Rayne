@@ -493,22 +493,8 @@ async function generateFollowUpMessages(
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
   userName?: string
 ): Promise<string[]> {
-  const followUps: string[] = [];
-  
-  // Analyze if Milla wants to send additional messages
-  const shouldElaborate = await shouldMillaElaborate(initialResponse, userMessage, conversationHistory);
-  
-  if (!shouldElaborate.shouldElaborate) {
-    return [];
-  }
-  
-  console.log(`Milla wants to elaborate: ${shouldElaborate.reason}`);
-  
-  // Generate follow-up messages based on context
-  const elaborations = await generateElaborationMessages(initialResponse, userMessage, shouldElaborate.reason || "natural_elaboration", userName);
-  
-  // Limit to 3 follow-up messages max to prevent spam
-  return elaborations.slice(0, 3);
+  // DISABLED for performance - no follow-up messages to reduce API calls and lag
+  return [];
 }
 
 /**
@@ -635,67 +621,8 @@ async function shouldMillaRespond(
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
   userName?: string
 ): Promise<{ shouldRespond: boolean; reason?: string }> {
-  const message = userMessage.toLowerCase().trim();
-  
-  // Always respond to direct questions
-  if (message.includes('?') || message.startsWith('what') || message.startsWith('how') || message.startsWith('why') || message.startsWith('when') || message.startsWith('where')) {
-    return { shouldRespond: true, reason: "Direct question detected" };
-  }
-  
-  // Always respond to greetings and her name
-  if (message.includes('milla') || message.includes('hi') || message.includes('hello') || message.includes('hey')) {
-    return { shouldRespond: true, reason: "Greeting or name mentioned" };
-  }
-  
-  // Always respond to emotional content that needs support
-  const emotionalWords = ['sad', 'upset', 'angry', 'frustrated', 'worried', 'anxious', 'scared', 'hurt', 'lonely', 'depressed'];
-  if (emotionalWords.some(word => message.includes(word))) {
-    return { shouldRespond: true, reason: "Emotional support needed" };
-  }
-  
-  // Always respond to action messages (asterisk wrapped)
-  if (message.startsWith('*') && message.endsWith('*')) {
-    return { shouldRespond: true, reason: "Action message requires response" };
-  }
-  
-  // Check conversation flow - if last few messages were from user without response, more likely to respond
-  if (conversationHistory) {
-    const recent = conversationHistory.slice(-3);
-    const userMessages = recent.filter(msg => msg.role === 'user').length;
-    const assistantMessages = recent.filter(msg => msg.role === 'assistant').length;
-    
-    if (userMessages > assistantMessages + 1) {
-      return { shouldRespond: true, reason: "User sent multiple messages without response" };
-    }
-  }
-  
-  // Sometimes choose not to respond to simple statements
-  const simpleStatements = ['ok', 'okay', 'k', 'sure', 'yeah', 'yes', 'no', 'thanks', 'thank you'];
-  if (simpleStatements.includes(message)) {
-    // 30% chance to respond to simple acknowledgments
-    if (Math.random() < 0.3) {
-      return { shouldRespond: true, reason: "Chose to acknowledge simple statement" };
-    } else {
-      return { shouldRespond: false, reason: "Simple acknowledgment doesn't need response" };
-    }
-  }
-  
-  // For other messages, Milla decides based on her mood and context
-  // 80% chance to respond to substantial messages
-  if (message.length > 10) {
-    if (Math.random() < 0.8) {
-      return { shouldRespond: true, reason: "Substantial message worth responding to" };
-    } else {
-      return { shouldRespond: false, reason: "Choosing to listen rather than respond" };
-    }
-  }
-  
-  // Default: 60% chance to respond to short messages
-  if (Math.random() < 0.6) {
-    return { shouldRespond: true, reason: "Chose to engage" };
-  } else {
-    return { shouldRespond: false, reason: "Choosing to observe quietly" };
-  }
+  // DISABLED for performance - always respond to eliminate decision overhead and randomness
+  return { shouldRespond: true, reason: "Always respond (performance mode)" };
 }
 
 // ================================================================================================
@@ -716,7 +643,7 @@ async function shouldMillaRespond(
 // ================================================================================================
 
 // TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
-const KEYWORD_TRIGGERS_ENABLED = true;
+const KEYWORD_TRIGGERS_ENABLED = false; // DISABLED for performance
 
 interface TriggerResult {
   triggered: boolean;

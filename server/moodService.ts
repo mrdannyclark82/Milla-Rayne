@@ -15,34 +15,16 @@ export interface MillaMood {
 
 // Mood analysis based on recent interactions and personal tasks
 export async function getMillaMoodData(): Promise<MillaMood> {
-  try {
-    // Analyze recent conversations
-    const conversationMood = await analyzeConversationMood();
-    
-    // Analyze personal task completion satisfaction
-    const taskMood = await analyzeTaskMood();
-    
-    // Combine factors to determine overall mood
-    const overallMood = determineOverallMood(conversationMood, taskMood);
-    
-    return {
-      ...overallMood,
-      lastUpdated: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error("Error getting mood data:", error);
-    
-    // Return default happy mood if analysis fails
-    return {
-      primary: "content",
-      intensity: "medium",
-      description: "Feeling grateful for our connection",
-      emoji: "😊",
-      color: "#22C55E",
-      factors: ["enjoying our conversations"],
-      lastUpdated: new Date().toISOString()
-    };
-  }
+  // DISABLED for performance - return static mood to eliminate analysis overhead
+  return {
+    primary: "content",
+    intensity: "medium",
+    description: "Feeling grateful for our connection",
+    emoji: "😊",
+    color: "#22C55E",
+    factors: ["enjoying our conversations"],
+    lastUpdated: new Date().toISOString()
+  };
 }
 
 async function analyzeConversationMood(): Promise<{
