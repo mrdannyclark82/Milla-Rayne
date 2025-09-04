@@ -185,7 +185,7 @@ function parseCsvLine(line: string): string[] {
 // Global memory core cache
 let memoryCoreCache: MemoryCoreData | null = null;
 let memoryCoreLastLoaded: number = 0;
-const MEMORY_CORE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MEMORY_CORE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (increased for performance)
 
 /**
  * Load and parse the entire Milla backup file into a searchable Memory Core

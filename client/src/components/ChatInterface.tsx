@@ -497,8 +497,8 @@ export default function ChatInterface({
       }
     };
 
-    // Check for proactive messages and break reminders every 5 minutes
-    const interval = setInterval(checkProactiveEngagement, 5 * 60 * 1000);
+    // Check for proactive messages and break reminders every 15 minutes (reduced for performance)
+    const interval = setInterval(checkProactiveEngagement, 15 * 60 * 1000);
     
     // Also check immediately on component mount
     setTimeout(checkProactiveEngagement, 2000);

@@ -61,10 +61,16 @@ export const useSpeechSynthesis = (options: SpeechSynthesisHookOptions = {}): Sp
 
     const loadVoices = () => {
       const availableVoices = window.speechSynthesis.getVoices();
-      setVoices(availableVoices);
       
-      // Debug: Log available voices for troubleshooting
-      console.log('Available voices:', availableVoices.map(v => ({ name: v.name, lang: v.lang, gender: v.name.toLowerCase() })));
+      // Only update if voices actually changed to reduce re-renders
+      if (availableVoices.length !== voices.length) {
+        setVoices(availableVoices);
+        
+        // Only log once when voices first load
+        if (voices.length === 0 && availableVoices.length > 0) {
+          console.log('Available voices:', availableVoices.map(v => ({ name: v.name, lang: v.lang, gender: v.name.toLowerCase() })));
+        }
+      }
       
       // Auto-select a female English voice if no voice is set
       if (!voice && availableVoices.length > 0) {

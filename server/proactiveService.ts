@@ -24,6 +24,10 @@ interface UserActivity {
 
 const ACTIVITY_FILE = path.join(process.cwd(), 'memory', 'user_activity.json');
 
+// Batch activity updates to reduce file I/O
+let pendingActivityUpdate: UserActivity | null = null;
+let activityUpdateTimeout: NodeJS.Timeout | null = null;
+
 // Track user activity patterns
 export async function trackUserActivity(): Promise<void> {
   try {
@@ -54,7 +58,24 @@ export async function trackUserActivity(): Promise<void> {
       // New activity tracking
     }
 
-    await fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2));
+    // Batch the write operation - only write every 10 seconds to reduce file I/O
+    pendingActivityUpdate = activity;
+    
+    if (activityUpdateTimeout) {
+      clearTimeout(activityUpdateTimeout);
+    }
+    
+    activityUpdateTimeout = setTimeout(async () => {
+      if (pendingActivityUpdate) {
+        try {
+          await fs.writeFile(ACTIVITY_FILE, JSON.stringify(pendingActivityUpdate, null, 2));
+          pendingActivityUpdate = null;
+        } catch (writeError) {
+          console.error('Error writing activity file:', writeError);
+        }
+      }
+    }, 10000); // 10 second delay to batch writes
+    
   } catch (error) {
     console.error('Error tracking user activity:', error);
   }
