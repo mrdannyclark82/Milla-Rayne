@@ -41,11 +41,9 @@ export async function initializePersonalTaskSystem(): Promise<void> {
     await loadExistingTasks();
     console.log('Personal task system initialized');
     
-    // Start the background task generation
-    setInterval(generatePersonalTasksIfNeeded, TASK_GENERATION_INTERVAL);
-    
-    // Start automatic task processing
-    setInterval(processTasksAutomatically, TASK_PROCESSING_CHECK_INTERVAL);
+    // DISABLED for performance - no background task generation/processing
+    // setInterval(generatePersonalTasksIfNeeded, TASK_GENERATION_INTERVAL);
+    // setInterval(processTasksAutomatically, TASK_PROCESSING_CHECK_INTERVAL);
   } catch (error) {
     console.error('Error initializing personal task system:', error);
   }
