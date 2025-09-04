@@ -14,6 +14,44 @@ import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
 import VideoAnalyzer from "@/components/VideoAnalyzer";
 
+// Component to handle image loading with fallback for failed loads
+interface ImageWithFallbackProps {
+  imageUrl: string;
+  altText: string;
+}
+
+const ImageWithFallback = ({ imageUrl, altText }: ImageWithFallbackProps) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    // Reset state when URL changes
+    setImageFailed(false);
+  }, [imageUrl]);
+
+  if (imageFailed) {
+    // Don't render anything if the image failed to load
+    return null;
+  }
+
+  return (
+    <div className="my-3">
+      <img 
+        src={imageUrl}
+        alt={altText}
+        className="max-w-full h-auto rounded-lg shadow-lg border border-pink-300/20"
+        style={{ maxHeight: '400px', objectFit: 'contain' }}
+        onLoad={() => {
+          console.log('✅ Image loaded:', imageUrl);
+        }}
+        onError={() => {
+          console.error('❌ Image failed to load:', imageUrl);
+          setImageFailed(true);
+        }}
+      />
+    </div>
+  );
+};
+
 interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
   onSpeakingStateChange?: (isSpeaking: boolean) => void;
@@ -123,16 +161,11 @@ export default function ChatInterface({
         const altText = parts[i - 1] || "Generated Image";
         const imageUrl = parts[i];
         elements.push(
-          <div key={i} className="my-3">
-            <img 
-              src={imageUrl}
-              alt={altText}
-              className="max-w-full h-auto rounded-lg shadow-lg border border-pink-300/20"
-              style={{ maxHeight: '400px', objectFit: 'contain' }}
-              onLoad={() => console.log('✅ Image loaded:', imageUrl)}
-              onError={() => console.error('❌ Image failed to load:', imageUrl)}
-            />
-          </div>
+          <ImageWithFallback 
+            key={i}
+            imageUrl={imageUrl}
+            altText={altText}
+          />
         );
       }
     }

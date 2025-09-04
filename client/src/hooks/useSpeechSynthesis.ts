@@ -63,13 +63,58 @@ export const useSpeechSynthesis = (options: SpeechSynthesisHookOptions = {}): Sp
       const availableVoices = window.speechSynthesis.getVoices();
       setVoices(availableVoices);
       
+      // Debug: Log available voices for troubleshooting
+      console.log('Available voices:', availableVoices.map(v => ({ name: v.name, lang: v.lang, gender: v.name.toLowerCase() })));
+      
       // Auto-select a female English voice if no voice is set
       if (!voice && availableVoices.length > 0) {
-        const femaleVoice = availableVoices.find(
-          v => v.lang.startsWith('en') && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('woman') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('hazel'))
-        );
+        // Enhanced female voice detection - looking for more patterns
+        const femaleVoice = availableVoices.find(v => {
+          const name = v.name.toLowerCase();
+          const lang = v.lang.toLowerCase();
+          return lang.startsWith('en') && (
+            name.includes('female') || 
+            name.includes('woman') || 
+            name.includes('zira') || 
+            name.includes('hazel') ||
+            name.includes('susan') ||
+            name.includes('karen') ||
+            name.includes('samantha') ||
+            name.includes('allison') ||
+            name.includes('ava') ||
+            name.includes('serena') ||
+            name.includes('fiona') ||
+            name.includes('tessa') ||
+            name.includes('kate') ||
+            name.includes('vicky') ||
+            name.includes('aria') ||
+            name.includes('jenny') ||
+            name.includes('emily') ||
+            name.includes('sarah') ||
+            name.includes('anna') ||
+            // Common patterns in voice names
+            name.includes('f ') || // Female marker
+            (name.includes('us') && name.includes('female')) ||
+            (name.includes('gb') && name.includes('female'))
+          );
+        });
+        
+        // If no explicitly female voice found, prefer voices that typically sound more feminine
+        const preferredVoice = femaleVoice || availableVoices.find(v => {
+          const name = v.name.toLowerCase();
+          return v.lang.startsWith('en') && (
+            name.includes('natural') ||
+            name.includes('neural') ||
+            name.includes('enhanced') ||
+            name.includes('premium')
+          );
+        });
+        
         const englishVoice = availableVoices.find(v => v.lang.startsWith('en'));
-        setVoice(femaleVoice || englishVoice || availableVoices[0]);
+        const selectedVoice = preferredVoice || englishVoice || availableVoices[0];
+        
+        console.log('Selected voice for Milla:', selectedVoice?.name, selectedVoice?.lang);
+        setVoice(selectedVoice);
       }
     };
 
