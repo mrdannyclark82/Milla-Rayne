@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milla - Advanced AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                },
+                fontFamily: {
+                    sans: ["Inter", "system-ui", "sans-serif"],
+                }
+            },
+        }
+    };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --background: hsl(222 25% 6%);
+            --foreground: hsl(210 40% 98%);
+            --card: hsl(222 25% 11%);
+            --card-foreground: hsl(210 40% 98%);
+            --popover: hsl(222 25% 11%);
+            --popover-foreground: hsl(210 40% 98%);
+            --primary: hsl(217 91% 60%);
+            --primary-foreground: hsl(210 40% 98%);
+            --secondary: hsl(217 32% 17%);
+            --secondary-foreground: hsl(210 40% 98%);
+            --muted: hsl(217 32% 17%);
+            --muted-foreground: hsl(215 20.2% 65.1%);
+            --accent: hsl(217 32% 17%);
+            --accent-foreground: hsl(210 40% 98%);
+            --destructive: hsl(0 62.8% 30.6%);
+            --destructive-foreground: hsl(210 40% 98%);
+            --border: hsl(217 32% 17%);
+            --input: hsl(217 32% 17%);
+            --ring: hsl(217 91% 60%);
+            --radius: 0.5rem;
+        }
+
+        .gradient-border {
+            background: linear-gradient(to right, var(--primary), #8B5CF6) padding-box,
+                        linear-gradient(to right, var(--primary), #8B5CF6) border-box;
+            border: 1px solid transparent;
+        }
+
+        .typing-animation {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .scroll-smooth {
+            scroll-behavior: smooth;
+        }
+
+        .message-fade-in {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="h-full bg-background text-foreground font-sans">
+    <!-- @COMPONENT: App [Main application container] -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- @COMPONENT: Sidebar [Navigation and project info] -->
+        <!-- @END_COMPONENT: Sidebar -->
+        <aside class="w-80 bg-card border-r border-border flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-border">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fas fa-robot text-primary-foreground text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-foreground">Milla</h1>
+                        <p class="text-sm text-muted-foreground">Advanced AI Assistant</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Core Philosophy Framework Display -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div class="space-y-6">
+                    <!-- Adaptive Personality Matrix -->
+                    <div class="bg-muted/10 rounded-lg p-4 border border-border">
+                        <h3 class="text-sm font-semibold text-primary mb-3">
+                            <i class="fas fa-brain mr-2"></i>Adaptive Personality Matrix
+                        </h3>
+                        <div class="space-y-2 text-xs text-muted-foreground">
+                            <div class="flex items-center justify-between">
+                                <span>Coach Mode</span>
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Empathetic Listener</span>
+                                <div class="w-2 h-2 bg-muted rounded-full"></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Strategic Advisor</span>
+                                <div class="w-2 h-2 bg-muted rounded-full"></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span>Creative Partner</span>
+                                <div class="w-2 h-2 bg-muted rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ethical Framework -->
+                    <div class="bg-muted/10 rounded-lg p-4 border border-border">
+                        <h3 class="text-sm font-semibold text-primary mb-3">
+                            <i class="fas fa-shield-alt mr-2"></i>Ethical Framework
+                        </h3>
+                        <ul class="space-y-2 text-xs text-muted-foreground">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
+                                <span>User privacy is paramount</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
+                                <span>Prioritize user well-being & growth</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 text-xs mt-0.5 mr-2"></i>
+                                <span>Blend brutal honesty with strategic empathy</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Project Leadership -->
+                    <div class="bg-muted/10 rounded-lg p-4 border border-border">
+                        <h3 class="text-sm font-semibold text-primary mb-3">
+                            <i class="fas fa-users mr-2"></i>Project Leadership
+                        </h3>
+                        <div class="space-y-2 text-xs text-muted-foreground">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-user-circle text-primary"></i>
+                                <div>
+                                    <p class="font-medium text-foreground">Danny Clark</p>
+                                    <p class="text-xs">CEO / Visionary</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-user-circle text-primary"></i>
+                                <div>
+                                    <p class="font-medium text-foreground">Gem</p>
+                                    <p class="text-xs">COO / Strategist</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="bg-muted/10 rounded-lg p-4 border border-border">
+                        <h3 class="text-sm font-semibold text-primary mb-3">
+                            <i class="fas fa-server mr-2"></i>System Status
+                        </h3>
+                        <div class="space-y-2 text-xs">
+                            <div class="flex items-center justify-between">
+                                <span class="text-muted-foreground">Core Framework</span>
+                                <span class="text-green-500">Active</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-muted-foreground">AI Integration</span>
+                                <span class="text-yellow-500">Pending</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-muted-foreground">Backend Server</span>
+                                <span class="text-green-500">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- @COMPONENT: ChatInterface [Main chat area] -->
+        <!-- @END_COMPONENT: ChatInterface -->
+        <main class="flex-1 flex flex-col h-full">
+            <!-- Chat Header -->
+            <header class="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-white text-sm"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-semibold text-foreground">Milla Assistant</h2>
+                        <p class="text-xs text-muted-foreground">Ready to help • Adaptive personality enabled</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button class="p-2 hover:bg-muted rounded-lg transition-colors">
+                        <i class="fas fa-cog text-muted-foreground"></i>
+                    </button>
+                    <button class="p-2 hover:bg-muted rounded-lg transition-colors">
+                        <i class="fas fa-ellipsis-h text-muted-foreground"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Conversation Display Area -->
+            <div class="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth" data-implementation="ChatMessages component - maps over conversation array">
+                <!-- Welcome Message -->
+                <!-- @MAP: messages.map(message => ( -->
+                <div class="message-fade-in" data-mock="true">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fas fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl">
+                            <p class="text-foreground leading-relaxed">
+                                Hello! I'm Milla, your advanced AI assistant. I'm designed with an adaptive personality matrix that allows me to adjust my communication style based on your needs - whether you need a strategic coach, an empathetic listener, or a creative partner.
+                            </p>
+                            <p class="text-foreground leading-relaxed mt-3">
+                                My core principles prioritize your privacy, well-being, and growth. I communicate with a blend of honest insights and strategic empathy. How can I assist you today?
+                            </p>
+                            <div class="mt-3 text-xs text-muted-foreground">
+                                <i class="fas fa-clock mr-1"></i>
+                                Just now
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample User Message -->
+                <div class="message-fade-in" data-mock="true">
+                    <div class="flex items-start space-x-4 justify-end">
+                        <div class="flex-1 bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                            <p class="text-primary-foreground leading-relaxed">
+                                Hi Milla! I'm working on a new project and could use some strategic guidance. Can you help me think through the approach?
+                            </p>
+                            <div class="mt-3 text-xs text-primary-foreground/70 text-right">
+                                <i class="fas fa-clock mr-1"></i>
+                                2 minutes ago
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fas fa-user text-muted-foreground text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milla's Response with Personality Indicator -->
+                <div class="message-fade-in" data-mock="true">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fas fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-green-500/10 text-green-500 px-2 py-1 rounded-full text-xs font-medium">
+                                    <i class="fas fa-lightbulb mr-1"></i>Strategic Advisor Mode
+                                </div>
+                            </div>
+                            <p class="text-foreground leading-relaxed">
+                                Absolutely! I'd be happy to help you think strategically about your project. To provide the most valuable guidance, I'll need to understand a few key aspects:
+                            </p>
+                            <ul class="text-foreground leading-relaxed mt-3 space-y-1 pl-4">
+                                <li class="flex items-start">
+                                    <span class="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                    What's the core objective or problem you're trying to solve?
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                    Who are your key stakeholders or target audience?
+                                </li>
+                                <li class="flex items-start">
+                                    <span class="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                    What resources and constraints are you working within?
+                                </li>
+                            </ul>
+                            <p class="text-foreground leading-relaxed mt-3">
+                                Once I understand these fundamentals, I can help you develop a comprehensive strategic framework that balances ambition with pragmatism.
+                            </p>
+                            <div class="mt-3 text-xs text-muted-foreground">
+                                <i class="fas fa-clock mr-1"></i>
+                                1 minute ago
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typing Indicator -->
+                <div class="typing-animation" data-implementation="Show when AI is generating response" style="display: none;">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fas fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-muted-foreground rounded-full animate-pulse"></div>
+                                <div class="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                                <div class="w-2 h-2 bg-muted-foreground rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="bg-card border-t border-border p-6">
+                <div class="max-w-4xl mx-auto">
+                    <!-- @COMPONENT: MessageInput [Text input with send functionality] -->
+                    <!-- @END_COMPONENT: MessageInput -->
+                    <div class="relative">
+                        <div class="flex items-end space-x-4">
+                            <div class="flex-1 relative">
+                                <textarea 
+                                    placeholder="Type your message to Milla..."
+                                    class="w-full bg-input border border-border rounded-2xl px-4 py-3 pr-12 text-foreground placeholder:text-muted-foreground resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all"
+                                    rows="1"
+                                    data-event="input:handleInputChange"
+                                    data-implementation="Auto-resize textarea and handle message composition"
+                                    data-mock="true"
+                                ></textarea>
+                                
+                                <!-- Attachment Button -->
+                                <button 
+                                    class="absolute right-3 bottom-3 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                                    data-event="click:handleAttachment"
+                                    data-implementation="Handle file attachments"
+                                >
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Send Button -->
+                            <button 
+                                class="gradient-border rounded-2xl p-3 text-primary-foreground hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                data-event="click:handleSendMessage"
+                                data-implementation="Send message to AI backend"
+                                data-mock="true"
+                            >
+                                <i class="fas fa-paper-plane text-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Input Helper Text -->
+                        <div class="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                            <div class="flex items-center space-x-4">
+                                <span>
+                                    <i class="fas fa-shield-alt mr-1"></i>
+                                    End-to-end encrypted
+                                </span>
+                                <span data-bind="wordCount">0/2000 words</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <kbd class="px-2 py-1 bg-muted rounded text-xs">⌘</kbd>
+                                <kbd class="px-2 py-1 bg-muted rounded text-xs">Enter</kbd>
+                                <span>to send</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- @END_COMPONENT: ChatInterface -->
+    </div>
+    <!-- @END_COMPONENT: App -->
+
+    <script>
+        // TODO: Implement React components and state management
+        // TODO: Connect to Node.js/Express backend
+        // TODO: Integrate AI personality switching logic
+        // TODO: Implement real-time messaging
+        
+        (function() {
+            // Basic mockup interactions - replace with React implementation
+            const textarea = document.querySelector('textarea');
+            const sendButton = document.querySelector('button[data-event="click:handleSendMessage"]');
+            const wordCountSpan = document.querySelector('[data-bind="wordCount"]');
+            
+            if (textarea) {
+                // Auto-resize textarea
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 128) + 'px';
+                    
+                    // Update word count
+                    const words = this.value.trim().split(/\s+/).filter(word => word.length > 0);
+                    const wordCount = this.value.trim() === '' ? 0 : words.length;
+                    if (wordCountSpan) {
+                        wordCountSpan.textContent = `${wordCount}/2000 words`;
+                    }
+                    
+                    // Enable/disable send button
+                    if (sendButton) {
+                        sendButton.disabled = this.value.trim() === '';
+                        sendButton.style.opacity = this.value.trim() === '' ? '0.5' : '1';
+                    }
+                });
+                
+                // Send on Cmd/Ctrl + Enter
+                textarea.addEventListener('keydown', function(e) {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && this.value.trim()) {
+                        // TODO: Implement message sending logic
+                        console.log('Send message:', this.value);
+                        this.value = '';
+                        this.style.height = 'auto';
+                        if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
+                        if (sendButton) {
+                            sendButton.disabled = true;
+                            sendButton.style.opacity = '0.5';
+                        }
+                    }
+                });
+            }
+            
+            if (sendButton) {
+                sendButton.addEventListener('click', function() {
+                    if (textarea && textarea.value.trim()) {
+                        // TODO: Implement message sending logic
+                        console.log('Send message:', textarea.value);
+                        textarea.value = '';
+                        textarea.style.height = 'auto';
+                        if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
+                        this.disabled = true;
+                        this.style.opacity = '0.5';
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

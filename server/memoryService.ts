@@ -193,14 +193,17 @@ const MEMORY_CORE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (increased for perfo
  */
 export async function loadMemoryCore(): Promise<MemoryCoreData> {
   try {
+    const startTime = Date.now();
     // Check cache first
     const now = Date.now();
     if (memoryCoreCache && (now - memoryCoreLastLoaded) < MEMORY_CORE_CACHE_TTL) {
       console.log('Using cached Memory Core data');
+      const endTime = Date.now();
+      console.log(`Memory Core cache access latency: ${endTime - startTime}ms`);
       return memoryCoreCache;
     }
 
-    console.log('Loading Memory Core from memories.txt as primary source...');
+  console.log('Loading Memory Core from memories.txt as primary source...');
     
     // Try to load from memories.txt first (primary source)
     try {
@@ -212,7 +215,9 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
         memoryCoreCache = result;
         memoryCoreLastLoaded = now;
         
-        return result;
+  const endTime = Date.now();
+  console.log(`Memory Core loaded from memories.txt latency: ${endTime - startTime}ms`);
+  return result;
       }
     } catch (error) {
       console.log('Failed to load from memories.txt, trying backup files...');
@@ -242,7 +247,7 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
         backupContent = await fs.readFile(filePath, 'utf-8');
         console.log(`Successfully loaded Memory Core from backup file: ${filename}`);
         foundBackupFile = true;
-        break;
+  break;
       } catch (error) {
         // File doesn't exist, try next one
         continue;
@@ -273,12 +278,16 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
     memoryCoreLastLoaded = now;
     
     console.log(`Memory Core loaded from backup: ${entries.length} entries`);
-    return result;
+  const endTime = Date.now();
+  console.log(`Memory Core loaded from backup latency: ${endTime - startTime}ms`);
+  return result;
     
   } catch (error) {
     console.error('Error loading Memory Core:', error);
     
     // Final fallback - empty memory core
+    const endTime = Date.now();
+    console.log(`Memory Core error fallback latency: ${endTime - startTime}ms`);
     return {
       entries: [],
       totalEntries: 0,
