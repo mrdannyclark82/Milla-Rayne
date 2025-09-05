@@ -14,6 +14,9 @@ import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
 import VideoAnalyzer from "@/components/VideoAnalyzer";
 
+// Memoized heavy child components
+const MemoizedVideoAnalyzer = React.memo(VideoAnalyzer);
+
 // Component to handle image loading with fallback for failed loads
 interface ImageWithFallbackProps {
   imageUrl: string;
@@ -127,26 +130,21 @@ export default function ChatInterface({
     }
   }, [selectedVoice, speechRate, voicePitch, voiceVolume, setVoice, setRate, setPitch, setVolume, voice, rate, pitch, volume]);
 
-  // Function to render message content with image support
-  const renderMessageContent = (content: string) => {
+  // Function to render message content with image support (memoized)
+  const renderMessageContent = useCallback((content: string) => {
     // Handle null/undefined content
     if (!content) return content;
-    
     // Simple approach: detect image markdown and replace with img tags
     const imageMarkdownPattern = /!\[([^\]]*)\]\((https?:\/\/[^)]+)\)/g;
-    
     // Check if content contains image markdown
     if (!imageMarkdownPattern.test(content)) {
       return content;
     }
-    
     // Reset regex lastIndex for reuse
     imageMarkdownPattern.lastIndex = 0;
-    
     // Split content and replace images
     const parts = content.split(imageMarkdownPattern);
     const elements: React.ReactNode[] = [];
-    
     for (let i = 0; i < parts.length; i++) {
       if (i % 3 === 0) {
         // Text content
@@ -169,9 +167,8 @@ export default function ChatInterface({
         );
       }
     }
-    
     return <div className="whitespace-pre-wrap">{elements}</div>;
-  };
+  }, []);
   
   // Camera functionality
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -761,22 +758,24 @@ export default function ChatInterface({
     }
   };
 
-  // Handle user typing state changes
+  // Debounced typing state logic
+  const typingTimeout = useRef<NodeJS.Timeout | null>(null);
   const handleInputChange = (value: string) => {
     setMessage(value);
-    
     // Voice interruption - stop Milla speaking when user starts typing
     if (value.length > 0 && isSpeaking) {
       console.log("User started typing - interrupting Milla's speech");
       stopSpeaking();
     }
-    
-    if (value.length > 0 && !userIsTyping && !sendMessageMutation.isPending) {
-      setUserIsTyping(true);
-      // onAvatarStateChange("thinking"); // DISABLED for performance - no visual changes during typing
-    } else if (value.length === 0 && userIsTyping) {
-      setUserIsTyping(false);
-      // onAvatarStateChange("neutral"); // DISABLED for performance - no visual changes during typing
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    if (value.length > 0 && !sendMessageMutation.isPending) {
+      typingTimeout.current = setTimeout(() => {
+        setUserIsTyping(true);
+      }, 120);
+    } else if (value.length === 0) {
+      typingTimeout.current = setTimeout(() => {
+        setUserIsTyping(false);
+      }, 120);
     }
   };
 
@@ -810,43 +809,56 @@ export default function ChatInterface({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className="message-fade-in"
-              data-testid={`message-${msg.role}-${msg.id}`}
-            >
-              {msg.role === "assistant" ? (
-                <div className="flex items-start space-x-4">
-                  <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
-                    <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
-                      {renderMessageContent(msg.content)}
-                    </div>
-                    <div className="mt-3 text-xs text-pink-300/70">
-                      <i className="fas fa-clock mr-1"></i>
-                      {formatTimeCST(msg.timestamp)}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-start space-x-4 justify-end">
-                  <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
-                    <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
-                      {renderMessageContent(msg.content)}
-                    </div>
-                    <div className="mt-3 text-xs text-blue-300/70 text-right">
-                      <i className="fas fa-clock mr-1"></i>
-                      {formatTimeCST(msg.timestamp)}
-                    </div>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <i className="fas fa-user text-blue-300 text-xs"></i>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))
+          <MemoizedMessageList messages={messages.slice(-10)} renderMessageContent={renderMessageContent} formatTimeCST={formatTimeCST} />
         )}
+// Memoized message list to prevent unnecessary re-renders
+type MessageListProps = {
+  messages: any[];
+  renderMessageContent: (content: string) => React.ReactNode;
+  formatTimeCST: (ts: any) => string;
+};
+const MemoizedMessageList = React.memo(function MessageList({ messages, renderMessageContent, formatTimeCST }: MessageListProps) {
+  return (
+    <>
+      {messages.map((msg) => (
+        <div 
+          key={msg.id} 
+          className="message-fade-in"
+          data-testid={`message-${msg.role}-${msg.id}`}
+        >
+          {msg.role === "assistant" ? (
+            <div className="flex items-start space-x-4">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
+                <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-pink-300/70">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start space-x-4 justify-end">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-blue-300/70 text-right">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
+              </div>
+              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i className="fas fa-user text-blue-300 text-xs"></i>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </>
+  );
+});
 
           {/* Typing Indicator */}
           {showThinking && (
@@ -1077,14 +1089,12 @@ export default function ChatInterface({
         {showVideoAnalyzer && (
           <div className="bg-black/20 backdrop-blur-sm border-t border-white/10 p-6">
             <div className="max-w-4xl mx-auto">
-              <VideoAnalyzer 
+              <MemoizedVideoAnalyzer
                 onAnalysisComplete={(result) => {
                   // Add video analysis to the chat
                   const analysisMessage = `🎬 **Video Analysis Complete!**\n\n**Summary:** ${result.summary}\n\n**Milla's Insights:** ${result.insights || "I found your video interesting!"}`;
-                  
                   rapidFireSend(analysisMessage);
                   setShowVideoAnalyzer(false);
-                  
                   toast({
                     title: "Video Analyzed",
                     description: "Milla has analyzed your video and shared her insights!",

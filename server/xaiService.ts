@@ -52,6 +52,7 @@ export async function generateXAIResponse(
   context: PersonalityContext
 ): Promise<AIResponse> {
   try {
+    const startTime = Date.now();
     if (!process.env.XAI_API_KEY) {
       return {
         content: "xAI integration is not configured. Please add your API key.",
@@ -123,6 +124,7 @@ export async function generateXAIResponse(
       contentLength: msg.content ? msg.content.length : 0 
     })));
 
+
     const response = await xaiClient.chat.completions.create({
       model: "grok-2-1212",
       messages: messages as any,
@@ -130,6 +132,9 @@ export async function generateXAIResponse(
       temperature: 0.8,
       stream: false
     });
+
+    const endTime = Date.now();
+    console.log(`xAI API call latency: ${endTime - startTime}ms`);
 
     if (response.choices && response.choices.length > 0) {
       const content = response.choices[0].message?.content;

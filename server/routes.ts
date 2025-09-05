@@ -14,12 +14,6 @@ import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnv
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateXAIResponse } from "./xaiService";
-import OpenAI from "openai";
-
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
