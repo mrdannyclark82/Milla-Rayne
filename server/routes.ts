@@ -1030,6 +1030,7 @@ async function generateAIResponse(
         await updateMemories(`User said: "${userMessage}" - Milla (fallback mode): "${fallbackResponse}"`);
       } catch (error) {
         console.error("Error updating memories:", error);
+      }
       // Fallback response generated (use a proper logger in production)
       // logger.info('Fallback response generated:', fallbackResponse.substring(0, 100) + '...');
       
