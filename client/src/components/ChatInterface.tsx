@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-import React, { useState } from "react";
-=======
+
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,9 +12,23 @@ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
->>>>>>> c060f4657607bbeb5953d5fb1b7dcfd5d16ad722
+
+const BACKGROUND_IMAGE = "/attached_assets/6124451be476ac0007e3face_bdd6ecce-c0f8-48c9-98c1-183aef053c3a_1756909651397.jpg";
+
+// Memoized message list to prevent unnecessary re-renders
+type MessageListProps = {
+  messages: Message[];
+  renderMessageContent: (content: string) => React.ReactNode;
+  formatTimeCST: (ts: any) => string;
+};
+
+const MemoizedMessageList = React.memo(function MessageList({ 
+  messages, 
+  renderMessageContent, 
+  formatTimeCST 
+}: MessageListProps) {
+
 const BACKGROUND_IMAGE = "/attached_assets/6124451be476ac0007e3face_bdd6ecce-c0f8-48c9-98c1-183aef053c3a_1756909651397.jpg";
 
 interface ChatMessage extends Message {
@@ -42,13 +54,6 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-<<<<<<< HEAD
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, input]);
-      setInput("");
-    }
-  };
 
   return (
     <div
@@ -82,9 +87,10 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
           onClick={handleSend}
           style={{ padding: "0.5rem 1rem", borderRadius: "0 8px 8px 0", border: "1px solid #ccc", background: "#007bff", color: "#fff" }}
         >
+
           Send
         </button>
-=======
+
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -240,6 +246,7 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
                 {/* Bot Avatar */}
                 <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-full flex items-center justify-center border border-pink-400/30 backdrop-blur-sm">
                   <span className="text-pink-300 font-bold text-sm">MR</span>
+
                 </div>
                 
                 {/* Message Content */}
@@ -258,6 +265,7 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
                   </div>
                 </div>
               </div>
+
             ) : (
               // Danny Ray (user) message - right aligned
               <div className="flex items-start space-x-3 justify-end">
@@ -275,6 +283,7 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
                       {formatTimeCST(msg.timestamp)}
                     </div>
                   </div>
+
                 </div>
                 
                 {/* User Avatar */}
@@ -361,31 +370,230 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="flex-shrink-0 px-4 py-2 bg-red-500/20 border-t border-red-400/30 backdrop-blur-sm">
-            <div className="text-red-300 text-sm flex items-center">
-              <i className="fas fa-exclamation-triangle mr-2"></i>
-              {error}
+export default function ChatInterface() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
+  const { addExchange, getRecentMessages, extractAndSetUserName } = useConversationMemory();
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Fetch existing messages from the server
+  const { data: existingMessages } = useQuery({
+    queryKey: ["/api/messages"],
+    enabled: true,
+  });
+
+  useEffect(() => {
+    if (existingMessages && Array.isArray(existingMessages)) {
+      setMessages(existingMessages);
+    }
+  }, [existingMessages]);
+
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (messageContent: string) => {
+      const response = await apiRequest("POST", "/api/messages", {
+        content: messageContent,
+        role: "user",
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Add user message
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        content: input,
+        role: "user",
+        timestamp: new Date(),
+        personalityMode: null,
+        userId: null,
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      
+      // Extract user name if present
+      extractAndSetUserName(input);
+      
+      // Add assistant response
+      if (data?.response) {
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          content: data.response,
+          role: "assistant",
+          timestamp: new Date(),
+          personalityMode: data.personalityMode || null,
+          userId: null,
+        };
+        
+        setMessages(prev => [...prev, assistantMessage]);
+        
+        // Add to conversation memory
+        addExchange(input, data.response);
+      }
+      
+      setInput("");
+      setIsLoading(false);
+    },
+    onError: (error) => {
+      console.error("Failed to send message:", error);
+      
+      // Mock response for demo purposes if API fails
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        content: input,
+        role: "user",
+        timestamp: new Date(),
+        personalityMode: null,
+        userId: null,
+      };
+      
+      const mockResponse: Message = {
+        id: crypto.randomUUID(),
+        content: "Hello! I'm Milla, your AI assistant. I'm here to help you with anything you need. How can I assist you today?",
+        role: "assistant",
+        timestamp: new Date(),
+        personalityMode: "empathetic",
+        userId: null,
+      };
+      
+      setMessages(prev => [...prev, userMessage, mockResponse]);
+      addExchange(input, mockResponse.content);
+      
+      toast({
+        title: "Connection Issue",
+        description: "Using offline mode - responses may be limited.",
+        variant: "default",
+      });
+      
+      setInput("");
+      setIsLoading(false);
+    },
+  });
+
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    setIsLoading(true);
+    sendMessageMutation.mutate(input);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  }, [input]);
+
+  const renderMessageContent = (content: string) => {
+    return content;
+  };
+
+  return (
+    <div 
+      className="flex flex-col h-full relative"
+      style={{
+        backgroundImage: `url(${BACKGROUND_IMAGE})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed"
+      }}
+    >
+      {/* Background Overlay for text visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-[2px]" />
+      
+      {/* Content Container */}
+      <div className="relative z-10 flex flex-col h-full">
+        {/* Chat Header */}
+        <div className="flex-shrink-0 p-4 border-b border-white/10 bg-black/20 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center">
+              <i className="fas fa-robot text-white text-sm"></i>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-white">Chat with Milla</h2>
+              <p className="text-sm text-white/70">Your AI Assistant</p>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center text-white/60">
+                <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fas fa-comments text-white text-xl"></i>
+                </div>
+                <h3 className="text-lg font-medium mb-2">Start a conversation</h3>
+                <p className="text-sm">Send a message to begin chatting with Milla</p>
+              </div>
+            </div>
+          ) : (
+            <MemoizedMessageList 
+              messages={messages}
+              renderMessageContent={renderMessageContent}
+              formatTimeCST={formatTimeCST}
+            />
+          )}
+          
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="flex items-start space-x-4 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i className="fas fa-robot text-white text-xs"></i>
+              </div>
+              <div className="bg-black/20 backdrop-blur-sm rounded-2xl rounded-tl-sm px-4 py-3 border border-white/10">
+                <div className="flex items-center space-x-2 text-pink-300">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{animationDelay: "0.2s"}}></div>
+                    <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse" style={{animationDelay: "0.4s"}}></div>
+                  </div>
+                  <span className="text-sm">Milla is typing...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div ref={messagesEndRef} />
+        </div>
 
         {/* Input Area */}
         <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
-          <div className="flex space-x-2">
+          <div className="flex items-end space-x-3">
             <div className="flex-1 relative">
               <Textarea
-                ref={inputRef}
+                ref={textareaRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32"
+                onKeyDown={handleKeyPress}
+                placeholder="Type your message to Milla..."
+                className="w-full bg-black/40 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder:text-white/50 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+
                 rows={1}
                 disabled={isLoading}
               />
             </div>
+
             <Button
               onClick={handleSendMessage}
               disabled={!input.trim() || isLoading}
@@ -406,8 +614,8 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
             </Button>
           </div>
         </div>
->>>>>>> c060f4657607bbeb5953d5fb1b7dcfd5d16ad722
       </div>
     </div>
   );
 }
+
