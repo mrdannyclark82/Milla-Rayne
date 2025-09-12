@@ -112,10 +112,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes gentle-breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.02) translateY(-2px); }
-}
+
 
 @keyframes playful-bounce {
   0%, 100% { transform: translateY(0px); }
@@ -172,21 +169,10 @@
   50% { transform: scale(1.05) rotate(1deg); opacity: 0.5; }
 }
 
-@keyframes breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.02) translateY(-2px); }
-}
 
-@keyframes subtle-blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
 
-@keyframes gentle-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  25% { transform: translateX(1px) rotate(0.5deg); }
-  75% { transform: translateX(-1px) rotate(-0.5deg); }
-}
+
+
 
 .message-fade-in {
   animation: fadeInUp 0.3s ease-out;
@@ -214,26 +200,6 @@
   }
 }
 
-/* Dynamic Avatar Animations */
-@keyframes breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.01) translateY(-2px); }
-}
-
-@keyframes subtle-blink {
-  0%, 90%, 100% { opacity: 1; }
-  95% { opacity: 0.95; }
-}
-
-@keyframes gentle-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  25% { transform: translateX(1px) rotate(0.2deg); }
-  75% { transform: translateX(-1px) rotate(-0.2deg); }
-}
-
-.avatar-breathing {
-  will-change: transform, opacity;
-}
 
 /* Custom Range Slider Styling */
 .slider {
