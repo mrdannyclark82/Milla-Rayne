@@ -222,5 +222,4 @@ export const avatarAnimations = `
   @keyframes gentle-glow {
     0%, 100% { filter: brightness(1); }
     50% { filter: brightness(1.1); }
-  }
-`;
+  }`;
