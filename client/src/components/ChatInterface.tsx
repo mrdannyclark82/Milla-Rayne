@@ -334,9 +334,14 @@ export default function ChatInterface({ theme = 'dark', onAvatarStateChange }: C
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message..."
-                className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32"
+                className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200"
                 rows={1}
                 disabled={isLoading}
+                style={{
+                  height: 'auto',
+                  minHeight: '40px',
+                  maxHeight: '128px'
+                }}
               />
             </div>
             <Button
