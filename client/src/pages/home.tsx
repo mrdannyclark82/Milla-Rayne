@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ChatInterface from "@/components/ChatInterface";
+import CalendarTaskManager from "@/components/CalendarTaskManager";
 import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
 import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
 import { DynamicAvatar } from "@/components/DynamicAvatar";
@@ -12,6 +13,7 @@ import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avat
 import avatarVideo from "@assets/generated_images/AI_assistant_avatar_video_8218245c.png";
 import millaPortraitVideo from "@assets/Creating_a_Living_Portrait_Animation_1756641116784.mp4";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SettingsPanel from "@/components/SettingsPanel";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
@@ -354,7 +356,7 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      {/* Right Side - Dedicated Chat Container */}
+      {/* Right Side - Chat and Calendar Container */}
       <div 
         className="w-96 flex flex-col transition-all duration-300 relative"
         style={{
@@ -365,22 +367,32 @@ export default function Home() {
           border: chatTransparency < 50 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
         }}
       >
-        {/* --- Old Messages block --- */}
-        <div className="p-4 border-b border-gray-700">
-          <h2 className="text-lg font-semibold mb-2">Old Messages</h2>
-          {loadingMessages && <p>Loading...</p>}
-          {messagesError && <p className="text-red-500">Error: {messagesError}</p>}
-          <ul>
-            {messages.map((msg, i) => (
-              <li key={i} className="text-xs mb-1">{JSON.stringify(msg)}</li>
-            ))}
-          </ul>
-        </div>
-        {/* --- End Old Messages block --- */}
-
-        <ChatInterface 
+        <Tabs defaultValue="chat" className="flex flex-col h-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/20 border-b border-white/10">
+            <TabsTrigger 
+              value="chat" 
+              className="text-white/70 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300"
+            >
+              <i className="fas fa-comments mr-2"></i>
+              Chat
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calendar" 
+              className="text-white/70 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300"
+            >
+              <i className="fas fa-calendar mr-2"></i>
+              Tasks
+            </TabsTrigger>
+          </TabsList>
           
-        />
+          <TabsContent value="chat" className="flex-1 mt-0">
+            <ChatInterface />
+          </TabsContent>
+          
+          <TabsContent value="calendar" className="flex-1 mt-0 p-4">
+            <CalendarTaskManager className="h-full" />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
