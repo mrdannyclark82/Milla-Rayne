@@ -996,14 +996,7 @@ async function generateAIResponse(
     // Use xAI for higher token limits (avoiding Perplexity 131K token limit)
     const aiResponse = await generateXAIResponse(enhancedMessage, context);
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('XAI Response Debug:', {
-        success: aiResponse.success,
-        hasContent: !!aiResponse.content,
-        contentLength: aiResponse.content ? aiResponse.content.length : 0,
-        contentPreview: aiResponse.content ? aiResponse.content.substring(0, 50) : 'NO CONTENT'
-      });
-    }
+    // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
     
     if (aiResponse.success && aiResponse.content && aiResponse.content.trim()) {
       reasoning.push("Crafting my response with empathy and understanding");
@@ -1037,7 +1030,8 @@ async function generateAIResponse(
         await updateMemories(`User said: "${userMessage}" - Milla (fallback mode): "${fallbackResponse}"`);
       } catch (error) {
         console.error("Error updating memories:", error);
-      }
+      // Fallback response generated (use a proper logger in production)
+      // logger.info('Fallback response generated:', fallbackResponse.substring(0, 100) + '...');
       
       return { content: fallbackResponse, reasoning };
     }

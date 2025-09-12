@@ -179,7 +179,7 @@ export function shouldPerformSearch(userMessage: string): boolean {
       message.includes("good afternoon") ||
       message.includes("good evening") ||
       message.includes("hello") ||
-      message.includes("hi ") ||
+      message.match(/\bhi\b/) ||
       message.includes("hey ")) {
     return false;
   }
