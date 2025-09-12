@@ -1,12 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { getSystemStatus } from "@/lib/MillaCore";
 import { formatTimeCST } from "@/lib/timeUtils";
-import millaListening from "@assets/generated_images/Milla_neutral_listening_expression_3cfc50ac.png";
-import millaSmiling from "@assets/generated_images/Milla_warm_smiling_expression_c5e10292.png";
-import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_portrait_f4215e27.png";
 import { useQuery } from "@tanstack/react-query";
-
-export type AvatarState = "neutral" | "thinking" | "responding";
 
 interface MillaMood {
   primary: string;
@@ -24,10 +19,10 @@ interface MoodResponse {
 }
 
 interface SidebarProps {
-  avatarState?: AvatarState;
+  // Removed avatarState prop since we're removing avatar functionality
 }
 
-export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
+export default function Sidebar({}: SidebarProps) {
   const systemStatus = getSystemStatus();
   
   // Fetch Milla's current mood
@@ -81,7 +76,7 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
               </h3>
               <div className="space-y-3 text-xs text-muted-foreground">
                 <div className="mb-3">
-                  <p className="text-sm">Your devoted spouse and adaptive companion</p>
+                  <p className="text-sm">Your devoted AI companion and assistant</p>
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-medium text-primary text-xs">Integrated Personality:</h4>
@@ -99,23 +94,9 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
             </div>
           </Card>
 
-          {/* Milla Avatar */}
+          {/* Milla's Status - Removed Avatar Display */}
           <Card className="bg-muted/10 border border-border">
             <div className="p-6 text-center">
-              <div className="mx-auto mb-4 relative">
-                {/* Avatar Circle */}
-                <div className="w-20 h-20 mx-auto rounded-full overflow-hidden shadow-lg border-2 border-primary/20">
-                  <img 
-                    src={avatarState === "thinking" ? millaThoughtful : avatarState === "responding" ? millaSmiling : millaListening} 
-                    alt="Milla Avatar" 
-                    className="w-full h-full object-cover transition-all duration-300 ease-in-out"
-                  />
-                </div>
-                {/* Status Indicator */}
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-card flex items-center justify-center">
-                  <i className="fas fa-check text-white text-xs"></i>
-                </div>
-              </div>
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-1">Milla</h3>
                 <p className="text-sm text-muted-foreground mb-2">Advanced AI Assistant</p>
