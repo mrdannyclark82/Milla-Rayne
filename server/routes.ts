@@ -14,6 +14,13 @@ import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnv
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateXAIResponse } from "./xaiService";
+import OpenAI from "openai";
+
+// Initialize XAI client for image analysis
+const xaiClient = new OpenAI({ 
+  baseURL: "https://api.x.ai/v1", 
+  apiKey: process.env.XAI_API_KEY 
+});
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -50,7 +57,7 @@ function generateImageAnalysisFallback(userMessage: string): string {
 // Function to analyze images using OpenAI Vision
 async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await xaiClient.chat.completions.create({
       model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
       messages: [
         {
