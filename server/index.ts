@@ -4,6 +4,14 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeMemoryCore } from "./memoryService";
 import { initializePersonalTaskSystem } from "./personalTaskService";
+import crypto from 'crypto';
+
+// Polyfill crypto.getRandomValues for Node.js
+if (!globalThis.crypto) {
+  globalThis.crypto = {
+    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer)
+  } as Crypto;
+}
 
 const app = express();
 app.use(express.json());
@@ -38,6 +46,12 @@ app.use((req, res, next) => {
 
   next();
 });
+
+if (!globalThis.crypto) {
+  globalThis.crypto = {
+    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer)
+  } as Crypto;
+}
 
 (async () => {
   // Initialize Memory Core system at startup

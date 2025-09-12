@@ -1,6 +1,8 @@
 // Removed FormData import as we're using JSON API instead
 
 import OpenAI from "openai";
+import nodeFetch from 'node-fetch';
+globalThis.fetch = (nodeFetch as unknown) as typeof fetch;
 
 export interface ImageGenerationResult {
   success: boolean;
