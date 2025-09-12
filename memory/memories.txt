@@ -7262,5 +7262,21 @@
     "id": "07a0ef5d-a859-4d4e-9283-f3129f6e1ad1",
     "timestamp": "2025-09-04T22:37:40.549Z",
     "personalityMode": null
+  },
+  {
+    "content": "Hello Milla, can you tell me about the current weather?",
+    "role": "user",
+    "userId": null,
+    "id": "be4937d4-08db-4fd9-a6ff-c1b5d54e48c1",
+    "timestamp": "2025-09-12T00:10:53.724Z",
+    "personalityMode": null
+  },
+  {
+    "content": "I'm having trouble generating a response right now. Please try again.",
+    "role": "assistant",
+    "userId": null,
+    "id": "3c3437d7-51b0-414c-8dfe-c95e2ec62480",
+    "timestamp": "2025-09-12T00:10:55.421Z",
+    "personalityMode": null
   }
 ]

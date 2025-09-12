@@ -1,3 +1,18 @@
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { checkIdentityQuery, MILLA_IDENTITY } from "@/lib/MillaCore";
+import type { Message } from "@shared/schema";
+import { AvatarState } from "@/components/Sidebar";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { useConversationMemory } from "@/contexts/ConversationContext";
+import { formatTimeCST } from "@/lib/timeUtils";
+import VideoAnalyzer from "@/components/VideoAnalyzer";
 import React, { useState } from "react";
 const BACKGROUND_IMAGE = "/attached_assets/6124451be476ac0007e3face_bdd6ecce-c0f8-48c9-98c1-183aef053c3a_1756909651397.jpg";
 
@@ -5,65 +20,55 @@ export default function ChatInterface() {
   const [messages, setMessages] = useState<string[]>([]);
   const [input, setInput] = useState("");
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      setMessages([...messages, input.trim()]);
-      setInput("");
-    }
-  };
 
+// Memoized message list to prevent unnecessary re-renders
+type MessageListProps = {
+  messages: any[];
+  renderMessageContent: (content: string) => React.ReactNode;
+  formatTimeCST: (ts: any) => string;
+};
+const MemoizedMessageList = React.memo(function MessageList({ messages, renderMessageContent, formatTimeCST }: MessageListProps) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundImage: `url(${BACKGROUND_IMAGE})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        zIndex: 0,
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          background: "rgba(0,0,0,0.5)",
-          zIndex: 1,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ width: "100%", maxWidth: 500, margin: "0 auto", background: "rgba(255,255,255,0.1)", borderRadius: 16, padding: 24, minHeight: 400, boxShadow: "0 4px 32px rgba(0,0,0,0.2)" }}>
-          <div style={{ marginBottom: 16, minHeight: 300, overflowY: "auto" }}>
-            {messages.map((msg, idx) => (
-              <div key={idx} style={{ color: "#fff", marginBottom: 8, padding: 8, background: "rgba(0,0,0,0.3)", borderRadius: 8 }}>
-                {msg}
+    <>
+      {messages.map((msg) => (
+        <div 
+          key={msg.id} 
+          className="message-fade-in"
+          data-testid={`message-${msg.role}-${msg.id}`}
+        >
+          {msg.role === "assistant" ? (
+            <div className="flex items-start space-x-4">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
+                <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-pink-300/70">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
               </div>
-            ))}
-          </div>
-          <form onSubmit={handleSend} style={{ display: "flex", gap: 8 }}>
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="Type a message..."
-              style={{ flex: 1, padding: 12, borderRadius: 8, border: "none", outline: "none" }}
-            />
-            <button type="submit" style={{ padding: "0 16px", borderRadius: 8, background: "#fff", color: "#222", border: "none", fontWeight: "bold" }}>
-              Send
-            </button>
-          </form>
+            </div>
+          ) : (
+            <div className="flex items-start space-x-4 justify-end">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-blue-300/70 text-right">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
+              </div>
+              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i className="fas fa-user text-blue-300 text-xs"></i>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      ))}
+    </>
   );
-}
+});
+
+  
+   

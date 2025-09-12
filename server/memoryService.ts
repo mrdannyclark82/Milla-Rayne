@@ -192,8 +192,8 @@ const MEMORY_CORE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (increased for perfo
  * This function runs at application startup and caches results
  */
 export async function loadMemoryCore(): Promise<MemoryCoreData> {
+  const startTime = Date.now();
   try {
-    const startTime = Date.now();
     // Check cache first
     const now = Date.now();
     if (memoryCoreCache && (now - memoryCoreLastLoaded) < MEMORY_CORE_CACHE_TTL) {
