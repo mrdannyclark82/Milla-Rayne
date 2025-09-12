@@ -169,17 +169,29 @@ export function shouldPerformSearch(userMessage: string): boolean {
       message.includes("my name is") ||
       // Don't search for identity queries about Milla
       message.includes("what is your name") ||
-      message.includes("who are you")) {
+      message.includes("who are you") ||
+      // Don't search for personal conversation patterns
+      message.includes("how are you") ||
+      message.includes("how do you feel") ||
+      message.includes("what are you doing") ||
+      message.includes("how's your day") ||
+      message.includes("good morning") ||
+      message.includes("good afternoon") ||
+      message.includes("good evening") ||
+      message.includes("hello") ||
+      message.includes("hi ") ||
+      message.includes("hey ")) {
     return false;
   }
 
-  // Search for questions and information requests
+  // Search for questions and information requests - but be more specific
   const searchTriggers = [
-    "what is", "what are", "who is", "who are", "where is", "where are",
-    "when is", "when are", "how is", "how are", "why is", "why are",
+    "what is the", "what are the", "who is the", "who are the", 
+    "where is the", "where are the", "when is the", "when are the", 
+    "why is the", "why are the",
     "tell me about", "explain", "define", "meaning of", "information about",
     "search for", "look up", "find information", "what do you know about",
-    "can you find", "help me find", "i need to know", "do you know"
+    "can you find", "help me find", "i need to know about"
   ];
 
   return searchTriggers.some(trigger => message.includes(trigger));

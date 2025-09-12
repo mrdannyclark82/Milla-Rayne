@@ -149,7 +149,7 @@ export async function generateXAIResponse(
     }
 
     return {
-      content: "I'm having trouble generating a response right now. Please try again.",
+      content: "", // Return empty content so routes.ts can handle fallback
       success: false,
       error: "No response content"
     };
@@ -157,7 +157,7 @@ export async function generateXAIResponse(
   } catch (error) {
     console.error("xAI API error:", error);
     return {
-      content: "I'm experiencing technical difficulties right now. Please try again in a moment.",
+      content: "", // Return empty content so the routes.ts can handle fallback
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"
     };
