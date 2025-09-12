@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,55 @@ import VideoAnalyzer from "@/components/VideoAnalyzer";
 
 // Memoized heavy child components
 const MemoizedVideoAnalyzer = React.memo(VideoAnalyzer);
+
+// Memoized message list to prevent unnecessary re-renders
+type MessageListProps = {
+  messages: any[];
+  renderMessageContent: (content: string) => React.ReactNode;
+  formatTimeCST: (ts: any) => string;
+};
+const MemoizedMessageList = React.memo(function MessageList({ messages, renderMessageContent, formatTimeCST }: MessageListProps) {
+  return (
+    <>
+      {messages.map((msg) => (
+        <div 
+          key={msg.id} 
+          className="message-fade-in"
+          data-testid={`message-${msg.role}-${msg.id}`}
+        >
+          {msg.role === "assistant" ? (
+            <div className="flex items-start space-x-4">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
+                <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-pink-300/70">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start space-x-4 justify-end">
+              <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
+                  {renderMessageContent(msg.content)}
+                </div>
+                <div className="mt-3 text-xs text-blue-300/70 text-right">
+                  <i className="fas fa-clock mr-1"></i>
+                  {formatTimeCST(msg.timestamp)}
+                </div>
+              </div>
+              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i className="fas fa-user text-blue-300 text-xs"></i>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </>
+  );
+});
 
 // Component to handle image loading with fallback for failed loads
 interface ImageWithFallbackProps {
@@ -811,54 +860,6 @@ export default function ChatInterface({
         ) : (
           <MemoizedMessageList messages={messages.slice(-10)} renderMessageContent={renderMessageContent} formatTimeCST={formatTimeCST} />
         )}
-// Memoized message list to prevent unnecessary re-renders
-type MessageListProps = {
-  messages: any[];
-  renderMessageContent: (content: string) => React.ReactNode;
-  formatTimeCST: (ts: any) => string;
-};
-const MemoizedMessageList = React.memo(function MessageList({ messages, renderMessageContent, formatTimeCST }: MessageListProps) {
-  return (
-    <>
-      {messages.map((msg) => (
-        <div 
-          key={msg.id} 
-          className="message-fade-in"
-          data-testid={`message-${msg.role}-${msg.id}`}
-        >
-          {msg.role === "assistant" ? (
-            <div className="flex items-start space-x-4">
-              <div className="flex-1 bg-transparent rounded-2xl rounded-tl-sm px-4 py-3 max-w-3xl">
-                <div className="text-pink-300 leading-relaxed whitespace-pre-wrap">
-                  {renderMessageContent(msg.content)}
-                </div>
-                <div className="mt-3 text-xs text-pink-300/70">
-                  <i className="fas fa-clock mr-1"></i>
-                  {formatTimeCST(msg.timestamp)}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-start space-x-4 justify-end">
-              <div className="flex-1 bg-transparent rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
-                <div className="text-blue-300 leading-relaxed whitespace-pre-wrap">
-                  {renderMessageContent(msg.content)}
-                </div>
-                <div className="mt-3 text-xs text-blue-300/70 text-right">
-                  <i className="fas fa-clock mr-1"></i>
-                  {formatTimeCST(msg.timestamp)}
-                </div>
-              </div>
-              <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                <i className="fas fa-user text-blue-300 text-xs"></i>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </>
-  );
-});
 
           {/* Typing Indicator */}
           {showThinking && (
