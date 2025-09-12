@@ -164,27 +164,28 @@ export default function Home() {
       {/* Left Side - Dynamic Avatar Video */}
       <div className="flex-1 relative overflow-hidden">
         <div className="relative w-full h-full overflow-hidden">
-          {use3DAvatar ? (
-            <Avatar3D
-              avatarState={avatarState}
-              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
-              isSpeaking={isSpeaking}
-              personalityMode={personalitySettings.communicationStyle}
-              onInteraction={(type) => console.log(`3D Avatar interaction: ${type}`)}
-            />
-          ) : useLivingAvatar ? (
-            <LivingAvatar
-              avatarState={avatarState}
-              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
-              isSpeaking={isSpeaking}
-              personalityMode={personalitySettings.communicationStyle}
-              onInteraction={(type) => console.log(`Avatar interaction: ${type}`)}
-            />
-          ) : useInteractiveAvatar ? (
-            null // <-- This disables the interactive avatar
-          ) : useCustomAvatar ? (
-            null
-          ) : useVideo ? (
+          )
+//          {use3DAvatar ? (
+//            <Avatar3D
+//              avatarState={avatarState}
+//              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
+//              isSpeaking={isSpeaking}
+//              personalityMode={personalitySettings.communicationStyle}
+//              onInteraction={(type) => console.log(`3D Avatar interaction: ${type}`)}
+//            />
+//          ) : useLivingAvatar ? (
+//           <LivingAvatar
+//              avatarState={avatarState}
+//              emotion={avatarState === 'thinking' ? 'thoughtful' : avatarState === 'responding' ? 'excited' : 'loving'}
+//              isSpeaking={isSpeaking}
+//              personalityMode={personalitySettings.communicationStyle}
+//              onInteraction={(type) => console.log(`Avatar interaction: ${type}`)}
+//            />
+//          ) : useInteractiveAvatar ? (
+//            null // <-- This disables the interactive avatar
+//          ) : useCustomAvatar ? (
+//            null
+//          ) : useVideo ? (
             <video
               src={millaPortraitVideo}
               autoPlay
@@ -199,38 +200,37 @@ export default function Home() {
               }}
               data-testid="avatar-video"
             />
-          ) : (
-            <img
-              src={getAvatarImage()}
-              alt="Milla AI Assistant"
-              className="w-full h-full object-cover avatar-breathing"
-              style={{
-                animation: `
-                  breathing 4s ease-in-out infinite,
-                  subtle-blink 6s infinite,
-                  gentle-sway 8s ease-in-out infinite
-                `
-              }}
-              data-testid="avatar-image"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10"></div>
-          <div 
-            className={`absolute inset-0 transition-all duration-1000 ${
-              avatarState === 'thinking' ? 'bg-blue-500/5' :
-              avatarState === 'responding' ? 'bg-green-500/5' :
-              'bg-purple-500/3'
-            }`}
-          />
-          {useInteractiveAvatar && lastGesture && (
-            <div className="absolute bottom-4 left-4 z-20">
-              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white/90 text-sm font-medium animate-pulse border border-pink-400/30">
-                <i className="fas fa-sparkles mr-2 text-pink-400"></i>
-                Last gesture: <span className="text-pink-300 font-semibold capitalize">{lastGesture}</span>
-              </div>
-            </div>
-          )}
-        </div>
+//          ) : (
+//            <img
+//              src={getAvatarImage()}
+//              alt="Milla AI Assistant"
+//              className="w-full h-full object-cover avatar-breathing"
+//              style={{
+//                animation: `
+//                  breathing 4s ease-in-out infinite,
+//                  subtle-blink 6s infinite,
+//                  gentle-sway 8s ease-in-out infinite
+//                `
+//             }}
+//              data-testid="avatar-image"
+//            />
+//          )}
+//          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10"></div>
+//          <div className={`absolute inset-0 transition-all duration-1000 ${
+//              avatarState === 'thinking' ? 'bg-blue-500/5' :
+//              avatarState === 'responding' ? 'bg-green-500/5' :
+//              'bg-purple-500/3'
+//            }`}
+//          />
+//          {useInteractiveAvatar && lastGesture && (
+//            <div className="absolute bottom-4 left-4 z-20">
+//              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white/90 text-sm font-medium animate-pulse border border-pink-400/30">
+//                <i className="fas fa-sparkles mr-2 text-pink-400"></i>
+//                Last gesture: <span className="text-pink-300 font-semibold capitalize">{lastGesture}</span>
+//              </div>
+//            </div>
+//          )})
+        </div>)
         <SettingsPanel 
           voiceEnabled={voiceEnabled}
           onVoiceToggle={setVoiceEnabled}
