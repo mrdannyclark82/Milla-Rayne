@@ -152,7 +152,6 @@ export default function ChatInterface() {
           }}
           placeholder="Type your message..."
           onKeyDown={e => { if (e.key === "Enter" && !loading) handleSend(); }}
-          disabled={loading}
         />
         <button
           onClick={handleSend}
