@@ -28,14 +28,13 @@ type AvatarSettings = {
 };
 
 export default function Home() {
+  // --- Existing state hooks ---
   const [avatarState, setAvatarState] = useState<AvatarState>("neutral");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [voicePitch, setVoicePitch] = useState(1.1);
   const [voiceVolume, setVoiceVolume] = useState(0.8);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
-  
-  // Get available voices for voice picker
   const { voices: availableVoices } = useSpeechSynthesis();
   const [useVideo, setUseVideo] = useState(false);
   const [useCustomAvatar, setUseCustomAvatar] = useState(false);
@@ -55,8 +54,6 @@ export default function Home() {
     lighting: 75,
     glow: 60
   });
-  
-  // New settings state
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [backgroundBlur, setBackgroundBlur] = useState(75);
   const [chatTransparency, setChatTransparency] = useState(80);
@@ -66,7 +63,28 @@ export default function Home() {
     responseLength: 'medium' as 'short' | 'medium' | 'long',
     emotionalIntelligence: 'high' as 'low' | 'medium' | 'high'
   });
-  
+
+  // --- Add these for messages ---
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(true);
+  const [messagesError, setMessagesError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/memory")
+      .then(res => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+      })
+      .then(data => {
+        setMessages(Array.isArray(data) ? data : []);
+        setLoadingMessages(false);
+      })
+      .catch(err => {
+        setMessagesError(err.message);
+        setLoadingMessages(false);
+      });
+  }, []);
+
   // Get the appropriate avatar image based on state
   const getAvatarImage = () => {
     switch (avatarState) {
@@ -78,49 +96,41 @@ export default function Home() {
         return millaRealistic;
     }
   };
-  
+
   // Voice control handlers
   const handleVoiceChange = (voice: SpeechSynthesisVoice | null) => {
-    // Voice is passed directly
     setSelectedVoice(voice);
   };
 
   // Gesture feedback system
   const handleAvatarGesture = (gesture: GestureType) => {
     setLastGesture(gesture);
-    
-    // Log gesture for user feedback
     console.log(`🎭 Milla performed gesture: ${gesture}`);
-    
-    // Optional: Trigger voice response for certain gestures
     if (voiceEnabled && gesture === 'heart') {
       // Could trigger a loving response here
     }
-    
-    // Clear gesture after delay
     setTimeout(() => setLastGesture(null), 3000);
   };
-  
+
   const handleVoicePitchChange = () => {
     const pitches = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4];
     const currentIndex = pitches.indexOf(voicePitch);
     const nextIndex = (currentIndex + 1) % pitches.length;
     setVoicePitch(pitches[nextIndex]);
   };
-  
+
   const handleVoiceVolumeChange = () => {
     const volumes = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
     const currentIndex = volumes.indexOf(voiceVolume);
     const nextIndex = (currentIndex + 1) % volumes.length;
     setVoiceVolume(volumes[nextIndex]);
   };
-  
-  // Voice display helpers
+
   const getVoiceDisplayName = () => {
     if (!selectedVoice) return 'Default';
     return selectedVoice.name.split(' ')[0] || 'Default';
   };
-  
+
   const getVoicePitchLabel = () => {
     if (voicePitch === 0.8) return 'Lower';
     if (voicePitch === 0.9) return 'Low';
@@ -131,7 +141,7 @@ export default function Home() {
     if (voicePitch === 1.4) return 'Highest';
     return 'Custom';
   };
-  
+
   const getVoiceVolumeLabel = () => {
     if (voiceVolume === 0.3) return 'Whisper';
     if (voiceVolume === 0.5) return 'Soft';
@@ -153,7 +163,6 @@ export default function Home() {
     >
       {/* Left Side - Dynamic Avatar Video */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Dynamic Avatar with Video/Image/Custom */}
         <div className="relative w-full h-full overflow-hidden">
           {use3DAvatar ? (
             <Avatar3D
@@ -213,10 +222,7 @@ export default function Home() {
               data-testid="avatar-image"
             />
           )}
-          {/* Overlay for depth */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10"></div>
-          
-          {/* Dynamic glow effect based on avatar state */}
           <div 
             className={`absolute inset-0 transition-all duration-1000 ${
               avatarState === 'thinking' ? 'bg-blue-500/5' :
@@ -224,8 +230,6 @@ export default function Home() {
               'bg-purple-500/3'
             }`}
           />
-
-          {/* Gesture Feedback Display */}
           {useInteractiveAvatar && lastGesture && (
             <div className="absolute bottom-4 left-4 z-20">
               <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg px-3 py-2 text-white/90 text-sm font-medium animate-pulse border border-pink-400/30">
@@ -235,8 +239,6 @@ export default function Home() {
             </div>
           )}
         </div>
-        
-        {/* Settings Panel */}
         <SettingsPanel 
           voiceEnabled={voiceEnabled}
           onVoiceToggle={setVoiceEnabled}
@@ -269,8 +271,6 @@ export default function Home() {
             <i className="fas fa-cog text-sm"></i>
           </Button>
         </SettingsPanel>
-        
-        {/* Avatar Mode Toggle Buttons */}
         <div className="absolute top-4 right-4 z-50 flex space-x-1">
           <Button
             variant="ghost"
@@ -354,7 +354,6 @@ export default function Home() {
           </Button>
         </div>
       </div>
-      
       {/* Right Side - Dedicated Chat Container */}
       <div 
         className="w-96 flex flex-col transition-all duration-300 relative"
@@ -366,9 +365,21 @@ export default function Home() {
           border: chatTransparency < 50 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
         }}
       >
+        {/* --- Old Messages block --- */}
+        <div className="p-4 border-b border-gray-700">
+          <h2 className="text-lg font-semibold mb-2">Old Messages</h2>
+          {loadingMessages && <p>Loading...</p>}
+          {messagesError && <p className="text-red-500">Error: {messagesError}</p>}
+          <ul>
+            {messages.map((msg, i) => (
+              <li key={i} className="text-xs mb-1">{JSON.stringify(msg)}</li>
+            ))}
+          </ul>
+        </div>
+        {/* --- End Old Messages block --- */}
+
         <ChatInterface 
-          theme={theme}
-          onAvatarStateChange={setAvatarState}
+          
         />
       </div>
     </div>
