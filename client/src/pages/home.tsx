@@ -367,16 +367,6 @@ export default function Home() {
         }}
       >
         <ChatInterface 
-          onAvatarStateChange={setAvatarState}
-          onSpeakingStateChange={setIsSpeaking}
-          voiceEnabled={voiceEnabled}
-          speechRate={speechRate}
-          voicePitch={voicePitch}
-          voiceVolume={voiceVolume}
-          selectedVoice={selectedVoice}
-          theme={theme}
-          chatTransparency={chatTransparency}
-          personalitySettings={personalitySettings}
         />
       </div>
     </div>
