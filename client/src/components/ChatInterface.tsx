@@ -45,9 +45,11 @@ export default function ChatInterface() {
           onClick={handleSend}
           style={{ padding: "0.5rem 1rem", borderRadius: "0 8px 8px 0", border: "1px solid #ccc", background: "#007bff", color: "#fff" }}
         >
+
           Send
         </button>
       </div>
     </div>
   );
 }
+
