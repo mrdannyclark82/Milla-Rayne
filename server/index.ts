@@ -43,6 +43,10 @@ app.use((req, res, next) => {
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
   
+  // Initialize User Tasks system
+  const { initializeUserTasks } = await import("./userTaskService");
+  await initializeUserTasks();
+  
   // REMOVED - Personal Task system (user rarely used it)
   // await initializePersonalTaskSystem();
   
