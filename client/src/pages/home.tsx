@@ -181,17 +181,9 @@ export default function Home() {
               onInteraction={(type) => console.log(`Avatar interaction: ${type}`)}
             />
           ) : useInteractiveAvatar ? (
-            <InteractiveAvatar
-              avatarState={avatarState}
-              onGesture={handleAvatarGesture}
-              personalityMode={personalitySettings.communicationStyle}
-            />
+            null // <-- This disables the interactive avatar
           ) : useCustomAvatar ? (
-            <DynamicAvatar
-              avatarState={avatarState}
-              settings={avatarSettings}
-              useVideo={false}
-            />
+            null
           ) : useVideo ? (
             <video
               src={millaPortraitVideo}
@@ -304,6 +296,7 @@ export default function Home() {
           >
             <i className="fas fa-smile text-sm"></i>
           </Button>
+          {/* 
           <Button
             variant="ghost"
             size="sm"
@@ -320,6 +313,7 @@ export default function Home() {
           >
             <i className="fas fa-hand-pointer text-sm"></i>
           </Button>
+          */}
           <Button
             variant="ghost"
             size="sm"
