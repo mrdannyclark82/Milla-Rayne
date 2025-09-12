@@ -367,6 +367,8 @@ export default function Home() {
         }}
       >
         <ChatInterface 
+          theme={theme}
+          onAvatarStateChange={setAvatarState}
         />
       </div>
     </div>
