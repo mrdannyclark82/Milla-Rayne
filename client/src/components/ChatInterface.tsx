@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface Message {
   id: string;
@@ -6,6 +6,8 @@ interface Message {
   sender: "user" | "milla";
   timestamp: Date;
 }
+
+const BACKGROUND_IMAGE = "/background.jpg";
 
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
@@ -17,6 +19,16 @@ export default function ChatInterface() {
     }
   ]);
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = () => {
     if (input.trim()) {
@@ -54,71 +66,111 @@ export default function ChatInterface() {
     alert("Task feature coming soon!");
   };
 
+  // Get last 5 messages for display
+  const displayMessages = messages.slice(-5);
+
   return (
-    <div className="flex flex-col w-full max-w-xl min-h-[70vh] mx-auto">
-      {/* Top Bar with Action Buttons */}
-      <div className="flex justify-center items-center p-4 border-b border-gray-200">
-        <div className="flex gap-4">
-          <button 
-            onClick={handleOpenCalendar}
-            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 shadow-sm"
-          >
-            📅 Calendar
-          </button>
-          <button 
-            onClick={handleOpenTasks}
-            className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200 shadow-sm"
-          >
-            📋 Tasks
-          </button>
-        </div>
+    <div
+      className="relative h-screen w-screen overflow-hidden"
+      style={{
+        backgroundImage: `url('${BACKGROUND_IMAGE}')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
+      {/* Full page background overlay for better readability */}
+      <div className="absolute inset-0 bg-black/30"></div>
+      
+      {/* Bottom Left - Action Buttons */}
+      <div className="absolute bottom-6 left-6 flex gap-3 z-10">
+        <button 
+          onClick={handleOpenCalendar}
+          className="px-4 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
+        >
+          📅 Calendar
+        </button>
+        <button 
+          onClick={handleOpenTasks}
+          className="px-4 py-3 bg-green-500/90 text-white rounded-lg hover:bg-green-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
+        >
+          📋 Tasks
+        </button>
       </div>
 
-      {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-sm ${
-                message.sender === "user"
-                  ? "bg-blue-500 text-white rounded-br-md"
-                  : "bg-white text-gray-800 border border-gray-200 rounded-bl-md"
-              }`}
-            >
-              <p className="text-sm">{message.text}</p>
-              <p className={`text-xs mt-1 ${
-                message.sender === "user" ? "text-blue-100" : "text-gray-400"
-              }`}>
-                {message.timestamp.toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-              </p>
+      {/* Right Side - Chat Area */}
+      <div className="absolute right-6 top-6 bottom-6 w-96 flex flex-col z-10">
+        {/* Chat Messages Area - Limited to last 5 messages */}
+        <div className="flex-1 mb-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
+            <div className="p-4 border-b border-white/20">
+              <h2 className="text-white font-semibold text-lg">Chat with Milla</h2>
+              <p className="text-white/70 text-sm">Showing last 5 messages</p>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+              {displayMessages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} message-fade-in`}
+                >
+                  <div
+                    className={`max-w-xs px-4 py-3 rounded-2xl shadow-sm ${
+                      message.sender === "user"
+                        ? "bg-blue-500/90 text-white rounded-br-md backdrop-blur-sm"
+                        : "bg-white/90 text-gray-800 rounded-bl-md backdrop-blur-sm"
+                    }`}
+                  >
+                    <p className="text-sm leading-relaxed">{message.text}</p>
+                    <p className={`text-xs mt-2 ${
+                      message.sender === "user" ? "text-blue-100" : "text-gray-500"
+                    }`}>
+                      {message.timestamp.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-gray-200">
-        <div className="flex gap-2">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 px-4 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Type your message..."
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 shadow-sm"
-          >
-            Send
-          </button>
+        {/* Bottom Right - Input Area */}
+        <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl p-4">
+          <div className="flex gap-3">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="flex-1 px-4 py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="Type your message..."
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="px-6 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+              placeholder="Type your message..."
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim()}
+              className="px-6 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium"
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
     </div>
