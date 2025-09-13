@@ -54,18 +54,24 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
         
         // Include video analysis context if available
-        let contextualMessage = messageToSend;
+        let context = undefined;
         if (videoAnalysisResults && videoAnalysisResults.length > 0) {
-          const detectedObjects = videoAnalysisResults
-            .map(r => `${r.class} (${Math.round(r.score * 100)}%)`)
-            .join(', ');
-          contextualMessage = `[Video Analysis Context: Currently seeing - ${detectedObjects}] ${messageToSend}`;
+          context = {
+            detectedObjects: videoAnalysisResults.map(r => ({
+              class: r.class,
+              score: r.score,
+              bbox: r.bbox
+            }))
+          };
         }
         
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: contextualMessage }),
+          body: JSON.stringify({
+            message: messageToSend,
+            context
+          }),
           signal: controller.signal
         });
         
