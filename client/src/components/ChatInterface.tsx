@@ -7,7 +7,17 @@ interface Message {
   timestamp: Date;
 }
 
-export default function ChatInterface() {
+interface VideoAnalysisResult {
+  bbox: [number, number, number, number];
+  class: string;
+  score: number;
+}
+
+interface ChatInterfaceProps {
+  videoAnalysisResults?: VideoAnalysisResult[];
+}
+
+export default function ChatInterface({ videoAnalysisResults }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -43,10 +53,19 @@ export default function ChatInterface() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
         
+        // Include video analysis context if available
+        let contextualMessage = messageToSend;
+        if (videoAnalysisResults && videoAnalysisResults.length > 0) {
+          const detectedObjects = videoAnalysisResults
+            .map(r => `${r.class} (${Math.round(r.score * 100)}%)`)
+            .join(', ');
+          contextualMessage = `[Video Analysis Context: Currently seeing - ${detectedObjects}] ${messageToSend}`;
+        }
+        
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: messageToSend }),
+          body: JSON.stringify({ message: contextualMessage }),
           signal: controller.signal
         });
         
@@ -126,8 +145,18 @@ export default function ChatInterface() {
       <div className="flex-1 mb-4">
         <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
           <div className="p-3 sm:p-4 border-b border-white/20">
-            <h2 className="text-black font-semibold text-base sm:text-lg">Chat with Milla</h2>
-            <p className="text-gray-700 text-xs sm:text-sm">Showing last 10 messages</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-black font-semibold text-base sm:text-lg">Chat with Milla</h2>
+                <p className="text-gray-700 text-xs sm:text-sm">Showing last 10 messages</p>
+              </div>
+              {videoAnalysisResults && videoAnalysisResults.length > 0 && (
+                <div className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-xs text-green-700 font-medium">Video Active</span>
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 chat-scroll">
             {displayMessages.map((message) => (
