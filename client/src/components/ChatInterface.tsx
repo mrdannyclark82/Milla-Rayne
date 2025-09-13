@@ -39,11 +39,19 @@ export default function ChatInterface() {
 
       // Replace this with a real backend call
       try {
+        // Add timeout to prevent hanging requests
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: messageToSend }),
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
+        
         if (res.ok) {
           const data = await res.json();
           setMessages(prev => [
@@ -56,22 +64,44 @@ export default function ChatInterface() {
             }
           ]);
         } else {
+          // Handle different error status codes
+          let errorMessage = "Sorry, I couldn't reach the AI service.";
+          
+          if (res.status === 400) {
+            errorMessage = "There was an issue with your message format. Please try again.";
+          } else if (res.status === 429) {
+            errorMessage = "I'm getting a lot of messages right now. Please wait a moment and try again.";
+          } else if (res.status >= 500) {
+            errorMessage = "I'm experiencing some technical difficulties. Please try again in a moment.";
+          }
+          
           setMessages(prev => [
             ...prev,
             {
               id: (Date.now() + 1).toString(),
-              text: "Sorry, I couldn't reach the AI service.",
+              text: errorMessage,
               sender: "milla",
               timestamp: new Date()
             }
           ]);
         }
       } catch (err) {
+        console.error("Chat communication error:", err);
+        
+        // Provide more specific error messages based on error type
+        let errorMessage = "Error communicating with backend.";
+        
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          errorMessage = "Unable to connect to the server. Please check your internet connection and try again.";
+        } else if (err instanceof Error && err.name === 'AbortError') {
+          errorMessage = "The request timed out. Please try again.";
+        }
+        
         setMessages(prev => [
           ...prev,
           {
             id: (Date.now() + 1).toString(),
-            text: "Error communicating with backend.",
+            text: errorMessage,
             sender: "milla",
             timestamp: new Date()
           }
