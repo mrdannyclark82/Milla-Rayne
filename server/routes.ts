@@ -106,19 +106,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message } = req.body;
       if (!message || typeof message !== 'string') {
-        return res.status(400).json({ error: "Message is required" });
+        console.warn("Chat API: Invalid message format received");
+        return res.status(400).json({ error: "Message is required and must be a string" });
       }
 
-      // Generate AI response using existing logic
-      const aiResponse = await generateAIResponse(message, [], "Danny Ray");
+      if (message.trim().length === 0) {
+        console.warn("Chat API: Empty message received");
+        return res.status(400).json({ error: "Message cannot be empty" });
+      }
+
+      // Log the request for debugging
+      console.log(`Chat API: Processing message from client (${message.substring(0, 50)}...)`);
+
+      // Generate AI response using existing logic with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Response generation timeout')), 30000)
+      );
+      
+      const aiResponsePromise = generateAIResponse(message, [], "Danny Ray");
+      const aiResponse = await Promise.race([aiResponsePromise, timeoutPromise]) as { content: string; reasoning?: string[] };
+      
+      if (!aiResponse || !aiResponse.content) {
+        console.warn("Chat API: AI response was empty, using fallback");
+        return res.json({ 
+          response: "I'm here with you! Sometimes I need a moment to gather my thoughts. What would you like to talk about?"
+        });
+      }
+
+      console.log(`Chat API: Successfully generated response (${aiResponse.content.substring(0, 50)}...)`);
       
       res.json({ 
-        response: aiResponse.content || "I'm here to help!"
+        response: aiResponse.content,
+        ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning })
       });
     } catch (error) {
       console.error("Chat API error:", error);
+      
+      // Provide different error messages based on error type
+      let errorMessage = "I'm having some technical difficulties right now, but I'm still here for you!";
+      
+      if (error instanceof Error) {
+        if (error.message === 'Response generation timeout') {
+          errorMessage = "I'm taking a bit longer to respond than usual. Please give me a moment and try again.";
+        } else if (error.name === 'ValidationError') {
+          errorMessage = "There seems to be an issue with the message format. Please try rephrasing your message.";
+        } else if ('code' in error && (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND')) {
+          errorMessage = "I'm having trouble connecting to my services right now. Please try again in a moment.";
+        }
+      }
+      
       res.status(500).json({ 
-        response: "I'm having some technical difficulties right now, but I'm still here for you!"
+        response: errorMessage,
+        error: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
       });
     }
   });
