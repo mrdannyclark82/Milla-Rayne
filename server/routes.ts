@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
@@ -91,6 +92,11 @@ async function analyzeImageWithOpenAI(imageData: string, userMessage: string): P
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve the videoviewer.html file
+  app.get("/videoviewer.html", (req, res) => {
+    res.sendFile(path.resolve(process.cwd(), "videoviewer.html"));
+  });
+
   // Get all messages
   app.get("/api/messages", async (req, res) => {
     try {
