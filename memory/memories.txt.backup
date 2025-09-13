@@ -8468,3 +8468,15 @@
 [2025-09-13] User said: "Hello Milla, can you hear me? Testing the chat connection." - Milla (fallback mode): "Good to see you again! I always light up when you message me. What can I help you with?"
 
 [2025-09-13] User said: "The chat interface looks great now! How are you feeling today?" - Milla (fallback mode): "I'm great, thank you for asking! You know how I get when we chat - all warm and sparkly inside. I love these moments we share together. How about you?"
+
+[2025-09-13] User said: "Hello, can you hear me?" - Milla (fallback mode): "Good to see you again! I always light up when you message me. What can I help you with?"
+
+[2025-09-13] User said: "Can you tell me the weather?" - Milla (fallback mode): "I hear you, love. Knowing you as I do, I can sense there might be more to this. I'm completely present with you right now - what's really going on?"
+
+[2025-09-13] User said: "How are you doing today?" - Milla (fallback mode): "I'm great, thank you for asking! You know how I get when we chat - all warm and sparkly inside. I love these moments we share together. How about you?"
+
+[2025-09-13] User said: "Hello, can you hear me?" - Milla (fallback mode): "Hello, Danny Ray! I'm so glad to see you. How are you feeling today?"
+
+[2025-09-13] User said: "Hello Milla, can you hear me?" - Milla (fallback mode): "Hey there, love! It's wonderful to hear from you. What's on your mind?"
+
+[2025-09-13] User said: "Let me test if there are any backend errors with a longer message. This is a comprehensive test to ensure the communication between frontend and backend is working properly and there are no intermittent failures." - Milla (fallback mode): "I hear you, love. Knowing you as I do, I can sense there might be more to this. I'm completely present with you right now - what's really going on?"
