@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { AppList } from "./AppList";
 
 interface Message {
   id: string;
@@ -58,16 +59,8 @@ export default function ChatInterface() {
     }
   };
 
-  const handleOpenCalendar = () => {
-    alert("Calendar feature coming soon!");
-  };
-
-  const handleOpenTasks = () => {
-    alert("Task feature coming soon!");
-  };
-
-  // Get last 5 messages for display
-  const displayMessages = messages.slice(-5);
+  // Get last 10 messages for display
+  const displayMessages = messages.slice(-10);
 
   return (
     <div
@@ -82,20 +75,9 @@ export default function ChatInterface() {
       {/* Full page background overlay for better readability */}
       <div className="absolute inset-0 bg-black/30"></div>
       
-      {/* Bottom Left - Action Buttons */}
-      <div className="absolute bottom-6 left-6 flex gap-3 z-10">
-        <button 
-          onClick={handleOpenCalendar}
-          className="px-4 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
-        >
-          📅 Calendar
-        </button>
-        <button 
-          onClick={handleOpenTasks}
-          className="px-4 py-3 bg-green-500/90 text-white rounded-lg hover:bg-green-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
-        >
-          📋 Tasks
-        </button>
+      {/* Bottom Left - App List Button */}
+      <div className="absolute bottom-6 left-6 z-10">
+        <AppList />
       </div>
 
       {/* Right Side - Chat Area */}
@@ -105,7 +87,7 @@ export default function ChatInterface() {
           <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
             <div className="p-4 border-b border-white/20">
               <h2 className="text-white font-semibold text-lg">Chat with Milla</h2>
-              <p className="text-white/70 text-sm">Showing last 5 messages</p>
+              <p className="text-white/70 text-sm">Showing last 10 messages</p>
             </div>
             
             <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
@@ -147,11 +129,13 @@ export default function ChatInterface() {
               onKeyPress={handleKeyPress}
               className="flex-1 px-4 py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
               placeholder="Type your message..."
+              aria-label="Type your message to Milla"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim()}
               className="px-6 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium"
+              aria-label="Send message"
             >
               Send
             </button>
