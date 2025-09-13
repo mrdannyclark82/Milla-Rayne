@@ -94,7 +94,7 @@ async function analyzeImageWithOpenAI(imageData: string, userMessage: string): P
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve the videoviewer.html file
   app.get("/videoviewer.html", (req, res) => {
-    res.sendFile(path.resolve(process.cwd(), "videoviewer.html"));
+    res.sendFile(path.resolve(process.cwd(), "client", "public", "videoviewer.html"));
   });
 
   // Get all messages
