@@ -7,8 +7,6 @@ interface Message {
   timestamp: Date;
 }
 
-const BACKGROUND_IMAGE = "/background.jpg";
-
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,46 +56,11 @@ export default function ChatInterface() {
     }
   };
 
-  const handleOpenCalendar = () => {
-    alert("Calendar feature coming soon!");
-  };
-
-  const handleOpenTasks = () => {
-    alert("Task feature coming soon!");
-  };
-
   // Get last 5 messages for display
   const displayMessages = messages.slice(-5);
 
   return (
-    <div
-      className="relative h-screen w-screen overflow-hidden"
-      style={{
-        backgroundImage: `url('${BACKGROUND_IMAGE}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      {/* Full page background overlay for better readability */}
-      <div className="absolute inset-0 bg-black/30"></div>
-      
-      {/* Bottom Left - Action Buttons */}
-      <div className="absolute bottom-6 left-6 flex gap-3 z-10">
-        <button 
-          onClick={handleOpenCalendar}
-          className="px-4 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
-        >
-          📅 Calendar
-        </button>
-        <button 
-          onClick={handleOpenTasks}
-          className="px-4 py-3 bg-green-500/90 text-white rounded-lg hover:bg-green-600/90 transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 flex items-center gap-2 font-medium"
-        >
-          📋 Tasks
-        </button>
-      </div>
-
+    <div className="relative h-screen w-screen overflow-hidden">
       {/* Right Side - Chat Area */}
       <div className="absolute right-6 top-6 bottom-6 w-96 flex flex-col z-10">
         {/* Chat Messages Area - Limited to last 5 messages */}
