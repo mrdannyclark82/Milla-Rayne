@@ -83,8 +83,8 @@
             // --- PostMessage Communication ---
             const sendMessage = (type, data = {}) => {
                 if (window.parent && window.parent !== window) {
-                    // Replace 'https://your-parent-domain.com' with the actual expected parent origin
-                    window.parent.postMessage({ type, data }, 'https://your-parent-domain.com');
+                    // Send to parent window with same origin
+                    window.parent.postMessage({ type, data }, window.location.origin);
                 }
             };
 
