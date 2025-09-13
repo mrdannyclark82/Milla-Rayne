@@ -9,7 +9,8 @@ export default function Home() {
       className="flex flex-col h-screen w-screen overflow-hidden"
       style={{
         backgroundImage: `url('${BACKGROUND_IMAGE}')`,
-        backgroundSize: "cover",
+        backgroundSize: "contain", // Show full image without cropping
+        backgroundRepeat: "no-repeat", // Prevent tiling
         backgroundPosition: "center",
       }}
     >
