@@ -41,11 +41,9 @@
             let analysisCallback = null;
 
             // TODO: Replace with your actual Gemini API key or load securely
-            const apiKey = "YOUR_GEMINI_API_KEY_HERE"; // API key for Gemini models
+            const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : "YOUR_GEMINI_API_KEY_HERE"; // API key for Gemini models
 
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-            // Use a global variable or environment injection for the API key
-            const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : '';
             if (!apiKey) {
                 updateStatus('Error: API key is missing. Please provide a valid API key via secure configuration.');
             }
@@ -164,7 +162,6 @@
                  // console.log("Firebase config and app id: ", firebaseConfig, appId);
                  console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
                  console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
-            };
         })();
     </script>
 </body>
