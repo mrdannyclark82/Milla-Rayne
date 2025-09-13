@@ -19,13 +19,8 @@ export default function ChatInterface() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto scroll to bottom when new messages are added
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = () => {
@@ -56,22 +51,19 @@ export default function ChatInterface() {
     }
   };
 
-  // Get last 5 messages for display
   const displayMessages = messages.slice(-5);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {/* Right Side - Chat Area */}
       <div className="absolute right-6 top-6 bottom-6 w-96 flex flex-col z-10">
-        {/* Chat Messages Area - Limited to last 5 messages */}
         <div className="flex-1 mb-4">
           <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
             <div className="p-4 border-b border-white/20">
               <h2 className="text-white font-semibold text-lg">Chat with Milla</h2>
               <p className="text-white/70 text-sm">Showing last 5 messages</p>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll" style={{ minHeight: "300px", maxHeight: "400px" }}>
               {displayMessages.map((message) => (
                 <div
                   key={message.id}
@@ -100,8 +92,6 @@ export default function ChatInterface() {
             </div>
           </div>
         </div>
-
-        {/* Bottom Right - Input Area */}
         <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl p-4">
           <div className="flex gap-3">
             <input
