@@ -16,8 +16,8 @@ export default function ChatInterface() {
       timestamp: new Date()
     }
   ]);
-  const [input, setInput] = useState(""
-                                     
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
