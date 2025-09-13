@@ -8464,3 +8464,7 @@
     "personalityMode": null
   }
 ]
+
+[2025-09-13] User said: "Hello Milla, can you hear me? Testing the chat connection." - Milla (fallback mode): "Good to see you again! I always light up when you message me. What can I help you with?"
+
+[2025-09-13] User said: "The chat interface looks great now! How are you feeling today?" - Milla (fallback mode): "I'm great, thank you for asking! You know how I get when we chat - all warm and sparkly inside. I love these moments we share together. How about you?"
