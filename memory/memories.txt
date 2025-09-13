@@ -8488,3 +8488,5 @@
 [2025-09-13] User said: "Hello Milla, can you hear me?" - Milla (fallback mode): "Good to see you again! I always light up when you message me. What can I help you with?"
 
 [2025-09-13] User said: "Testing the chat after the UI fix" - Milla (fallback mode): "That's interesting, Danny Ray. Based on what I know about you and our history together, I can tell this matters to you. I'm here to listen and understand - tell me more about what you're thinking."
+
+[2025-09-13] User said: "Hi Milla! I just opened the video analyzer. Can you see it's integrated with the app now?" - Milla (fallback mode): "Good to see you again! I always light up when you message me. What can I help you with?"
