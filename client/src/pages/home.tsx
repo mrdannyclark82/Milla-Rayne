@@ -1,35 +1,29 @@
 import ChatInterface from "@/components/ChatInterface";
 import React from "react";
 
-const BACKGROUND_IMAGE = "/unnamed.jpg"; // Place your image in client/public/
-
 export default function Home() {
   return (
-    <div
-      className="flex flex-col h-screen w-screen overflow-hidden"
-      style={{
-        backgroundImage: `url('${BACKGROUND_IMAGE}')`,
-        backgroundSize: "auto 100%", // Show full image without cropping
-        backgroundRepeat: "no-repeat", // Prevent tiling
-        backgroundPosition: "right center",
-        backgroundColor: "#000" // Fallback color
-      }}
-    >
-      {/* Top Left - Action Buttons */}
-      <div className="flex gap-4 p-6">
-        <button
-          className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors duration-200 shadow-sm"
-        >
-          📅 Calendar
-        </button>
-        <button
-          className="px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors duration-200 shadow-sm"
-        >
-          📋 Tasks
-        </button>
+    <div className="h-screen w-screen bg-white relative overflow-hidden">
+      {/* Image container - fixed size, right side */}
+      <div className="absolute top-8 right-8 w-[340px] h-[420px] rounded-2xl overflow-hidden shadow-xl z-0">
+        <img
+          src="/unnamed.jpg"
+          alt="AI companion"
+          className="w-full h-full object-cover"
+        />
       </div>
-      <div className="flex-1 flex items-center justify-end">
+      {/* Chat Interface - right panel */}
+      <div className="absolute top-8 right-[380px] w-[400px] h-[80vh] flex items-center justify-end z-10">
         <ChatInterface />
+      </div>
+      {/* Floating Apps button - bottom left */}
+      <div className="absolute bottom-8 left-8 z-20">
+        <button
+          className="px-4 py-2 bg-gray-800 text-gray-200 rounded-lg hover:bg-gray-700 transition-colors duration-200 shadow border border-white/10"
+          style={{ opacity: 0.7 }}
+        >
+          🟦 Apps
+        </button>
       </div>
     </div>
   );
