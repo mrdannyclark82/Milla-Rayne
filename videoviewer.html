@@ -83,7 +83,8 @@
             // --- PostMessage Communication ---
             const sendMessage = (type, data = {}) => {
                 if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({ type, data }, '*');
+                    // Replace 'https://your-parent-domain.com' with the actual expected parent origin
+                    window.parent.postMessage({ type, data }, 'https://your-parent-domain.com');
                 }
             };
 
@@ -107,9 +108,6 @@
                         window.videoAnalyzer.stopAnalysis();
                         break;
                     case 'stopCamera':
-                        window.videoAnalyzer.stopStream();
-                        break;
-                    case 'stopAll':
                         window.videoAnalyzer.stopStream();
                         break;
                 }
