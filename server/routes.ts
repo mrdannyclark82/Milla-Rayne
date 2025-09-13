@@ -101,6 +101,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat endpoint for frontend compatibility
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Generate AI response using existing logic
+      const aiResponse = await generateAIResponse(message, [], "Danny Ray");
+      
+      res.json({ 
+        response: aiResponse.content || "I'm here to help!"
+      });
+    } catch (error) {
+      console.error("Chat API error:", error);
+      res.status(500).json({ 
+        response: "I'm having some technical difficulties right now, but I'm still here for you!"
+      });
+    }
+  });
+
   // Create a new message
   app.post("/api/messages", async (req, res) => {
     try {
