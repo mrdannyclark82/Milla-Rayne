@@ -122,31 +122,28 @@ export default function ChatInterface() {
   const displayMessages = messages.slice(-10);
 
   return (
-
-    <div className="absolute right-6 top-6 bottom-6 w-96 flex flex-col z-10">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-80 sm:w-96 h-[500px] sm:h-[600px] flex flex-col z-10">
       <div className="flex-1 mb-4">
         <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
-          <div className="p-4 border-b border-white/20">
-            <h2 className="text-black font-semibold text-lg">Chat with Milla</h2>
-            <p className="text-gray-700 text-sm">Showing last 10 messages</p>
+          <div className="p-3 sm:p-4 border-b border-white/20">
+            <h2 className="text-black font-semibold text-base sm:text-lg">Chat with Milla</h2>
+            <p className="text-gray-700 text-xs sm:text-sm">Showing last 10 messages</p>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scroll">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 chat-scroll">
             {displayMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} message-fade-in`}
               >
-
                 <div
-                  className={`max-w-xs px-4 py-3 rounded-2xl shadow-sm ${
+                  className={`max-w-[250px] sm:max-w-xs px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm ${
                     message.sender === "user"
                       ? "bg-blue-500/90 text-white rounded-br-md backdrop-blur-sm"
                       : "bg-white/90 text-gray-800 rounded-bl-md backdrop-blur-sm"
                   }`}
                 >
-
-                  <p className="text-sm leading-relaxed">{message.text}</p>
-                  <p className={`text-xs mt-2 ${message.sender === "user" ? "text-blue-100" : "text-gray-500"}`}>
+                  <p className="text-xs sm:text-sm leading-relaxed">{message.text}</p>
+                  <p className={`text-xs mt-1 sm:mt-2 ${message.sender === "user" ? "text-blue-100" : "text-gray-500"}`}>
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -156,25 +153,24 @@ export default function ChatInterface() {
           </div>
         </div>
       </div>
-      <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl p-4">
-        <div className="flex gap-3">
+      <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl p-3 sm:p-4">
+        <div className="flex gap-2 sm:gap-3">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 px-4 py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all text-sm sm:text-base"
             placeholder="Type your message..."
             aria-label="Type your message"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="px-6 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium text-sm sm:text-base"
             aria-label="Send message"
           >
             Send
           </button>
-
         </div>
       </div>
     </div>
