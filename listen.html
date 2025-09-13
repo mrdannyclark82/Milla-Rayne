@@ -40,14 +40,15 @@
             let audioChunks = [];
             let analysisCallback = null;
 
-            // --- Firebase setup variables ---
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
-            const apiKey = ""; // API key for Gemini models
+            // TODO: Replace with your actual Gemini API key or load securely
+            const apiKey = "YOUR_GEMINI_API_KEY_HERE"; // API key for Gemini models
 
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-
+            // Use a global variable or environment injection for the API key
+            const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : '';
+            if (!apiKey) {
+                updateStatus('Error: API key is missing. Please provide a valid API key via secure configuration.');
+            }
             // --- Helper function to update status ---
             const updateStatus = (message) => {
                 console.log(`[AudioAnalyzer] Status: ${message}`);
@@ -160,8 +161,8 @@
             };
 
             // --- Initial setup on window load ---
-            window.onload = () => {
-                 console.log("Firebase config and app id: ", firebaseConfig, appId);
+                 // console.log("Firebase config and app id: ", firebaseConfig, appId);
+                 console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
                  console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
             };
         })();

@@ -160,19 +160,4 @@ export default function ChatInterface() {
       </div>
     </div>
   );
-}-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
-              placeholder="Type your message..."
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="px-6 py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }

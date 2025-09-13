@@ -13,8 +13,13 @@ class BrowserAgentTool:
     - Install the playwright library: pip install playwright
     - Install browser binaries: playwright install
     """
-    def __init__(self):
-        """Initializes the browser context."""
+    def __init__(self, headless: bool = True):
+        """Initializes the browser context.
+
+        Args:
+            headless: Whether to run the browser in headless mode (default: True).
+        """
+        self.headless = headless
         self.playwright = None
         self.browser = None
         self.page = None
@@ -26,7 +31,7 @@ class BrowserAgentTool:
         """
         self.playwright = await async_playwright().start()
         # Use headless=True for running in the background without a UI
-        self.browser = await self.playwright.chromium.launch(headless=True)
+        self.browser = await self.playwright.chromium.launch(headless=self.headless)
         self.page = await self.browser.new_page()
 
     async def cleanup(self):
@@ -150,7 +155,7 @@ class BrowserAgentTool:
 # Example of how the tool could be used by an AI assistant
 async def main():
     """Demonstrates how to use the BrowserAgentTool class."""
-    browser_tool = BrowserAgentTool()
+    browser_tool = BrowserAgentTool(headless=True)  # Set headless=False for debugging with UI
 
     try:
         # 1. Initialize the tool
