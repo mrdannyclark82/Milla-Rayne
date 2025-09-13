@@ -9,9 +9,10 @@ export default function Home() {
       className="flex flex-col h-screen w-screen overflow-hidden"
       style={{
         backgroundImage: `url('${BACKGROUND_IMAGE}')`,
-        backgroundSize: "contain", // Show full image without cropping
+        backgroundSize: "auto 100%", // Show full image without cropping
         backgroundRepeat: "no-repeat", // Prevent tiling
-        backgroundPosition: "center",
+        backgroundPosition: "right center",
+        backgroundColor: "#000" // Fallback color
       }}
     >
       {/* Top Left - Action Buttons */}
@@ -27,7 +28,7 @@ export default function Home() {
           📋 Tasks
         </button>
       </div>
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-end">
         <ChatInterface />
       </div>
     </div>
