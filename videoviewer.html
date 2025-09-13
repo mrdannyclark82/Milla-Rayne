@@ -64,6 +64,7 @@
          * ---------------------------------------------------------------------
          * This script exposes a global `videoAnalyzer` object that can be
          * used by an external program to control the video analysis process.
+         * It also supports postMessage communication for iframe integration.
          */
         (function() {
             // --- DOM Elements ---
@@ -79,10 +80,46 @@
             let animationFrameId = null;
             let analysisCallback = null;
 
+            // --- PostMessage Communication ---
+            const sendMessage = (type, data = {}) => {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({ type, data }, '*');
+                }
+            };
+
+            // Listen for commands from parent window
+            window.addEventListener('message', (event) => {
+                const { command } = event.data;
+                
+                switch (command) {
+                    case 'initialize':
+                        window.videoAnalyzer.initialize();
+                        break;
+                    case 'startCamera':
+                        window.videoAnalyzer.startCamera();
+                        break;
+                    case 'startAnalysis':
+                        window.videoAnalyzer.startAnalysis((results) => {
+                            sendMessage('analysisResults', { results });
+                        });
+                        break;
+                    case 'stopAnalysis':
+                        window.videoAnalyzer.stopAnalysis();
+                        break;
+                    case 'stopCamera':
+                        window.videoAnalyzer.stopStream();
+                        break;
+                    case 'stopAll':
+                        window.videoAnalyzer.stopStream();
+                        break;
+                }
+            });
+
             // --- Private Helper Functions ---
             const updateStatus = (message) => {
                 console.log(`[VideoAnalyzer] Status: ${message}`);
                 statusOverlay.textContent = `STATUS: ${message}`;
+                sendMessage('statusUpdate', { status: message });
             };
             
             const drawBoundingBoxes = (predictions) => {
@@ -135,16 +172,19 @@
                     return new Promise(async (resolve, reject) => {
                         if (model) {
                             updateStatus("Model already loaded.");
+                            sendMessage('modelLoaded');
                             return resolve();
                         }
                         try {
                             updateStatus("Loading AI model...");
                             model = await cocoSsd.load();
                             updateStatus("Ready");
+                            sendMessage('modelLoaded');
                             resolve();
                         } catch (error) {
                             console.error("Failed to load model:", error);
                             updateStatus("Error: Model failed to load.");
+                            sendMessage('error', { message: "Model failed to load" });
                             reject(error);
                         }
                     });
@@ -157,7 +197,9 @@
                 startCamera: function() {
                     return new Promise(async (resolve, reject) => {
                         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                            return reject(new Error("Browser does not support camera access."));
+                            const error = new Error("Browser does not support camera access.");
+                            sendMessage('error', { message: error.message });
+                            return reject(error);
                         }
                         this.stopStream(); // Stop any existing stream first
                         try {
@@ -166,10 +208,12 @@
                             videoElement.srcObject = stream;
                             currentStream = stream;
                             updateStatus("Camera feed active.");
+                            sendMessage('cameraStarted');
                             resolve();
                         } catch (error) {
                             console.error("Error accessing camera:", error);
                             updateStatus("Error: Camera access denied.");
+                            sendMessage('error', { message: "Camera access denied" });
                             reject(error);
                         }
                     });
@@ -206,16 +250,19 @@
                     if (!model) {
                         console.error("Analysis failed: Model not initialized.");
                         updateStatus("Error: Model not loaded.");
+                        sendMessage('error', { message: "Model not loaded" });
                         return;
                     }
                     if (videoElement.readyState < 3) {
                          console.error("Analysis failed: Video not ready.");
                         updateStatus("Error: Video not ready.");
+                        sendMessage('error', { message: "Video not ready" });
                          return;
                     }
                     isAnalyzing = true;
                     analysisCallback = callback;
                     updateStatus("Analysis running...");
+                    sendMessage('analysisStarted');
                     detectionLoop();
                 },
 
@@ -232,6 +279,7 @@
                     // Clear the canvas
                     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
                     updateStatus("Analysis stopped.");
+                    sendMessage('analysisStopped');
                 },
 
                 /**
@@ -246,6 +294,7 @@
                     videoElement.src = "";
                     currentStream = null;
                     updateStatus("Stream stopped.");
+                    sendMessage('cameraStopped');
                 }
             };
         })();
