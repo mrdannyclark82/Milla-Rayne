@@ -31,14 +31,39 @@
 }
 .text-muted-foreground {
   color: #bababa;
-}@media (max-width: 768px) {
-  /* Make drawer responsive on mobile */
-  .fixed.w-72 {
-    width: 90vw; min-width: 0;
+}
+
+/* Responsive Design Improvements */
+@media (max-width: 768px) {
+  /* Chat interface responsive adjustments */
+  .fixed.bottom-4.right-4 {
+    bottom: 1rem;
+    right: 1rem;
+    width: calc(100vw - 2rem);
+    max-width: 20rem;
   }
+  
+  /* Ensure image doesn't interfere on mobile */
+  .absolute.top-4.right-4 {
+    top: 1rem;
+    right: 1rem;
+    width: 200px !important;
+    height: 250px !important;
+  }
+}
 
-  .absolute.w-96 {
-    width: 100vw; right: 0; left: 0;
-
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .fixed.bottom-4.right-4 {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: calc(100vw - 1rem);
+    max-width: 18rem;
+    height: 400px;
+  }
+  
+  .absolute.top-4.right-4 {
+    width: 150px !important;
+    height: 200px !important;
   }
 }
