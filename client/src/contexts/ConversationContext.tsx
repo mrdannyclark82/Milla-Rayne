@@ -65,7 +65,7 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       { role: 'user' as const, content: exchange.userMessage },
       { role: 'assistant' as const, content: exchange.assistantMessage }
     ]);
-    return allMessages.slice(-4); // Last 4 messages
+    return allMessages.slice(-10); // Last 10 messages
   };
 
   // Extract user name from message patterns
