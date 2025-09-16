@@ -101,7 +101,7 @@ export async function generateXAIResponse(
     })));
 
     const result = await generateText({
-      model: xai("grok-beta"),
+      model: xai("grok-3"),
       messages: messages,
       temperature: 0.8,
     });
