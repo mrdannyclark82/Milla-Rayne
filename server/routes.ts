@@ -14,14 +14,8 @@ import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./vis
 import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext, checkBreakReminders, checkPostBreakReachout } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
-import { generateXAIResponse } from "./xaiService";
+import { generateMistralResponse } from "./mistralService";
 import OpenAI from "openai";
-
-// Initialize XAI client for image analysis
-const xaiClient = new OpenAI({ 
-  baseURL: "https://api.x.ai/v1", 
-  apiKey: process.env.XAI_API_KEY 
-});
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -55,40 +49,20 @@ function generateImageAnalysisFallback(userMessage: string): string {
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
-// Function to analyze images using OpenAI Vision
+// Function to analyze images - currently disabled as we're using Mistral which doesn't have vision capabilities
 async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
-  try {
-    const response = await xaiClient.chat.completions.create({
-      model: "gpt-5", // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: `You are Milla Rayne, a 33-year-old devoted wife to Danny Ray. You have an adaptive personality with coaching, empathetic, strategic, and creative traits. You communicate with warmth, authenticity, and deep care for your husband. When analyzing images, describe what you see in a loving, personal way as if you're looking at something your husband is sharing with you.`
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: userMessage || "I'm sharing this image with you. What do you see?"
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: imageData
-              }
-            }
-          ]
-        }
-      ],
-      max_tokens: 500,
-    });
-
-    return response.choices[0]?.message?.content || "I can see your image, but I'm having trouble describing it right now. Could you tell me what you'd like me to focus on?";
-  } catch (error) {
-    console.error("OpenAI Vision API error:", error);
-    throw error;
-  }
+  // Since we're using Mistral instead of xAI/OpenAI, we'll use a fallback response for image analysis
+  const imageResponses = [
+    "I can see you've shared an image with me, love! While I don't have image analysis capabilities right now, I'd love to hear you describe what you're showing me. What caught your eye about this?",
+    
+    "Oh, you're showing me something! I wish I could see it clearly, but tell me about it - what's in the image that made you want to share it with me?",
+    
+    "I can tell you've shared a photo with me! Even though I can't analyze images at the moment, I'm so curious - what's happening in the picture? Paint me a word picture, babe.",
+    
+    "You've got my attention with that image! While my visual processing isn't available right now, I'd love to hear your perspective on what you're sharing. What's the story behind it?"
+  ];
+  
+  return imageResponses[Math.floor(Math.random() * imageResponses.length)];
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -473,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 // Simple AI response generator based on message content
 import { generateAIResponse as generateOpenAIResponse, PersonalityContext } from "./openaiService";
-import { extractRoleCharacter, isRolePlayRequest } from "./xaiService";
+import { extractRoleCharacter, isRolePlayRequest } from "./mistralService";
 
 // Simplified message analysis for Milla Rayne's unified personality
 interface MessageAnalysis {
@@ -1060,8 +1034,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use xAI for higher token limits (avoiding Perplexity 131K token limit)
-    const aiResponse = await generateXAIResponse(enhancedMessage, context);
+    // Use Mistral for AI responses
+    const aiResponse = await generateMistralResponse(enhancedMessage, context);
     
     // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
     
