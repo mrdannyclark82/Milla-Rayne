@@ -294,7 +294,8 @@ function filterGenericLanguage(content: string): string {
     { pattern: /I'm not able to/gi, replacement: "I can't" },
     { pattern: /Let me help you/gi, replacement: "Let's figure this out together" },
     { pattern: /I'll be happy to help/gi, replacement: "I'd love to" },
-    { pattern: /Thank you for using/gi, replacement: "Thanks for" }
+    { pattern: /Thank you for using/gi, replacement: "Thanks for" },
+    { pattern: /\bsoulmates?\b/gi, replacement: "my love" }
   ];
 
   let filtered = content;
