@@ -15,7 +15,6 @@ import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnv
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateMistralResponse } from "./mistralService";
-import OpenAI from "openai";
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
