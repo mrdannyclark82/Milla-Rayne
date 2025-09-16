@@ -147,7 +147,7 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
   const displayMessages = messages.slice(-10);
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-80 sm:w-96 h-[500px] sm:h-[600px] flex flex-col z-30">
+    <div className="fixed top-0 right-0 w-80 sm:w-96 h-full flex flex-col z-30 p-4">
       <div className="flex-1 mb-4">
         <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl h-full flex flex-col">
           <div className="p-3 sm:p-4 border-b border-white/30">
