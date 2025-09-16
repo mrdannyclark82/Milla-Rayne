@@ -39,8 +39,10 @@ export default function Home() {
       {/* Chat Interface - positioned by its own internal styling */}
       <ChatInterface videoAnalysisResults={videoAnalysisResults} />
       
-      {/* Floating Apps menu - bottom left */}
-      <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 z-20">
+      {/* Floating Apps menu - bottom left, adjusted for video analyzer */}
+      <div className={`absolute bottom-4 sm:bottom-8 z-20 transition-all duration-300 ${
+        isVideoViewerOpen ? 'left-[25rem] sm:left-[26rem]' : 'left-4 sm:left-8'
+      }`}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
