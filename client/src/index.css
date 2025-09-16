@@ -1,15 +1,13 @@
 
-/* Explicit positioning overrides to ensure proper layout */
+/* Scrollable chat interface container - removed fixed positioning */
 .chat-interface-container {
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
   width: 320px !important; /* w-80 equivalent */
-  height: 100vh !important;
-  z-index: 30 !important;
+  min-height: 600px !important;
+  max-width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   padding: 1rem !important;
+  margin: 0 auto !important;
 }
 
 @media (min-width: 640px) {

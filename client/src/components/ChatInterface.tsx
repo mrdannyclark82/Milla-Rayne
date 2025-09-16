@@ -144,17 +144,17 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
     }
   };
 
-  const displayMessages = messages.slice(-10);
+  const displayMessages = messages; // Show all messages now that we have scrolling
 
   return (
     <div className="chat-interface-container">
       <div className="flex-1 mb-4">
-        <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl h-full flex flex-col">
+        <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl min-h-[400px] flex flex-col">
           <div className="p-3 sm:p-4 border-b border-white/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-white font-semibold text-base sm:text-lg drop-shadow-sm">Chat with Milla</h2>
-                <p className="text-white/80 text-xs sm:text-sm">Showing last 10 messages</p>
+                <p className="text-white/80 text-xs sm:text-sm">Chat History</p>
               </div>
               {videoAnalysisResults && videoAnalysisResults.length > 0 && (
                 <div className="flex items-center space-x-1">
