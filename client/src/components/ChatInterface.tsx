@@ -147,19 +147,19 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
   const displayMessages = messages.slice(-10);
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-80 sm:w-96 h-[500px] sm:h-[600px] flex flex-col z-10">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-80 sm:w-96 h-[500px] sm:h-[600px] flex flex-col z-30">
       <div className="flex-1 mb-4">
-        <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl h-full flex flex-col">
-          <div className="p-3 sm:p-4 border-b border-white/20">
+        <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl h-full flex flex-col">
+          <div className="p-3 sm:p-4 border-b border-white/30">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-black font-semibold text-base sm:text-lg">Chat with Milla</h2>
-                <p className="text-gray-700 text-xs sm:text-sm">Showing last 10 messages</p>
+                <h2 className="text-white font-semibold text-base sm:text-lg drop-shadow-sm">Chat with Milla</h2>
+                <p className="text-white/80 text-xs sm:text-sm">Showing last 10 messages</p>
               </div>
               {videoAnalysisResults && videoAnalysisResults.length > 0 && (
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-xs text-green-700 font-medium">Video Active</span>
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse drop-shadow-sm" />
+                  <span className="text-xs text-green-100 font-medium drop-shadow-sm">Video Active</span>
                 </div>
               )}
             </div>
@@ -171,10 +171,10 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
                 className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"} message-fade-in`}
               >
                 <div
-                  className={`max-w-[250px] sm:max-w-xs px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm ${
+                  className={`max-w-[250px] sm:max-w-xs px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-lg ${
                     message.sender === "user"
-                      ? "bg-blue-500/90 text-white rounded-br-md backdrop-blur-sm"
-                      : "bg-white/90 text-gray-800 rounded-bl-md backdrop-blur-sm"
+                      ? "bg-blue-500/95 text-white rounded-br-md backdrop-blur-sm border border-blue-400/30"
+                      : "bg-white/95 text-gray-800 rounded-bl-md backdrop-blur-sm border border-white/40"
                   }`}
                 >
                   <p className="text-xs sm:text-sm leading-relaxed">{message.text}</p>
@@ -188,20 +188,20 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
           </div>
         </div>
       </div>
-      <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl p-3 sm:p-4">
+      <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl p-3 sm:p-4">
         <div className="flex gap-2 sm:gap-3">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all text-sm sm:text-base"
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-white/30 backdrop-blur-sm border border-white/40 text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-blue-400/60 focus:border-transparent transition-all text-sm sm:text-base"
             placeholder="Type your message..."
             aria-label="Type your message"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500/90 text-white rounded-lg hover:bg-blue-600/90 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-white/20 font-medium text-sm sm:text-base"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500/95 text-white rounded-lg hover:bg-blue-600/95 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-blue-400/30 font-medium text-sm sm:text-base"
             aria-label="Send message"
           >
             Send
