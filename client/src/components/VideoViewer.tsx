@@ -112,7 +112,7 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
   return (
     <>
       {isOpen && (
-        <div className="fixed top-0 left-0 w-96 h-full bg-white/20 backdrop-blur-lg border-r border-white/30 shadow-2xl z-40 flex flex-col p-4">
+        <div className="video-analyzer-container">
           {/* Header */}
           <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/30">
             <div className="flex items-center space-x-2">
