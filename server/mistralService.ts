@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { Mistral } from "@mistralai/mistralai";
 
 export interface AIResponse {
   content: string;
@@ -13,10 +13,9 @@ export interface PersonalityContext {
   userName?: string;
 }
 
-// Initialize xAI client using OpenAI library with xAI endpoint
-const xaiClient = new OpenAI({ 
-  baseURL: "https://api.x.ai/v1", 
-  apiKey: process.env.XAI_API_KEY 
+// Initialize Mistral client
+const mistralClient = new Mistral({ 
+  apiKey: process.env.MISTRAL_API_KEY 
 });
 
 /**
@@ -45,24 +44,24 @@ const xaiClient = new OpenAI({
 // }
 
 /**
- * Generate AI response using xAI Grok with personality-aware prompts
+ * Generate AI response using Mistral with personality-aware prompts
  */
-export async function generateXAIResponse(
+export async function generateMistralResponse(
   userMessage: string,
   context: PersonalityContext
 ): Promise<AIResponse> {
   try {
     const startTime = Date.now();
-    if (!process.env.XAI_API_KEY) {
+    if (!process.env.MISTRAL_API_KEY) {
       return {
-        content: "xAI integration is not configured. Please add your API key.",
+        content: "Mistral AI integration is not configured. Please add your API key.",
         success: false,
         error: "Missing API key"
       };
     }
 
     const systemPrompt = createSystemPrompt(context);
-    const messages: Array<{ role: string; content: string }> = [];
+    const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
     
     // Add system prompt only if it has content
     if (systemPrompt && systemPrompt.trim().length > 0) {
@@ -93,7 +92,7 @@ export async function generateXAIResponse(
         const msg = validMessages[i];
         if (msg.role === expectedRole) {
           messages.push({ 
-            role: msg.role, 
+            role: msg.role as "user" | "assistant", 
             content: msg.content.trim()
           });
           expectedRole = expectedRole === 'user' ? 'assistant' : 'user';
@@ -117,28 +116,26 @@ export async function generateXAIResponse(
     }
 
     // Debug: Log the messages array to ensure all have content
-    console.log('Sending messages to xAI Grok API:', messages.map((msg, index) => ({ 
+    console.log('Sending messages to Mistral API:', messages.map((msg, index) => ({ 
       index, 
       role: msg.role, 
       hasContent: !!msg.content, 
       contentLength: msg.content ? msg.content.length : 0 
     })));
 
-
-    const response = await xaiClient.chat.completions.create({
-      model: "grok-2-1212",
-      messages: messages as any,
-      max_tokens: 800,
+    const response = await mistralClient.chat.complete({
+      model: "mistral-large-latest",
+      messages: messages,
+      maxTokens: 800,
       temperature: 0.8,
-      stream: false
     });
 
     const endTime = Date.now();
-    console.log(`xAI API call latency: ${endTime - startTime}ms`);
+    console.log(`Mistral API call latency: ${endTime - startTime}ms`);
 
     if (response.choices && response.choices.length > 0) {
       const content = response.choices[0].message?.content;
-      if (content) {
+      if (content && typeof content === 'string') {
         // Filter out any generic AI assistant language that might slip through
         const filteredContent = filterGenericLanguage(content.trim());
         return {
@@ -155,7 +152,7 @@ export async function generateXAIResponse(
     };
 
   } catch (error) {
-    console.error("xAI API error:", error);
+    console.error("Mistral API error:", error);
     return {
       content: "", // Return empty content so the routes.ts can handle fallback
       success: false,
