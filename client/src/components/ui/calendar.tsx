@@ -65,5 +65,5 @@ function Calendar({
 }
 Calendar.displayName = "Calendar"
 
-// Fix: export as default so you can use import Calendar from "./ui/calendar"
+export { Calendar }
 export default Calendar
