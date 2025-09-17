@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface VideoAnalysisResult {
@@ -111,21 +110,22 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <span>🎥</span>
-            <span>Video Analyzer</span>
-            <div className="ml-auto text-sm text-muted-foreground">
+    <>
+      {isOpen && (
+        <div className="video-analyzer-container">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/30">
+            <div className="flex items-center space-x-2">
+              <span>🎥</span>
+              <span className="text-white font-semibold">Video Analyzer</span>
+            </div>
+            <div className="text-sm text-white/70">
               Status: {status}
             </div>
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex-1 flex flex-col space-y-4">
+          </div>
+          
           {/* Video viewer iframe */}
-          <div className="flex-1 relative border rounded-lg overflow-hidden bg-black">
+          <div className="flex-1 relative border rounded-lg overflow-hidden bg-black mb-4">
             <iframe
               ref={iframeRef}
               src="/videoviewer.html"
@@ -136,67 +136,69 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
           </div>
           
           {/* Controls */}
-          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/10">
-            <div className="flex items-center space-x-2">
+          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 mb-3">
+            <div className="flex items-center space-x-2 mb-3">
               <div className={`w-3 h-3 rounded-full ${
                 isCameraActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
               }`} />
-              <span className="text-sm">
+              <span className="text-sm text-white">
                 {isCameraActive ? 'Camera Active' : 'Camera Inactive'}
               </span>
               {isAnalyzing && (
                 <>
                   <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-sm text-blue-600">AI Analysis Running</span>
+                  <span className="text-sm text-blue-200">AI Analysis Running</span>
                 </>
               )}
             </div>
             
-            <div className="flex space-x-2">
+            <div className="grid grid-cols-2 gap-2">
               {!isModelLoaded && (
                 <Button 
                   onClick={initializeAnalyzer} 
                   disabled={!isOpen}
                   variant="outline"
+                  size="sm"
+                  className="col-span-2"
                 >
                   Initialize AI Model
                 </Button>
               )}
               
               {isModelLoaded && !isCameraActive && (
-                <Button onClick={startCamera} variant="outline">
+                <Button onClick={startCamera} variant="outline" size="sm">
                   Start Camera
                 </Button>
               )}
               
               {isCameraActive && !isAnalyzing && (
-                <Button onClick={startAnalysis} variant="default">
+                <Button onClick={startAnalysis} variant="default" size="sm">
                   Start Analysis
                 </Button>
               )}
               
               {isAnalyzing && (
-                <Button onClick={stopAnalysis} variant="destructive">
+                <Button onClick={stopAnalysis} variant="destructive" size="sm">
                   Stop Analysis
                 </Button>
               )}
               
               {isCameraActive && (
-                <Button onClick={stopCamera} variant="outline">
+                <Button onClick={stopCamera} variant="outline" size="sm">
                   Stop Camera
                 </Button>
               )}
               
-              <Button onClick={handleClose} variant="outline">
+              <Button onClick={handleClose} variant="outline" size="sm">
                 Close
               </Button>
             </div>
           </div>
           
           {/* Instructions */}
-          <div className="p-4 border rounded-lg bg-muted/5">
-            <h4 className="text-sm font-medium mb-2">How to use:</h4>
-            <ol className="text-sm text-muted-foreground space-y-1">
+          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
+            <h4 className="text-sm font-medium mb-2 text-white">How to use:</h4>
+            <ol className="text-xs text-white/80 space-y-1">
               <li>1. Click "Initialize AI Model" to load TensorFlow.js</li>
               <li>2. Click "Start Camera" to activate your webcam</li>
               <li>3. Click "Start Analysis" to begin AI object detection</li>
@@ -204,7 +206,7 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
             </ol>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 }

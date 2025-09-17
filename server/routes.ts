@@ -15,6 +15,7 @@ import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnv
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateMistralResponse } from "./mistralService";
+import { generateXAIResponse } from "./xaiService";
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -50,7 +51,7 @@ function generateImageAnalysisFallback(userMessage: string): string {
 
 // Function to analyze images - currently disabled as we're using Mistral which doesn't have vision capabilities
 async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
-  // Since we're using Mistral instead of xAI/OpenAI, we'll use a fallback response for image analysis
+  // Since we're using XAI instead of OpenAI/Mistral, we'll use a fallback response for image analysis
   const imageResponses = [
     "I can see you've shared an image with me, love! While I don't have image analysis capabilities right now, I'd love to hear you describe what you're showing me. What caught your eye about this?",
     
@@ -1033,8 +1034,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use Mistral for AI responses
-    const aiResponse = await generateMistralResponse(enhancedMessage, context);
+    // Use XAI for AI responses
+    const aiResponse = await generateXAIResponse(enhancedMessage, context);
     
     // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
     
