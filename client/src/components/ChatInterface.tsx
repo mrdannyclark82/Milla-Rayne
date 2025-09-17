@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 interface Message {
   id: string;
@@ -18,6 +19,15 @@ interface ChatInterfaceProps {
 }
 
 export default function ChatInterface({ videoAnalysisResults }: ChatInterfaceProps) {
+  // Voice input state
+  const {
+    transcript,
+    isListening,
+    isSupported: isVoiceSupported,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -34,16 +44,17 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (input.trim()) {
+  // Unified send handler for both text and voice
+  const handleSend = async (overrideText?: string) => {
+    const textToSend = overrideText !== undefined ? overrideText : input;
+    if (textToSend.trim()) {
       const newMessage: Message = {
         id: Date.now().toString(),
-        text: input,
+        text: textToSend,
         sender: "user",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, newMessage]);
-      const messageToSend = input;
       setInput("");
       setIsLoading(true);
 
@@ -52,7 +63,6 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
         // Add timeout to prevent hanging requests
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-        
         // Include video analysis context if available
         let context = undefined;
         if (videoAnalysisResults && videoAnalysisResults.length > 0) {
@@ -64,19 +74,16 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
             }))
           };
         }
-        
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            message: messageToSend,
+            message: textToSend,
             context
           }),
           signal: controller.signal
         });
-        
         clearTimeout(timeoutId);
-        
         if (res.ok) {
           const data = await res.json();
           setMessages(prev => [
@@ -91,7 +98,6 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
         } else {
           // Handle different error status codes
           let errorMessage = "Sorry, I couldn't reach the AI service.";
-          
           if (res.status === 400) {
             errorMessage = "There was an issue with your message format. Please try again.";
           } else if (res.status === 429) {
@@ -99,7 +105,6 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
           } else if (res.status >= 500) {
             errorMessage = "I'm experiencing some technical difficulties. Please try again in a moment.";
           }
-          
           setMessages(prev => [
             ...prev,
             {
@@ -112,16 +117,12 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
         }
       } catch (err) {
         console.error("Chat communication error:", err);
-        
-        // Provide more specific error messages based on error type
         let errorMessage = "Error communicating with backend.";
-        
         if (err instanceof TypeError && err.message.includes('fetch')) {
           errorMessage = "Unable to connect to the server. Please check your internet connection and try again.";
         } else if (err instanceof Error && err.name === 'AbortError') {
           errorMessage = "The request timed out. Please try again.";
         }
-        
         setMessages(prev => [
           ...prev,
           {
@@ -143,6 +144,15 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
       handleSend();
     }
   };
+
+  // When transcript changes and listening stops, send the transcript as a message
+  useEffect(() => {
+    if (!isListening && transcript.trim()) {
+      handleSend(transcript);
+      resetTranscript();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isListening]);
 
   const displayMessages = messages; // Show all messages now that we have scrolling
 
@@ -189,7 +199,7 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
         </div>
       </div>
       <div className="bg-white/20 backdrop-blur-lg rounded-xl border border-white/30 shadow-2xl p-3 sm:p-4">
-        <div className="flex gap-2 sm:gap-3">
+        <div className="flex gap-2 sm:gap-3 items-center">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -198,8 +208,20 @@ export default function ChatInterface({ videoAnalysisResults }: ChatInterfacePro
             placeholder="Type your message..."
             aria-label="Type your message"
           />
+          {/* Voice input button */}
+          {isVoiceSupported && (
+            <button
+              type="button"
+              onClick={isListening ? stopListening : startListening}
+              className={`px-3 py-2 rounded-lg border border-blue-400/30 shadow-lg backdrop-blur-sm text-white transition-colors duration-200 font-medium text-base focus:outline-none ${isListening ? 'bg-blue-600/90 animate-pulse' : 'bg-blue-500/80 hover:bg-blue-600/90'}`}
+              aria-label={isListening ? "Stop voice input" : "Start voice input"}
+              title={isListening ? "Stop voice input" : "Start voice input"}
+            >
+              {isListening ? '🎤...' : '🎤'}
+            </button>
+          )}
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!input.trim()}
             className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500/95 text-white rounded-lg hover:bg-blue-600/95 disabled:bg-gray-500/50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg backdrop-blur-sm border border-blue-400/30 font-medium text-sm sm:text-base"
             aria-label="Send message"

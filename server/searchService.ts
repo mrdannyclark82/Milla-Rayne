@@ -3,6 +3,7 @@ export interface SearchResult {
   url: string;
   description: string;
 }
+import { queryWolframAlpha } from "./wolframAlphaService";
 
 export interface SearchResponse {
   query: string;
@@ -11,79 +12,99 @@ export interface SearchResponse {
 }
 
 export async function performWebSearch(query: string): Promise<SearchResponse | null> {
-  const API_KEY = process.env.PERPLEXITY_API_KEY;
-  
-  if (!API_KEY) {
-    console.warn("Perplexity API key not found, falling back to knowledge base");
-    return generateKnowledgeBasedResponse(query);
-  }
-
-  try {
-    console.log("Making Perplexity API request...");
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${API_KEY.trim()}`,
-      },
-      body: JSON.stringify({
-        model: "sonar",
-        messages: [
+  // Try Wolfram Alpha first for factual/computational queries
+  const WOLFRAM_APPID = process.env.WOLFRAM_ALPHA_APPID;
+  if (WOLFRAM_APPID) {
+    const wolframResult = await queryWolframAlpha(query, WOLFRAM_APPID);
+    if (wolframResult) {
+      return {
+        query,
+        results: [
           {
-            role: "system",
-            content: "Be precise and concise."
-          },
-          {
-            role: "user",
-            content: query
+            title: "Wolfram Alpha Result",
+            url: `https://www.wolframalpha.com/input/?i=${encodeURIComponent(query)}`,
+            description: wolframResult
           }
         ],
-        max_tokens: 500,
-        temperature: 0.2,
-        top_p: 0.9,
-        return_images: false,
-        return_related_questions: false,
-        search_recency_filter: "month",
-        stream: false,
-        presence_penalty: 0,
-        frequency_penalty: 1
-      })
-    });
+        summary: wolframResult
+      };
+    }
+  }
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Perplexity API error:", response.status, errorText);
+  // Fallback to Perplexity
+  const API_KEY = process.env.PERPLEXITY_API_KEY;
+  if (API_KEY) {
+    try {
+      console.log("Making Perplexity API request...");
+      const response = await fetch("https://api.perplexity.ai/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY.trim()}`,
+        },
+        body: JSON.stringify({
+          model: "sonar",
+          messages: [
+            {
+              role: "system",
+              content: "Be precise and concise."
+            },
+            {
+              role: "user",
+              content: query
+            }
+          ],
+          max_tokens: 500,
+          temperature: 0.2,
+          top_p: 0.9,
+          return_images: false,
+          return_related_questions: false,
+          search_recency_filter: "month",
+          stream: false,
+          presence_penalty: 0,
+          frequency_penalty: 1
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Perplexity API error:", response.status, errorText);
+        console.log("Falling back to knowledge-based search");
+        return generateKnowledgeBasedResponse(query);
+      }
+
+      const data = await response.json();
+      
+      if (data.choices && data.choices.length > 0) {
+        const content = data.choices[0].message.content;
+        const citations = data.citations || [];
+        
+        // Create results from citations for consistency
+        const results: SearchResult[] = citations.slice(0, 3).map((citation: string, index: number) => ({
+          title: `Source ${index + 1}`,
+          url: citation,
+          description: "Information source from Perplexity search"
+        }));
+
+        return {
+          query,
+          results,
+          summary: content
+        };
+      } else {
+        console.log("No results from Perplexity, falling back to knowledge base");
+        return generateKnowledgeBasedResponse(query);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
       console.log("Falling back to knowledge-based search");
       return generateKnowledgeBasedResponse(query);
     }
-
-    const data = await response.json();
-    
-    if (data.choices && data.choices.length > 0) {
-      const content = data.choices[0].message.content;
-      const citations = data.citations || [];
-      
-      // Create results from citations for consistency
-      const results: SearchResult[] = citations.slice(0, 3).map((citation: string, index: number) => ({
-        title: `Source ${index + 1}`,
-        url: citation,
-        description: "Information source from Perplexity search"
-      }));
-
-      return {
-        query,
-        results,
-        summary: content
-      };
-    } else {
-      console.log("No results from Perplexity, falling back to knowledge base");
-      return generateKnowledgeBasedResponse(query);
-    }
-  } catch (error) {
-    console.error("Search error:", error);
-    console.log("Falling back to knowledge-based search");
-    return generateKnowledgeBasedResponse(query);
   }
+
+  // Fallback to knowledge base
+  console.warn("No search API keys found, using knowledge base fallback");
+  return generateKnowledgeBasedResponse(query);
 }
 
 function generateKnowledgeBasedResponse(query: string): SearchResponse {
