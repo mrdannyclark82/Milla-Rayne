@@ -217,7 +217,7 @@ export async function generateXAIResponse(
       // First, clean the history of any looping phrases
       const cleanedHistory = cleanConversationHistory(context.conversationHistory);
       // Then, get the last few messages for a clean context
-      const recentHistory = cleanedHistory.slice(-5); // You can adjust this number as needed
+      const recentHistory = cleanedHistory.slice(-4); // Reduced to 4 messages to optimize token usage
 
       const validMessages = recentHistory.filter(msg =>
         msg.content && msg.content.trim().length > 0
