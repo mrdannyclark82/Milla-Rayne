@@ -38,13 +38,19 @@ export default function Home() {
           alt="AI companion background"
           className="w-full h-full object-cover"
         />
-        {/* Overlay to ensure chat readability */}
-        <div className="absolute inset-0 bg-black/10"></div>
+        {/* Overlay to ensure readability */}
+        <div className="absolute inset-0 bg-black/20"></div>
       </div>
       
-      {/* Chat Interface - positioned on the right side */}
-      <div className="fixed bottom-4 right-4 z-10 w-96 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] md:max-w-96">
-        <div className="chat-interface-container">
+      {/* Main UI Layout - Split screen with background on left and chat on right */}
+      <div className="relative z-10 h-full flex">
+        {/* Left side - Background image area (for avatar/visual elements) */}
+        <div className="flex-1 flex items-center justify-center">
+          {/* This area is available for future avatar display or other UI elements */}
+        </div>
+        
+        {/* Right side - Integrated Chat Interface */}
+        <div className="w-96 max-w-[40vw] min-w-[320px] bg-black/30 backdrop-blur-md border-l border-white/10">
           <ChatInterface 
             videoAnalysisResults={videoAnalysisResults} 
             onAvatarStateChange={handleAvatarStateChange}
@@ -52,8 +58,8 @@ export default function Home() {
         </div>
       </div>
       
-      {/* Floating Apps menu - bottom left, adjusted for video analyzer */}
-      <div className={`absolute bottom-4 sm:bottom-8 z-20 transition-all duration-300 ${
+      {/* Floating Apps menu - positioned over the left side */}
+      <div className={`absolute bottom-4 sm:bottom-8 left-4 sm:left-8 z-20 transition-all duration-300 ${
         isVideoViewerOpen ? 'left-[25rem] sm:left-[26rem]' : 'left-4 sm:left-8'
       }`}>
         <DropdownMenu>
