@@ -42,11 +42,15 @@ export default function Home() {
         <div className="absolute inset-0 bg-black/10"></div>
       </div>
       
-      {/* Chat Interface - positioned by its own internal styling */}
-      <ChatInterface 
-        videoAnalysisResults={videoAnalysisResults} 
-        onAvatarStateChange={handleAvatarStateChange}
-      />
+      {/* Chat Interface - positioned on the right side */}
+      <div className="fixed bottom-4 right-4 z-10 w-96 max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] md:max-w-96">
+        <div className="chat-interface-container">
+          <ChatInterface 
+            videoAnalysisResults={videoAnalysisResults} 
+            onAvatarStateChange={handleAvatarStateChange}
+          />
+        </div>
+      </div>
       
       {/* Floating Apps menu - bottom left, adjusted for video analyzer */}
       <div className={`absolute bottom-4 sm:bottom-8 z-20 transition-all duration-300 ${

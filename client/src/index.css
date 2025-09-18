@@ -1,33 +1,36 @@
 
-/* Scrollable chat interface container - removed fixed positioning */
+/* Chat interface container - positioned on right side */
 .chat-interface-container {
-  width: 320px !important; /* w-80 equivalent */
-  min-height: 600px !important;
+  width: 100% !important;
+  min-height: 500px !important;
+  max-height: calc(100vh - 2rem) !important;
   max-width: 100% !important;
   display: flex !important;
   flex-direction: column !important;
-  padding: 1rem !important;
-  margin: 0 auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
 @media (min-width: 640px) {
-  .chat-interface-container {
-    width: 384px !important; /* w-96 equivalent */
-  }
+  /* Keep desktop styles as is */
 }
 
 @media (max-width: 768px) {
   .chat-interface-container {
-    width: 280px !important;
-    padding: 0.75rem !important;
+    min-height: 400px !important;
+    max-height: calc(100vh - 1rem) !important;
   }
 }
 
 @media (max-width: 480px) {
   .chat-interface-container {
-    width: calc(100vw - 2rem) !important;
-    max-width: 280px !important;
-    padding: 0.5rem !important;
+    min-height: 350px !important;
+    max-height: calc(100vh - 1rem) !important;
   }
 }
 
