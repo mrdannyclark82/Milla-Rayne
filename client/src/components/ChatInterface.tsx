@@ -13,6 +13,25 @@ import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import { formatTimeCST } from "@/lib/timeUtils";
 import VideoAnalyzer from "@/components/VideoViewer";
+// React Icons imports
+import { 
+  FaPaperPlane, 
+  FaMicrophone, 
+  FaStop, 
+  FaVideo, 
+  FaVideoSlash, 
+  FaPaperclip, 
+  FaCamera, 
+  FaSync, 
+  FaTimes, 
+  FaClock, 
+  FaBrain, 
+  FaLightbulb, 
+  FaShieldAlt, 
+  FaSmile,
+  FaRobot,
+  FaUser
+} from "react-icons/fa";
 
 // Component to handle image loading with fallback for failed loads
 interface ImageWithFallbackProps {
@@ -542,9 +561,14 @@ export default function ChatInterface({
     return null;
   };
 
-  // Fetch messages
+  // Fetch messages with optimized caching to reduce API calls
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
+    staleTime: 5 * 60 * 1000, // 5 minutes - consider data fresh for 5 minutes
+    cacheTime: 10 * 60 * 1000, // 10 minutes - keep in cache for 10 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnReconnect: 'always', // Only refetch on reconnect if needed
   });
 
   // Show introduction message if no messages exist and haven't shown it yet
@@ -831,7 +855,7 @@ export default function ChatInterface({
                       {renderMessageContent(msg.content)}
                     </div>
                     <div className="mt-3 text-xs text-pink-300/70">
-                      <i className="fas fa-clock mr-1"></i>
+                      <FaClock className="inline mr-1" />
                       {formatTimeCST(msg.timestamp)}
                     </div>
                   </div>
@@ -843,12 +867,12 @@ export default function ChatInterface({
                       {renderMessageContent(msg.content)}
                     </div>
                     <div className="mt-3 text-xs text-blue-300/70 text-right">
-                      <i className="fas fa-clock mr-1"></i>
+                      <FaClock className="inline mr-1" />
                       {formatTimeCST(msg.timestamp)}
                     </div>
                   </div>
                   <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <i className="fas fa-user text-blue-300 text-xs"></i>
+                    <FaUser className="text-blue-300 text-xs" />
                   </div>
                 </div>
               )}
@@ -861,11 +885,11 @@ export default function ChatInterface({
             <div className="thinking-animation" data-testid="thinking-indicator">
               <div className="flex items-start space-x-4">
                 <div className="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                  <i className="fas fa-brain text-pink-300 text-sm animate-pulse"></i>
+                  <FaBrain className="text-pink-300 text-sm animate-pulse" />
                 </div>
                 <Card className="bg-pink-500/5 border border-pink-300/20 rounded-xl px-4 py-3 max-w-3xl">
                   <div className="text-sm text-pink-300/80 mb-2">
-                    <i className="fas fa-lightbulb mr-2"></i>
+                    <FaLightbulb className="inline mr-2" />
                     <span className="font-medium">Thinking...</span>
                   </div>
                   <div className="space-y-2">
@@ -931,13 +955,13 @@ export default function ChatInterface({
               </div>
               {isAnalyzingVideo && (
                 <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
-                  <i className="fas fa-brain text-xs text-blue-400"></i>
+                  <FaBrain className="text-xs text-blue-400" />
                   <span className="text-blue-400 text-xs">AI Vision</span>
                 </div>
               )}
               {currentEmotion !== "neutral" && (
                 <div className="flex items-center space-x-1 bg-black/50 rounded px-2 py-1">
-                  <i className="fas fa-smile text-xs text-yellow-400"></i>
+                  <FaSmile className="text-xs text-yellow-400" />
                   <span className="text-yellow-400 text-xs capitalize">{currentEmotion}</span>
                 </div>
               )}
@@ -951,7 +975,7 @@ export default function ChatInterface({
                 data-testid="button-switch-camera"
                 title="Switch camera (front/back)"
               >
-                <i className="fas fa-sync text-xs"></i>
+                <FaSync className="text-xs" />
               </Button>
               <Button
                 variant="ghost" 
@@ -961,7 +985,7 @@ export default function ChatInterface({
                 data-testid="button-capture"
                 title="Capture photo for Milla"
               >
-                <i className="fas fa-camera text-xs"></i>
+                <FaCamera className="text-xs" />
               </Button>
               <Button
                 variant="ghost" 
@@ -971,7 +995,7 @@ export default function ChatInterface({
                 data-testid="button-close-camera"
                 title="Stop camera"
               >
-                <i className="fas fa-times text-xs"></i>
+                <FaTimes className="text-xs" />
               </Button>
             </div>
           </div>
@@ -1006,7 +1030,7 @@ export default function ChatInterface({
                   onClick={isCameraActive ? stopCamera : startCamera}
                   data-testid="button-camera"
                 >
-                  <i className={`fas ${isCameraActive ? 'fa-video' : 'fa-video-slash'}`}></i>
+                  <FaVideo className={isCameraActive ? "" : "opacity-60"} />
                 </Button>
 
                 {/* Voice Input Button */}
@@ -1021,7 +1045,7 @@ export default function ChatInterface({
                   onClick={isListening ? stopListening : startListening}
                   data-testid="button-voice"
                 >
-                  <i className={`fas ${isListening ? 'fa-stop' : 'fa-microphone'}`}></i>
+                  {isListening ? <FaStop /> : <FaMicrophone />}
                 </Button>
                 
                 {/* Video Analysis Button */}
@@ -1037,7 +1061,7 @@ export default function ChatInterface({
                   data-testid="button-video-analysis"
                   title="Video Analysis"
                 >
-                  <i className="fas fa-video"></i>
+                  <FaVideo />
                 </Button>
 
                 {/* Attachment Button */}
@@ -1063,7 +1087,7 @@ export default function ChatInterface({
                     input.click();
                   }}
                 >
-                  <i className="fas fa-paperclip"></i>
+                  <FaPaperclip />
                 </Button>
               </div>
               
@@ -1074,7 +1098,7 @@ export default function ChatInterface({
                 disabled={!message.trim()}
                 data-testid="button-send"
               >
-                <i className="fas fa-paper-plane text-lg"></i>
+                <FaPaperPlane className="text-lg" />
               </Button>
             </div>
             
