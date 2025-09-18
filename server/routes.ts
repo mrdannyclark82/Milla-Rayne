@@ -71,11 +71,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.sendFile(path.resolve(process.cwd(), "videoviewer.html"));
   });
 
-  // Get all messages
+  // Get all messages with pagination/limit
   app.get("/api/messages", async (req, res) => {
     try {
-      const messages = await storage.getMessages();
-      res.json(messages);
+      const limit = parseInt(req.query.limit as string) || 50; // Default to last 50 messages
+      const allMessages = await storage.getMessages();
+      // Return only the most recent messages (last N messages)
+      const recentMessages = allMessages.slice(-limit);
+      res.json(recentMessages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });
     }
@@ -875,7 +878,7 @@ async function generateAIResponse(
       const searchResults = await performWebSearch(userMessage);
       let response = "";
       if (searchResults) {
-        response = `Let me search for that information!\n\n${searchResults.summary}`;
+        response = searchResults.summary; // Remove the generic "Let me search for that information!" prefix
       } else {
         response = `I searched for information about "${userMessage}" but couldn't find relevant results. Could you try rephrasing your question or being more specific?`;
       }
