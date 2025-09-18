@@ -52,6 +52,12 @@ const ImageWithFallback = ({ imageUrl, altText }: ImageWithFallbackProps) => {
   );
 };
 
+interface VideoAnalysisResult {
+  bbox: [number, number, number, number];
+  class: string;
+  score: number;
+}
+
 interface ChatInterfaceProps {
   onAvatarStateChange: (state: AvatarState) => void;
   onSpeakingStateChange?: (isSpeaking: boolean) => void;
@@ -62,6 +68,7 @@ interface ChatInterfaceProps {
   selectedVoice?: SpeechSynthesisVoice | null;
   theme?: 'light' | 'dark';
   chatTransparency?: number;
+  videoAnalysisResults?: VideoAnalysisResult[];
   personalitySettings?: {
     communicationStyle: 'adaptive' | 'formal' | 'casual' | 'friendly';
     formalityLevel: 'formal' | 'balanced' | 'casual';
@@ -80,6 +87,7 @@ export default function ChatInterface({
   selectedVoice = null,
   theme = 'dark',
   chatTransparency = 80,
+  videoAnalysisResults,
   personalitySettings
 }: ChatInterfaceProps) {
   const [message, setMessage] = useState("");
@@ -697,7 +705,8 @@ export default function ChatInterface({
         onAvatarStateChange("neutral");
       }
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Send message mutation error:", error);
       setIsTyping(false);
       onAvatarStateChange("neutral"); // Back to neutral on error
       toast({

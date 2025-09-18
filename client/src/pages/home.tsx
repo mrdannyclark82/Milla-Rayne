@@ -5,6 +5,7 @@ import TaskList from "@/components/TaskList";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AvatarState } from "@/components/Sidebar";
 
 interface VideoAnalysisResult {
   bbox: [number, number, number, number];
@@ -17,10 +18,15 @@ export default function Home() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isTaskListOpen, setIsTaskListOpen] = useState(false);
   const [videoAnalysisResults, setVideoAnalysisResults] = useState<VideoAnalysisResult[]>([]);
+  const [avatarState, setAvatarState] = useState<AvatarState>('neutral');
 
   const handleVideoAnalysisUpdate = (results: VideoAnalysisResult[]) => {
     setVideoAnalysisResults(results);
     // You could also send these results to the chat here if needed
+  };
+
+  const handleAvatarStateChange = (state: AvatarState) => {
+    setAvatarState(state);
   };
 
   return (
@@ -37,7 +43,10 @@ export default function Home() {
       </div>
       
       {/* Chat Interface - positioned by its own internal styling */}
-      <ChatInterface videoAnalysisResults={videoAnalysisResults} />
+      <ChatInterface 
+        videoAnalysisResults={videoAnalysisResults} 
+        onAvatarStateChange={handleAvatarStateChange}
+      />
       
       {/* Floating Apps menu - bottom left, adjusted for video analyzer */}
       <div className={`absolute bottom-4 sm:bottom-8 z-20 transition-all duration-300 ${
