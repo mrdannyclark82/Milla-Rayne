@@ -177,7 +177,7 @@ function generateKnowledgeBasedResponse(query: string): SearchResponse {
 // Removed createSearchSummary function as Perplexity provides direct AI-generated summaries
 
 export function shouldPerformSearch(userMessage: string): boolean {
-  const message = userMessage.toLowerCase();
+  const message = userMessage.toLowerCase().trim();
   
   // Don't search for weather, image generation, personal queries, or other specific commands
   if (message.includes("weather") || 
@@ -201,18 +201,34 @@ export function shouldPerformSearch(userMessage: string): boolean {
       message.includes("good evening") ||
       message.includes("hello") ||
       message.match(/\bhi\b/) ||
-      message.includes("hey ")) {
+      message.includes("hey ") ||
+      // Don't search for conversational responses
+      message.includes("thank you") ||
+      message.includes("thanks") ||
+      message.includes("yes") ||
+      message.includes("no") ||
+      message.includes("okay") ||
+      message.includes("ok") ||
+      message.includes("sure") ||
+      message.includes("great") ||
+      message.includes("awesome") ||
+      message.includes("cool") ||
+      message.includes("nice") ||
+      message.length < 10) { // Very short messages are likely conversational
     return false;
   }
 
-  // Search for questions and information requests - but be more specific
+  // Only search for very explicit search requests - must be specific and deliberate
   const searchTriggers = [
-    "what is the", "what are the", "who is the", "who are the", 
-    "where is the", "where are the", "when is the", "when are the", 
-    "why is the", "why are the",
-    "tell me about", "explain", "define", "meaning of", "information about",
-    "search for", "look up", "find information", "what do you know about",
-    "can you find", "help me find", "i need to know about"
+    "search for", 
+    "look up", 
+    "find information about", 
+    "what do you know about",
+    "can you search for",
+    "help me find information about",
+    "i need to know about",
+    "research about",
+    "find me information on"
   ];
 
   return searchTriggers.some(trigger => message.includes(trigger));
