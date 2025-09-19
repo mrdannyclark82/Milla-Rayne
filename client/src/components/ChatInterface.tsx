@@ -565,16 +565,19 @@ export default function ChatInterface({
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
     staleTime: 10 * 60 * 1000, // 10 minutes - consider data fresh for 10 minutes 
-    cacheTime: 15 * 60 * 1000, // 15 minutes - keep in cache for 15 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes - keep in cache for 15 minutes (formerly cacheTime)
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     refetchOnMount: false, // Don't refetch on component mount if data exists
     refetchOnReconnect: false, // Don't refetch on reconnect
     refetchInterval: false, // No automatic refetch interval
+    retry: 2, // Limit retries to reduce redundant requests
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 
   // Show introduction message if no messages exist and haven't shown it yet
   useEffect(() => {
-    if (messages && messages.length === 0 && !hasShownIntroduction) {
+    const messagesArray = messages as Message[];
+    if (messagesArray && messagesArray.length === 0 && !hasShownIntroduction) {
       setHasShownIntroduction(true);
       // Add introduction message to the conversation
       setTimeout(() => {
@@ -832,7 +835,8 @@ export default function ChatInterface({
     }
   };
 
-  
+  // Filter messages to show only the most recent one (requirement 1)
+  const recentMessage = messages && messages.length > 0 ? [messages[messages.length - 1]] : [];
 
   return (
     <main className="flex-1 flex flex-col h-full" data-testid="chat-interface">
@@ -843,7 +847,7 @@ export default function ChatInterface({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          messages.map((msg) => (
+          recentMessage.map((msg: Message) => (
             <div 
               key={msg.id} 
               className="message-fade-in"
