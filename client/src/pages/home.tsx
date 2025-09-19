@@ -25,6 +25,13 @@ export default function Home() {
   const [isStoryOpen, setIsStoryOpen] = useState(false);
   const [videoAnalysisResults, setVideoAnalysisResults] = useState<VideoAnalysisResult[]>([]);
   const [avatarState, setAvatarState] = useState<AvatarState>('neutral');
+  
+  // Voice settings state
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [speechRate, setSpeechRate] = useState(1.0);
+  const [voicePitch, setVoicePitch] = useState(1.1);
+  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
 
   const handleVideoAnalysisUpdate = (results: VideoAnalysisResult[]) => {
     setVideoAnalysisResults(results);
@@ -51,6 +58,11 @@ export default function Home() {
         <ChatInterface
           videoAnalysisResults={videoAnalysisResults}
           onAvatarStateChange={handleAvatarStateChange}
+          voiceEnabled={voiceEnabled}
+          speechRate={speechRate}
+          voicePitch={voicePitch}
+          voiceVolume={voiceVolume}
+          selectedVoice={selectedVoice}
         />
       </div>
 
@@ -109,6 +121,13 @@ export default function Home() {
             >
               <span>✅</span>
               <span>Task List</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className="flex items-center space-x-2 hover:bg-gray-100/80"
+            >
+              <span>{voiceEnabled ? '🔊' : '🔇'}</span>
+              <span>{voiceEnabled ? 'Disable Voice' : 'Enable Voice'}</span>
             </DropdownMenuItem>
             <DropdownMenuItem disabled className="flex items-center space-x-2">
               <span>🔧</span>
