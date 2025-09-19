@@ -2,6 +2,9 @@ import ChatInterface from "@/components/ChatInterface";
 import VideoViewer from "@/components/VideoViewer";
 import CalendarApp from "@/components/CalendarApp";
 import TaskList from "@/components/TaskList";
+import RealTimeGaming from "@/components/RealTimeGaming";
+import VirtualGarden from "@/components/VirtualGarden";
+import InteractiveStory from "@/components/InteractiveStory";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -17,6 +20,9 @@ export default function Home() {
   const [isVideoViewerOpen, setIsVideoViewerOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isTaskListOpen, setIsTaskListOpen] = useState(false);
+  const [isGamingOpen, setIsGamingOpen] = useState(false);
+  const [isGardenOpen, setIsGardenOpen] = useState(false);
+  const [isStoryOpen, setIsStoryOpen] = useState(false);
   const [videoAnalysisResults, setVideoAnalysisResults] = useState<VideoAnalysisResult[]>([]);
   const [avatarState, setAvatarState] = useState<AvatarState>('neutral');
 
@@ -80,6 +86,27 @@ export default function Home() {
               <span>Video Analyzer</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
+              onClick={() => setIsGamingOpen(true)}
+              className="flex items-center space-x-2 hover:bg-gray-100/80"
+            >
+              <span>🎮</span>
+              <span>Real-Time Gaming</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setIsGardenOpen(true)}
+              className="flex items-center space-x-2 hover:bg-gray-100/80"
+            >
+              <span>🌱</span>
+              <span>Virtual Garden</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setIsStoryOpen(true)}
+              className="flex items-center space-x-2 hover:bg-gray-100/80"
+            >
+              <span>📖</span>
+              <span>Interactive Story</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem 
               onClick={() => setIsCalendarOpen(true)}
               className="flex items-center space-x-2 hover:bg-gray-100/80"
             >
@@ -110,6 +137,24 @@ export default function Home() {
         isOpen={isVideoViewerOpen}
         onClose={() => setIsVideoViewerOpen(false)}
         onAnalysisUpdate={handleVideoAnalysisUpdate}
+      />
+
+      {/* Real-Time Gaming Modal */}
+      <RealTimeGaming
+        isOpen={isGamingOpen}
+        onClose={() => setIsGamingOpen(false)}
+      />
+
+      {/* Virtual Garden Modal */}
+      <VirtualGarden
+        isOpen={isGardenOpen}
+        onClose={() => setIsGardenOpen(false)}
+      />
+
+      {/* Interactive Story Modal */}
+      <InteractiveStory
+        isOpen={isStoryOpen}
+        onClose={() => setIsStoryOpen(false)}
       />
 
       {/* Calendar Modal */}
