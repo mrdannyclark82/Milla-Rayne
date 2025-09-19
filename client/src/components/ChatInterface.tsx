@@ -561,14 +561,15 @@ export default function ChatInterface({
     return null;
   };
 
-  // Fetch messages with optimized caching to reduce API calls
+  // Fetch messages with optimized caching to reduce API calls and limit message count
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
-    staleTime: 5 * 60 * 1000, // 5 minutes - consider data fresh for 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes - keep in cache for 10 minutes
+    staleTime: 10 * 60 * 1000, // 10 minutes - consider data fresh for 10 minutes 
+    cacheTime: 15 * 60 * 1000, // 15 minutes - keep in cache for 15 minutes
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     refetchOnMount: false, // Don't refetch on component mount if data exists
-    refetchOnReconnect: 'always', // Only refetch on reconnect if needed
+    refetchOnReconnect: false, // Don't refetch on reconnect
+    refetchInterval: false, // No automatic refetch interval
   });
 
   // Show introduction message if no messages exist and haven't shown it yet
@@ -1002,7 +1003,7 @@ export default function ChatInterface({
         )}
 
         {/* Chat Input Area */}
-        <div className="bg-transparent p-6">
+        <div className="bg-black/50 backdrop-blur-sm border-t border-white/10 p-6 relative z-10">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             <div className="flex items-end space-x-4">
@@ -1010,7 +1011,7 @@ export default function ChatInterface({
                 <Textarea
                   ref={textareaRef}
                   placeholder="Type your message to Milla..."
-                  className="w-full bg-transparent border-none rounded-2xl px-4 py-3 pr-44 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-0 focus:border-transparent transition-all"
+                  className="w-full bg-black/30 backdrop-blur border border-white/20 rounded-2xl px-4 py-3 pr-44 text-white placeholder:text-white/60 resize-none min-h-[3rem] max-h-32 focus:outline-none focus:ring-1 focus:ring-primary/50 focus:border-primary/50 transition-all"
                   value={message}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
