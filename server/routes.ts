@@ -445,6 +445,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server for real-time features
+  const { setupWebSocketServer } = await import("./websocketService");
+  await setupWebSocketServer(httpServer);
+  
   return httpServer;
 }
 
