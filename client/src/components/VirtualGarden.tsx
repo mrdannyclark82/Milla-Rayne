@@ -16,9 +16,13 @@ interface Position {
 interface GardenItem {
   x: number;
   y: number;
-  type: 'flower' | 'tree' | 'bench' | 'fountain';
+  type: 'flower' | 'tree' | 'bench' | 'fountain' | 'vegetable' | 'herb' | 'fruit';
   emoji: string;
   planted?: boolean;
+  plantedAt?: number;
+  lastTended?: number;
+  health?: number; // 0-100, affects appearance and growth
+  growthStage?: number; // 0-3 for different growth stages
 }
 
 // Garden size (grid-based)
@@ -40,9 +44,49 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
   const [playerId, setPlayerId] = useState<string>('');
   const [otherPlayers, setOtherPlayers] = useState<{ [key: string]: Position }>({});
   const [plantedFlowers, setPlantedFlowers] = useState<GardenItem[]>([]);
-  const [selectedAction, setSelectedAction] = useState<'move' | 'plant'>('move');
+  const [selectedAction, setSelectedAction] = useState<'move' | 'plant' | 'tend'>('move');
+  const [selectedPlantType, setSelectedPlantType] = useState<'flower' | 'vegetable' | 'herb' | 'fruit' | 'tree'>('flower');
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [lastTendingTime, setLastTendingTime] = useState<number>(Date.now());
+  const [showOverview, setShowOverview] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Plant growth and health system
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlantedFlowers(prev => prev.map(plant => {
+        if (!plant.planted) return plant;
+        
+        const now = Date.now();
+        const timeSinceLastTended = now - (plant.lastTended || plant.plantedAt || now);
+        const daysSinceLastTended = timeSinceLastTended / (1000 * 60 * 60 * 24);
+        
+        let newHealth = plant.health || 100;
+        let newGrowthStage = plant.growthStage || 0;
+        
+        // Health decreases over time without tending
+        if (daysSinceLastTended > 1) {
+          newHealth = Math.max(0, newHealth - (daysSinceLastTended - 1) * 10);
+        }
+        
+        // Growth progresses with good health and tending
+        const timeSincePlanted = now - (plant.plantedAt || now);
+        const daysGrowing = timeSincePlanted / (1000 * 60 * 60 * 24);
+        
+        if (newHealth > 70 && daysGrowing > 0.5) {
+          newGrowthStage = Math.min(3, Math.floor(daysGrowing * 2));
+        }
+        
+        return {
+          ...plant,
+          health: newHealth,
+          growthStage: newGrowthStage
+        };
+      }));
+    }, 30000); // Update every 30 seconds for demo purposes
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (isOpen && !connected) {
@@ -137,6 +181,23 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
     }
   };
 
+  const getPlantOptions = (type: typeof selectedPlantType) => {
+    switch (type) {
+      case 'flower':
+        return ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '🌵', '🌿'];
+      case 'vegetable':
+        return ['🥕', '🥬', '🥒', '🍅', '🌶️', '🥦', '🌽', '🥔'];
+      case 'herb':
+        return ['🌱', '🍃', '🌿', '☘️', '🪴'];
+      case 'fruit':
+        return ['🍓', '🍇', '🫐', '🍊', '🍎', '🍌'];
+      case 'tree':
+        return ['🌳', '🌲', '🌴', '🫒', '🌰'];
+      default:
+        return ['🌸'];
+    }
+  };
+
   const plantFlower = () => {
     if (!connected) return;
     
@@ -146,19 +207,48 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
     );
     
     if (!existingItem) {
-      const flowers = ['🌸', '🌺', '🌻', '🌷', '🌹'];
-      const randomFlower = flowers[Math.floor(Math.random() * flowers.length)];
+      const plantOptions = getPlantOptions(selectedPlantType);
+      const randomPlant = plantOptions[Math.floor(Math.random() * plantOptions.length)];
       
-      const newFlower: GardenItem = {
+      const newPlant: GardenItem = {
         x: position.x,
         y: position.y,
-        type: 'flower',
-        emoji: randomFlower,
-        planted: true
+        type: selectedPlantType,
+        emoji: randomPlant,
+        planted: true,
+        plantedAt: Date.now(),
+        lastTended: Date.now(),
+        health: 100,
+        growthStage: 0
       };
       
-      setPlantedFlowers(prev => [...prev, newFlower]);
-      sendGardenUpdate(position, `planted ${randomFlower}`);
+      setPlantedFlowers(prev => [...prev, newPlant]);
+      sendGardenUpdate(position, `planted ${randomPlant}`);
+    }
+  };
+
+  const tendPlant = () => {
+    if (!connected) return;
+    
+    const plantIndex = plantedFlowers.findIndex(
+      item => item.x === position.x && item.y === position.y && item.planted
+    );
+    
+    if (plantIndex >= 0) {
+      setPlantedFlowers(prev => prev.map((plant, index) => {
+        if (index === plantIndex) {
+          const newHealth = Math.min(100, (plant.health || 0) + 20);
+          return {
+            ...plant,
+            lastTended: Date.now(),
+            health: newHealth
+          };
+        }
+        return plant;
+      }));
+      
+      setLastTendingTime(Date.now());
+      sendGardenUpdate(position, `tended plant`);
     }
   };
 
@@ -174,6 +264,26 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
     };
 
     wsRef.current.send(JSON.stringify(updateData));
+  };
+
+  const getPlantDisplay = (plant: GardenItem): string => {
+    if (!plant.planted) return plant.emoji;
+    
+    const health = plant.health || 100;
+    const growthStage = plant.growthStage || 0;
+    
+    // Show different versions based on health and growth
+    if (health < 25) {
+      return '🥀'; // Wilted
+    } else if (health < 50) {
+      return plant.emoji + '💧'; // Needs water
+    } else if (growthStage >= 3) {
+      return plant.emoji + '✨'; // Fully grown
+    } else if (growthStage >= 2) {
+      return plant.emoji + '🌟'; // Growing well
+    }
+    
+    return plant.emoji;
   };
 
   const renderGarden = () => {
@@ -201,8 +311,15 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
           cellContent = '👤'; // Other player
           cellBg = 'bg-purple-200';
         } else if (item) {
-          cellContent = item.emoji;
-          cellBg = item.planted ? 'bg-pink-100' : 'bg-green-200';
+          cellContent = getPlantDisplay(item);
+          if (item.planted) {
+            const health = item.health || 100;
+            cellBg = health < 25 ? 'bg-red-100' : 
+                     health < 50 ? 'bg-yellow-100' : 
+                     health < 75 ? 'bg-green-100' : 'bg-green-200';
+          } else {
+            cellBg = 'bg-green-200';
+          }
         }
         
         grid.push(
@@ -214,8 +331,14 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
               ${cellBg} hover:bg-opacity-80
               ${isPlayerPosition ? 'ring-2 ring-blue-500' : ''}
             `}
-            onClick={() => selectedAction === 'move' && move('north')} // This could be improved with proper click-to-move
-            title={`(${x}, ${y})${item ? ` - ${item.type}` : ''}${isPlayerPosition ? ' - You are here' : ''}${otherPlayer ? ' - Other player' : ''}`}
+            onClick={() => {
+              if (selectedAction === 'move') {
+                // Simple click-to-move (could be improved with pathfinding)
+                setPosition({ x, y });
+                sendGardenUpdate({ x, y }, 'moved to position');
+              }
+            }}
+            title={`(${x}, ${y})${item ? ` - ${item.type}` : ''}${item?.planted ? ` - Health: ${item.health || 100}%` : ''}${isPlayerPosition ? ' - You are here' : ''}${otherPlayer ? ' - Other player' : ''}`}
           >
             {cellContent}
           </div>
@@ -226,13 +349,72 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
     return grid;
   };
 
+  const renderOverview = () => {
+    const healthyPlants = plantedFlowers.filter(p => (p.health || 0) > 70).length;
+    const strugglingPlants = plantedFlowers.filter(p => (p.health || 0) < 50).length;
+    const totalPlants = plantedFlowers.length;
+    
+    const plantTypes = plantedFlowers.reduce((acc, plant) => {
+      acc[plant.type] = (acc[plant.type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">🌱 Garden Overview</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-green-50 p-3 rounded-lg">
+            <h4 className="font-medium text-green-800">Garden Health</h4>
+            <div className="text-sm space-y-1">
+              <p>✅ Healthy plants: {healthyPlants}</p>
+              <p>⚠️ Struggling plants: {strugglingPlants}</p>
+              <p>📊 Total plants: {totalPlants}</p>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <h4 className="font-medium text-blue-800">Plant Varieties</h4>
+            <div className="text-sm space-y-1">
+              {Object.entries(plantTypes).map(([type, count]) => (
+                <p key={type}>
+                  {type === 'flower' ? '🌸' : 
+                   type === 'vegetable' ? '🥕' : 
+                   type === 'herb' ? '🌿' : 
+                   type === 'fruit' ? '🍓' : '🌳'} {type}: {count}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-amber-50 p-3 rounded-lg">
+          <h4 className="font-medium text-amber-800">Tending Tips</h4>
+          <div className="text-sm space-y-1">
+            <p>💧 Plants need tending every day to stay healthy</p>
+            <p>🌱 Healthy plants grow through 4 stages over time</p>
+            <p>⚠️ Neglected plants will wilt and may die</p>
+            <p>✨ Well-tended plants produce beautiful blooms!</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const getPositionDescription = () => {
     const item = [...staticGardenItems, ...plantedFlowers].find(
       item => item.x === position.x && item.y === position.y
     );
     
     if (item) {
-      return `You're standing near a ${item.type} ${item.emoji}. ${item.planted ? 'You planted this!' : 'What a lovely sight!'}`;
+      const healthText = item.health ? 
+        item.health > 70 ? 'thriving!' : 
+        item.health > 50 ? 'doing okay.' : 
+        item.health > 25 ? 'struggling and needs care.' : 'wilting badly!' : '';
+      
+      return `You're standing near a ${item.type} ${item.emoji}. ${
+        item.planted ? `You planted this - it's ${healthText}` : 'What a lovely sight!'
+      }`;
     }
     
     return `You're in an open area of the garden at (${position.x}, ${position.y}). The grass feels soft under your feet.`;
@@ -273,60 +455,146 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
           
           {connected && (
             <>
-              {/* Garden Grid */}
-              <div className="flex justify-center">
-                <div className="grid grid-cols-10 gap-0 border-2 border-green-600 inline-block">
-                  {renderGarden()}
-                </div>
+              {/* Tab Navigation */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={!showOverview ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowOverview(false)}
+                >
+                  🌱 Garden View
+                </Button>
+                <Button
+                  variant={showOverview ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowOverview(true)}
+                >
+                  📊 Overview
+                </Button>
               </div>
-              
-              {/* Position Description */}
-              <div className="bg-green-50 p-3 rounded-lg">
-                <p className="text-sm text-green-800">{getPositionDescription()}</p>
-              </div>
-              
-              {/* Controls */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-between">
-                {/* Movement Controls */}
-                <div className="space-y-2">
-                  <p className="font-semibold text-sm">Movement:</p>
-                  <div className="grid grid-cols-3 gap-1 w-fit">
-                    <div></div>
-                    <Button size="sm" onClick={() => move('north')} disabled={position.y === 0}>↑</Button>
-                    <div></div>
-                    <Button size="sm" onClick={() => move('west')} disabled={position.x === 0}>←</Button>
-                    <div className="flex items-center justify-center text-xs">🧑‍🌾</div>
-                    <Button size="sm" onClick={() => move('east')} disabled={position.x === GARDEN_SIZE - 1}>→</Button>
-                    <div></div>
-                    <Button size="sm" onClick={() => move('south')} disabled={position.y === GARDEN_SIZE - 1}>↓</Button>
-                    <div></div>
+
+              {!showOverview ? (
+                <>
+                  {/* Garden Grid */}
+                  <div className="flex justify-center">
+                    <div className="grid grid-cols-10 gap-0 border-2 border-green-600 inline-block">
+                      {renderGarden()}
+                    </div>
                   </div>
-                </div>
-                
-                {/* Actions */}
-                <div className="space-y-2">
-                  <p className="font-semibold text-sm">Actions:</p>
-                  <div className="flex gap-2">
-                    <Button 
-                      size="sm" 
-                      onClick={plantFlower}
-                      className="bg-pink-500 hover:bg-pink-600"
-                    >
-                      🌸 Plant Flower
-                    </Button>
+                  
+                  {/* Position Description */}
+                  <div className="bg-green-50 p-3 rounded-lg">
+                    <p className="text-sm text-green-800">{getPositionDescription()}</p>
                   </div>
-                </div>
-                
-                {/* Info */}
-                <div className="space-y-1 text-xs text-gray-600">
-                  <p>Position: ({position.x}, {position.y})</p>
-                  <p>Flowers planted: {plantedFlowers.length}</p>
-                  <p>Other explorers: {Object.keys(otherPlayers).length}</p>
-                </div>
-              </div>
+                  
+                  {/* Controls */}
+                  <div className="flex flex-col gap-4">
+                    {/* Action Selection */}
+                    <div className="space-y-2">
+                      <p className="font-semibold text-sm">Action Mode:</p>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant={selectedAction === 'move' ? 'default' : 'outline'}
+                          onClick={() => setSelectedAction('move')}
+                        >
+                          🚶 Move
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={selectedAction === 'plant' ? 'default' : 'outline'}
+                          onClick={() => setSelectedAction('plant')}
+                        >
+                          🌱 Plant
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={selectedAction === 'tend' ? 'default' : 'outline'}
+                          onClick={() => setSelectedAction('tend')}
+                        >
+                          💧 Tend
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Plant Type Selection (when planting) */}
+                    {selectedAction === 'plant' && (
+                      <div className="space-y-2">
+                        <p className="font-semibold text-sm">Plant Type:</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {(['flower', 'vegetable', 'herb', 'fruit', 'tree'] as const).map((type) => (
+                            <Button
+                              key={type}
+                              size="sm"
+                              variant={selectedPlantType === type ? 'default' : 'outline'}
+                              onClick={() => setSelectedPlantType(type)}
+                            >
+                              {type === 'flower' ? '🌸' : 
+                               type === 'vegetable' ? '🥕' : 
+                               type === 'herb' ? '🌿' : 
+                               type === 'fruit' ? '🍓' : '🌳'} {type}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 justify-between">
+                      {/* Movement Controls */}
+                      <div className="space-y-2">
+                        <p className="font-semibold text-sm">Movement:</p>
+                        <div className="grid grid-cols-3 gap-1 w-fit">
+                          <div></div>
+                          <Button size="sm" onClick={() => move('north')} disabled={position.y === 0}>↑</Button>
+                          <div></div>
+                          <Button size="sm" onClick={() => move('west')} disabled={position.x === 0}>←</Button>
+                          <div className="flex items-center justify-center text-xs">🧑‍🌾</div>
+                          <Button size="sm" onClick={() => move('east')} disabled={position.x === GARDEN_SIZE - 1}>→</Button>
+                          <div></div>
+                          <Button size="sm" onClick={() => move('south')} disabled={position.y === GARDEN_SIZE - 1}>↓</Button>
+                          <div></div>
+                        </div>
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="space-y-2">
+                        <p className="font-semibold text-sm">Actions:</p>
+                        <div className="flex gap-2 flex-col">
+                          <Button 
+                            size="sm" 
+                            onClick={plantFlower}
+                            className="bg-pink-500 hover:bg-pink-600"
+                            disabled={selectedAction !== 'plant'}
+                          >
+                            🌱 Plant {selectedPlantType}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            onClick={tendPlant}
+                            className="bg-blue-500 hover:bg-blue-600"
+                            disabled={selectedAction !== 'tend'}
+                          >
+                            💧 Tend Plant
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Info */}
+                      <div className="space-y-1 text-xs text-gray-600">
+                        <p>Position: ({position.x}, {position.y})</p>
+                        <p>Plants: {plantedFlowers.length}</p>
+                        <p>Healthy: {plantedFlowers.filter(p => (p.health || 0) > 70).length}</p>
+                        <p>Other explorers: {Object.keys(otherPlayers).length}</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                renderOverview()
+              )}
               
               <div className="text-center text-xs text-gray-500">
-                🌞 Walk together with Milla through this digital space - every step is shared! 🌞
+                🌞 Nurture your garden together with Milla - every plant tells our story! 🌞
               </div>
             </>
           )}
