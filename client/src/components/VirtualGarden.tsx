@@ -359,9 +359,90 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
       return acc;
     }, {} as Record<string, number>);
 
+    // Create bird's eye view mini-map
+    const renderBirdsEyeMap = () => {
+      const mapGrid = [];
+      
+      for (let y = 0; y < GARDEN_SIZE; y++) {
+        for (let x = 0; x < GARDEN_SIZE; x++) {
+          const isPlayerPosition = position.x === x && position.y === y;
+          const otherPlayer = Object.entries(otherPlayers).find(
+            ([id, pos]) => pos.x === x && pos.y === y
+          );
+          
+          // Find items at this position
+          const staticItem = staticGardenItems.find(item => item.x === x && item.y === y);
+          const plantedItem = plantedFlowers.find(item => item.x === x && item.y === y);
+          const item = plantedItem || staticItem;
+          
+          let cellContent = '';
+          let cellBg = 'bg-green-50'; // Empty soil
+          let cellBorder = 'border-green-200';
+          
+          if (isPlayerPosition) {
+            cellContent = '👤';
+            cellBg = 'bg-blue-100';
+            cellBorder = 'border-blue-400';
+          } else if (otherPlayer) {
+            cellContent = '👥';
+            cellBg = 'bg-purple-100';
+            cellBorder = 'border-purple-400';
+          } else if (item) {
+            if (item.planted) {
+              const health = item.health || 100;
+              cellContent = getPlantDisplay(item);
+              cellBg = health < 25 ? 'bg-red-100' : 
+                       health < 50 ? 'bg-yellow-100' : 
+                       health < 75 ? 'bg-green-100' : 'bg-green-200';
+              cellBorder = 'border-green-400';
+            } else {
+              cellContent = item.emoji;
+              cellBg = 'bg-amber-100';
+              cellBorder = 'border-amber-400';
+            }
+          }
+          
+          mapGrid.push(
+            <div
+              key={`map-${x}-${y}`}
+              className={`
+                w-6 h-6 border flex items-center justify-center
+                text-xs transition-all duration-200
+                ${cellBg} ${cellBorder}
+                ${isPlayerPosition ? 'ring-1 ring-blue-500' : ''}
+              `}
+              title={`(${x}, ${y})${item ? ` - ${item.type}` : ' - Empty'}${item?.planted ? ` - Health: ${item.health || 100}%` : ''}${isPlayerPosition ? ' - You are here' : ''}${otherPlayer ? ' - Other player' : ''}`}
+            >
+              {cellContent}
+            </div>
+          );
+        }
+      }
+      
+      return mapGrid;
+    };
+
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">🌱 Garden Overview</h3>
+        
+        {/* Bird's Eye View Map */}
+        <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+          <h4 className="font-medium text-green-800 mb-3 text-center">🦅 Bird's Eye View</h4>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-10 gap-0 border-2 border-green-600 inline-block">
+              {renderBirdsEyeMap()}
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-center text-green-700">
+            <div className="flex justify-center space-x-4 flex-wrap">
+              <span>🟢 Empty Soil</span>
+              <span>🌱 Planted</span>
+              <span>🏛️ Structures</span>
+              <span>👤 Your Position</span>
+            </div>
+          </div>
+        </div>
         
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-green-50 p-3 rounded-lg">
@@ -370,6 +451,7 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
               <p>✅ Healthy plants: {healthyPlants}</p>
               <p>⚠️ Struggling plants: {strugglingPlants}</p>
               <p>📊 Total plants: {totalPlants}</p>
+              <p>🌍 Empty spaces: {(GARDEN_SIZE * GARDEN_SIZE) - totalPlants - staticGardenItems.length}</p>
             </div>
           </div>
           
@@ -384,6 +466,9 @@ export default function VirtualGarden({ isOpen, onClose }: VirtualGardenProps) {
                    type === 'fruit' ? '🍓' : '🌳'} {type}: {count}
                 </p>
               ))}
+              {Object.keys(plantTypes).length === 0 && (
+                <p className="text-gray-500 italic">No plants yet - start gardening!</p>
+              )}
             </div>
           </div>
         </div>
