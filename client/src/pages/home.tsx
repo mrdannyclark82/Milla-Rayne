@@ -36,36 +36,26 @@ export default function Home() {
   };
 
   return (
-    <div className="h-screen w-screen relative overflow-hidden">
-      {/* Full screen background image */}
-      <div className="absolute inset-0 z-0">
+    <div className="h-screen w-screen flex overflow-hidden">
+      {/* Left side - Image area */}
+      <div className="flex-shrink-0 w-[600px] h-full flex items-center justify-center bg-black/10">
         <img
           src="/unnamed.jpg"
-          alt="AI companion background"
-          className="w-full h-full object-cover"
+          alt="AI companion"
+          className="h-full w-auto object-cover rounded-none"
         />
-        {/* Overlay to ensure readability */}
-        <div className="absolute inset-0 bg-black/20"></div>
       </div>
-      
-      {/* Main UI Layout - Split screen with background on left and chat on right */}
-      <div className="relative z-10 h-full flex">
-        {/* Left side - Background image area (for avatar/visual elements) */}
-        <div className="flex-1 flex items-center justify-center">
-          {/* This area is available for future avatar display or other UI elements */}
-        </div>
-        
-        {/* Right side - Integrated Chat Interface */}
-        <div className="w-96 max-w-[40vw] min-w-[320px] bg-black/30 backdrop-blur-md border-l border-white/10">
-          <ChatInterface 
-            videoAnalysisResults={videoAnalysisResults} 
-            onAvatarStateChange={handleAvatarStateChange}
-          />
-        </div>
+
+      {/* Right side - Integrated Chat Interface */}
+      <div className="flex-1 h-full flex flex-col bg-black/30 backdrop-blur-md border-l border-white/10">
+        <ChatInterface
+          videoAnalysisResults={videoAnalysisResults}
+          onAvatarStateChange={handleAvatarStateChange}
+        />
       </div>
-      
+
       {/* Floating Apps menu - positioned over the left side */}
-      <div className={`absolute bottom-4 sm:bottom-8 left-4 sm:left-8 z-20 transition-all duration-300 ${
+      <div className={`absolute bottom-4 sm:bottom-8 left-4 sm:left-8 z-40 transition-all duration-300 ${
         isVideoViewerOpen ? 'left-[25rem] sm:left-[26rem]' : 'left-4 sm:left-8'
       }`}>
         <DropdownMenu>
