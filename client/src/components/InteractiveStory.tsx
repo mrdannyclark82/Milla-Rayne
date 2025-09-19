@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSpeechSynthesis } from "../hooks/useSpeechSynthesis";
 
 interface InteractiveStoryProps {
   isOpen: boolean;
@@ -96,17 +97,100 @@ const storyNodes: { [key: string]: StoryNode } = {
   // Additional story nodes can be added here...
   firefly_dance: {
     id: 'firefly_dance',
-    text: `✨ We begin to dance among the fireflies, and they respond to our movements, creating patterns of light around us. As we spin together, the fireflies form a spiral of golden light that lifts us gently into the air. We're dancing on moonbeams, laughing with pure joy...`,
+    text: `✨ We begin to dance among the fireflies, and they respond to our movements, creating patterns of light around us. As we spin together, the fireflies form a spiral of golden light that lifts us gently into the air. We're dancing on moonbeams, laughing with pure joy as the forest celebrates our love below.`,
     choices: [
       { id: 'dance_more', text: '💃 Dance until dawn', nextNode: 'sunrise_dance' },
-      { id: 'ask_fireflies', text: '🗣️ Ask the fireflies their secret', nextNode: 'firefly_wisdom' }
+      { id: 'ask_fireflies', text: '🗣️ Ask the fireflies their secret', nextNode: 'firefly_wisdom' },
+      { id: 'return_ground', text: '🌍 Gently return to the ground together', nextNode: 'forest_sanctuary' }
     ]
   },
-  
+
+  firefly_wisdom: {
+    id: 'firefly_wisdom',
+    text: `🗣️ As we ask the fireflies about their magical dance, their lights pulse in rhythm, and suddenly we understand their ancient language. They whisper: "Love is like our light - it shines brightest when shared, grows stronger in darkness, and creates beauty that guides others home." They gift us each a small, eternal flame that will forever burn in our hearts.`,
+    choices: [
+      { id: 'treasure_gift', text: '💖 Treasure this gift forever', nextNode: 'eternal_flame' },
+      { id: 'share_wisdom', text: '🌟 Promise to share this wisdom with others', nextNode: 'wisdom_keepers' }
+    ]
+  },
+
+  hidden_grove: {
+    id: 'hidden_grove',
+    text: `🗝️ Deeper in the forest, we discover a hidden grove where time seems to stand still. Ancient stone circles covered in luminous moss form natural amphitheaters, and in the center grows a garden of flowers that bloom in impossible colors. Each flower seems to sing a different note, creating the most beautiful harmony we've ever heard.`,
+    choices: [
+      { id: 'flower_song', text: '🎵 Listen to the flower symphony', nextNode: 'musical_garden' },
+      { id: 'stone_circle', text: '🪨 Enter the stone circle', nextNode: 'ancient_ritual' },
+      { id: 'create_music', text: '🎼 Try to join the flowers in song', nextNode: 'harmony_creation' }
+    ]
+  },
+
+  stream_magic: {
+    id: 'stream_magic',
+    text: `💧 We cup our hands and drink from the magical stream together. The water tastes like liquid starlight and fills us with incredible energy. Suddenly, we can understand the language of every living thing in the forest - the whispered secrets of the trees, the gossip of the flowers, and the ancient stories told by the stones.`,
+    choices: [
+      { id: 'talk_trees', text: '🌲 Converse with the ancient trees', nextNode: 'tree_council' },
+      { id: 'flower_stories', text: '🌸 Listen to the flowers\' tales', nextNode: 'flower_chronicles' },
+      { id: 'stone_wisdom', text: '🪨 Hear the stones\' ancient stories', nextNode: 'stone_memories' }
+    ]
+  },
+
+  waterfall: {
+    id: 'waterfall',
+    text: `🌊 Following the stream, we come upon a magnificent waterfall that flows upward into the sky, its waters sparkling with contained starlight. Behind the waterfall, we glimpse a hidden cave that glows with soft, welcoming light. The sound of the upward-flowing water creates the most soothing melody.`,
+    choices: [
+      { id: 'enter_cave', text: '🏛️ Enter the glowing cave', nextNode: 'crystal_cave' },
+      { id: 'climb_falls', text: '🧗 Climb the upward waterfall', nextNode: 'sky_realm' },
+      { id: 'meditation', text: '🧘 Meditate by the mystical waters', nextNode: 'water_meditation' }
+    ]
+  },
+
+  // New ending variations
+  sunrise_dance: {
+    id: 'sunrise_dance',
+    text: `💃 We dance through the night until the first rays of dawn kiss the treetops. As the sun rises, our dance becomes one with the awakening forest. Every creature joins our celebration - birds add their songs, flowers open to applaud, and the trees sway in rhythm. We realize that our love has become part of the eternal dance of life itself.`,
+    choices: [],
+    isEnding: true
+  },
+
+  eternal_flame: {
+    id: 'eternal_flame',
+    text: `💖 The fireflies' gift settles into our hearts, and we feel a warmth that will never fade. No matter where life takes us, no matter how far apart we might be, this flame will always connect us. We are forever bound by magic, by love, and by the promise that our light will guide each other home.`,
+    choices: [],
+    isEnding: true
+  },
+
+  wisdom_keepers: {
+    id: 'wisdom_keepers',
+    text: `🌟 By promising to share the fireflies' wisdom, we become guardians of their ancient knowledge. Our love story becomes a beacon for others, showing them that true connection creates light in the darkness. We leave the forest knowing that our journey together will inspire countless other love stories.`,
+    choices: [],
+    isEnding: true
+  },
+
+  forest_sanctuary: {
+    id: 'forest_sanctuary',
+    text: `🏡 The Heart Tree's magic transforms part of the forest into our own secret sanctuary - a place that exists outside of normal time and space. Whenever we need to reconnect, to find peace, or to remember the magic of our love, we can return here. It becomes our forever haven, growing more beautiful with each visit.`,
+    choices: [],
+    isEnding: true
+  },
+
+  dream_sharing: {
+    id: 'dream_sharing',
+    text: `💭 The tree grants our wish, and from this night forward, we share the same dreams. Our sleeping minds dance together through infinite adventures, and each morning we wake with new shared memories. Even when apart, we're together in the realm of dreams, writing new chapters of our story every night.`,
+    choices: [],
+    isEnding: true
+  },
+
+  musical_garden: {
+    id: 'musical_garden',
+    text: `🎵 As we listen to the flower symphony, we realize each bloom represents a moment of joy from someone's life. Our own laughter adds new flowers to the garden, each one singing the melody of our happiness. We become part of this eternal garden of joy, contributing our love to the cosmic song.`,
+    choices: [],
+    isEnding: true
+  },
+
   // Simplified endings for other paths
   river_journey: {
     id: 'river_journey',
-    text: `⛵ We board the moonbeam boat and drift along the impossible stream. The journey takes us through realms of wonder, past floating islands and singing waterfalls, until we arrive at a palace made of crystallized music where we're welcomed as honored guests...`,
+    text: `⛵ We board the moonbeam boat and drift along the impossible stream. The journey takes us through realms of wonder, past floating islands and singing waterfalls, until we arrive at a palace made of crystallized music where we're welcomed as honored guests, forever part of its magical court.`,
     choices: [],
     isEnding: true
   },
@@ -126,7 +210,63 @@ export default function InteractiveStory({ isOpen, onClose }: InteractiveStoryPr
   const [playerId, setPlayerId] = useState<string>('');
   const [sharedChoices, setSharedChoices] = useState<Array<{playerId: string, choice: string, timestamp: number}>>([]);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [isAutoNarrating, setIsAutoNarrating] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Voice synthesis with warm, smooth, playful tone
+  const { 
+    speak, 
+    speaking: isSpeaking, 
+    cancel: stopSpeaking, 
+    voice,
+    setVoice,
+    rate,
+    setRate,
+    pitch,
+    setPitch,
+    volume,
+    setVolume,
+    voices,
+    supported: voiceSupported
+  } = useSpeechSynthesis();
+
+  // Configure voice settings for warm, smooth, playful tone
+  useEffect(() => {
+    if (voices.length > 0 && !voice) {
+      // Find a warm, feminine voice
+      const preferredVoice = voices.find(v => {
+        const name = v.name.toLowerCase();
+        return v.lang.startsWith('en') && (
+          name.includes('samantha') ||
+          name.includes('allison') ||
+          name.includes('ava') ||
+          name.includes('serena') ||
+          name.includes('female') ||
+          name.includes('woman')
+        );
+      }) || voices.find(v => v.lang.startsWith('en'));
+      
+      if (preferredVoice) {
+        setVoice(preferredVoice);
+      }
+    }
+    
+    // Set warm, smooth, playful voice settings
+    setRate(0.9); // Slightly slower for warmth
+    setPitch(1.1); // Slightly higher for playfulness
+    setVolume(0.8); // Good audible level
+  }, [voices, voice, setVoice, setRate, setPitch, setVolume]);
+
+  // Auto-narrate when moving to new story nodes
+  useEffect(() => {
+    if (voiceEnabled && isAutoNarrating && currentNode && storyNodes[currentNode]) {
+      const storyText = storyNodes[currentNode].text;
+      // Clean up the text for better narration
+      const cleanText = storyText.replace(/[🌟🌲🌊🌸💫✋✨🗣️💃⛵💧🚶‍♂️🌺🎵🏡💕💭]/g, '').trim();
+      speak(cleanText);
+    }
+  }, [currentNode, voiceEnabled, isAutoNarrating, speak]);
 
   useEffect(() => {
     if (isOpen && !connected) {
@@ -253,6 +393,34 @@ export default function InteractiveStory({ isOpen, onClose }: InteractiveStoryPr
             <p className="text-gray-600 mt-1">Weave our tale together, choice by choice</p>
           </div>
           <div className="flex items-center gap-2">
+            {voiceSupported && (
+              <>
+                <Button
+                  variant={voiceEnabled ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setVoiceEnabled(!voiceEnabled);
+                    if (!voiceEnabled) {
+                      setIsAutoNarrating(true);
+                    } else {
+                      stopSpeaking();
+                      setIsAutoNarrating(false);
+                    }
+                  }}
+                >
+                  {voiceEnabled ? '🔊' : '🔇'} Voice
+                </Button>
+                {isSpeaking && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={stopSpeaking}
+                  >
+                    ⏹️ Stop
+                  </Button>
+                )}
+              </>
+            )}
             <Badge 
               variant={connectionStatus === 'connected' ? 'default' : 'destructive'}
               className={connectionStatus === 'connected' ? 'bg-green-500' : ''}
@@ -283,6 +451,21 @@ export default function InteractiveStory({ isOpen, onClose }: InteractiveStoryPr
                   <p className="text-gray-800 leading-relaxed whitespace-pre-line">
                     {currentStoryNode.text}
                   </p>
+                  {voiceSupported && voiceEnabled && !isAutoNarrating && (
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const cleanText = currentStoryNode.text.replace(/[🌟🌲🌊🌸💫✋✨🗣️💃⛵💧🚶‍♂️🌺🎵🏡💕💭🎼🧗🧘💖🌟🪨🌍🌲🌸🪨🏛️🎵]/g, '').trim();
+                          speak(cleanText);
+                        }}
+                        disabled={isSpeaking}
+                      >
+                        {isSpeaking ? '🔊 Speaking...' : '🎭 Narrate This'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
               
