@@ -42,25 +42,29 @@ interface MoveHint {
   quality: 'good' | 'better' | 'best' | 'blunder';
 }
 
-// Simple chess-like board representation (8x8)
+// Chess board representation (8x8) with proper starting positions
 const initialBoard = () => {
   const board: { [key: string]: string } = {};
-  // Simple pieces setup for demo
+  
+  // White pieces (bottom of board - ranks 1 and 2)
+  board['a1'] = '♖'; board['h1'] = '♖'; // White rooks
+  board['b1'] = '♘'; board['g1'] = '♘'; // White knights
+  board['c1'] = '♗'; board['f1'] = '♗'; // White bishops
+  board['d1'] = '♕'; board['e1'] = '♔'; // White queen and king
+  
   for (let i = 0; i < 8; i++) {
-    board[`${String.fromCharCode(97 + i)}2`] = '♟'; // Black pawns
-    board[`${String.fromCharCode(97 + i)}7`] = '♙'; // White pawns
+    board[`${String.fromCharCode(97 + i)}2`] = '♙'; // White pawns
   }
   
-  // Add some pieces for demonstration
-  board['a1'] = '♜'; board['h1'] = '♜'; // Black rooks
-  board['b1'] = '♞'; board['g1'] = '♞'; // Black knights
-  board['c1'] = '♝'; board['f1'] = '♝'; // Black bishops
-  board['d1'] = '♛'; board['e1'] = '♚'; // Black queen and king
+  // Black pieces (top of board - ranks 7 and 8)
+  for (let i = 0; i < 8; i++) {
+    board[`${String.fromCharCode(97 + i)}7`] = '♟'; // Black pawns
+  }
   
-  board['a8'] = '♖'; board['h8'] = '♖'; // White rooks
-  board['b8'] = '♘'; board['g8'] = '♘'; // White knights
-  board['c8'] = '♗'; board['f8'] = '♗'; // White bishops
-  board['d8'] = '♕'; board['e8'] = '♔'; // White queen and king
+  board['a8'] = '♜'; board['h8'] = '♜'; // Black rooks
+  board['b8'] = '♞'; board['g8'] = '♞'; // Black knights
+  board['c8'] = '♝'; board['f8'] = '♝'; // Black bishops
+  board['d8'] = '♛'; board['e8'] = '♚'; // Black queen and king
   
   return board;
 };
@@ -378,6 +382,16 @@ export default function RealTimeGaming({ isOpen, onClose }: RealTimeGamingProps)
       timestamp: Date.now()
     };
 
+    // Add message locally immediately for better UX
+    const newMessage: ChatMessage = {
+      id: `${playerId}-${chatData.timestamp}`,
+      playerId: playerId,
+      message: chatData.message,
+      timestamp: chatData.timestamp,
+      type: 'chat'
+    };
+    
+    setChatMessages(prev => [...prev, newMessage]);
     wsRef.current.send(JSON.stringify(chatData));
     setChatInput('');
   };
