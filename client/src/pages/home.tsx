@@ -79,61 +79,61 @@ export default function Home() {
               🟦 Apps
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48 bg-white/95 backdrop-blur-sm border-white/20">
+          <DropdownMenuContent align="start" className="w-52 bg-white/98 backdrop-blur-md border-gray-200/80 shadow-xl rounded-lg max-h-80 overflow-y-auto">
             <DropdownMenuItem 
               onClick={() => setIsVideoViewerOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>🎥</span>
               <span>Video Analyzer</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setIsGamingOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>🎮</span>
               <span>Real-Time Gaming</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setIsGardenOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>🌱</span>
               <span>Virtual Garden</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setIsStoryOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>📖</span>
               <span>Interactive Story</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setIsCalendarOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>📅</span>
               <span>Calendar</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setIsTaskListOpen(true)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>✅</span>
               <span>Task List</span>
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setVoiceEnabled(!voiceEnabled)}
-              className="flex items-center space-x-2 hover:bg-gray-100/80"
+              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
             >
               <span>{voiceEnabled ? '🔊' : '🔇'}</span>
               <span>{voiceEnabled ? 'Disable Voice' : 'Enable Voice'}</span>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled className="flex items-center space-x-2">
+            <DropdownMenuItem disabled className="flex items-center space-x-3 px-3 py-2 text-gray-500">
               <span>🔧</span>
               <span>Settings (Coming Soon)</span>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled className="flex items-center space-x-2">
+            <DropdownMenuItem disabled className="flex items-center space-x-3 px-3 py-2 text-gray-500">
               <span>📊</span>
               <span>Analytics (Coming Soon)</span>
             </DropdownMenuItem>
