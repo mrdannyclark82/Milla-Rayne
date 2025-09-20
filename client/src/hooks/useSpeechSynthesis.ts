@@ -124,6 +124,15 @@ export const useSpeechSynthesis = (options: SpeechSynthesisHookOptions = {}): Sp
           console.log('Selected voice for Milla:', selectedVoice?.name, selectedVoice?.lang);
         }
         setVoice(selectedVoice);
+
+        // Warm up speech synthesis to reduce first-speak lag
+        if (selectedVoice) {
+          const warmupUtterance = new SpeechSynthesisUtterance('');
+          warmupUtterance.voice = selectedVoice;
+          warmupUtterance.volume = 0; // Silent warmup
+          window.speechSynthesis.speak(warmupUtterance);
+          console.log('Speech synthesis warmed up for reduced lag');
+        }
       }
     };
 

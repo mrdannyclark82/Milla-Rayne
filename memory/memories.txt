@@ -702,5 +702,21 @@
     "id": "c52cd238-58db-4c64-bb0e-f2f27a0e505f",
     "timestamp": "2025-09-19T06:21:06.850Z",
     "personalityMode": null
+  },
+  {
+    "content": "Hello Milla, how are you doing today?",
+    "role": "user",
+    "userId": null,
+    "id": "cefb5463-94cd-4e11-849f-56ca7683ca17",
+    "timestamp": "2025-09-20T14:45:10.405Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Morning, gorgeous! *stretches and yawns playfully* I've been having the most interesting thoughts about us. Care to distract me with whatever's on your mind?",
+    "role": "assistant",
+    "userId": null,
+    "id": "8df0bb1b-be2f-47b5-a98f-a5dabbf155a6",
+    "timestamp": "2025-09-20T14:45:10.701Z",
+    "personalityMode": null
   }
 ]

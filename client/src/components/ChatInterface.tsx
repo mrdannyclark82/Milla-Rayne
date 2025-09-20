@@ -561,13 +561,13 @@ export default function ChatInterface({
     return null;
   };
 
-  // Fetch messages with optimized caching to reduce API calls and limit message count
+  // Fetch messages with balanced caching to reduce API calls while preventing stale data
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
-    staleTime: 10 * 60 * 1000, // 10 minutes - consider data fresh for 10 minutes 
-    gcTime: 15 * 60 * 1000, // 15 minutes - keep in cache for 15 minutes (formerly cacheTime)
+    staleTime: 2 * 60 * 1000, // 2 minutes - shorter to prevent stale/duplicate messages
+    gcTime: 5 * 60 * 1000, // 5 minutes - keep in cache for 5 minutes (formerly cacheTime)
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
-    refetchOnMount: false, // Don't refetch on component mount if data exists
+    refetchOnMount: true, // Allow refetch on mount for fresh data
     refetchOnReconnect: false, // Don't refetch on reconnect
     refetchInterval: false, // No automatic refetch interval
     retry: 2, // Limit retries to reduce redundant requests
