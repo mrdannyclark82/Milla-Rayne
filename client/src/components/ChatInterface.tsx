@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface ChatInterfaceProps {
   theme?: 'light' | 'dark';
-  onAvatarStateChange?: (state: string) => void;
+  onAvatarStateChange?: (state: 'neutral' | 'thinking' | 'responding') => void;
 }
 
 interface MessageResponse {
