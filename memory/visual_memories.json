@@ -151,5 +151,23 @@
     "imageHash": "/9j/4AAQSkZJRgABAQA",
     "date": "9/1/2025",
     "timeOfDay": "1:48:38 AM"
+  },
+  {
+    "id": "visual_1758226993245",
+    "timestamp": 1758226993245,
+    "emotion": "thoughtful",
+    "confidence": 0.8,
+    "imageHash": "/9j/4AAQSkZJRgABAQA",
+    "date": "9/18/2025",
+    "timeOfDay": "3:23 PM"
+  },
+  {
+    "id": "visual_1758226996254",
+    "timestamp": 1758226996254,
+    "emotion": "curious",
+    "confidence": 0.8,
+    "imageHash": "/9j/4AAQSkZJRgABAQA",
+    "date": "9/18/2025",
+    "timeOfDay": "3:23 PM"
   }
 ]
