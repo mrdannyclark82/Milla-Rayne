@@ -948,10 +948,24 @@ function generateIntelligentFallback(
     `That reminds me of ${relevantMemories || 'some of our previous conversations.'} What's your take on this today?`
   ];
   
-  const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-  
+  // Deterministic response selection based on userMessage and userName
+  function simpleHash(str: string): number {
+    let hash = 0, i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+      chr   = str.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  const hashInput = `${userMessage}:${userName}`;
+  const deterministicIndex = simpleHash(hashInput) % responses.length;
+  const deterministicResponse = responses[deterministicIndex];
+
   // Add a note about the AI system status for transparency
-  return `${randomResponse}\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*`;
+  return `${deterministicResponse}\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*`;
 }
 
 async function generateAIResponse(
