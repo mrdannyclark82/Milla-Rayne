@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import type { Message } from "@shared/schema";
@@ -103,10 +104,12 @@ export default function ChatInterface({
       
       if (data.aiMessage) {
         newMessages.push(data.aiMessage);
+
         
         // Add to conversation memory
         addExchange(data.userMessage.content, data.aiMessage.content);
         
+
         // Set avatar to responding state
         onAvatarStateChange?.('responding');
         
@@ -157,10 +160,15 @@ export default function ChatInterface({
         ? 'bg-gray-100 text-gray-800 mr-auto'
         : 'bg-gray-700 text-gray-100 mr-auto'
       }`;
+
     }
   };
 
+  // Filter messages to show only the most recent one (requirement 1)
+  const recentMessage = messages && messages.length > 0 ? [messages[messages.length - 1]] : [];
+
   return (
+
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className={`p-4 border-b ${
@@ -268,8 +276,8 @@ export default function ChatInterface({
             )}
           </Button>
         </div>
+
       </div>
-    </div>
+    </main>
   );
 }
-
