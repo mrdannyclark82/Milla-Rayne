@@ -172,14 +172,18 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
               )}
               
               {isCameraActive && !isAnalyzing && (
-                <Button onClick={startAnalysis} variant="default" size="sm">
-                  Start Analysis
+
+                <Button onClick={startAnalysis} variant="default">
+                  Start Video Preview
+
                 </Button>
               )}
               
               {isAnalyzing && (
-                <Button onClick={stopAnalysis} variant="destructive" size="sm">
-                  Stop Analysis
+
+                <Button onClick={stopAnalysis} variant="destructive">
+                  Stop Preview
+
                 </Button>
               )}
               
@@ -196,12 +200,14 @@ export default function VideoViewer({ isOpen, onClose, onAnalysisUpdate }: Video
           </div>
           
           {/* Instructions */}
-          <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3">
-            <h4 className="text-sm font-medium mb-2 text-white">How to use:</h4>
-            <ol className="text-xs text-white/80 space-y-1">
-              <li>1. Click "Initialize AI Model" to load TensorFlow.js</li>
+
+          <div className="p-4 border rounded-lg bg-muted/5">
+            <h4 className="text-sm font-medium mb-2">How to use:</h4>
+            <ol className="text-sm text-muted-foreground space-y-1">
+              <li>1. Click "Initialize AI Model" to prepare the video system</li>
+
               <li>2. Click "Start Camera" to activate your webcam</li>
-              <li>3. Click "Start Analysis" to begin AI object detection</li>
+              <li>3. Click "Start Video Preview" to begin live video feed</li>
               <li>4. Chat with Milla about what she sees in your video feed</li>
             </ol>
           </div>
