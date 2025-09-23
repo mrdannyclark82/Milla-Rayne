@@ -20,7 +20,7 @@ export async function generateImage(prompt: string): Promise<ImageGenerationResu
   }
   try {
     // Example XAI image generation call (update endpoint/params as needed)
-    const response = await fetch(XAI_IMAGE_ENDPOINT, {
+    const response = await fetch(process.env.XAI_IMAGE_ENDPOINT || 'https://api.xai.com/v1/images/generations', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
