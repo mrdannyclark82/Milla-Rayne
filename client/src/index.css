@@ -1,4 +1,240 @@
 
+/* Chat interface container - positioned on right side */
+.chat-interface-container {
+  width: 100% !important;
+  min-height: 500px !important;
+  max-height: calc(100vh - 2rem) !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+@media (min-width: 640px) {
+  /* Keep desktop styles as is */
+}
+
+@media (max-width: 768px) {
+  .chat-interface-container {
+    min-height: 400px !important;
+    max-height: calc(100vh - 1rem) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-interface-container {
+    min-height: 350px !important;
+    max-height: calc(100vh - 1rem) !important;
+  }
+}
+
+.video-analyzer-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 384px !important; /* w-96 equivalent */
+  height: 100vh !important;
+  z-index: 40 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 1rem !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+@media (max-width: 768px) {
+  .video-analyzer-container {
+    width: 320px !important;
+    padding: 0.75rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-analyzer-container {
+    width: calc(100vw - 2rem) !important;
+    max-width: 320px !important;
+    padding: 0.5rem !important;
+  }
+}
+
+
+/* Dynamic Avatar Animations */
+@keyframes breathing {
+  0%, 100% { transform: scale(1) translateY(0px); }
+  50% { transform: scale(1.01) translateY(-2px); }
+}
+
+@keyframes subtle-blink {
+  0%, 90%, 100% { opacity: 1; }
+  95% { opacity: 0.95; }
+}
+
+@keyframes gentle-sway {
+  0%, 100% { transform: translateX(0px) rotate(0deg); }
+  25% { transform: translateX(1px) rotate(0.2deg); }
+  75% { transform: translateX(-1px) rotate(-0.2deg); }
+}
+
+.avatar-breathing {
+  will-change: transform, opacity;
+}
+
+/* Custom scrollbar for chat messages */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Custom Range Slider Styling */
+.slider {
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+.slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+/* Chat Interface Animations */
+.message-fade-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced chat bubble animations */
+.chat-bubble-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-bubble-hover:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Glassmorphism effects */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-chat-bubble {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced typing animation */
+@keyframes typing-dots {
+  0%, 20% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+.typing-dots .dot {
+  animation: typing-dots 1.4s infinite;
+}
+
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Avatar pulse effect */
+.avatar-pulse {
+  animation: avatarPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
+  }
+}
+
+/* Smooth scrollbar for chat */
+
 .chat-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
