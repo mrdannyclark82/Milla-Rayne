@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Analysis Engine (API)</title>
+    <!-- TensorFlow.js and COCO-SSD Model -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: monospace;
+            color: white;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        video, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Keeps aspect ratio */
+        }
+        #status-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="video-container">
+        <!-- The video element for displaying the feed -->
+        <video id="video-element" playsinline muted autoplay></video>
+        <!-- The canvas for drawing analysis results (e.g., bounding boxes) -->
+        <canvas id="canvas-element"></canvas>
+        <!-- A simple overlay to show the current status to the user -->
+        <div id="status-overlay">STATUS: Uninitialized</div>
+    </div>
+
+    <script>
+        /**
+         * ---------------------------------------------------------------------
+         * Video Analysis API for AI Assistant Integration
+         * ---------------------------------------------------------------------
+         * This script exposes a global `videoAnalyzer` object that can be
+         * used by an external program to control the video analysis process.
+         * It also supports postMessage communication for iframe integration.
+         */
+        (function() {
+            // --- DOM Elements ---
+            const videoElement = document.getElementById('video-element');
+            const canvasElement = document.getElementById('canvas-element');
+            const canvasCtx = canvasElement.getContext('2d');
+            const statusOverlay = document.getElementById('status-overlay');
+
+            // --- Internal State ---
+            let model = null;
+            let isAnalyzing = false;
+            let currentStream = null;
+            let animationFrameId = null;
+            let analysisCallback = null;
+
+            // --- PostMessage Communication ---
+            const sendMessage = (type, data = {}) => {
+                if (window.parent && window.parent !== window) {
+                    // Send to parent window with same origin
+                    window.parent.postMessage({ type, data }, window.location.origin);
+                }
+            };
+
+            // Listen for commands from parent window
+            window.addEventListener('message', (event) => {
+                const { command } = event.data;
+                
+                switch (command) {
+                    case 'initialize':
+                        window.videoAnalyzer.initialize();
+                        break;
+                    case 'startCamera':
+                        window.videoAnalyzer.startCamera();
+                        break;
+                    case 'startAnalysis':
+                        window.videoAnalyzer.startAnalysis((results) => {
+                            sendMessage('analysisResults', { results });
+                        });
+                        break;
+                    case 'stopAnalysis':
+                        window.videoAnalyzer.stopAnalysis();
+                        break;
+                    case 'stopCamera':
+                        window.videoAnalyzer.stopStream();
+                        break;
+                }
+            });
+
+            // --- Private Helper Functions ---
+            const updateStatus = (message) => {
+                console.log(`[VideoAnalyzer] Status: ${message}`);
+                statusOverlay.textContent = `STATUS: ${message}`;
+                sendMessage('statusUpdate', { status: message });
+            };
+            
+            const drawBoundingBoxes = (predictions) => {
+                // Set canvas dimensions to match the actual video dimensions
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+                canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+                predictions.forEach(prediction => {
+                    const [x, y, width, height] = prediction.bbox;
+                    const text = `${prediction.class} (${Math.round(prediction.score * 100)}%)`;
+
+                    canvasCtx.strokeStyle = '#00FFFF';
+                    canvasCtx.lineWidth = 2;
+                    canvasCtx.strokeRect(x, y, width, height);
+                    canvasCtx.fillStyle = '#00FFFF';
+                    
+                    const textWidth = canvasCtx.measureText(text).width;
+                    canvasCtx.fillRect(x, y, textWidth + 10, 20);
+                    canvasCtx.fillStyle = '#000000';
+                    canvasCtx.font = '16px Arial';
+                    canvasCtx.fillText(text, x + 5, y + 16);
+                });
+            };
+
+            const detectionLoop = async () => {
+                if (!isAnalyzing || videoElement.paused || videoElement.ended) {
+                    window.videoAnalyzer.stopAnalysis();
+                    return;
+                }
+
+                const predictions = await model.detect(videoElement);
+                drawBoundingBoxes(predictions);
+
+                // Send results back to the assistant via the callback
+                if (typeof analysisCallback === 'function') {
+                    analysisCallback(predictions);
+                }
+
+                animationFrameId = requestAnimationFrame(detectionLoop);
+            };
+
+            // --- Public API Definition ---
+            window.videoAnalyzer = {
+                /**
+                 * Initializes the component and loads the ML model.
+                 * @returns {Promise<void>} Resolves when the model is ready.
+                 */
+                initialize: function() {
+                    return new Promise(async (resolve, reject) => {
+                        if (model) {
+                            updateStatus("Model already loaded.");
+                            sendMessage('modelLoaded');
+                            return resolve();
+                        }
+                        try {
+                            updateStatus("Loading AI model...");
+                            model = await cocoSsd.load();
+                            updateStatus("Ready");
+                            sendMessage('modelLoaded');
+                            resolve();
+                        } catch (error) {
+                            console.error("Failed to load model:", error);
+                            updateStatus("Error: Model failed to load.");
+                            sendMessage('error', { message: "Model failed to load" });
+                            reject(error);
+                        }
+                    });
+                },
+
+                /**
+                 * Starts the webcam feed.
+                 * @returns {Promise<void>} Resolves when the camera is active.
+                 */
+                startCamera: function() {
+                    return new Promise(async (resolve, reject) => {
+                        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                            const error = new Error("Browser does not support camera access.");
+                            sendMessage('error', { message: error.message });
+                            return reject(error);
+                        }
+                        this.stopStream(); // Stop any existing stream first
+                        try {
+                            updateStatus("Accessing camera...");
+                            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                            videoElement.srcObject = stream;
+                            currentStream = stream;
+                            updateStatus("Camera feed active.");
+                            sendMessage('cameraStarted');
+                            resolve();
+                        } catch (error) {
+                            console.error("Error accessing camera:", error);
+                            updateStatus("Error: Camera access denied.");
+                            sendMessage('error', { message: "Camera access denied" });
+                            reject(error);
+                        }
+                    });
+                },
+
+                /**
+                 * Loads a video from a given URL.
+                 * @param {string} url - The URL of the video file.
+                 * @returns {Promise<void>} Resolves when the video is loaded.
+                 */
+                loadVideoFromUrl: function(url) {
+                    return new Promise((resolve, reject) => {
+                        this.stopStream(); // Stop any existing stream first
+                        updateStatus(`Loading video from URL...`);
+                        videoElement.src = url;
+                        videoElement.onloadeddata = () => {
+                            updateStatus("Video loaded.");
+                            resolve();
+                        };
+                        videoElement.onerror = (e) => {
+                            console.error("Error loading video:", e);
+                            updateStatus("Error: Could not load video.");
+                            reject(new Error("Failed to load video from URL. Check CORS policy and URL validity."));
+                        };
+                    });
+                },
+
+                /**
+                 * Starts the object detection process on the current video feed.
+                 * @param {function(Array<object>)} callback - A function that will be called
+                 * on each frame with an array of detected objects.
+                 */
+                startAnalysis: function(callback) {
+                    if (!model) {
+                        console.error("Analysis failed: Model not initialized.");
+                        updateStatus("Error: Model not loaded.");
+                        sendMessage('error', { message: "Model not loaded" });
+                        return;
+                    }
+                    if (videoElement.readyState < 3) {
+                         console.error("Analysis failed: Video not ready.");
+                        updateStatus("Error: Video not ready.");
+                        sendMessage('error', { message: "Video not ready" });
+                         return;
+                    }
+                    isAnalyzing = true;
+                    analysisCallback = callback;
+                    updateStatus("Analysis running...");
+                    sendMessage('analysisStarted');
+                    detectionLoop();
+                },
+
+                /**
+                 * Stops the object detection process.
+                 */
+                stopAnalysis: function() {
+                    isAnalyzing = false;
+                    analysisCallback = null;
+                    if (animationFrameId) {
+                        cancelAnimationFrame(animationFrameId);
+                        animationFrameId = null;
+                    }
+                    // Clear the canvas
+                    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    updateStatus("Analysis stopped.");
+                    sendMessage('analysisStopped');
+                },
+
+                /**
+                 * Stops the current video stream (camera or URL).
+                 */
+                stopStream: function() {
+                    this.stopAnalysis();
+                    if (currentStream) {
+                        currentStream.getTracks().forEach(track => track.stop());
+                    }
+                    videoElement.srcObject = null;
+                    videoElement.src = "";
+                    currentStream = null;
+                    updateStatus("Stream stopped.");
+                    sendMessage('cameraStopped');
+                }
+            };
+        })();
+    </script>
+
+</body>
+</html>
