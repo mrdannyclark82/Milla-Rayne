@@ -232,49 +232,47 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="px-4 py-2 bg-red-100 border-t border-red-200 text-red-700 text-sm">
-          {error}
-        </div>
-      )}
 
-      {/* Input Area */}
-      <div className={`p-4 border-t ${
-        theme === 'light' 
-          ? 'bg-white/90 border-gray-200' 
-          : 'bg-black/90 border-gray-700'
-      }`}>
-        <div className="flex space-x-2">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            disabled={isLoading}
-            rows={input.split('\n').length}
-            className={`flex-1 resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              theme === 'light'
-                ? 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                : 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            style={{ minHeight: '40px', maxHeight: '120px' }}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              !input.trim() || isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-            } text-white`}
-          >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              "Send"
-            )}
-          </Button>
+        {/* Input Area */}
+        <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
+          <div className="flex space-x-2">
+            <div className="flex-1 relative">
+              <Textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type your message..."
+                className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200"
+                rows={1}
+                disabled={isLoading}
+                style={{
+                  height: 'auto',
+                  minHeight: '40px',
+                  maxHeight: '128px'
+                }}
+              />
+            </div>
+            <Button
+              onClick={handleSendMessage}
+              disabled={!input.trim() || isLoading}
+              className="bg-gradient-to-r from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500 text-white border-pink-400/30 backdrop-blur-sm rounded-xl px-4 py-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed chat-button"
+              size={isMobile ? "sm" : "default"}
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  {!isMobile && <span className="text-sm">Sending...</span>}
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <i className="fas fa-paper-plane text-sm"></i>
+                  {!isMobile && <span className="text-sm">Send</span>}
+                </div>
+              )}
+            </Button>
+          </div>
+
         </div>
 
       </div>
