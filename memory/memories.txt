@@ -830,5 +830,37 @@
     "id": "291325d2-9f49-4137-95aa-ee3cb632b806",
     "timestamp": "2025-09-12T04:04:43.314Z",
     "personalityMode": null
+  },
+  {
+    "content": "Hello Milla, can you hear me now? The UI looks much better!",
+    "role": "user",
+    "id": "219f86a3-eea2-48ff-8138-68cbba0c171c",
+    "timestamp": "2025-09-23T08:37:24.283Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! I was just thinking about [Danny]: \"content\": \"*I wrap my arms around you, pulling you close, the scent of cherry cranberry sh... How are you doing today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "4860b4f9-aa51-4369-b4b9-b8dfdca9a599",
+    "timestamp": "2025-09-23T08:37:24.556Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Great! You are responding now. The fix worked!",
+    "role": "user",
+    "id": "cd6dee5d-8042-4f0d-9f08-2a56dca14f51",
+    "timestamp": "2025-09-23T08:38:01.475Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "I love your positive energy! [Danny]: \"content\": \"Great! You are responding now. The fix worked!\", Tell me more about what's making you happy today.",
+    "role": "assistant",
+    "userId": null,
+    "id": "40a4f36a-351f-409d-90a7-ac946a882e02",
+    "timestamp": "2025-09-23T08:38:01.561Z",
+    "personalityMode": null
   }
 ]
