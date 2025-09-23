@@ -1,14 +1,21 @@
 import ChatInterface from "@/components/ChatInterface";
-import VideoViewer from "@/components/VideoViewer";
-import CalendarApp from "@/components/CalendarApp";
-import TaskList from "@/components/TaskList";
-import RealTimeGaming from "@/components/RealTimeGaming";
-import VirtualGarden from "@/components/VirtualGarden";
-import InteractiveStory from "@/components/InteractiveStory";
-import React, { useState } from "react";
+
+import CalendarTaskManager from "@/components/CalendarTaskManager";
+import AvatarSidebar, { AvatarState } from "@/components/AvatarSidebar";
+import InteractiveAvatar, { GestureType } from "@/components/InteractiveAvatar";
+import { DynamicAvatar } from "@/components/DynamicAvatar";
+import LivingAvatar from "@/components/LivingAvatar";
+import Avatar3D from "@/components/Avatar3D";
+import VideoAnalyzer from "@/components/VideoAnalyzer";
+import millaRealistic from "@assets/generated_images/Hyper-realistic_Milla_full_body_dbd5d6ca.png";
+import millaThoughtful from "@assets/generated_images/Milla_thoughtful_expression_avatar_dbb1829b.png";
+import millaSmiling from "@assets/generated_images/Milla_smiling_expression_avatar_4945ceea.png";
+import avatarVideo from "@assets/generated_images/AI_assistant_avatar_video_8218245c.png";
+import millaPortraitVideo from "@assets/Creating_a_Living_Portrait_Animation_1756641116784.mp4";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AvatarState } from "@/components/Sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SettingsPanel from "@/components/SettingsPanel";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 
 interface VideoAnalysisResult {
   bbox: [number, number, number, number];
@@ -66,79 +73,44 @@ export default function Home() {
         />
       </div>
 
-      {/* Floating Apps menu - positioned over the left side */}
-      <div className={`absolute bottom-4 sm:bottom-8 left-4 sm:left-8 z-40 transition-all duration-300 ${
-        isVideoViewerOpen ? 'left-[25rem] sm:left-[26rem]' : 'left-4 sm:left-8'
-      }`}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-800/80 text-gray-200 rounded-lg hover:bg-gray-700/80 transition-colors duration-200 shadow border border-white/10 text-sm sm:text-base backdrop-blur-sm"
-              style={{ opacity: 0.9 }}
+      {/* Right Side - Chat and Calendar Container */}
+      <div 
+        className="w-96 flex flex-col transition-all duration-300 relative"
+        style={{
+          backgroundColor: theme === 'light' 
+            ? `rgba(255, 255, 255, ${(100 - chatTransparency) / 100})` 
+            : `rgba(0, 0, 0, ${(100 - chatTransparency) / 100})`,
+          backdropFilter: `blur(${backgroundBlur / 4}px)`,
+          border: chatTransparency < 50 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none'
+        }}
+      >
+        <Tabs defaultValue="chat" className="flex flex-col h-full">
+          <TabsList className="grid w-full grid-cols-2 bg-black/20 border-b border-white/10">
+            <TabsTrigger 
+              value="chat" 
+              className="text-white/70 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300"
             >
-              🟦 Apps
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-52 bg-white/98 backdrop-blur-md border-gray-200/80 shadow-xl rounded-lg max-h-80 overflow-y-auto">
-            <DropdownMenuItem 
-              onClick={() => setIsVideoViewerOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
+              <i className="fas fa-comments mr-2"></i>
+              Chat
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calendar" 
+              className="text-white/70 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-300"
             >
-              <span>🎥</span>
-              <span>Video Analyzer</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setIsGamingOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>🎮</span>
-              <span>Real-Time Gaming</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setIsGardenOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>🌱</span>
-              <span>Virtual Garden</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setIsStoryOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>📖</span>
-              <span>Interactive Story</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setIsCalendarOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>📅</span>
-              <span>Calendar</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setIsTaskListOpen(true)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>✅</span>
-              <span>Task List</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => setVoiceEnabled(!voiceEnabled)}
-              className="flex items-center space-x-3 hover:bg-gray-100/90 px-3 py-2 text-gray-800"
-            >
-              <span>{voiceEnabled ? '🔊' : '🔇'}</span>
-              <span>{voiceEnabled ? 'Disable Voice' : 'Enable Voice'}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled className="flex items-center space-x-3 px-3 py-2 text-gray-500">
-              <span>🔧</span>
-              <span>Settings (Coming Soon)</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled className="flex items-center space-x-3 px-3 py-2 text-gray-500">
-              <span>📊</span>
-              <span>Analytics (Coming Soon)</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <i className="fas fa-calendar mr-2"></i>
+              Tasks
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="chat" className="flex-1 mt-0">
+            <ChatInterface />
+          </TabsContent>
+          
+          <TabsContent value="calendar" className="flex-1 mt-0 p-4">
+            <CalendarTaskManager className="h-full" />
+          </TabsContent>
+        </Tabs>
+
       </div>
 
       {/* Video Viewer Modal */}

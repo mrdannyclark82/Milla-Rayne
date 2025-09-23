@@ -1,8 +1,9 @@
 
-import { createXai } from "@ai-sdk/xai";
-const xai = createXai({ apiKey: process.env.XAI_API_KEY });
-// XAI image generation endpoint (assumed, update if needed)
-const XAI_IMAGE_ENDPOINT = "https://api.xai.com/v1/images/generate";
+
+import OpenAI from "openai";
+import nodeFetch from 'node-fetch';
+globalThis.fetch = (nodeFetch as unknown) as typeof fetch;
+
 
 export interface ImageGenerationResult {
   success: boolean;
