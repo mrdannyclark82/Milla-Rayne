@@ -37,17 +37,17 @@ The AI-powered virtual assistant companion is now up and running with the follow
 
 For full AI functionality, configure these external APIs:
 
-### XAI (Grok) Integration
+### Mistral AI Integration
 Add to your `.env` file:
 ```env
-XAI_API_KEY=your_xai_api_key_here
+MISTRAL_API_KEY=your_mistral_api_key_here
 ```
 This enables AI responses for queries not found in the memory database.
 
 ### Other Optional APIs
 - **OpenAI** (for additional AI capabilities)
 - **Weather Service** (for weather-related queries)
-- **Image Generation** (for visual content creation)
+- **Note**: Image generation is currently disabled as Mistral AI doesn't support image generation
 
 ## 🔍 Memory System
 
