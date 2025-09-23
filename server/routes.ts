@@ -329,6 +329,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // app.post("/api/personal-tasks/:taskId/complete", async (req, res) => { ... });
   // app.post("/api/generate-tasks", async (req, res) => { ... });
 
+  // User Tasks API endpoints
+  app.get("/api/user-tasks", async (req, res) => {
+    try {
+      const { getUserTasks } = await import("./userTaskService");
+      const tasks = getUserTasks();
+      res.json(tasks);
+    } catch (error) {
+      console.error('Error fetching user tasks:', error);
+      res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post("/api/user-tasks", async (req, res) => {
+    try {
+      const { createUserTask } = await import("./userTaskService");
+      const task = await createUserTask(req.body);
+      res.status(201).json(task);
+    } catch (error) {
+      console.error('Error creating user task:', error);
+      res.status(500).json({ message: "Failed to create task" });
+    }
+  });
+
+  app.put("/api/user-tasks/:id", async (req, res) => {
+    try {
+      const { updateUserTask } = await import("./userTaskService");
+      const task = await updateUserTask(req.params.id, req.body);
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error('Error updating user task:', error);
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
+  app.delete("/api/user-tasks/:id", async (req, res) => {
+    try {
+      const { deleteUserTask } = await import("./userTaskService");
+      const deleted = await deleteUserTask(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting user task:', error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  app.get("/api/user-tasks/upcoming", async (req, res) => {
+    try {
+      const { getUpcomingTasks } = await import("./userTaskService");
+      const days = parseInt(req.query.days as string) || 7;
+      const tasks = getUpcomingTasks(days);
+      res.json(tasks);
+    } catch (error) {
+      console.error('Error fetching upcoming tasks:', error);
+      res.status(500).json({ message: "Failed to fetch upcoming tasks" });
+    }
+  });
+
   // Milla's mood endpoint
   app.get("/api/milla-mood", async (req, res) => {
     try {
@@ -980,14 +1043,15 @@ async function generateAIResponse(
   }
 
   // Use OpenAI for intelligent responses with memory context
+  const context: PersonalityContext = {
+    userEmotionalState: analysis.sentiment,
+    urgency: analysis.urgency,
+    conversationHistory: conversationHistory,
+    userName: userName || "Danny Ray", // Always default to Danny Ray
+    triggerResult: triggerResult // Pass trigger information to AI
+  };
+  
   try {
-    const context: PersonalityContext = {
-      userEmotionalState: analysis.sentiment,
-      urgency: analysis.urgency,
-      conversationHistory: conversationHistory,
-      userName: userName || "Danny Ray", // Always default to Danny Ray
-      triggerResult: triggerResult // Pass trigger information to AI
-    };
     
     // Enhance the user message with Memory Core context FIRST, then other contexts
     let enhancedMessage = userMessage;
