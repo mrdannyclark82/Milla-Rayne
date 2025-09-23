@@ -1,218 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: hsl(222, 25%, 6%);
-  --foreground: hsl(210, 40%, 98%);
-  --card: hsl(222, 25%, 11%);
-  --card-foreground: hsl(210, 40%, 98%);
-  --popover: hsl(222, 25%, 11%);
-  --popover-foreground: hsl(210, 40%, 98%);
-  --primary: hsl(217, 91%, 60%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(217, 32%, 17%);
-  --secondary-foreground: hsl(210, 40%, 98%);
-  --muted: hsl(217, 32%, 17%);
-  --muted-foreground: hsl(215, 20.2%, 65.1%);
-  --accent: hsl(217, 32%, 17%);
-  --accent-foreground: hsl(210, 40%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --border: hsl(217, 32%, 17%);
-  --input: hsl(217, 32%, 17%);
-  --ring: hsl(217, 91%, 60%);
-  --chart-1: hsl(217, 91%, 60%);
-  --chart-2: hsl(159.7826, 100%, 36.0784%);
-  --chart-3: hsl(42.0290, 92.8251%, 56.2745%);
-  --chart-4: hsl(147.1429, 78.5047%, 41.9608%);
-  --chart-5: hsl(341.4894, 75.2000%, 50.9804%);
-  --sidebar: hsl(222, 25%, 11%);
-  --sidebar-foreground: hsl(210, 40%, 98%);
-  --sidebar-primary: hsl(217, 91%, 60%);
-  --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(217, 32%, 17%);
-  --sidebar-accent-foreground: hsl(210, 40%, 98%);
-  --sidebar-border: hsl(217, 32%, 17%);
-  --sidebar-ring: hsl(217, 91%, 60%);
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: 0.5rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00), 0px 1px 2px -1px hsl(217, 91%, 60% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00), 0px 1px 2px -1px hsl(217, 91%, 60% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00), 0px 2px 4px -1px hsl(217, 91%, 60% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00), 0px 4px 6px -1px hsl(217, 91%, 60% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00), 0px 8px 10px -1px hsl(217, 91%, 60% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(217, 91%, 60% / 0.00);
-  --tracking-normal: 0em;
-  --spacing: 0.25rem;
+/* Chat interface container - positioned on right side */
+.chat-interface-container {
+  width: 100% !important;
+  min-height: 500px !important;
+  max-height: calc(100vh - 2rem) !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
-.gradient-border {
-  background: linear-gradient(to right, var(--primary), #8B5CF6) padding-box,
-              linear-gradient(to right, var(--primary), #8B5CF6) border-box;
-  border: 1px solid transparent;
+@media (min-width: 640px) {
+  /* Keep desktop styles as is */
 }
 
-.typing-animation {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.scroll-smooth {
-  scroll-behavior: smooth;
-}
-
-/* Interactive Avatar Gesture Animations */
-@keyframes wave-gesture {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
-}
-
-@keyframes nod-gesture {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes wink-gesture {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.8); }
-}
-
-@keyframes heart-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-@keyframes surprised-bounce {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.08); }
-  100% { transform: scale(1.02); }
-}
-
-@keyframes shy-sway {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-1deg); }
-  75% { transform: rotate(1deg); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes gentle-breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.02) translateY(-2px); }
-}
-
-@keyframes playful-bounce {
-  0%, 100% { transform: translateY(0px); }
-  25% { transform: translateY(-3px); }
-  75% { transform: translateY(-1px); }
-}
-
-@keyframes mysterious-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  33% { transform: translateX(2px) rotate(0.5deg); }
-  66% { transform: translateX(-2px) rotate(-0.5deg); }
-}
-
-@keyframes gentle-glow {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.1); }
-}
-
-/* 3D Avatar Animations */
-@keyframes gentle-float {
-  0%, 100% { 
-    transform: translateY(0px) translateZ(0px) rotate(0deg); 
-    opacity: 0.6; 
-  }
-  50% { 
-    transform: translateY(-8px) translateZ(5px) rotate(5deg); 
-    opacity: 0.9; 
+@media (max-width: 768px) {
+  .chat-interface-container {
+    min-height: 400px !important;
+    max-height: calc(100vh - 1rem) !important;
   }
 }
 
-@keyframes depth-breathing {
-  0%, 100% { 
-    transform: translateZ(0px) scale(1); 
-  }
-  50% { 
-    transform: translateZ(5px) scale(1.02); 
+@media (max-width: 480px) {
+  .chat-interface-container {
+    min-height: 350px !important;
+    max-height: calc(100vh - 1rem) !important;
   }
 }
 
-@keyframes emotion-glow {
-  0%, 100% { 
-    filter: brightness(1) saturate(1); 
-    box-shadow: 0 0 0 rgba(255,255,255,0);
-  }
-  50% { 
-    filter: brightness(1.1) saturate(1.2); 
-    box-shadow: 0 0 20px rgba(255,255,255,0.1);
-  }
+.video-analyzer-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 384px !important; /* w-96 equivalent */
+  height: 100vh !important;
+  z-index: 40 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 1rem !important;
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(16px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* Living Avatar Animations */
-@keyframes gentle-pulse {
-  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
-  50% { transform: scale(1.05) rotate(1deg); opacity: 0.5; }
-}
-
-@keyframes breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.02) translateY(-2px); }
-}
-
-@keyframes subtle-blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
-
-@keyframes gentle-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  25% { transform: translateX(1px) rotate(0.5deg); }
-  75% { transform: translateX(-1px) rotate(-0.5deg); }
-}
-
-.message-fade-in {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (max-width: 768px) {
+  .video-analyzer-container {
+    width: 320px !important;
+    padding: 0.75rem !important;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-    font-family: var(--font-sans);
+@media (max-width: 480px) {
+  .video-analyzer-container {
+    width: calc(100vw - 2rem) !important;
+    max-width: 320px !important;
+    padding: 0.5rem !important;
   }
 }
+
 
 /* Dynamic Avatar Animations */
 @keyframes breathing {
@@ -233,6 +85,24 @@
 
 .avatar-breathing {
   will-change: transform, opacity;
+}
+
+/* Custom scrollbar for chat messages */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Custom Range Slider Styling */
@@ -278,18 +148,27 @@
 
 /* Chat Interface Animations */
 .message-fade-in {
-  animation: fadeInUp 0.4s ease-out forwards;
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
+}
+
+/* Enhanced chat bubble animations */
+.chat-bubble-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-bubble-hover:hover {
+  transform: translateY(-2px) scale(1.02);
 }
 
 /* Glassmorphism effects */
@@ -355,39 +234,72 @@
 }
 
 /* Smooth scrollbar for chat */
+
 .chat-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
-
 .chat-scroll::-webkit-scrollbar {
   width: 6px;
 }
-
 .chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .chat-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
-
 .chat-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
-
-/* Enhanced button hover effects */
-.chat-button {
-  transition: all 0.2s ease;
-  transform: translateY(0);
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.message-fade-in {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+.bg-white\/10, .bg-gray-900\/80, .backdrop-blur-md {
+  backdrop-filter: blur(10px);
+}
+.bg-muted\/80 {
+  background-color: rgba(60, 60, 60, 0.8);
+}
+.text-muted-foreground {
+  color: #bababa;
 }
 
-.chat-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+/* Responsive Design Improvements */
+@media (max-width: 768px) {
+  /* Chat interface responsive adjustments */
+  .fixed.bottom-4.right-4 {
+    bottom: 1rem;
+    right: 1rem;
+    width: calc(100vw - 2rem);
+    max-width: 20rem;
+  }
+  
+  /* Ensure image doesn't interfere on mobile */
+  .absolute.top-4.right-4 {
+    top: 1rem;
+    right: 1rem;
+    width: 200px !important;
+    height: 250px !important;
+  }
 }
 
-.chat-button:active {
-  transform: translateY(0);
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .fixed.bottom-4.right-4 {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: calc(100vw - 1rem);
+    max-width: 18rem;
+    height: 400px;
+  }
+  
+  .absolute.top-4.right-4 {
+    width: 150px !important;
+    height: 200px !important;
+  }
 }

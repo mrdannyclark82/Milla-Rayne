@@ -29,51 +29,118 @@ export class FileStorage implements IStorage {
     this.loadMessages();
   }
 
-  // This function loads messages from the file
+  // This function loads messages from the file with improved integrity checking
   private loadMessages() {
     if (fs.existsSync(MEMORY_FILE_PATH)) {
       try {
         const fileContent = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
-        // Check if the file content is valid JSON
-        if (fileContent.trim().startsWith('[') || fileContent.trim().startsWith('{')) {
-          const messages: any[] = JSON.parse(fileContent);
-          messages.forEach(msg => {
-            // Ensure timestamp is converted to Date object
-            const processedMessage: Message = {
-              ...msg,
-              timestamp: new Date(msg.timestamp)
-            };
-            this.messages.set(msg.id, processedMessage);
-          });
-          console.log(`Loaded ${this.messages.size} messages from file.`);
-        } else {
-          console.log("Existing memories file is not in JSON format. Starting fresh with empty messages.");
-          // Backup the old file
-          const backupPath = MEMORY_FILE_PATH + '.backup';
-          fs.copyFileSync(MEMORY_FILE_PATH, backupPath);
-          console.log(`Backed up existing memories to ${backupPath}`);
+        
+        // Enhanced file content validation
+        if (!fileContent || fileContent.trim().length === 0) {
+          console.log("Memories file is empty. Starting fresh with empty messages.");
+          return;
         }
+        
+        // Check if the file content looks like valid JSON
+        const trimmedContent = fileContent.trim();
+        if (!trimmedContent.startsWith('[') && !trimmedContent.startsWith('{')) {
+          console.log("Existing memories file is not in JSON format. Starting fresh with empty messages.");
+          this.backupFile(MEMORY_FILE_PATH, 'non-json format');
+          return;
+        }
+        
+        // Validate JSON structure more thoroughly
+        let messages: any[];
+        try {
+          messages = JSON.parse(fileContent);
+        } catch (parseError) {
+          console.error('JSON parsing failed:', parseError instanceof Error ? parseError.message : String(parseError));
+          this.backupFile(MEMORY_FILE_PATH, 'json parsing error');
+          return;
+        }
+        
+        // Validate that we have an array of valid message objects
+        if (!Array.isArray(messages)) {
+          console.log("Memories file does not contain an array. Starting fresh.");
+          this.backupFile(MEMORY_FILE_PATH, 'not an array');
+          return;
+        }
+        
+        // Load and validate each message
+        let loadedCount = 0;
+        messages.forEach((msg, index) => {
+          try {
+            if (msg && typeof msg === 'object' && msg.id && msg.content) {
+              const processedMessage: Message = {
+                ...msg,
+                timestamp: new Date(msg.timestamp || new Date())
+              };
+              this.messages.set(msg.id, processedMessage);
+              loadedCount++;
+            } else {
+              console.warn(`Skipping invalid message at index ${index}:`, msg);
+            }
+          } catch (msgError) {
+            console.warn(`Error processing message at index ${index}:`, msgError instanceof Error ? msgError.message : String(msgError));
+          }
+        });
+        
+        console.log(`Successfully loaded ${loadedCount} valid messages from file (${messages.length} total entries).`);
+        
       } catch (error) {
         console.error('Error loading messages from file:', error);
         console.log('Starting with empty messages.');
-        // Backup the problematic file
-        const backupPath = MEMORY_FILE_PATH + '.backup';
-        try {
-          fs.copyFileSync(MEMORY_FILE_PATH, backupPath);
-          console.log(`Backed up problematic file to ${backupPath}`);
-        } catch (backupError) {
-          console.error('Failed to backup problematic file:', backupError);
-        }
+        this.backupFile(MEMORY_FILE_PATH, 'general error');
       }
     } else {
       console.log("No memories file found. Starting fresh.");
     }
   }
+  
+  // Helper method to backup problematic files
+  private backupFile(filePath: string, reason: string) {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const backupPath = `${filePath}.backup-${timestamp}`;
+      fs.copyFileSync(filePath, backupPath);
+      console.log(`Backed up problematic file to ${backupPath} (reason: ${reason})`);
+    } catch (backupError) {
+      console.error('Failed to backup problematic file:', backupError);
+    }
+  }
 
-  // This function saves all messages to the file
+  // This function saves all messages to the file with improved error handling
   private saveMessages() {
-    const messagesArray = Array.from(this.messages.values());
-    fs.writeFileSync(MEMORY_FILE_PATH, JSON.stringify(messagesArray, null, 2), 'utf8');
+    try {
+      const messagesArray = Array.from(this.messages.values());
+      const jsonData = JSON.stringify(messagesArray, null, 2);
+      
+      // Create a temporary file first to avoid corruption during write
+      const tempPath = MEMORY_FILE_PATH + '.tmp';
+      fs.writeFileSync(tempPath, jsonData, 'utf8');
+      
+      // Verify the file was written correctly by parsing it
+      const verification = JSON.parse(fs.readFileSync(tempPath, 'utf8'));
+      if (Array.isArray(verification)) {
+        // Only replace the original file if the temp file is valid
+        fs.renameSync(tempPath, MEMORY_FILE_PATH);
+      } else {
+        throw new Error('Invalid JSON structure in temporary file');
+      }
+    } catch (error) {
+      console.error('Error saving messages to file:', error);
+      // Clean up temporary file if it exists
+      const tempPath = MEMORY_FILE_PATH + '.tmp';
+      if (fs.existsSync(tempPath)) {
+        try {
+          fs.unlinkSync(tempPath);
+        } catch (cleanupError) {
+          console.error('Failed to clean up temporary file:', cleanupError);
+        }
+      }
+      // Don't throw the error to prevent breaking the application
+      // The messages are still in memory and will be saved on next successful write
+    }
   }
 
   async getUser(id: string): Promise<User | undefined> {
