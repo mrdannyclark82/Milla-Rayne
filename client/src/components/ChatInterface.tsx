@@ -3,11 +3,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useConversationMemory } from "@/contexts/ConversationContext";
 import type { Message } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { AvatarState } from "@/components/AvatarSidebar";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ChatInterfaceProps {
   theme?: 'light' | 'dark';
-  onAvatarStateChange?: (state: AvatarState) => void;
+  onAvatarStateChange?: (state: string) => void;
 }
 
 interface MessageResponse {
@@ -25,7 +25,9 @@ export default function ChatInterface({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   
   const { 
     addExchange, 
@@ -37,6 +39,18 @@ export default function ChatInterface({
   // Load existing messages on component mount
   useEffect(() => {
     loadMessages();
+  }, []);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    
+    return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
   // Scroll to bottom when new messages arrive
@@ -63,7 +77,7 @@ export default function ChatInterface({
     }
   };
 
-  const handleSend = async () => {
+  const handleSendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
@@ -143,7 +157,7 @@ export default function ChatInterface({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSendMessage();
     }
   };
 
@@ -164,11 +178,7 @@ export default function ChatInterface({
     }
   };
 
-  // Filter messages to show only the most recent one (requirement 1)
-  const recentMessage = messages && messages.length > 0 ? [messages[messages.length - 1]] : [];
-
   return (
-
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className={`p-4 border-b ${
@@ -232,50 +242,46 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-
-        {/* Input Area */}
-        <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
-          <div className="flex space-x-2">
-            <div className="flex-1 relative">
-              <Textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200"
-                rows={1}
-                disabled={isLoading}
-                style={{
-                  height: 'auto',
-                  minHeight: '40px',
-                  maxHeight: '128px'
-                }}
-              />
-            </div>
-            <Button
-              onClick={handleSendMessage}
-              disabled={!input.trim() || isLoading}
-              className="bg-gradient-to-r from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500 text-white border-pink-400/30 backdrop-blur-sm rounded-xl px-4 py-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed chat-button"
-              size={isMobile ? "sm" : "default"}
-            >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  {!isMobile && <span className="text-sm">Sending...</span>}
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <i className="fas fa-paper-plane text-sm"></i>
-                  {!isMobile && <span className="text-sm">Send</span>}
-                </div>
-              )}
-            </Button>
+      {/* Input Area */}
+      <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
+        <div className="flex space-x-2">
+          <div className="flex-1 relative">
+            <Textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Type your message..."
+              className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200"
+              rows={1}
+              disabled={isLoading}
+              style={{
+                height: 'auto',
+                minHeight: '40px',
+                maxHeight: '128px'
+              }}
+            />
           </div>
-
+          <Button
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isLoading}
+            className="bg-gradient-to-r from-pink-500/80 to-purple-500/80 hover:from-pink-500 hover:to-purple-500 text-white border-pink-400/30 backdrop-blur-sm rounded-xl px-4 py-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed chat-button"
+            size={isMobile ? "sm" : "default"}
+          >
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                {!isMobile && <span className="text-sm">Sending...</span>}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <i className="fas fa-paper-plane text-sm"></i>
+                {!isMobile && <span className="text-sm">Send</span>}
+              </div>
+            )}
+          </Button>
         </div>
-
       </div>
-    </main>
+    </div>
   );
 }
