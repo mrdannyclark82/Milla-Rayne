@@ -29,24 +29,23 @@ export default function MinimalChat() {
       setIsLoading(true);
 
       try {
-        // Send message to API
-        const response = await fetch("/api/messages", {
+        // Send message to OpenRouter API
+        const response = await fetch("/api/openrouter-chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            content: input.trim(),
-            role: "user",
+            message: input.trim(),
           }),
         });
 
         const data = await response.json();
         
-        if (data.aiMessage && data.aiMessage.content) {
+        if (data.response) {
           const aiMessage: Message = {
             id: (Date.now() + 1).toString(),
-            content: data.aiMessage.content,
+            content: data.response,
             role: 'assistant',
             timestamp: new Date().toLocaleTimeString()
           };

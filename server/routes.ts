@@ -85,7 +85,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat endpoint for frontend compatibility
+  // Simple OpenRouter chat endpoint
+  app.post("/api/openrouter-chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: "Message is required and must be a string" });
+      }
+
+      if (message.trim().length === 0) {
+        return res.status(400).json({ error: "Message cannot be empty" });
+      }
+
+      console.log(`OpenRouter Chat: Processing message: ${message.substring(0, 50)}...`);
+
+      // Use OpenRouter directly without complex processing
+      const aiResponse = await generateOpenRouterResponse(message, {
+        userName: "Danny Ray"
+      });
+      
+      // Always return success since fallback is handled in the service
+      res.json({ 
+        response: aiResponse.content,
+        success: aiResponse.success
+      });
+    } catch (error) {
+      console.error("OpenRouter Chat error:", error);
+      res.status(500).json({ 
+        response: "I'm experiencing some technical issues. Please try again in a moment."
+      });
+    }
+  });
+
   app.post("/api/chat", async (req, res) => {
     try {
       const { message } = req.body;
@@ -1204,8 +1235,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use xAI (Grok) for AI responses - keeping OpenRouter as future upgrade option
-    const aiResponse = await generateXAIResponse(enhancedMessage, {
+    // Use OpenRouter for AI responses
+    const aiResponse = await generateOpenRouterResponse(enhancedMessage, {
       conversationHistory: conversationHistory,
       userEmotionalState: analysis.sentiment,
       urgency: analysis.urgency,
