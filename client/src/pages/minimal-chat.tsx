@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const BACKGROUND_IMAGE = "/attached_assets/6124451be476ac0007e3face_bdd6ecce-c0f8-48c9-98c1-183aef053c3a_1756909651397.jpg";
+const BACKGROUND_IMAGE = "/background.jpg";
 
 export default function MinimalChat() {
   const [messages, setMessages] = useState<string[]>([]);
