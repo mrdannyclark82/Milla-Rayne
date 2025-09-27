@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
+import EnhancementSuggestions from "@/components/EnhancementSuggestions";
 
 const BACKGROUND_IMAGE = "/background.jpg";
 
@@ -21,11 +22,16 @@ export default function Home() {
       
       {/* Main layout container */}
       <div className="relative z-10 flex h-screen">
-        {/* Left side - 2D Avatar */}
-        <div className="flex-1 flex flex-col items-center justify-center">
+        {/* Left side - 2D Avatar and Enhancement Suggestions */}
+        <div className="flex-1 flex flex-col items-center justify-center space-y-6 p-4">
           {/* Temporarily disabled avatar to fix Three.js compatibility issues */}
           <div className="w-1/2 h-1/2 bg-gray-800 rounded-lg flex items-center justify-center">
             <p className="text-white">Milla's Portrait</p>
+          </div>
+          
+          {/* Enhancement Suggestions */}
+          <div className="w-full max-w-md">
+            <EnhancementSuggestions />
           </div>
         </div>
         
