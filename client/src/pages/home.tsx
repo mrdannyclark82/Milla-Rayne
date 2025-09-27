@@ -1,34 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
-import Avatar2D from "@/components/Avatar2D";
 
 const BACKGROUND_IMAGE = "/background.jpg";
 
 export default function Home() {
   const [avatarState, setAvatarState] = useState<'neutral' | 'thinking' | 'responding'>('neutral');
-  const [avatarImageUrl, setAvatarImageUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const generateAvatarImage = async () => {
-      const response = await fetch("/api/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: "generate an image of a woman with long red curly hair and green eyes, portrait, shoulders up, neutral expression",
-          role: "user",
-        }),
-      });
-      const data = await response.json();
-      const imageUrl = data.aiMessage.content.match(/!\[Generated Image\]\((.*?)\)/)?.[1];
-      if (imageUrl) {
-        setAvatarImageUrl(imageUrl);
-      }
-    };
-
-    generateAvatarImage();
-  }, []);
 
   return (
     <div
@@ -47,13 +23,10 @@ export default function Home() {
       <div className="relative z-10 flex h-screen">
         {/* Left side - 2D Avatar */}
         <div className="flex-1 flex flex-col items-center justify-center">
-          {avatarImageUrl ? (
-            <Avatar2D imageUrl={avatarImageUrl} avatarState={avatarState} />
-          ) : (
-            <div className="w-1/2 h-1/2 bg-gray-800 rounded-lg flex items-center justify-center">
-              <p className="text-white">Generating Milla's portrait...</p>
-            </div>
-          )}
+          {/* Temporarily disabled avatar to fix Three.js compatibility issues */}
+          <div className="w-1/2 h-1/2 bg-gray-800 rounded-lg flex items-center justify-center">
+            <p className="text-white">Milla's Portrait</p>
+          </div>
         </div>
         
         {/* Right side - Chat Interface */}

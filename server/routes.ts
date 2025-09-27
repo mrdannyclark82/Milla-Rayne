@@ -1204,8 +1204,8 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use OpenRouter (Venice: Uncensored) for AI responses
-    const aiResponse = await generateOpenRouterResponse(enhancedMessage, {
+    // Use xAI (Grok) for AI responses - keeping OpenRouter as future upgrade option
+    const aiResponse = await generateXAIResponse(enhancedMessage, {
       conversationHistory: conversationHistory,
       userEmotionalState: analysis.sentiment,
       urgency: analysis.urgency,
@@ -1230,7 +1230,7 @@ async function generateAIResponse(
     } else {
 
       // Enhanced fallback response using memory context and intelligent analysis
-      console.log("OpenRouter failed, generating intelligent fallback response with memory context");
+      console.log("xAI failed, generating intelligent fallback response with memory context");
       reasoning.push("Using memory-based response (external AI temporarily unavailable)");
       
       let fallbackResponse = generateIntelligentFallback(userMessage, memoryCoreContext, analysis, userName || "Danny Ray");

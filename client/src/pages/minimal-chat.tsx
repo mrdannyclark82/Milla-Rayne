@@ -2,15 +2,68 @@ import React, { useState } from "react";
 
 const BACKGROUND_IMAGE = "/background.jpg";
 
-export default function MinimalChat() {
-  const [messages, setMessages] = useState<string[]>([]);
-  const [input, setInput] = useState("");
+interface Message {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: string;
+}
 
-  const handleSend = (e: React.FormEvent) => {
+export default function MinimalChat() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim()) {
-      setMessages([...messages, input.trim()]);
+    if (input.trim() && !isLoading) {
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        content: input.trim(),
+        role: 'user',
+        timestamp: new Date().toLocaleTimeString()
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
       setInput("");
+      setIsLoading(true);
+
+      try {
+        // Send message to API
+        const response = await fetch("/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            content: input.trim(),
+            role: "user",
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (data.aiMessage && data.aiMessage.content) {
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            content: data.aiMessage.content,
+            role: 'assistant',
+            timestamp: new Date().toLocaleTimeString()
+          };
+          setMessages(prev => [...prev, aiMessage]);
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: "Sorry, I'm having trouble connecting right now. Please try again.",
+          role: 'assistant',
+          timestamp: new Date().toLocaleTimeString()
+        };
+        setMessages(prev => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -46,22 +99,39 @@ export default function MinimalChat() {
           >
             {messages.length === 0 ? (
               <div className="text-center text-white/60 text-sm italic">
-                Start a conversation...
+                Start a conversation with Milla...
               </div>
             ) : (
-              messages.map((msg, idx) => (
+              messages.map((msg) => (
                 <div 
-                  key={idx} 
-                  className="mb-3 p-3 rounded-xl text-white/90 text-sm leading-relaxed message-fade-in"
+                  key={msg.id} 
+                  className={`mb-3 p-3 rounded-xl text-sm leading-relaxed message-fade-in ${
+                    msg.role === 'user' 
+                      ? 'ml-4 text-white/90 bg-blue-500/20' 
+                      : 'mr-4 text-white/90 bg-white/12'
+                  }`}
                   style={{
-                    background: "rgba(255, 255, 255, 0.12)",
                     backdropFilter: "blur(10px)",
                     border: "1px solid rgba(255, 255, 255, 0.1)",
                   }}
                 >
-                  {msg}
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="text-xs text-white/50">
+                      {msg.role === 'user' ? 'You' : 'Milla'}
+                    </span>
+                    <span className="text-xs text-white/40">{msg.timestamp}</span>
+                  </div>
+                  {msg.content}
                 </div>
               ))
+            )}
+            
+            {isLoading && (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-pulse text-white/60 text-sm">
+                  Milla is typing...
+                </div>
+              </div>
             )}
           </div>
           
@@ -82,7 +152,8 @@ export default function MinimalChat() {
               />
               <button 
                 type="submit" 
-                className="px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/30"
+                disabled={isLoading || !input.trim()}
+                className="px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: "rgba(255, 255, 255, 0.2)",
                   backdropFilter: "blur(10px)",
@@ -90,7 +161,7 @@ export default function MinimalChat() {
                   color: "white",
                 }}
               >
-                Send
+                {isLoading ? "Sending..." : "Send"}
               </button>
             </div>
           </form>
