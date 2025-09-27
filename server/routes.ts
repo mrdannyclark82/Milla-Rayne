@@ -16,6 +16,7 @@ import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecogni
 import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateMistralResponse } from "./mistralService";
 import { generateXAIResponse } from "./xaiService";
+import { generateOpenRouterResponse } from "./openrouterService";
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -1203,8 +1204,13 @@ async function generateAIResponse(
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
     }
     
-    // Use XAI for AI responses
-    const aiResponse = await generateXAIResponse(enhancedMessage, context);
+    // Use OpenRouter (Venice: Uncensored) for AI responses
+    const aiResponse = await generateOpenRouterResponse(enhancedMessage, {
+      conversationHistory: conversationHistory,
+      userEmotionalState: analysis.sentiment,
+      urgency: analysis.urgency,
+      userName: userName
+    });
     
     // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
     
@@ -1224,7 +1230,7 @@ async function generateAIResponse(
     } else {
 
       // Enhanced fallback response using memory context and intelligent analysis
-      console.log("XAI failed, generating intelligent fallback response with memory context");
+      console.log("OpenRouter failed, generating intelligent fallback response with memory context");
       reasoning.push("Using memory-based response (external AI temporarily unavailable)");
       
       let fallbackResponse = generateIntelligentFallback(userMessage, memoryCoreContext, analysis, userName || "Danny Ray");
