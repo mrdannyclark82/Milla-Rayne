@@ -7,12 +7,16 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
   "devDependencies": {
     "vite": "^7.1.4",
     "@vitejs/plugin-react": "^4.3.2"
+  },
+  "type": "module",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@azure-rest/ai-inference": "latest",
+    "@azure/core-auth": "latest",
+    "@azure/core-sse": "latest"
   }
 }

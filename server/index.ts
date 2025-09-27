@@ -5,6 +5,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeMemoryCore } from "./memoryService";
 import { initializePersonalTaskSystem } from "./personalTaskService";
 import crypto from 'crypto';
+import suggestEnhancementsRouter from './suggestEnhancements';
 
 // Polyfill crypto.getRandomValues for Node.js
 if (!globalThis.crypto) {
@@ -46,6 +47,8 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.use('/api', suggestEnhancementsRouter);
 
 if (!globalThis.crypto) {
   globalThis.crypto = {

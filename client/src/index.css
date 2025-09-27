@@ -1,10 +1,8 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* @tailwind directives removed because Tailwind CSS is not configured in the build process */
+/* If you add Tailwind, restore these lines and ensure PostCSS is set up */
 
 :root {
   --background: hsl(222, 25%, 6%);
@@ -57,7 +55,7 @@
 
 .gradient-border {
   background: linear-gradient(to right, var(--primary), #8B5CF6) padding-box,
-              linear-gradient(to right, var(--primary), #8B5CF6) border-box;
+    linear-gradient(to right, var(--primary), #8B5CF6) border-box;
   border: 1px solid transparent;
 }
 
@@ -66,8 +64,15 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .scroll-smooth {
@@ -76,58 +81,141 @@
 
 /* Interactive Avatar Gesture Animations */
 @keyframes wave-gesture {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(5deg); }
-  75% { transform: rotate(-5deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(5deg);
+  }
+
+  75% {
+    transform: rotate(-5deg);
+  }
 }
 
 @keyframes nod-gesture {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes wink-gesture {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.8); }
+
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.8);
+  }
 }
 
 @keyframes heart-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes surprised-bounce {
-  0% { transform: scale(1); }
-  30% { transform: scale(1.08); }
-  100% { transform: scale(1.02); }
+  0% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1.02);
+  }
 }
 
 @keyframes shy-sway {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-1deg); }
-  75% { transform: rotate(1deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-1deg);
+  }
+
+  75% {
+    transform: rotate(1deg);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes gentle-breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.02) translateY(-2px); }
+
+  0%,
+  100% {
+    transform: scale(1) translateY(0px);
+  }
+
+  50% {
+    transform: scale(1.02) translateY(-2px);
+  }
 }
 
 @keyframes playful-bounce {
-  0%, 100% { transform: translateY(0px); }
-  25% { transform: translateY(-3px); }
-  75% { transform: translateY(-1px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  25% {
+    transform: translateY(-3px);
+  }
+
+  75% {
+    transform: translateY(-1px);
+  }
 }
 
 @keyframes mysterious-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  33% { transform: translateX(2px) rotate(0.5deg); }
-  66% { transform: translateX(-2px) rotate(-0.5deg); }
+
+  0%,
+  100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+
+  33% {
+    transform: translateX(2px) rotate(0.5deg);
+  }
+
+  66% {
+    transform: translateX(-2px) rotate(-0.5deg);
+  }
 }
 
 
@@ -170,7 +258,8 @@
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
-  width: 384px !important; /* w-96 equivalent */
+  width: 384px !important;
+  /* w-96 equivalent */
   height: 100vh !important;
   z-index: 40 !important;
   display: flex !important;
@@ -200,19 +289,44 @@
 
 /* Dynamic Avatar Animations */
 @keyframes breathing {
-  0%, 100% { transform: scale(1) translateY(0px); }
-  50% { transform: scale(1.01) translateY(-2px); }
+
+  0%,
+  100% {
+    transform: scale(1) translateY(0px);
+  }
+
+  50% {
+    transform: scale(1.01) translateY(-2px);
+  }
 }
 
 @keyframes subtle-blink {
-  0%, 90%, 100% { opacity: 1; }
-  95% { opacity: 0.95; }
+
+  0%,
+  90%,
+  100% {
+    opacity: 1;
+  }
+
+  95% {
+    opacity: 0.95;
+  }
 }
 
 @keyframes gentle-sway {
-  0%, 100% { transform: translateX(0px) rotate(0deg); }
-  25% { transform: translateX(1px) rotate(0.2deg); }
-  75% { transform: translateX(-1px) rotate(-0.2deg); }
+
+  0%,
+  100% {
+    transform: translateX(0px) rotate(0deg);
+  }
+
+  25% {
+    transform: translateX(1px) rotate(0.2deg);
+  }
+
+  75% {
+    transform: translateX(-1px) rotate(-0.2deg);
+  }
 }
 
 .avatar-breathing {
@@ -240,6 +354,7 @@
 /* Custom Range Slider Styling */
 .slider {
   -webkit-appearance: none;
+  appearance: none;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 5px;
   outline: none;
@@ -288,6 +403,7 @@
     opacity: 0;
     transform: translateY(30px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -325,14 +441,18 @@
 
 /* Enhanced typing animation */
 @keyframes typing-dots {
-  0%, 20% {
+
+  0%,
+  20% {
     opacity: 0;
     transform: scale(0.8);
   }
+
   50% {
     opacity: 1;
     transform: scale(1);
   }
+
   100% {
     opacity: 0;
     transform: scale(0.8);
@@ -357,9 +477,12 @@
 }
 
 @keyframes avatarPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.3);
   }
+
   50% {
     box-shadow: 0 0 0 10px rgba(236, 72, 153, 0);
   }
@@ -371,38 +494,57 @@
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
+
 .chat-scroll::-webkit-scrollbar {
   width: 6px;
 }
+
 .chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .chat-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
+
 .chat-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.3);
 }
+
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px);}
-  to { opacity: 1; transform: translateY(0);}
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .message-fade-in {
   animation: fadeInUp 0.4s ease-out forwards;
 }
-.bg-white\/10, .bg-gray-900\/80, .backdrop-blur-md {
+
+.bg-white\/10,
+.bg-gray-900\/80,
+.backdrop-blur-md {
   backdrop-filter: blur(10px);
 }
+
 .bg-muted\/80 {
   background-color: rgba(60, 60, 60, 0.8);
 }
+
 .text-muted-foreground {
   color: #bababa;
 }
 
 /* Responsive Design Improvements */
 @media (max-width: 768px) {
+
   /* Chat interface responsive adjustments */
   .fixed.bottom-4.right-4 {
     bottom: 1rem;
@@ -410,7 +552,7 @@
     width: calc(100vw - 2rem);
     max-width: 20rem;
   }
-  
+
   /* Ensure image doesn't interfere on mobile */
   .absolute.top-4.right-4 {
     top: 1rem;
@@ -421,6 +563,7 @@
 }
 
 @media (max-width: 480px) {
+
   /* Extra small screens */
   .fixed.bottom-4.right-4 {
     bottom: 0.5rem;
@@ -429,7 +572,7 @@
     max-width: 18rem;
     height: 400px;
   }
-  
+
   .absolute.top-4.right-4 {
     width: 150px !important;
     height: 200px !important;
