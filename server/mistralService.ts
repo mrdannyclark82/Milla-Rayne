@@ -7,7 +7,7 @@ export interface AIResponse {
 }
 
 export interface PersonalityContext {
-  conversationHistory?: Array<{ role: string; content: string }>;
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   userEmotionalState?: "positive" | "negative" | "neutral";
   urgency?: "low" | "medium" | "high";
   userName?: string;
@@ -70,7 +70,7 @@ export async function generateMistralResponse(
 
     // Add conversation history if available - ensure proper alternation
     if (context.conversationHistory) {
-      const recentHistory = context.conversationHistory.slice(-3); // Last 3 messages for context to save tokens
+      const recentHistory = context.conversationHistory.slice(-4); // Last 4 messages for context to save tokens
       
       // Filter and structure messages to ensure proper alternation
       const validMessages = recentHistory.filter(msg => 
@@ -87,7 +87,7 @@ export async function generateMistralResponse(
       }
       
       // Add messages starting from proper user message, maintaining alternation
-      let expectedRole = 'user';
+      let expectedRole: 'user' | 'assistant' = 'user';
       for (let i = startIndex; i < validMessages.length; i++) {
         const msg = validMessages[i];
         if (msg.role === expectedRole) {

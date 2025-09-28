@@ -83,7 +83,7 @@ export interface AIResponse {
 }
 
 export interface PersonalityContext {
-  conversationHistory?: Array<{ role: string; content: string }>;
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   userEmotionalState?: "positive" | "negative" | "neutral";
   urgency?: "low" | "medium" | "high";
   userName?: string;
