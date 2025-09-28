@@ -102,8 +102,8 @@ export async function generateOpenRouterResponse(
         temperature: 0.8, // Increased for more variety
         max_tokens: 1000,
         top_p: 0.9, // Reduced for better focus while maintaining variety
-        frequency_penalty: 0.3, // Added to reduce repetitive phrases
-        presence_penalty: 0.2, // Added to encourage new topics/approaches
+        frequency_penalty: 0.6, // Added to reduce repetitive phrases
+        presence_penalty: 0.4, // Added to encourage new topics/approaches
       }),
     });
 
