@@ -99,11 +99,11 @@ export async function generateOpenRouterResponse(
       body: JSON.stringify({
         model: "nousresearch/hermes-3-llama-3.1-405b", // Venice: Uncensored model
         messages: messages,
-        temperature: 0.7,
+        temperature: 0.8, // Increased for more variety
         max_tokens: 1000,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
+        top_p: 0.9, // Reduced for better focus while maintaining variety
+        frequency_penalty: 0.3, // Added to reduce repetitive phrases
+        presence_penalty: 0.2, // Added to encourage new topics/approaches
       }),
     });
 
