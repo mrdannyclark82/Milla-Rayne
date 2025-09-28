@@ -1,17 +1,7 @@
 {
-<<<<<<< HEAD
-  "lastInteraction": 1759020139671,
-  "sessionStart": 1758616644285,
-  "messageCount": 11,
+  "lastInteraction": 1759022284004,
+  "sessionStart": 1759022284004,
+  "messageCount": 1,
   "averageSessionLength": 0,
-  "continuousActivityStart": 1759020093615,
-  "lastBreakTaken": 1759018112427
-=======
-  "lastInteraction": 1759019208994,
-  "sessionStart": 1758616644285,
-  "messageCount": 7,
-  "averageSessionLength": 0,
-  "continuousActivityStart": 1759019208994,
-  "lastBreakTaken": 1759004972392
->>>>>>> fcd66d7a1b489a1b43dfd38d2a80878e8d2e99c8
+  "continuousActivityStart": 1759022284004
 }
