@@ -25,7 +25,7 @@ export default function Home() {
       <div className="relative z-10 flex h-screen">
         {/* Left side - 2D Avatar and Enhancement Suggestions - Now takes more space to show background */}
         <div className="flex-1 flex flex-col items-start justify-center space-y-6 p-8 max-w-2xl">
-          {/* Smart Watch - Milla's Multi-purpose Smart Watch */}
+          {/* Milla's Personal Smart Watch and Portrait */}
           <div className="flex items-center space-x-6">
             <SmartWatch />
             {/* Temporarily disabled avatar to fix Three.js compatibility issues */}

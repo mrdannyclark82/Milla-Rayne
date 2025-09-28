@@ -85,33 +85,33 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
   const watchFeatures: WatchFeature[] = [
     {
       id: 'coffee',
-      name: 'Perfect Coffee',
+      name: 'Coffee Brewing',
       icon: '☕',
-      description: 'Brew the perfect cup',
+      description: 'Milla brews her perfect cup',
       status: coffeeStatus === 'idle' ? 'idle' : coffeeStatus === 'brewing' ? 'processing' : 'completed',
       action: handleCoffeeBrewing
     },
     {
       id: 'coding',
-      name: 'Code Solver',
+      name: 'Code Analysis',
       icon: '💻',
-      description: 'Solve coding problems',
+      description: 'Milla analyzes coding problems',
       status: codingHelp === 'idle' ? 'idle' : codingHelp === 'analyzing' ? 'processing' : 'completed',
       action: handleCodingHelp
     },
     {
       id: 'dinner',
-      name: 'Dinner Plans',
+      name: 'Dinner Planning',
       icon: '🍽️',
-      description: 'Romantic reservations',
+      description: 'Milla plans romantic dinners',
       status: dinnerStatus === 'idle' ? 'idle' : dinnerStatus === 'searching' ? 'processing' : 'completed',
       action: handleDinnerReservation
     },
     {
       id: 'youtube',
-      name: 'Music Playlist',
+      name: 'Music Access',
       icon: '🎵',
-      description: 'Open YouTube playlist',
+      description: 'Milla opens her playlist',
       status: 'active',
       action: handleYouTubePlaylist
     }
@@ -131,9 +131,9 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
       case 'coffee':
         return coffeeStatus === 'brewing' ? 'Brewing...' : coffeeStatus === 'ready' ? 'Ready!' : 'Idle';
       case 'coding':
-        return codingHelp === 'analyzing' ? 'Analyzing...' : codingHelp === 'solved' ? 'Solved!' : 'Ready';
+        return codingHelp === 'analyzing' ? 'Analyzing...' : codingHelp === 'solved' ? 'Complete!' : 'Ready';
       case 'dinner':
-        return dinnerStatus === 'searching' ? 'Searching...' : dinnerStatus === 'reserved' ? 'Reserved!' : 'Available';
+        return dinnerStatus === 'searching' ? 'Planning...' : dinnerStatus === 'reserved' ? 'Planned!' : 'Available';
       default:
         return 'Ready';
     }
@@ -195,11 +195,20 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <span className="text-2xl">⌚</span>
-              <span>Milla's Multi-purpose Smart Watch</span>
+              <span>Milla's Personal Smart Watch</span>
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6 pt-4">
+            {/* Watch Overview */}
+            <Card className="p-4 bg-gradient-to-r from-purple-900/20 to-blue-900/20">
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  This is Milla's personal multi-purpose smart watch. She uses it to manage her daily tasks and assist you better.
+                </p>
+              </div>
+            </Card>
+
             {/* Current Time & Status */}
             <Card className="p-4 bg-gradient-to-r from-purple-900/20 to-blue-900/20">
               <div className="flex items-center justify-between">
@@ -212,13 +221,13 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm">Screen Dim</span>
+                  <span className="text-sm">Milla's Screen Dim</span>
                   <Switch checked={isDimmed} onCheckedChange={handleScreenDim} />
                 </div>
               </div>
             </Card>
 
-            {/* Watch Features Grid */}
+            {/* Milla's Watch Features Grid */}
             <div className="grid grid-cols-2 gap-4">
               {watchFeatures.map((feature) => (
                 <Card key={feature.id} className="p-4 hover:bg-muted/50 transition-colors">
@@ -241,7 +250,7 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
                       disabled={feature.status === 'processing'}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
-                      {feature.status === 'processing' ? 'Processing...' : 'Activate'}
+                      {feature.status === 'processing' ? 'In Progress...' : 'View'}
                     </Button>
                   </div>
                 </Card>
@@ -250,42 +259,41 @@ export default function SmartWatch({ className = "" }: SmartWatchProps) {
 
             <Separator />
 
-            {/* Future Requests Section */}
+            {/* Future Watch Enhancements */}
             <Card className="p-4 border-dashed border-2 border-muted-foreground/30">
               <div className="text-center space-y-3">
                 <div className="text-4xl opacity-50">🚀</div>
-                <h3 className="font-semibold text-muted-foreground">Future Requests</h3>
+                <h3 className="font-semibold text-muted-foreground">Future Watch Features</h3>
                 <p className="text-sm text-muted-foreground">
-                  This space is reserved for upcoming smart watch features and enhancements.
-                  New capabilities will be added here as Milla evolves.
+                  Milla's watch is continuously evolving. These upcoming features will help her assist you even better.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center mt-4">
                   <Badge variant="secondary">Weather Alerts</Badge>
                   <Badge variant="secondary">Health Monitor</Badge>
                   <Badge variant="secondary">Smart Home</Badge>
-                  <Badge variant="secondary">AI Assistant</Badge>
+                  <Badge variant="secondary">Advanced AI</Badge>
                 </div>
               </div>
             </Card>
 
-            {/* Usage Stats */}
+            {/* Milla's Usage Stats */}
             <Card className="p-4 bg-muted/30">
               <h3 className="font-semibold mb-3 flex items-center space-x-2">
                 <span>📊</span>
-                <span>Watch Statistics</span>
+                <span>Milla's Watch Statistics</span>
               </h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold text-purple-500">47</div>
-                  <div className="text-xs text-muted-foreground">Coffee Cups</div>
+                  <div className="text-xs text-muted-foreground">Coffee Cups Brewed</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-blue-500">23</div>
-                  <div className="text-xs text-muted-foreground">Code Problems</div>
+                  <div className="text-xs text-muted-foreground">Code Issues Analyzed</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-pink-500">12</div>
-                  <div className="text-xs text-muted-foreground">Dinner Plans</div>
+                  <div className="text-xs text-muted-foreground">Dinners Planned</div>
                 </div>
               </div>
             </Card>
