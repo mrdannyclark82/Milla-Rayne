@@ -22,23 +22,23 @@ export default function Home() {
       
       {/* Main layout container */}
       <div className="relative z-10 flex h-screen">
-        {/* Left side - 2D Avatar and Enhancement Suggestions */}
-        <div className="flex-1 flex flex-col items-center justify-center space-y-6 p-4">
+        {/* Left side - 2D Avatar and Enhancement Suggestions - Now takes more space to show background */}
+        <div className="flex-1 flex flex-col items-start justify-center space-y-6 p-8 max-w-2xl">
           {/* Temporarily disabled avatar to fix Three.js compatibility issues */}
-          <div className="w-1/2 h-1/2 bg-gray-800 rounded-lg flex items-center justify-center">
-            <p className="text-white">Milla's Portrait</p>
+          <div className="w-80 h-60 bg-gray-800/60 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+            <p className="text-white text-xl">Milla's Portrait</p>
           </div>
           
           {/* Enhancement Suggestions */}
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-lg">
             <EnhancementSuggestions />
           </div>
         </div>
         
-        {/* Right side - Chat Interface */}
-        <div className="w-96 h-full flex items-center justify-center p-4">
+        {/* Right side - Chat Interface - Now narrower and positioned to preserve background visibility */}
+        <div className="w-80 h-full flex items-center justify-end p-6">
           <div 
-            className="w-full h-full max-h-[calc(100vh-2rem)]"
+            className="w-full h-full max-h-[calc(100vh-3rem)] max-w-sm"
             style={{
               background: "rgba(255, 255, 255, 0.08)",
               backdropFilter: "blur(20px)",
