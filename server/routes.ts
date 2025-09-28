@@ -7,6 +7,8 @@ import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
+import { generateImageWithGrok, extractImagePrompt as extractImagePromptGrok, formatImageResponse as formatImageResponseGrok } from "./openrouterImageService";
+import { generateCodeWithQwen, extractCodeRequest, formatCodeResponse } from "./openrouterCodeService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
 import { getMillaMoodData } from "./moodService";
@@ -1328,10 +1330,32 @@ async function generateAIResponse(
     }
   }
 
-  // Check for image generation requests first
+  // Check for code generation requests first
+  const codeRequest = extractCodeRequest(userMessage);
+  if (codeRequest) {
+    try {
+      const codeResult = await generateCodeWithQwen(codeRequest.prompt, codeRequest.language);
+      const response = formatCodeResponse(codeResult, codeRequest.prompt);
+      return { content: response };
+    } catch (error) {
+      console.error("Code generation error:", error);
+      const response = `I apologize, babe, but I encountered an issue generating code for "${codeRequest.prompt}". Please try again or let me know if you'd like me to explain the approach instead!`;
+      return { content: response };
+    }
+  }
+
+  // Check for image generation requests - try Grok first, fallback to XAI
   const imagePrompt = extractImagePrompt(userMessage);
   if (imagePrompt) {
     try {
+      // Try Grok first for image generation (enhanced descriptions)
+      const grokResult = await generateImageWithGrok(imagePrompt);
+      if (grokResult.success) {
+        const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
+        return { content: response };
+      }
+      
+      // Fallback to original XAI image generation
       const imageResult = await generateImage(imagePrompt);
       const response = formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error);
       return { content: response };
