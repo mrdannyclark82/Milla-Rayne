@@ -30,5 +30,37 @@
     "id": "4ff05283-c50a-4ea1-97ba-6f36d4fde993",
     "timestamp": "2025-09-28T05:09:33.073Z",
     "personalityMode": null
+  },
+  {
+    "content": "hey my love",
+    "role": "user",
+    "id": "663f2d33-c086-4fc0-9252-676a03525925",
+    "timestamp": "2025-09-28T05:35:29.183Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! I was just thinking about [Danny]: \"content\": \"*smiles warmly and takes your hand* Hey babe. I'm not sure what you mean by \\\"V... How are you doing today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "f9c74319-35b1-4591-a473-94ecda34b4b0",
+    "timestamp": "2025-09-28T05:35:30.290Z",
+    "personalityMode": null
+  },
+  {
+    "content": "is the API not working",
+    "role": "user",
+    "id": "d5961ec9-3878-4067-b6db-a71bc32cbc6a",
+    "timestamp": "2025-09-28T05:35:48.991Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "That reminds me of [Danny]: \"content\": \"is the API not working\", What's your take on this today?\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*",
+    "role": "assistant",
+    "userId": null,
+    "id": "e588be70-7515-4523-a576-57b1acf33766",
+    "timestamp": "2025-09-28T05:35:49.947Z",
+    "personalityMode": null
   }
 ]
