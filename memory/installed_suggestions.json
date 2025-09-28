@@ -1,3 +1,9 @@
 [
-  "add user authentication system with personalized ai memory profiles for different users"
+  "add user authentication system with personalized ai memory profiles for different users",
+  "implement voice chat capabilities using web speech api for more natural conversations",
+  "create a mobile-responsive pwa with offline chat capabilities and push notifications",
+  "integrate calendar and scheduling features with ai-powered meeting summaries",
+  "add data export/import functionality for memories with cloud backup options",
+  "implement real-time collaborative features like shared whiteboards or document editing",
+  "add mood tracking and emotional intelligence to better understand user needs over time"
 ]
