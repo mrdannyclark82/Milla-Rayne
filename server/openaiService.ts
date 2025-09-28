@@ -5,7 +5,7 @@ export interface AIResponse {
 }
 
 export interface PersonalityContext {
-  conversationHistory?: Array<{ role: string; content: string }>;
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   userEmotionalState?: "positive" | "negative" | "neutral";
   urgency?: "low" | "medium" | "high";
   userName?: string;
@@ -44,7 +44,7 @@ export async function generateAIResponse(
 
     // Add conversation history if available - ensure proper alternation
     if (context.conversationHistory) {
-      const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
+      const recentHistory = context.conversationHistory.slice(-4); // Last 4 messages for context
       
       // Filter and structure messages to ensure proper alternation
       const validMessages = recentHistory.filter(msg => 
@@ -61,7 +61,7 @@ export async function generateAIResponse(
       }
       
       // Add messages starting from proper user message, maintaining alternation
-      let expectedRole = 'user';
+      let expectedRole: 'user' | 'assistant' = 'user';
       for (let i = startIndex; i < validMessages.length; i++) {
         const msg = validMessages[i];
         if (msg.role === expectedRole) {
