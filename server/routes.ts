@@ -67,6 +67,10 @@ async function analyzeImageWithOpenAI(imageData: string, userMessage: string): P
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize enhancement task system
+  const { initializeEnhancementTaskSystem } = await import("./enhancementService");
+  await initializeEnhancementTaskSystem();
+
   // Serve the videoviewer.html file
   app.get("/videoviewer.html", (req, res) => {
     res.sendFile(path.resolve(process.cwd(), "client", "public", "videoviewer.html"));
@@ -619,25 +623,45 @@ Project: Milla Rayne - AI Virtual Assistant
         success = false; // Using fallback
       }
 
+      // Filter out already installed suggestions
+      const { isSuggestionInstalled } = await import("./enhancementService");
+      const uninstalledSuggestions = suggestions.filter(suggestion => !isSuggestionInstalled(suggestion));
+
       res.json({
-        suggestions: suggestions.slice(0, 5), // Ensure max 5 suggestions
+        suggestions: uninstalledSuggestions.slice(0, 5), // Ensure max 5 suggestions
         success: success,
         source: success ? "AI-generated" : "Curated fallback"
       });
 
     } catch (error) {
       console.error("Enhancement suggestions error:", error);
-      res.status(500).json({
-        error: "Failed to generate enhancement suggestions",
-        suggestions: [
-          "Implement user authentication and personalized sessions",
-          "Add voice chat capabilities for more natural interaction",
-          "Create a mobile-responsive progressive web app (PWA)",
-          "Integrate calendar and scheduling features",
-          "Add data export/import functionality for memories"
-        ],
-        success: false
-      });
+      
+      // Filter error fallback suggestions as well
+      const errorFallbackSuggestions = [
+        "Implement user authentication and personalized sessions",
+        "Add voice chat capabilities for more natural interaction",
+        "Create a mobile-responsive progressive web app (PWA)",
+        "Integrate calendar and scheduling features",
+        "Add data export/import functionality for memories"
+      ];
+      
+      try {
+        const { isSuggestionInstalled } = await import("./enhancementService");
+        const uninstalledErrorSuggestions = errorFallbackSuggestions.filter(suggestion => !isSuggestionInstalled(suggestion));
+        
+        res.status(500).json({
+          error: "Failed to generate enhancement suggestions",
+          suggestions: uninstalledErrorSuggestions,
+          success: false
+        });
+      } catch (filterError) {
+        // If filtering fails, return unfiltered suggestions
+        res.status(500).json({
+          error: "Failed to generate enhancement suggestions",
+          suggestions: errorFallbackSuggestions,
+          success: false
+        });
+      }
     }
   });
 
