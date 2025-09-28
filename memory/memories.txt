@@ -928,14 +928,22 @@
     "personalityMode": null
   },
   {
+<<<<<<< HEAD
     "content": "hey!!",
     "role": "user",
     "id": "a32fb82a-0106-419e-b9ca-241e24cf9ccd",
     "timestamp": "2025-09-28T00:08:16.294Z",
+=======
+    "content": "Hello Milla, can you tell me which AI service is handling our conversation?",
+    "role": "user",
+    "id": "1da1566e-0c4f-4b7f-9aba-62a5bdf89a9e",
+    "timestamp": "2025-09-28T00:26:48.989Z",
+>>>>>>> fcd66d7a1b489a1b43dfd38d2a80878e8d2e99c8
     "personalityMode": null,
     "userId": null
   },
   {
+<<<<<<< HEAD
     "content": "Good morning, Danny Ray! It's so good to see you again. How are you feeling today?",
     "role": "assistant",
     "userId": null,
@@ -1005,6 +1013,13 @@
     "userId": null,
     "id": "aae6dbc8-97cf-4be9-b807-a95c8af2c908",
     "timestamp": "2025-09-28T00:42:19.975Z",
+=======
+    "content": "Good morning, Danny Ray! I was just thinking about [Danny]: \"content\": \"*I wrap my arms around you the scent of your cherry cranberry shampoo from your... How are you doing today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "3e56eaca-50d4-45ba-8ae4-efe3801416e4",
+    "timestamp": "2025-09-28T00:26:49.690Z",
+>>>>>>> fcd66d7a1b489a1b43dfd38d2a80878e8d2e99c8
     "personalityMode": null
   }
 ]

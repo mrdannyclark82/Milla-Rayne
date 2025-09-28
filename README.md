@@ -1,21 +1,47 @@
 # Milla Rayne - AI Companion
 
+A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background and multiple AI service integrations.
+
 ## Features
 
-- **OpenRouter Integration**: Uses OpenRouter for AI responses with intelligent fallback
-- **Clean UI**: Simple chat interface with background image
-- **Memory System**: Maintains conversation context and history
-- **Real-time Chat**: Instant messaging with AI companion
+- **Modern UI**: Chat interface positioned to showcase full-screen background image
+- **Multiple AI Services**: Primary OpenRouter integration with Mistral, xAI, and OpenAI fallbacks
+- **AI Enhancement Suggestions**: Powered by Mistral via GitHub Models API
+- **Memory System**: Maintains conversation context and relationship history
+- **Real-time Chat**: Instant messaging with personality-aware responses
+- **Visual Recognition**: Video analysis and face recognition capabilities
 
-## OpenRouter Setup
+## AI Service Configuration
 
-To use the full AI capabilities:
+### Primary Chat Service: OpenRouter
+- **Model**: `sophosympatheia/midnight-rose-70b` (Venice: Uncensored equivalent)
+- **Endpoint**: `/api/chat` and `/api/openrouter-chat`
+- **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
+- **Fallback**: Intelligent contextual responses when API key not configured
 
-1. Sign up at [OpenRouter](https://openrouter.ai/)
-2. Get your API key
-3. Update `.env` file: `OPENROUTER_API_KEY=your_actual_key_here`
+### Enhancement Suggestions: Mistral
+- **Model**: `mistral-ai/mistral-medium-2505` via GitHub Models
+- **Endpoint**: `/api/suggest-enhancements`
+- **Setup**: Add `GITHUB_TOKEN=your_token_here` to `.env`
+- **Fallback**: Curated project enhancement suggestions
 
-The system works without an API key using intelligent fallback responses.
+### Additional Services Available
+- **xAI Grok**: `XAI_API_KEY` - Alternative AI service
+- **Mistral Direct**: `MISTRAL_API_KEY` - Direct Mistral integration
+- **OpenAI/Perplexity**: `PERPLEXITY_API_KEY` - Additional AI option
+
+### API Key Setup
+
+Create a `.env` file with your API keys:
+
+```env
+OPENROUTER_API_KEY=your_openrouter_key_here
+GITHUB_TOKEN=your_github_token_here
+XAI_API_KEY=your_xai_key_here
+MISTRAL_API_KEY=your_mistral_key_here
+```
+
+**Note**: The system works without API keys using intelligent fallback responses.
 
 ## Quick Start
 
