@@ -1515,14 +1515,14 @@ async function generateAIResponse(
     // Enhance the user message with Memory Core context FIRST, then other contexts
     let enhancedMessage = userMessage;
 
-    // Build comprehensive context for Milla with token limits
+    // Build comprehensive context for Milla with reasonable token limits
     let contextualInfo = "";
-    const maxContextLength = 50000; // Limit context to ~50K chars to prevent token issues
+    const maxContextLength = 15000; // Reduced to ~15K chars to prevent token overload
 
     if (memoryCoreContext) {
       // Truncate Memory Core context if it's too long
-      const truncatedMemoryCore = memoryCoreContext.length > 30000
-        ? memoryCoreContext.substring(0, 30000) + "...[context truncated for performance]"
+      const truncatedMemoryCore = memoryCoreContext.length > 10000
+        ? memoryCoreContext.substring(0, 10000) + "...[context truncated for performance]"
         : memoryCoreContext;
 
       contextualInfo += `IMPORTANT - Your Relationship History with ${userName}: ${truncatedMemoryCore}\n
@@ -1542,16 +1542,16 @@ async function generateAIResponse(
     }
 
     // Skip memory and knowledge context if we're already at the limit
-    if (memoryContext && contextualInfo.length < maxContextLength - 10000) {
-      const truncatedMemory = memoryContext.length > 10000
-        ? memoryContext.substring(0, 10000) + "...[truncated]"
+    if (memoryContext && contextualInfo.length < maxContextLength - 3000) {
+      const truncatedMemory = memoryContext.length > 3000
+        ? memoryContext.substring(0, 3000) + "...[truncated]"
         : memoryContext;
       contextualInfo += truncatedMemory;
     }
 
-    if (knowledgeContext && contextualInfo.length < maxContextLength - 5000) {
-      const truncatedKnowledge = knowledgeContext.length > 5000
-        ? knowledgeContext.substring(0, 5000) + "...[truncated]"
+    if (knowledgeContext && contextualInfo.length < maxContextLength - 2000) {
+      const truncatedKnowledge = knowledgeContext.length > 2000
+        ? knowledgeContext.substring(0, 2000) + "...[truncated]"
         : knowledgeContext;
       contextualInfo += truncatedKnowledge;
     }
@@ -1563,6 +1563,13 @@ async function generateAIResponse(
 
     if (contextualInfo) {
       enhancedMessage = `${contextualInfo}\nCurrent message: ${userMessage}`;
+    }
+
+    // Debug logging for context length (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Context info length: ${contextualInfo.length} chars`);
+      console.log(`Enhanced message length: ${enhancedMessage.length} chars`);
+      console.log(`Conversation history length: ${conversationHistory?.length || 0} messages`);
     }
 
     // Use OpenRouter for AI responses

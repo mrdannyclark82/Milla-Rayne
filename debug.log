@@ -1,0 +1,16 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+Successfully loaded 114 valid messages from file (114 total entries).
+Initializing Memory Core system...
+Loading Memory Core from memories.txt as primary source...
+Successfully loaded Memory Core from memories.txt: 1147 entries
+Memory Core loaded from memories.txt latency: 26ms
+Memory Core initialized successfully
+User tasks system initialized
+Enhancement task system initialized
+Enhancement task system initialized
+Setting up WebSocket server for real-time features...
+WebSocket server setup complete
+11:48:43 PM [express] serving on port 5001

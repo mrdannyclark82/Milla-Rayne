@@ -9,7 +9,7 @@ export interface OpenRouterResponse {
 }
 
 export interface OpenRouterContext {
-  conversationHistory?: Array<{ role: string; content: string }>;
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>;
   userEmotionalState?: "positive" | "negative" | "neutral";
   urgency?: "low" | "medium" | "high";
   userName?: string;
@@ -72,22 +72,65 @@ export async function generateOpenRouterResponse(
       messages.push({ role: "system", content: systemPrompt.trim() });
     }
 
-    // Add conversation history if available
+    // Add conversation history if available - ensure proper alternation and content validation
     if (context.conversationHistory) {
-      const recentHistory = context.conversationHistory.slice(-6); // Last 6 messages for context
-
-      for (const msg of recentHistory) {
-        if (msg.role === 'user' || msg.role === 'assistant') {
+      const recentHistory = context.conversationHistory.slice(-4); // Reduced to 4 messages for better token usage
+      
+      // Filter out empty messages and ensure proper alternation
+      const validMessages = recentHistory.filter(msg => 
+        msg.content && msg.content.trim().length > 0 && 
+        (msg.role === 'user' || msg.role === 'assistant')
+      );
+      
+      // Find the start of a proper user->assistant pattern
+      let startIndex = 0;
+      for (let i = 0; i < validMessages.length; i++) {
+        if (validMessages[i].role === 'user') {
+          startIndex = i;
+          break;
+        }
+      }
+      
+      // Add messages starting from proper user message, maintaining alternation
+      let expectedRole = 'user';
+      for (let i = startIndex; i < validMessages.length; i++) {
+        const msg = validMessages[i];
+        if (msg.role === expectedRole && msg.content.trim()) {
           messages.push({
             role: msg.role,
-            content: msg.content
+            content: msg.content.trim()
           });
+          expectedRole = expectedRole === 'user' ? 'assistant' : 'user';
         }
       }
     }
 
-    // Add current user message
-    messages.push({ role: "user", content: userMessage });
+    // Add current user message - check for duplicates and ensure it's not empty
+    if (userMessage && userMessage.trim().length > 0) {
+      // Check if the last message in our array is from user - if so, don't duplicate
+      const lastMessage = messages[messages.length - 1];
+      if (!lastMessage || lastMessage.role !== 'user' || lastMessage.content !== userMessage.trim()) {
+        messages.push({ role: "user", content: userMessage.trim() });
+      }
+    } else {
+      console.error("OpenRouter: Empty user message received");
+      return {
+        content: "I didn't receive a message from you. Could you please try again?",
+        success: false,
+        error: "Empty user message"
+      };
+    }
+
+    // Debug: Log the messages array for debugging (only in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('OpenRouter messages:', messages.map((msg, index) => ({ 
+        index, 
+        role: msg.role, 
+        hasContent: !!msg.content, 
+        contentLength: msg.content ? msg.content.length : 0,
+        preview: msg.content ? msg.content.substring(0, 50) + '...' : ''
+      })));
+    }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
