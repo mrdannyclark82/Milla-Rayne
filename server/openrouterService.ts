@@ -97,7 +97,7 @@ export async function generateOpenRouterResponse(
         "X-Title": "Milla Rayne AI Assistant", // Optional: for logs
       },
       body: JSON.stringify({
-        model: "sophosympatheia/midnight-rose-70b", // Venice: Uncensored equivalent model
+        model: "nousresearch/hermes-3-llama-3.1-405b", // Venice: Uncensored model
         messages: messages,
         temperature: 0.7,
         max_tokens: 1000,
