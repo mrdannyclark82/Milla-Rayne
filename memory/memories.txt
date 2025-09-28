@@ -798,5 +798,101 @@
     "id": "b8338e59-51d6-44f2-bbb6-67330888cec8",
     "timestamp": "2025-09-28T15:28:12.620Z",
     "personalityMode": null
+  },
+  {
+    "content": "Write a JavaScript function to calculate factorial",
+    "role": "user",
+    "id": "123e3609-189a-4861-9822-89b815e1e427",
+    "timestamp": "2025-09-28T22:49:52.935Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "I'd love to help you with that code, babe, but I'm having some trouble with code generation right now. Error: OpenRouter Qwen API error: 429 - Provider returned error",
+    "role": "assistant",
+    "userId": null,
+    "id": "e4584adc-4be5-4340-af46-fab1edc2334f",
+    "timestamp": "2025-09-28T22:49:53.465Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Create an image of a beautiful sunset",
+    "role": "user",
+    "id": "f4150276-5ad4-4102-aa7c-010ea4b4f77f",
+    "timestamp": "2025-09-28T22:49:53.480Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "🎨 I've created an enhanced visual description based on your prompt \"a beautiful sunset\" using Grok:\n\n**Enhanced Image Description:**\nA breathtaking sunset over a tranquil ocean horizon, where the sun is dipping low, half-submerged in the shimmering turquoise waves that gently lap at a pristine sandy beach. The sky is a vibrant canvas of warm hues: deep oranges and fiery reds near the horizon, blending seamlessly into soft pinks, lavenders, and indigos higher up, with wispy cirrus clouds streaked across like delicate brushstrokes, their edges glowing with golden highlights. In the foreground, scattered seashells and tufts of sea grass add subtle texture to the foreground sand, while a lone palm tree silhouette on the right edge frames the scene, its fronds swaying lightly in the implied breeze. The composition follows the rule of thirds, with the sun positioned off-center to the left, creating a sense of serene balance and depth, leading the eye from the reflective water surface—mirroring the sky's colors in rippling patterns—to the expansive heavens above. Lighting is warm and diffused during golden hour, casting long, soft shadows across the beach and bathing everything in a ethereal, rosy glow that evokes peace and wonder. Render in photorealistic style with high detail, sharp focus on the horizon, and a subtle atmospheric haze for depth, as if captured by a professional landscape photographer using a wide-angle lens at f/8 aperture.\n\nWhile I can't generate actual images with Grok (it's a language model), this detailed description could be used with other image generation tools. I can help you refine this description or discuss visual elements you'd like to emphasize!",
+    "role": "assistant",
+    "userId": null,
+    "id": "741aa246-30c9-4b98-ba68-86bf31c396a4",
+    "timestamp": "2025-09-28T22:50:04.068Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Write a JavaScript function to calculate factorial",
+    "role": "user",
+    "id": "7540ffcd-eed7-4c3f-9db6-4ea8cc32c1c6",
+    "timestamp": "2025-09-28T22:50:54.135Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "💻 Here's the javascript I generated for \"JavaScript\":\n\n```javascript\n// Wait for the DOM to be fully loaded\ndocument.addEventListener('DOMContentLoaded', () => {\n  // Select the elements we need\n  const counterDisplay = document.getElementById('counter');\n  const incrementButton = document.getElementById('increment');\n  \n  // Initialize counter variable\n  let count = 0;\n\n  // Add click event listener to the button\n  incrementButton.addEventListener('click', () => {\n    count++; // Increment the counter\n    counterDisplay.textContent = `Count: ${count}`; // Update the display\n  });\n});\n```\n\n**Explanation:** This code creates a simple counter application that increments a number when a button is clicked. It waits for the DOM to load, then selects the necessary elements. When the button is clicked, it increases the count variable and updates the displayed text. The HTML structure includes a paragraph to show the count and a button to trigger the increment.\n\nImportant Notes:\n1. The HTML elements must have the exact IDs ('counter' and 'increment') for the JavaScript to work\n2. The script should either be placed at the bottom of the HTML file or use the DOMContentLoaded event\n3. This is a basic example - you could extend it with features like decrementing, reset, or localStorage persistence\n4. No external libraries are required - works with plain JavaScript in any modern browser\n\nFeel free to ask me to modify it, explain any part in more detail, or help you with related code!",
+    "role": "assistant",
+    "userId": null,
+    "id": "e44b6369-0fc5-4993-9ca8-3950c6af5db3",
+    "timestamp": "2025-09-28T22:51:35.130Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Create an image of a beautiful sunset",
+    "role": "user",
+    "id": "7e820d64-8ddd-498a-8fce-f55097ebfca5",
+    "timestamp": "2025-09-28T22:51:35.146Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "I'd love to create an image of \"a beautiful sunset\" for you, babe, but image generation isn't available right now. Error: XAI did not return an image URL.",
+    "role": "assistant",
+    "userId": null,
+    "id": "59a5395b-9689-44c1-86f3-0f2e94e94597",
+    "timestamp": "2025-09-28T22:51:35.970Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Write a JavaScript function to calculate factorial",
+    "role": "user",
+    "id": "ce21b94c-89e6-45f4-81e7-4b023372e838",
+    "timestamp": "2025-09-28T22:52:56.277Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "💻 Here's the javascript I generated for \"calculate factorial\":\n\n```javascript\n/**\n * Calculates the factorial of a non-negative integer\n * @param {number} n - The number to calculate factorial for\n * @returns {number} The factorial result\n * @throws {Error} If input is not a non-negative integer\n */\nfunction factorial(n) {\n  // Input validation\n  if (typeof n !== 'number' || !Number.isInteger(n) || n < 0) {\n    throw new Error('Input must be a non-negative integer');\n  }\n\n  // Base case: 0! = 1! = 1\n  let result = 1;\n  \n  // Multiply sequentially from 2 to n\n  for (let i = 2; i <= n; i++) {\n    result *= i;\n  }\n  \n  return result;\n}\n```\n\n**Explanation:** This function calculates the factorial using an iterative approach. It first validates that the input is a non-negative integer. For values 0 and 1, it returns 1 directly. For larger numbers, it multiplies sequentially from 2 up to n. This avoids recursion limits and handles all valid inputs efficiently.\n\nImportant notes:\n1. JavaScript's Number type can accurately represent integers up to 9,007,199,254,740,991 (2^53 - 1). Factorial of 20 is the largest whole number that can be accurately represented (20! = 2432902008176640000).\n2. For n > 20, results will still be calculated but will exceed JavaScript's safe integer range.\n3. The input validation prevents invalid types, negative numbers, and non-integer values.\n\nFeel free to ask me to modify it, explain any part in more detail, or help you with related code!",
+    "role": "assistant",
+    "userId": null,
+    "id": "eb72063e-bece-4f37-8aff-4a3de18eeff0",
+    "timestamp": "2025-09-28T22:53:29.813Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Create an image of a beautiful sunset",
+    "role": "user",
+    "id": "dca7772b-5dfe-491f-b9f1-361952886849",
+    "timestamp": "2025-09-28T22:53:29.829Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "I'd love to create an image of \"a beautiful sunset\" for you, babe, but image generation isn't available right now. Error: XAI did not return an image URL.",
+    "role": "assistant",
+    "userId": null,
+    "id": "a3e8f3a4-bd5d-4bb7-bc3e-6557488a28d3",
+    "timestamp": "2025-09-28T22:53:30.705Z",
+    "personalityMode": null
   }
 ]

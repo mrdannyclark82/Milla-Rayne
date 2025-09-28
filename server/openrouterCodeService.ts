@@ -61,7 +61,7 @@ Explanation: [your explanation here]`;
         "X-Title": "Milla Rayne AI Assistant - Code Generation",
       },
       body: JSON.stringify({
-        model: "qwen/qwen-2.5-coder-32b-instruct", // Updated to use correct Qwen coder model
+        model: "qwen/qwen-2.5-coder-32b-instruct", // Using working model (qwen3-coder:free may not be available)
         messages: [
           {
             role: "system",
@@ -149,10 +149,10 @@ export function extractCodeRequest(userMessage: string): { prompt: string; langu
   
   // Patterns that indicate code generation requests
   const codePatterns = [
-    /write\s+(?:a\s+)?(.+?)\s+(?:function|script|program|code)/i,
-    /create\s+(?:a\s+)?(.+?)\s+(?:function|script|program|code)/i,
-    /generate\s+(?:a\s+)?(.+?)\s+(?:function|script|program|code)/i,
-    /code\s+(?:for\s+)?(.+)/i,
+    /write\s+(?:a\s+)?(?:javascript|python|java|typescript|php|ruby|go|rust|swift|kotlin|scala|html|css|sql|bash|js|py|ts|cpp|c#|csharp)?\s*(?:function|script|program|code)?\s+(?:to\s+|for\s+)?(.+)/i,
+    /create\s+(?:a\s+)?(?:javascript|python|java|typescript|php|ruby|go|rust|swift|kotlin|scala|html|css|sql|bash|js|py|ts|cpp|c#|csharp)?\s*(?:function|script|program|code)?\s+(?:to\s+|for\s+)?(.+)/i,
+    /generate\s+(?:a\s+)?(?:javascript|python|java|typescript|php|ruby|go|rust|swift|kotlin|scala|html|css|sql|bash|js|py|ts|cpp|c#|csharp)?\s*(?:function|script|program|code)?\s+(?:to\s+|for\s+)?(.+)/i,
+    /code\s+(?:for\s+|to\s+)?(.+)/i,
     /function\s+(?:to\s+|for\s+)?(.+)/i,
     /script\s+(?:to\s+|for\s+)?(.+)/i,
     /program\s+(?:to\s+|for\s+)?(.+)/i,
