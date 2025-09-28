@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
 import EnhancementSuggestions from "@/components/EnhancementSuggestions";
+import SmartWatch from "@/components/SmartWatch";
 
 const BACKGROUND_IMAGE = "/background.jpg";
 
@@ -24,9 +25,13 @@ export default function Home() {
       <div className="relative z-10 flex h-screen">
         {/* Left side - 2D Avatar and Enhancement Suggestions - Now takes more space to show background */}
         <div className="flex-1 flex flex-col items-start justify-center space-y-6 p-8 max-w-2xl">
-          {/* Temporarily disabled avatar to fix Three.js compatibility issues */}
-          <div className="w-80 h-60 bg-gray-800/60 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
-            <p className="text-white text-xl">Milla's Portrait</p>
+          {/* Milla's Personal Smart Watch and Portrait */}
+          <div className="flex items-center space-x-6">
+            <SmartWatch />
+            {/* Temporarily disabled avatar to fix Three.js compatibility issues */}
+            <div className="w-80 h-60 bg-gray-800/60 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+              <p className="text-white text-xl">Milla's Portrait</p>
+            </div>
           </div>
           
           {/* Enhancement Suggestions */}
