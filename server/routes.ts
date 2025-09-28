@@ -641,6 +641,56 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // AI Enhancement Installation endpoint
+  app.post("/api/install-enhancement", async (req, res) => {
+    try {
+      const { suggestionId, suggestionText, index } = req.body;
+      
+      if (!suggestionText) {
+        return res.status(400).json({ 
+          error: "Suggestion text is required",
+          success: false 
+        });
+      }
+
+      console.log(`Installing enhancement suggestion: ${suggestionText}`);
+
+      // Import the personal task service to create implementation tasks
+      const { createEnhancementImplementationTask } = await import("./enhancementService");
+      
+      // Create a new implementation task
+      const implementationTask = await createEnhancementImplementationTask({
+        suggestionId,
+        suggestionText,
+        suggestionIndex: index
+      });
+
+      // Create implementation scaffolding based on the suggestion type
+      const implementationResult = await generateImplementationScaffolding(suggestionText);
+
+      res.json({
+        success: true,
+        message: "Enhancement installation initiated successfully",
+        task: implementationTask,
+        implementation: implementationResult,
+        nextSteps: [
+          "Implementation task created and added to project roadmap",
+          "Basic scaffolding has been generated",
+          "Review implementation details in the task management system",
+          "Follow up with detailed implementation as needed"
+        ]
+      });
+
+    } catch (error) {
+      console.error("Enhancement installation error:", error);
+      res.status(500).json({
+        error: "Failed to install enhancement",
+        success: false,
+        message: "An error occurred while setting up the enhancement implementation"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server for real-time features
@@ -648,6 +698,136 @@ Project: Milla Rayne - AI Virtual Assistant
   await setupWebSocketServer(httpServer);
 
   return httpServer;
+}
+
+/**
+ * Generate implementation scaffolding based on suggestion content
+ */
+async function generateImplementationScaffolding(suggestionText: string): Promise<{ 
+  type: string; 
+  files: string[]; 
+  steps: string[]; 
+  estimatedTime: string;
+}> {
+  const suggestion = suggestionText.toLowerCase();
+  
+  // Authentication system
+  if (suggestion.includes('authentication') || suggestion.includes('user') || suggestion.includes('login')) {
+    return {
+      type: "Authentication System",
+      files: [
+        "server/auth/authService.ts",
+        "server/auth/userModel.ts", 
+        "client/src/components/auth/LoginForm.tsx",
+        "client/src/components/auth/RegisterForm.tsx"
+      ],
+      steps: [
+        "Set up user database schema",
+        "Implement JWT token authentication",
+        "Create login and registration components",
+        "Add protected routes and middleware",
+        "Integrate with existing memory system"
+      ],
+      estimatedTime: "2-3 days"
+    };
+  }
+  
+  // Voice chat capabilities
+  if (suggestion.includes('voice') || suggestion.includes('speech') || suggestion.includes('audio')) {
+    return {
+      type: "Voice Chat System",
+      files: [
+        "client/src/services/speechService.ts",
+        "client/src/components/VoiceChat.tsx",
+        "server/audio/audioProcessor.ts"
+      ],
+      steps: [
+        "Implement Web Speech API integration",
+        "Add voice recognition components",
+        "Create audio processing pipeline",
+        "Add voice response generation",
+        "Integrate with existing chat system"
+      ],
+      estimatedTime: "3-4 days"
+    };
+  }
+  
+  // PWA features
+  if (suggestion.includes('pwa') || suggestion.includes('mobile') || suggestion.includes('offline')) {
+    return {
+      type: "Progressive Web App",
+      files: [
+        "client/public/manifest.json",
+        "client/src/serviceWorker.ts",
+        "client/src/hooks/useOfflineSync.ts"
+      ],
+      steps: [
+        "Create PWA manifest file",
+        "Implement service worker for caching",
+        "Add offline data synchronization",
+        "Enable push notifications",
+        "Optimize for mobile devices"
+      ],
+      estimatedTime: "1-2 days"
+    };
+  }
+  
+  // Calendar integration  
+  if (suggestion.includes('calendar') || suggestion.includes('scheduling') || suggestion.includes('meeting')) {
+    return {
+      type: "Calendar Integration",
+      files: [
+        "client/src/components/Calendar.tsx",
+        "server/calendar/calendarService.ts",
+        "shared/types/calendar.ts"
+      ],
+      steps: [
+        "Create calendar UI components", 
+        "Implement event management system",
+        "Add scheduling conflict detection",
+        "Integrate with AI for meeting summaries",
+        "Add notification system"
+      ],
+      estimatedTime: "2-3 days"
+    };
+  }
+  
+  // Data export/import
+  if (suggestion.includes('export') || suggestion.includes('import') || suggestion.includes('backup')) {
+    return {
+      type: "Data Management System",
+      files: [
+        "server/export/dataExporter.ts",
+        "server/import/dataImporter.ts",
+        "client/src/components/DataManagement.tsx"
+      ],
+      steps: [
+        "Implement data export functionality",
+        "Create import validation system",
+        "Add cloud backup integration",
+        "Build data management UI",
+        "Add data migration tools"
+      ],
+      estimatedTime: "1-2 days"
+    };
+  }
+  
+  // Default implementation for other suggestions
+  return {
+    type: "Custom Enhancement",
+    files: [
+      "server/enhancements/customEnhancement.ts",
+      "client/src/components/CustomFeature.tsx"
+    ],
+    steps: [
+      "Analyze enhancement requirements",
+      "Design system architecture",
+      "Implement core functionality",
+      "Create user interface components",
+      "Test and integrate with existing system"
+    ],
+    estimatedTime: "1-3 days"
+  };
 }
 
 // Simple AI response generator based on message content
