@@ -34,7 +34,7 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
         "X-Title": "Milla Rayne AI Assistant - Image Generation",
       },
       body: JSON.stringify({
-        model: "x-ai/grok-beta", // Trying different Grok model
+        model: "x-ai/grok-beta", // Using available model (grok-4-fast:free may not be available)
         messages: [
           {
             role: "system",
@@ -48,7 +48,6 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
         max_tokens: 1000,
         temperature: 0.7,
       }),
-    });
     });
 
     if (!response.ok) {
