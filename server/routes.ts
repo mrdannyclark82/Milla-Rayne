@@ -539,6 +539,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Enhancement Suggestions endpoint
+  app.get("/api/suggest-enhancements", async (req, res) => {
+    try {
+      // Always provide suggestions, using AI when available or fallback otherwise
+      let suggestions: string[] = [];
+      let success = true;
+
+      if (process.env.GITHUB_TOKEN) {
+        try {
+          const { Mistral } = await import("@mistralai/mistralai");
+          
+          const client = new Mistral({
+            apiKey: process.env.GITHUB_TOKEN,
+            serverURL: "https://models.github.ai/inference"
+          });
+
+          // Analyze project structure and create enhancement suggestions
+          const projectAnalysis = `
+Project: Milla Rayne - AI Virtual Assistant
+- Backend: TypeScript Express server with multiple AI integrations (Mistral, OpenAI, xAI)
+- Frontend: React with TypeScript, Tailwind CSS, modern UI components
+- Features: Chat interface, memory system, video analysis, task management, real-time gaming
+- Data Storage: JSON-based memory system (memories.json), planning database migration
+- AI Services: Multiple AI providers for fallback and specialized tasks
+- Recent Progress: Fixed blank UI issue, integrated Mistral API for enhancements
+          `;
+
+          const response = await client.chat.complete({
+            model: "mistral-ai/mistral-medium-2505",
+            messages: [
+              { 
+                role: "system", 
+                content: "You are an expert software architect analyzing a virtual AI assistant project. Provide 3-5 practical enhancement suggestions that would improve user experience, performance, or add valuable features." 
+              },
+              { 
+                role: "user", 
+                content: `Based on this project analysis, suggest future enhancements:\n\n${projectAnalysis}` 
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+            top_p: 1.0
+          });
+
+          const aiSuggestions = response.choices[0]?.message?.content || "";
+          
+          // Parse suggestions into an array if they're in a list format
+          suggestions = aiSuggestions
+            .split(/\d+\.|•|-/)
+            .filter(s => s.trim().length > 10)
+            .map(s => s.trim())
+            .slice(0, 5); // Limit to 5 suggestions
+
+          if (suggestions.length === 0) {
+            suggestions = [aiSuggestions];
+          }
+        } catch (aiError) {
+          console.log("AI generation failed, using fallback suggestions:", aiError);
+          success = false;
+        }
+      }
+
+      // Use intelligent fallback suggestions if AI failed or token not available
+      if (suggestions.length === 0) {
+        suggestions = [
+          "Add user authentication system with personalized AI memory profiles for different users",
+          "Implement voice chat capabilities using Web Speech API for more natural conversations",
+          "Create a mobile-responsive PWA with offline chat capabilities and push notifications",
+          "Integrate calendar and scheduling features with AI-powered meeting summaries",
+          "Add data export/import functionality for memories with cloud backup options",
+          "Implement real-time collaborative features like shared whiteboards or document editing",
+          "Add mood tracking and emotional intelligence to better understand user needs over time"
+        ];
+        success = false; // Using fallback
+      }
+
+      res.json({
+        suggestions: suggestions.slice(0, 5), // Ensure max 5 suggestions
+        success: success,
+        source: success ? "AI-generated" : "Curated fallback"
+      });
+
+    } catch (error) {
+      console.error("Enhancement suggestions error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate enhancement suggestions",
+        suggestions: [
+          "Implement user authentication and personalized sessions",
+          "Add voice chat capabilities for more natural interaction", 
+          "Create a mobile-responsive progressive web app (PWA)",
+          "Integrate calendar and scheduling features",
+          "Add data export/import functionality for memories"
+        ],
+        success: false
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   
   // Set up WebSocket server for real-time features
