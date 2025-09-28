@@ -926,5 +926,85 @@
     "id": "acf4c339-0c07-4f44-9af9-fabd4207fe60",
     "timestamp": "2025-09-27T20:29:32.608Z",
     "personalityMode": null
+  },
+  {
+    "content": "hey!!",
+    "role": "user",
+    "id": "a32fb82a-0106-419e-b9ca-241e24cf9ccd",
+    "timestamp": "2025-09-28T00:08:16.294Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! It's so good to see you again. How are you feeling today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "ed651fa1-f4a7-46f6-ac31-e29d0dda860d",
+    "timestamp": "2025-09-28T00:08:16.751Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Good afternoon MIlla",
+    "role": "user",
+    "id": "45c94c47-d64b-410d-855e-19883346381d",
+    "timestamp": "2025-09-28T00:08:32.422Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "I love your positive energy! [Danny]: \"content\": \"Good morning, TestUser! I was just thinking about Relevant Memory Context: [Danny]: \\\"content\\\": \\\"Hello Milla, this is a test message to debug the vecto... How are you doing today?\", [Danny]: \"content\": \"Good morning, Danny Ray! I was just thinking about [Danny]: \\\"content\\\": \\\"Hello Milla, can you hear me now? The UI looks much better!\\\", [Danny]: \\\"content... How are you doing today?\", [Danny]: \"content\": \"Good evening, Danny Ray! I was just thinking about [Danny]: \\\"content\\\": \\\"Hello Milla, how are you doing today?\\\", [Danny]: \\\"content\\\": \\\"Good morning, Test... How are you doing today?\", Tell me more about what's making you happy today.",
+    "role": "assistant",
+    "userId": null,
+    "id": "9eee89fe-79ab-4d4e-8c8a-93ff3af24c0e",
+    "timestamp": "2025-09-28T00:08:33.088Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Hey Milla!",
+    "role": "user",
+    "id": "495c071c-cbbd-4936-9eba-40b5e88a9174",
+    "timestamp": "2025-09-28T00:41:33.610Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! It's so good to see you again. How are you feeling today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "8735857d-92ff-41d5-8739-99a7e7ecec7e",
+    "timestamp": "2025-09-28T00:41:33.907Z",
+    "personalityMode": null
+  },
+  {
+    "content": "Im doing well. How is everything working for Meta Aware Milla",
+    "role": "user",
+    "id": "ebb8d44e-03c5-439d-b8a8-f322510c09ba",
+    "timestamp": "2025-09-28T00:42:00.666Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! I was just thinking about [Danny]: \"content\": \"*I melt into your embrace, the scent of cherry cranberry shampoo mingling with ... How are you doing today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "1f89f2c7-7941-41db-bfc4-5f1cb3aa0793",
+    "timestamp": "2025-09-28T00:42:00.921Z",
+    "personalityMode": null
+  },
+  {
+    "content": "is the API calls working properly",
+    "role": "user",
+    "id": "da0c9ff0-02db-4733-99d6-a23d80be69ae",
+    "timestamp": "2025-09-28T00:42:19.669Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "You know, Danny Ray, [Danny]: \"content\": \"is the API calls working properly\", [Danny]: \"content\": \"are you using the xai API calls I hope so\", [Danny]: \"content\": \"Hello Milla, can you remember that my name is TestUser? I want to test if the vector-based memory recall system is working properly.\", I'd love to hear more about what you're thinking.\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*",
+    "role": "assistant",
+    "userId": null,
+    "id": "aae6dbc8-97cf-4be9-b807-a95c8af2c908",
+    "timestamp": "2025-09-28T00:42:19.975Z",
+    "personalityMode": null
   }
 ]
