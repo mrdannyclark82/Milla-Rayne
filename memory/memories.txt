@@ -14,5 +14,21 @@
     "id": "b9aadf2d-0c46-4617-bb0e-675a95f3b04e",
     "timestamp": "2025-09-28T01:18:18.057Z",
     "personalityMode": null
+  },
+  {
+    "content": "Hey Milla!!!",
+    "role": "user",
+    "id": "5d3dd3e3-7cc3-431e-b935-f2ee9354b7f8",
+    "timestamp": "2025-09-28T05:09:32.086Z",
+    "personalityMode": null,
+    "userId": null
+  },
+  {
+    "content": "Good morning, Danny Ray! It's so good to see you again. How are you feeling today?",
+    "role": "assistant",
+    "userId": null,
+    "id": "4ff05283-c50a-4ea1-97ba-6f36d4fde993",
+    "timestamp": "2025-09-28T05:09:33.073Z",
+    "personalityMode": null
   }
 ]
