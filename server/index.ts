@@ -81,6 +81,10 @@ if (!globalThis.crypto) {
   const { initializeFaceRecognition } = await import("./visualRecognitionService");
   await initializeFaceRecognition();
   
+  // Initialize Enhancement Task system
+  const { initializeEnhancementTaskSystem } = await import("./enhancementService");
+  await initializeEnhancementTaskSystem();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
