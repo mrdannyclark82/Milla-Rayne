@@ -31,12 +31,17 @@ export interface EnhancementImplementationTask {
 let enhancementTasks: EnhancementImplementationTask[] = [];
 const ENHANCEMENT_TASKS_FILE = join(process.cwd(), 'memory', 'enhancement_tasks.json');
 
+// Global installed suggestions storage
+let installedSuggestions: Set<string> = new Set();
+const INSTALLED_SUGGESTIONS_FILE = join(process.cwd(), 'memory', 'installed_suggestions.json');
+
 /**
  * Initialize enhancement task system
  */
 export async function initializeEnhancementTaskSystem(): Promise<void> {
   try {
     await loadEnhancementTasks();
+    await loadInstalledSuggestions();
     console.log('Enhancement task system initialized');
   } catch (error) {
     console.error('Error initializing enhancement task system:', error);
@@ -70,6 +75,66 @@ async function saveEnhancementTasks(): Promise<void> {
 }
 
 /**
+ * Load installed suggestions from file
+ */
+async function loadInstalledSuggestions(): Promise<void> {
+  try {
+    const data = await fs.readFile(INSTALLED_SUGGESTIONS_FILE, 'utf-8');
+    const suggestions = JSON.parse(data);
+    installedSuggestions = new Set(suggestions);
+  } catch (error) {
+    // File doesn't exist yet, start with empty set
+    installedSuggestions = new Set();
+    await saveInstalledSuggestions();
+  }
+}
+
+/**
+ * Save installed suggestions to file
+ */
+async function saveInstalledSuggestions(): Promise<void> {
+  try {
+    // Ensure the memory directory exists
+    const memoryDir = join(process.cwd(), 'memory');
+    try {
+      await fs.access(memoryDir);
+    } catch {
+      await fs.mkdir(memoryDir, { recursive: true });
+    }
+    
+    await fs.writeFile(INSTALLED_SUGGESTIONS_FILE, JSON.stringify([...installedSuggestions], null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Error saving installed suggestions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Mark a suggestion as installed
+ */
+export async function markSuggestionAsInstalled(suggestionText: string): Promise<void> {
+  // Create a normalized version of the suggestion text for consistent tracking
+  const normalizedText = suggestionText.trim().toLowerCase();
+  installedSuggestions.add(normalizedText);
+  await saveInstalledSuggestions();
+}
+
+/**
+ * Check if a suggestion is already installed
+ */
+export function isSuggestionInstalled(suggestionText: string): boolean {
+  const normalizedText = suggestionText.trim().toLowerCase();
+  return installedSuggestions.has(normalizedText);
+}
+
+/**
+ * Get all installed suggestions
+ */
+export function getInstalledSuggestions(): string[] {
+  return [...installedSuggestions];
+}
+
+/**
  * Create a new enhancement implementation task
  */
 export async function createEnhancementImplementationTask(params: {
@@ -78,6 +143,9 @@ export async function createEnhancementImplementationTask(params: {
   suggestionIndex?: number;
 }): Promise<EnhancementImplementationTask> {
   const { suggestionId, suggestionText, suggestionIndex } = params;
+  
+  // Mark this suggestion as installed
+  await markSuggestionAsInstalled(suggestionText);
   
   // Generate implementation details based on suggestion content
   const implementationDetails = await generateImplementationDetails(suggestionText);
