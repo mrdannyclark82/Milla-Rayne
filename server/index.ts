@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeMemoryCore } from "./memoryService";
 import { initializePersonalTaskSystem } from "./personalTaskService";
+import { initializeServerSelfEvolution } from "./selfEvolutionService";
 import crypto from 'crypto';
 
 // Polyfill crypto.getRandomValues for Node.js
@@ -74,8 +75,11 @@ if (!globalThis.crypto) {
   const { initializeUserTasks } = await import("./userTaskService");
   await initializeUserTasks();
   
-  // REMOVED - Personal Task system (user rarely used it)
-  // await initializePersonalTaskSystem();
+  // Initialize Personal Task system for self-improvement
+  await initializePersonalTaskSystem();
+  
+  // Initialize Server Self-Evolution system
+  await initializeServerSelfEvolution();
   
   // Initialize Visual Recognition system
   const { initializeFaceRecognition } = await import("./visualRecognitionService");
