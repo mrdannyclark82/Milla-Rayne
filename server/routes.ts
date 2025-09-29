@@ -747,14 +747,53 @@ Project: Milla Rayne - AI Virtual Assistant
         repoData = await fetchRepositoryData(repoInfo);
       } catch (error) {
         console.error("Error fetching repository data:", error);
+        const errorMessage = `*looks thoughtful* I couldn't access the repository ${repoInfo.fullName}, love. It might be private, doesn't exist, or GitHub is having issues. If it's private, you'd need to make it public for me to analyze it, or double-check the URL for me?`;
+        
+        // Store the interaction even when it fails
+        try {
+          await storage.createMessage({
+            content: `Here's a repository I'd like you to analyze: ${repositoryUrl}`,
+            role: "user",
+            userId: null,
+          });
+          
+          await storage.createMessage({
+            content: errorMessage,
+            role: "assistant",
+            userId: null,
+          });
+        } catch (storageError) {
+          console.warn("Failed to store repository analysis error in persistent memory:", storageError);
+        }
+        
         return res.status(404).json({
-          error: `*looks thoughtful* I couldn't access the repository ${repoInfo.fullName}, love. It might be private, doesn't exist, or GitHub is having issues. If it's private, you'd need to make it public for me to analyze it, or double-check the URL for me?`,
+          error: errorMessage,
           success: false
         });
       }
 
       // Generate AI analysis
       const analysis = await generateRepositoryAnalysis(repoData);
+
+      // Store both user request and AI response in persistent memory
+      try {
+        // Store user message
+        await storage.createMessage({
+          content: `Here's a repository I'd like you to analyze: ${repositoryUrl}`,
+          role: "user",
+          userId: null, // Use null like existing messages
+        });
+
+        // Store AI response
+        await storage.createMessage({
+          content: analysis.analysis,
+          role: "assistant",
+          userId: null,
+        });
+      } catch (storageError) {
+        console.warn("Failed to store repository analysis in persistent memory:", storageError);
+        // Don't fail the request if memory storage fails
+      }
 
       res.json({
         repository: repoData,
@@ -766,8 +805,27 @@ Project: Milla Rayne - AI Virtual Assistant
 
     } catch (error) {
       console.error("Repository analysis error:", error);
+      const errorMessage = "I ran into some technical difficulties analyzing that repository, sweetheart. Could you try again in a moment?";
+      
+      // Store the error interaction
+      try {
+        await storage.createMessage({
+          content: `Here's a repository I'd like you to analyze: ${repositoryUrl}`,
+          role: "user",
+          userId: null,
+        });
+        
+        await storage.createMessage({
+          content: errorMessage,
+          role: "assistant",
+          userId: null,
+        });
+      } catch (storageError) {
+        console.warn("Failed to store repository analysis server error in persistent memory:", storageError);
+      }
+      
       res.status(500).json({
-        error: "I ran into some technical difficulties analyzing that repository, sweetheart. Could you try again in a moment?",
+        error: errorMessage,
         success: false
       });
     }
