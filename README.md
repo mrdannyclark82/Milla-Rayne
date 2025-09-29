@@ -14,7 +14,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 ## AI Service Configuration
 
 ### Primary Chat Service: OpenRouter
-- **Model**: `nousresearch/hermes-3-llama-3.1-405b` (Venice: Uncensored)
+- **Model**: `deepseek/deepseek-chat-v3.1:free` (DeepSeek Chat)
 - **Endpoint**: `/api/chat` and `/api/openrouter-chat`
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Fallback**: Intelligent contextual responses when API key not configured
