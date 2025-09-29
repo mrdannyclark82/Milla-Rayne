@@ -40,8 +40,8 @@ export function SelfImprovementTracker() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
-    type: '',
-    status: '',
+    type: 'all',
+    status: 'all',
     dateFrom: '',
     dateTo: '',
     limit: '50'
@@ -328,7 +328,7 @@ export function SelfImprovementTracker() {
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Types</SelectItem>
+                    <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="algorithm">Algorithm</SelectItem>
                     <SelectItem value="memory">Memory</SelectItem>
                     <SelectItem value="response">Response</SelectItem>
@@ -341,7 +341,7 @@ export function SelfImprovementTracker() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Status</SelectItem>
+                    <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="analyzing">Analyzing</SelectItem>
                     <SelectItem value="implementing">Implementing</SelectItem>

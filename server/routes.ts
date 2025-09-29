@@ -500,10 +500,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let filteredServerHistory = serverHistory;
       
       // Apply filters
-      if (type) {
+      if (type && type !== 'all') {
         filteredServerHistory = serverHistory.filter(h => h.evolutionType === type);
       }
-      if (status) {
+      if (status && status !== 'all') {
         filteredClientHistory = clientHistory.filter(h => h.status === status);
       }
       if (dateFrom) {
