@@ -443,6 +443,154 @@ export class ServerSelfEvolutionEngine {
       console.error('Error saving evolution history:', error);
     }
   }
+
+  /**
+   * Get current evolution status
+   */
+  static getEvolutionStatus() {
+    const recentEvolutions = this.evolutionHistory.slice(-5);
+    const successfulEvolutions = this.evolutionHistory.filter(e => e.success);
+    
+    return {
+      totalEvolutions: this.evolutionHistory.length,
+      successfulEvolutions: successfulEvolutions.length,
+      successRate: this.evolutionHistory.length > 0 ? successfulEvolutions.length / this.evolutionHistory.length : 0,
+      recentEvolutions,
+      lastEvolutionTime: this.lastEvolutionCheck,
+      nextEvolutionDue: Date.now() - this.lastEvolutionCheck >= this.EVOLUTION_CHECK_INTERVAL,
+      activeOptimizations: Array.from(this.activeOptimizations.values())
+    };
+  }
+
+  /**
+   * Get complete evolution history
+   */
+  static async getEvolutionHistory(): Promise<SystemEvolutionRecord[]> {
+    return [...this.evolutionHistory];
+  }
+
+  /**
+   * Get evolution analytics and trends
+   */
+  static async getEvolutionAnalytics() {
+    const history = this.evolutionHistory;
+    const successfulEvolutions = history.filter(e => e.success);
+    const recentEvolutions = history.slice(-10);
+
+    // Calculate performance trends
+    const performanceDeltas = recentEvolutions
+      .filter(e => e.performanceAfter)
+      .map(e => {
+        const before = e.performanceBefore;
+        const after = e.performanceAfter!;
+        return {
+          responseTime: (before.responseTime - after.responseTime) / before.responseTime,
+          memoryUsage: (before.memoryUsage - after.memoryUsage) / before.memoryUsage,
+          cpuUsage: (before.cpuUsage - after.cpuUsage) / before.cpuUsage,
+          errorRate: (before.errorRate - after.errorRate) / before.errorRate
+        };
+      });
+
+    const avgPerformanceImpact = performanceDeltas.reduce((acc, delta) => {
+      return {
+        responseTime: acc.responseTime + delta.responseTime,
+        memoryUsage: acc.memoryUsage + delta.memoryUsage,
+        cpuUsage: acc.cpuUsage + delta.cpuUsage,
+        errorRate: acc.errorRate + delta.errorRate
+      };
+    }, { responseTime: 0, memoryUsage: 0, cpuUsage: 0, errorRate: 0 });
+
+    const count = performanceDeltas.length || 1;
+    Object.keys(avgPerformanceImpact).forEach(key => {
+      avgPerformanceImpact[key as keyof typeof avgPerformanceImpact] /= count;
+    });
+
+    // Categorize evolutions by type
+    const evolutionsByType = history.reduce((acc, evolution) => {
+      acc[evolution.evolutionType] = (acc[evolution.evolutionType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      totalEvolutions: history.length,
+      successfulEvolutions: successfulEvolutions.length,
+      successRate: history.length > 0 ? successfulEvolutions.length / history.length : 0,
+      averagePerformanceImpact: avgPerformanceImpact,
+      evolutionsByType,
+      trends: {
+        performanceImpact: this.calculatePerformanceTrend(performanceDeltas),
+        frequency: this.calculateEvolutionFrequency()
+      },
+      recentActivity: recentEvolutions.map(evolution => ({
+        id: evolution.id,
+        timestamp: evolution.timestamp,
+        type: evolution.evolutionType,
+        description: evolution.description,
+        success: evolution.success,
+        performanceImpact: evolution.performanceAfter ? 
+          this.calculateSinglePerformanceImpact(evolution.performanceBefore, evolution.performanceAfter) : null
+      }))
+    };
+  }
+
+  /**
+   * Calculate performance trend from deltas
+   */
+  private static calculatePerformanceTrend(deltas: any[]): 'improving' | 'declining' | 'stable' {
+    if (deltas.length === 0) return 'stable';
+    
+    const overallImpact = deltas.reduce((acc, delta) => {
+      return acc + (delta.responseTime + delta.memoryUsage + delta.cpuUsage + delta.errorRate) / 4;
+    }, 0) / deltas.length;
+
+    if (overallImpact > 0.05) return 'improving';
+    if (overallImpact < -0.05) return 'declining';
+    return 'stable';
+  }
+
+  /**
+   * Calculate evolution frequency trend
+   */
+  private static calculateEvolutionFrequency(): 'increasing' | 'decreasing' | 'stable' {
+    if (this.evolutionHistory.length < 4) return 'stable';
+    
+    const recentPeriod = this.evolutionHistory.slice(-5);
+    const olderPeriod = this.evolutionHistory.slice(-10, -5);
+    
+    const recentInterval = this.calculateAverageInterval(recentPeriod);
+    const olderInterval = this.calculateAverageInterval(olderPeriod);
+    
+    if (recentInterval < olderInterval * 0.8) return 'increasing';
+    if (recentInterval > olderInterval * 1.2) return 'decreasing';
+    return 'stable';
+  }
+
+  /**
+   * Calculate average interval between evolutions
+   */
+  private static calculateAverageInterval(evolutions: SystemEvolutionRecord[]): number {
+    if (evolutions.length < 2) return Infinity;
+    
+    const intervals = [];
+    for (let i = 1; i < evolutions.length; i++) {
+      const interval = new Date(evolutions[i].timestamp).getTime() - new Date(evolutions[i-1].timestamp).getTime();
+      intervals.push(interval);
+    }
+    
+    return intervals.reduce((a, b) => a + b, 0) / intervals.length;
+  }
+
+  /**
+   * Calculate performance impact for a single evolution
+   */
+  private static calculateSinglePerformanceImpact(before: ServerPerformanceMetrics, after: ServerPerformanceMetrics): number {
+    const responseImpact = (before.responseTime - after.responseTime) / before.responseTime;
+    const memoryImpact = (before.memoryUsage - after.memoryUsage) / before.memoryUsage;
+    const cpuImpact = (before.cpuUsage - after.cpuUsage) / before.cpuUsage;
+    const errorImpact = (before.errorRate - after.errorRate) / before.errorRate;
+    
+    return (responseImpact + memoryImpact + cpuImpact + errorImpact) / 4;
+  }
 }
 
 /**
@@ -457,6 +605,20 @@ export async function initializeServerSelfEvolution(): Promise<void> {
  */
 export function getServerEvolutionStatus() {
   return ServerSelfEvolutionEngine.getEvolutionStatus();
+}
+
+/**
+ * Get detailed evolution history for API endpoints
+ */
+export async function getServerEvolutionHistory() {
+  return await ServerSelfEvolutionEngine.getEvolutionHistory();
+}
+
+/**
+ * Get evolution analytics for API endpoints
+ */
+export async function getServerEvolutionAnalytics() {
+  return await ServerSelfEvolutionEngine.getEvolutionAnalytics();
 }
 
 /**
