@@ -5,3 +5,9 @@ server/public
 vite.config.ts.*
 *.tar.gz
 .avatar-backup
+
+# Environment variables with sensitive data
+.env
+.env.local
+.env.production
+.env.development

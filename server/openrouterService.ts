@@ -59,7 +59,7 @@ export async function generateOpenRouterResponse(
 
       return {
         content: response,
-        success: true,
+        success: false, // Return false so other services can be tried as fallback
         error: "Using fallback response - OpenRouter API key not configured"
       };
     }
