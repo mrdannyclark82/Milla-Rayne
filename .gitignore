@@ -6,8 +6,10 @@ vite.config.ts.*
 *.tar.gz
 .avatar-backup
 
-# Environment variables with sensitive data
+# Environment variables with sensitive data (NEVER commit these!)
 .env
 .env.local
 .env.production
 .env.development
+.env.*.local
+*.env

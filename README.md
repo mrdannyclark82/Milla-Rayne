@@ -32,7 +32,10 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 ### API Key Setup
 
-⚠️ **SECURITY IMPORTANT**: Never commit actual API keys to version control!
+🚨 **CRITICAL SECURITY WARNING**: 
+- **NEVER** commit actual API keys to version control!
+- If you accidentally commit API keys, they become publicly visible and will be automatically revoked by providers
+- Always use `.env` files for local development (they are git-ignored)
 
 1. Copy the example environment file:
    ```bash
@@ -47,7 +50,16 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
    MISTRAL_API_KEY=your_actual_mistral_key_here
    ```
 
-3. The `.env` file is automatically ignored by git to protect your keys.
+3. **Verify** your `.env` file is git-ignored:
+   ```bash
+   git check-ignore .env  # Should output: .env
+   ```
+
+**🆘 If you already committed API keys by mistake:**
+1. Remove the file from git tracking: `git rm --cached .env`
+2. Replace real keys with placeholders in your local `.env`
+3. Get new API keys from your providers (old ones are likely revoked)
+4. Commit the removal: `git commit -m "Remove API keys from version control"`
 
 **Note**: The system works without API keys using intelligent fallback responses.
 
