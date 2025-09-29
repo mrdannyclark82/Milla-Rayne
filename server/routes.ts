@@ -484,6 +484,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get detailed improvement history
+  app.get("/api/self-improvement/history", async (req, res) => {
+    try {
+      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      const { getServerEvolutionHistory } = await import("./selfEvolutionService");
+      
+      const clientHistory = SelfImprovementEngine.getImprovementHistory();
+      const serverHistory = await getServerEvolutionHistory();
+      
+      // Parse query parameters for filtering
+      const { limit, type, status, dateFrom, dateTo } = req.query;
+      
+      let filteredClientHistory = clientHistory;
+      let filteredServerHistory = serverHistory;
+      
+      // Apply filters
+      if (type) {
+        filteredServerHistory = serverHistory.filter(h => h.evolutionType === type);
+      }
+      if (status) {
+        filteredClientHistory = clientHistory.filter(h => h.status === status);
+      }
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom as string);
+        filteredClientHistory = filteredClientHistory.filter(h => new Date(h.timestamp) >= fromDate);
+        filteredServerHistory = filteredServerHistory.filter(h => new Date(h.timestamp) >= fromDate);
+      }
+      if (dateTo) {
+        const toDate = new Date(dateTo as string);
+        filteredClientHistory = filteredClientHistory.filter(h => new Date(h.timestamp) <= toDate);
+        filteredServerHistory = filteredServerHistory.filter(h => new Date(h.timestamp) <= toDate);
+      }
+      
+      // Apply limit
+      if (limit) {
+        const limitNum = parseInt(limit as string);
+        filteredClientHistory = filteredClientHistory.slice(-limitNum);
+        filteredServerHistory = filteredServerHistory.slice(-limitNum);
+      }
+      
+      res.json({
+        client: filteredClientHistory,
+        server: filteredServerHistory,
+        total: {
+          client: filteredClientHistory.length,
+          server: filteredServerHistory.length
+        },
+        success: true
+      });
+    } catch (error) {
+      console.error('Error fetching improvement history:', error);
+      res.status(500).json({ message: "Failed to fetch improvement history" });
+    }
+  });
+
+  // Get improvement analytics and trends
+  app.get("/api/self-improvement/analytics", async (req, res) => {
+    try {
+      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      const { getServerEvolutionAnalytics } = await import("./selfEvolutionService");
+      
+      const clientAnalytics = SelfImprovementEngine.getImprovementAnalytics();
+      const serverAnalytics = await getServerEvolutionAnalytics();
+      
+      res.json({
+        client: clientAnalytics,
+        server: serverAnalytics,
+        combined: {
+          totalImprovements: clientAnalytics.totalCycles + serverAnalytics.totalEvolutions,
+          successRate: (
+            (clientAnalytics.successfulCycles + serverAnalytics.successfulEvolutions) /
+            (clientAnalytics.totalCycles + serverAnalytics.totalEvolutions)
+          ) || 0,
+          trends: {
+            improvementFrequency: clientAnalytics.trends?.frequency || 'stable',
+            performanceImpact: serverAnalytics.trends?.performanceImpact || 'stable'
+          }
+        },
+        success: true
+      });
+    } catch (error) {
+      console.error('Error fetching improvement analytics:', error);
+      res.status(500).json({ message: "Failed to fetch improvement analytics" });
+    }
+  });
+
   app.get("/api/personal-tasks", async (req, res) => {
     try {
       const tasks = getPersonalTasks();

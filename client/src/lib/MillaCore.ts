@@ -1306,6 +1306,111 @@ export class SelfImprovementEngine {
     };
   }
 
+  /**
+   * Gets the complete improvement history
+   */
+  static getImprovementHistory() {
+    return [...this.improvementHistory];
+  }
+
+  /**
+   * Gets analytics and trends for improvements
+   */
+  static getImprovementAnalytics() {
+    const history = this.improvementHistory;
+    const successfulCycles = history.filter(c => c.status === "completed");
+    const recentCycles = history.slice(-10); // Last 10 cycles
+    
+    // Calculate performance trends
+    const performanceScores = recentCycles.map(cycle => {
+      const before = cycle.performanceBeforeAfter.before;
+      const after = cycle.performanceBeforeAfter.after;
+      if (!after) return 0;
+      
+      // Simple performance score calculation
+      return (
+        (after.responseTime - before.responseTime) / before.responseTime +
+        (after.userSatisfaction - before.userSatisfaction) / before.userSatisfaction +
+        (after.memoryEfficiency - before.memoryEfficiency) / before.memoryEfficiency
+      ) / 3;
+    });
+
+    const avgPerformanceGain = performanceScores.reduce((a, b) => a + b, 0) / performanceScores.length || 0;
+    
+    // Categorize improvements by type
+    const improvementsByType = history.reduce((acc, cycle) => {
+      cycle.implementedChanges.forEach(change => {
+        acc[change.type] = (acc[change.type] || 0) + 1;
+      });
+      return acc;
+    }, {} as Record<string, number>);
+
+    return {
+      totalCycles: history.length,
+      successfulCycles: successfulCycles.length,
+      successRate: history.length > 0 ? successfulCycles.length / history.length : 0,
+      averagePerformanceGain: avgPerformanceGain,
+      improvementsByType,
+      trends: {
+        frequency: this.calculateImprovementFrequency(),
+        performance: avgPerformanceGain > 0.05 ? 'improving' : avgPerformanceGain < -0.05 ? 'declining' : 'stable'
+      },
+      recentActivity: recentCycles.map(cycle => ({
+        id: cycle.id,
+        timestamp: cycle.timestamp,
+        status: cycle.status,
+        changesCount: cycle.implementedChanges.length,
+        performanceImpact: cycle.performanceBeforeAfter.after ? 
+          this.calculatePerformanceImpact(cycle.performanceBeforeAfter.before, cycle.performanceBeforeAfter.after) : null
+      }))
+    };
+  }
+
+  /**
+   * Calculate improvement frequency trend
+   */
+  private static calculateImprovementFrequency(): 'increasing' | 'decreasing' | 'stable' {
+    if (this.improvementHistory.length < 4) return 'stable';
+    
+    const recentPeriod = this.improvementHistory.slice(-5);
+    const olderPeriod = this.improvementHistory.slice(-10, -5);
+    
+    const recentInterval = this.calculateAverageInterval(recentPeriod);
+    const olderInterval = this.calculateAverageInterval(olderPeriod);
+    
+    if (recentInterval < olderInterval * 0.8) return 'increasing';
+    if (recentInterval > olderInterval * 1.2) return 'decreasing';
+    return 'stable';
+  }
+
+  /**
+   * Calculate average interval between improvements
+   */
+  private static calculateAverageInterval(cycles: SelfImprovementCycle[]): number {
+    if (cycles.length < 2) return Infinity;
+    
+    const intervals = [];
+    for (let i = 1; i < cycles.length; i++) {
+      const interval = new Date(cycles[i].timestamp).getTime() - new Date(cycles[i-1].timestamp).getTime();
+      intervals.push(interval);
+    }
+    
+    return intervals.reduce((a, b) => a + b, 0) / intervals.length;
+  }
+
+  /**
+   * Calculate performance impact of a cycle
+   */
+  private static calculatePerformanceImpact(before: any, after: any): number {
+    if (!before || !after) return 0;
+    
+    const responseImpact = (before.responseTime - after.responseTime) / before.responseTime;
+    const satisfactionImpact = (after.userSatisfaction - before.userSatisfaction) / before.userSatisfaction;
+    const memoryImpact = (after.memoryEfficiency - before.memoryEfficiency) / before.memoryEfficiency;
+    
+    return (responseImpact + satisfactionImpact + memoryImpact) / 3;
+  }
+
   // Helper methods for analysis and improvement implementation
   private static calculateTrend(values: number[]): "improving" | "declining" | "stable" {
     if (values.length < 2) return "stable";
