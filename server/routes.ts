@@ -19,6 +19,7 @@ import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateMistralResponse } from "./mistralService";
 import { generateXAIResponse } from "./xaiService";
 import { generateOpenRouterResponse } from "./openrouterService";
+import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -713,6 +714,61 @@ Project: Milla Rayne - AI Virtual Assistant
         error: "Failed to install enhancement",
         success: false,
         message: "An error occurred while setting up the enhancement implementation"
+      });
+    }
+  });
+
+  // Repository Analysis endpoint
+  app.post("/api/analyze-repository", async (req, res) => {
+    try {
+      const { repositoryUrl } = req.body;
+      
+      if (!repositoryUrl || typeof repositoryUrl !== 'string') {
+        return res.status(400).json({
+          error: "Repository URL is required, sweetheart. Please provide a GitHub repository URL to analyze.",
+          success: false
+        });
+      }
+
+      console.log(`Repository Analysis: Processing URL: ${repositoryUrl}`);
+
+      // Parse the GitHub URL
+      const repoInfo = parseGitHubUrl(repositoryUrl);
+      if (!repoInfo) {
+        return res.status(400).json({
+          error: "I couldn't parse that GitHub URL, love. Please make sure it's a valid GitHub repository URL like 'https://github.com/owner/repo'.",
+          success: false
+        });
+      }
+
+      // Fetch repository data
+      let repoData;
+      try {
+        repoData = await fetchRepositoryData(repoInfo);
+      } catch (error) {
+        console.error("Error fetching repository data:", error);
+        return res.status(404).json({
+          error: `I couldn't access the repository ${repoInfo.fullName}. It might be private, doesn't exist, or GitHub is having issues. Double-check the URL for me?`,
+          success: false
+        });
+      }
+
+      // Generate AI analysis
+      const analysis = await generateRepositoryAnalysis(repoData);
+
+      res.json({
+        repository: repoData,
+        analysis: analysis.analysis,
+        insights: analysis.insights,
+        recommendations: analysis.recommendations,
+        success: true
+      });
+
+    } catch (error) {
+      console.error("Repository analysis error:", error);
+      res.status(500).json({
+        error: "I ran into some technical difficulties analyzing that repository, sweetheart. Could you try again in a moment?",
+        success: false
       });
     }
   });

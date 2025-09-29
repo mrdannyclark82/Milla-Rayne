@@ -92,58 +92,17 @@ export default function ChatInterface({
     onAvatarStateChange?.('thinking');
 
     try {
-      const conversationHistory = getRecentMessages();
-      
-      const response = await fetch("/api/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          content: userMessage,
-          role: "user",
-          conversationHistory,
-          userName: userName || "Danny Ray"
-        }),
-      });
+      // Check if message contains a GitHub repository URL
+      const githubUrlPattern = /github\.com\/[^\/\s]+\/[^\/\s]+/i;
+      const isRepositoryAnalysisRequest = githubUrlPattern.test(userMessage);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (isRepositoryAnalysisRequest) {
+        // Handle repository analysis
+        await handleRepositoryAnalysis(userMessage);
+      } else {
+        // Handle normal chat message
+        await handleNormalMessage(userMessage);
       }
-
-      const data: MessageResponse = await response.json();
-      
-      // Update messages with user message and AI response
-      const newMessages: Message[] = [data.userMessage];
-      
-      if (data.aiMessage) {
-        newMessages.push(data.aiMessage);
-
-        
-        // Add to conversation memory
-        addExchange(data.userMessage.content, data.aiMessage.content);
-        
-
-        // Set avatar to responding state
-        onAvatarStateChange?.('responding');
-        
-        // Reset to neutral after a delay
-        setTimeout(() => {
-          onAvatarStateChange?.('neutral');
-        }, 3000);
-      }
-      
-      // Add any follow-up messages
-      if (data.followUpMessages?.length) {
-        newMessages.push(...data.followUpMessages);
-        
-        // Add follow-ups to conversation memory
-        data.followUpMessages.forEach(followUp => {
-          addExchange("", followUp.content);
-        });
-      }
-      
-      setMessages(prev => [...prev, ...newMessages]);
       
     } catch (error) {
       console.error("Error sending message:", error);
@@ -151,6 +110,144 @@ export default function ChatInterface({
       onAvatarStateChange?.('neutral');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNormalMessage = async (userMessage: string) => {
+    const conversationHistory = getRecentMessages();
+    
+    const response = await fetch("/api/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: userMessage,
+        role: "user",
+        conversationHistory,
+        userName: userName || "Danny Ray"
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data: MessageResponse = await response.json();
+    
+    // Update messages with user message and AI response
+    const newMessages: Message[] = [data.userMessage];
+    
+    if (data.aiMessage) {
+      newMessages.push(data.aiMessage);
+
+      
+      // Add to conversation memory
+      addExchange(data.userMessage.content, data.aiMessage.content);
+      
+
+      // Set avatar to responding state
+      onAvatarStateChange?.('responding');
+      
+      // Reset to neutral after a delay
+      setTimeout(() => {
+        onAvatarStateChange?.('neutral');
+      }, 3000);
+    }
+    
+    // Add any follow-up messages
+    if (data.followUpMessages?.length) {
+      newMessages.push(...data.followUpMessages);
+      
+      // Add follow-ups to conversation memory
+      data.followUpMessages.forEach(followUp => {
+        addExchange("", followUp.content);
+      });
+    }
+    
+    setMessages(prev => [...prev, ...newMessages]);
+  };
+
+  const handleRepositoryAnalysis = async (userMessage: string) => {
+    // Extract GitHub URL from the message
+    const githubUrlMatch = userMessage.match(/https?:\/\/github\.com\/[^\/\s]+\/[^\/\s]+/i) ||
+                           userMessage.match(/github\.com\/[^\/\s]+\/[^\/\s]+/i);
+    
+    let repositoryUrl = '';
+    if (githubUrlMatch) {
+      repositoryUrl = githubUrlMatch[0];
+      if (!repositoryUrl.startsWith('http')) {
+        repositoryUrl = 'https://' + repositoryUrl;
+      }
+    }
+
+    // Add user message to chat
+    const userMsg: Message = {
+      id: Date.now(),
+      content: userMessage,
+      role: "user",
+      timestamp: new Date(),
+      userId: 1
+    };
+    setMessages(prev => [...prev, userMsg]);
+
+    // Add to conversation memory
+    addExchange(userMessage, "");
+
+    try {
+      const response = await fetch("/api/analyze-repository", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          repositoryUrl: repositoryUrl
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Repository analysis failed');
+      }
+
+      const analysisData = await response.json();
+      
+      // Create AI response message with repository analysis
+      const aiMsg: Message = {
+        id: Date.now() + 1,
+        content: analysisData.analysis,
+        role: "assistant",
+        timestamp: new Date(),
+        userId: 2
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+      
+      // Add to conversation memory
+      addExchange("", analysisData.analysis);
+
+      // Set avatar to responding state
+      onAvatarStateChange?.('responding');
+      
+      // Reset to neutral after a delay
+      setTimeout(() => {
+        onAvatarStateChange?.('neutral');
+      }, 3000);
+
+    } catch (error) {
+      console.error("Repository analysis error:", error);
+      
+      // Add error message to chat
+      const errorMsg: Message = {
+        id: Date.now() + 1,
+        content: error instanceof Error ? error.message : "I had trouble analyzing that repository, sweetheart. Could you double-check the URL and try again?",
+        role: "assistant",
+        timestamp: new Date(),
+        userId: 2
+      };
+
+      setMessages(prev => [...prev, errorMsg]);
+      onAvatarStateChange?.('neutral');
     }
   };
 
