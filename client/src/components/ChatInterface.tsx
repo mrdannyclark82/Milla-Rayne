@@ -26,6 +26,7 @@ export default function ChatInterface({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [detectedUrlType, setDetectedUrlType] = useState<'youtube' | 'github' | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   
@@ -52,6 +53,20 @@ export default function ChatInterface({
     
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
+
+  // Detect URLs in input
+  useEffect(() => {
+    const youtubeUrlPattern = /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const githubUrlPattern = /github\.com\/[^\/\s]+\/[^\/\s]+/i;
+    
+    if (youtubeUrlPattern.test(input)) {
+      setDetectedUrlType('youtube');
+    } else if (githubUrlPattern.test(input)) {
+      setDetectedUrlType('github');
+    } else {
+      setDetectedUrlType(null);
+    }
+  }, [input]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -92,11 +107,18 @@ export default function ChatInterface({
     onAvatarStateChange?.('thinking');
 
     try {
+      // Check if message contains a YouTube URL
+      const youtubeUrlPattern = /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const isYouTubeAnalysisRequest = youtubeUrlPattern.test(userMessage);
+      
       // Check if message contains a GitHub repository URL
       const githubUrlPattern = /github\.com\/[^\/\s]+\/[^\/\s]+/i;
       const isRepositoryAnalysisRequest = githubUrlPattern.test(userMessage);
 
-      if (isRepositoryAnalysisRequest) {
+      if (isYouTubeAnalysisRequest) {
+        // Handle YouTube video analysis
+        await handleYouTubeAnalysis(userMessage);
+      } else if (isRepositoryAnalysisRequest) {
         // Handle repository analysis
         await handleRepositoryAnalysis(userMessage);
       } else {
@@ -166,6 +188,113 @@ export default function ChatInterface({
     }
     
     setMessages(prev => [...prev, ...newMessages]);
+  };
+
+  const handleYouTubeAnalysis = async (userMessage: string) => {
+    // Extract YouTube URL from the message
+    const youtubeUrlMatch = userMessage.match(/(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    
+    if (!youtubeUrlMatch) {
+      throw new Error('No valid YouTube URL found in message');
+    }
+
+    let youtubeUrl = youtubeUrlMatch[0];
+    if (!youtubeUrl.startsWith('http')) {
+      youtubeUrl = `https://${youtubeUrl}`;
+    }
+
+    // Create user message first
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      content: userMessage,
+      role: "user",
+      personalityMode: null,
+      timestamp: new Date(),
+      userId: "1"
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+
+    // Show analyzing message
+    const analyzingMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      content: "🎥 Analyzing this YouTube video for you... This might take a moment!",
+      role: "assistant",
+      personalityMode: null,
+      timestamp: new Date(),
+      userId: "2"
+    };
+
+    setMessages(prev => [...prev, analyzingMsg]);
+
+    try {
+      // Call the YouTube analysis API
+      const response = await fetch("/api/analyze-youtube", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: youtubeUrl
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'YouTube analysis failed');
+      }
+
+      const analysisData = await response.json();
+      
+      // Remove the analyzing message
+      setMessages(prev => prev.filter(msg => msg.id !== analyzingMsg.id));
+      
+      // Create AI response message with YouTube analysis
+      const aiMsg: Message = {
+        id: (Date.now() + 2).toString(),
+        content: analysisData.message,
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+      
+      // Add to conversation memory
+      addExchange(userMessage, analysisData.message);
+
+      // Set avatar to responding state
+      onAvatarStateChange?.('responding');
+      
+      // Reset to neutral after a delay
+      setTimeout(() => {
+        onAvatarStateChange?.('neutral');
+      }, 3000);
+
+    } catch (error) {
+      console.error("YouTube analysis error:", error);
+      
+      // Remove the analyzing message
+      setMessages(prev => prev.filter(msg => msg.id !== analyzingMsg.id));
+      
+      const errorMessage = error instanceof Error ? error.message : "I had trouble analyzing that YouTube video, sweetheart. Could you double-check the URL and try again?";
+      
+      // Add error message to chat
+      const errorMsg: Message = {
+        id: (Date.now() + 2).toString(),
+        content: errorMessage,
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+
+      setMessages(prev => [...prev, errorMsg]);
+      
+      // Add to conversation memory
+      addExchange(userMessage, errorMessage);
+    }
   };
 
   const handleRepositoryAnalysis = async (userMessage: string) => {
@@ -350,6 +479,27 @@ export default function ChatInterface({
 
       {/* Input Area */}
       <div className="flex-shrink-0 p-4 border-t border-white/10 bg-black/20 backdrop-blur-sm">
+        {/* URL Detection Indicator */}
+        {detectedUrlType && (
+          <div className={`mb-2 px-3 py-2 rounded-lg text-sm flex items-center space-x-2 ${
+            detectedUrlType === 'youtube' 
+              ? 'bg-red-500/20 border border-red-400/30 text-red-300' 
+              : 'bg-blue-500/20 border border-blue-400/30 text-blue-300'
+          }`}>
+            {detectedUrlType === 'youtube' ? (
+              <>
+                <span>🎥</span>
+                <span>YouTube video detected - I'll analyze it for you!</span>
+              </>
+            ) : (
+              <>
+                <span>📁</span>
+                <span>GitHub repository detected - I'll analyze it for you!</span>
+              </>
+            )}
+          </div>
+        )}
+        
         <div className="flex space-x-2">
           <div className="flex-1 relative">
             <Textarea
@@ -358,7 +508,13 @@ export default function ChatInterface({
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Type your message..."
-              className="resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200"
+              className={`resize-none bg-white/10 border-white/20 text-white placeholder-white/50 rounded-xl backdrop-blur-sm focus:border-pink-400/50 focus:ring-pink-400/25 min-h-[40px] max-h-32 transition-all duration-200 ${
+                detectedUrlType === 'youtube' 
+                  ? 'border-red-400/50 focus:border-red-400/70' 
+                  : detectedUrlType === 'github' 
+                  ? 'border-blue-400/50 focus:border-blue-400/70' 
+                  : ''
+              }`}
               rows={1}
               disabled={isLoading}
               style={{
