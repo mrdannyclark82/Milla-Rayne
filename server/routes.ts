@@ -441,6 +441,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Recursive Self-Improvement API endpoints
+  app.get("/api/self-improvement/status", async (req, res) => {
+    try {
+      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      const { getServerEvolutionStatus } = await import("./selfEvolutionService");
+      
+      const clientStatus = SelfImprovementEngine.getImprovementStatus();
+      const serverStatus = getServerEvolutionStatus();
+      
+      res.json({
+        client: clientStatus,
+        server: serverStatus,
+        success: true
+      });
+    } catch (error) {
+      console.error('Error fetching self-improvement status:', error);
+      res.status(500).json({ message: "Failed to fetch self-improvement status" });
+    }
+  });
+
+  app.post("/api/self-improvement/trigger", async (req, res) => {
+    try {
+      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      const { triggerServerEvolution } = await import("./selfEvolutionService");
+      
+      // Trigger both client and server improvement cycles
+      const clientCycle = await SelfImprovementEngine.initiateImprovementCycle();
+      const serverEvolutions = await triggerServerEvolution();
+      
+      res.json({
+        clientCycle,
+        serverEvolutions,
+        message: "Self-improvement cycle initiated successfully",
+        success: true
+      });
+    } catch (error) {
+      console.error('Error triggering self-improvement:', error);
+      res.status(500).json({ message: "Failed to trigger self-improvement cycle" });
+    }
+  });
+
+  app.get("/api/personal-tasks", async (req, res) => {
+    try {
+      const tasks = getPersonalTasks();
+      res.json({ tasks, success: true });
+    } catch (error) {
+      console.error('Error fetching personal tasks:', error);
+      res.status(500).json({ message: "Failed to fetch personal tasks" });
+    }
+  });
+
+  app.get("/api/task-summary", async (req, res) => {
+    try {
+      const summary = getTaskSummary();
+      res.json({ summary, success: true });
+    } catch (error) {
+      console.error('Error fetching task summary:', error);
+      res.status(500).json({ message: "Failed to fetch task summary" });
+    }
+  });
+
+  app.post("/api/personal-tasks/:taskId/start", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const success = await startTask(taskId);
+      res.json({ success, message: success ? "Task started" : "Task not found or already started" });
+    } catch (error) {
+      console.error('Error starting task:', error);
+      res.status(500).json({ message: "Failed to start task" });
+    }
+  });
+
+  app.post("/api/personal-tasks/:taskId/complete", async (req, res) => {
+    try {
+      const { taskId } = req.params;
+      const { insights } = req.body;
+      const success = await completeTask(taskId, insights || "Task completed successfully");
+      res.json({ success, message: success ? "Task completed" : "Task not found" });
+    } catch (error) {
+      console.error('Error completing task:', error);
+      res.status(500).json({ message: "Failed to complete task" });
+    }
+  });
+
+  app.post("/api/generate-tasks", async (req, res) => {
+    try {
+      await generatePersonalTasksIfNeeded();
+      res.json({ success: true, message: "Personal tasks generated" });
+    } catch (error) {
+      console.error('Error generating tasks:', error);
+      res.status(500).json({ message: "Failed to generate tasks" });
+    }
+  });
+
   // Video analysis endpoint
   app.post("/api/analyze-video", async (req, res) => {
     try {

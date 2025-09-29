@@ -962,6 +962,515 @@ export class LearningEngine {
 }
 
 // ========================================
+// RECURSIVE SELF-IMPROVEMENT ENGINE
+// ========================================
+
+export interface CodeAnalysisResult {
+  performanceMetrics: {
+    responseTime: number;
+    accuracy: number;
+    userSatisfaction: number;
+    memoryEfficiency: number;
+  };
+  identifiedIssues: {
+    type: "performance" | "accuracy" | "ethical" | "memory";
+    severity: "low" | "medium" | "high" | "critical";
+    description: string;
+    suggestedFix: string;
+  }[];
+  optimizationOpportunities: {
+    area: string;
+    potentialGain: number;
+    implementationComplexity: "low" | "medium" | "high";
+    description: string;
+  }[];
+}
+
+export interface SelfImprovementCycle {
+  id: string;
+  timestamp: Date;
+  cycleNumber: number;
+  analysisResult: CodeAnalysisResult;
+  implementedChanges: {
+    type: "algorithm" | "personality" | "learning" | "response";
+    description: string;
+    expectedImprovement: number;
+    actualImprovement?: number;
+  }[];
+  performanceBeforeAfter: {
+    before: CodeAnalysisResult["performanceMetrics"];
+    after?: CodeAnalysisResult["performanceMetrics"];
+  };
+  status: "analyzing" | "implementing" | "testing" | "completed" | "rolled_back";
+}
+
+export interface MetaLearningInsights {
+  learningPatterns: {
+    mostEffectiveImprovements: string[];
+    failedAttempts: string[];
+    optimalCycleFrequency: number;
+  };
+  adaptationTrends: {
+    personalityAdjustments: Record<PersonalityMode, number>;
+    responsePatternEvolution: string[];
+    ethicalComplianceImprovements: number;
+  };
+  futureOpportunities: {
+    nextBestImprovement: string;
+    estimatedImpact: number;
+    resourcesRequired: "low" | "medium" | "high";
+  }[];
+}
+
+/**
+ * Recursive Self-Improvement Engine - The core system that allows Milla
+ * to analyze her own performance, identify improvements, and implement changes
+ * to become more effective over time.
+ */
+export class SelfImprovementEngine {
+  private static improvementHistory: SelfImprovementCycle[] = [];
+  private static metaLearningInsights: MetaLearningInsights | null = null;
+  private static isAnalyzing: boolean = false;
+  private static lastAnalysisTime: Date | null = null;
+  private static readonly ANALYSIS_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+  
+  /**
+   * Initiates a recursive self-improvement cycle
+   */
+  static async initiateImprovementCycle(): Promise<SelfImprovementCycle> {
+    if (this.isAnalyzing) {
+      throw new Error("Improvement cycle already in progress");
+    }
+
+    this.isAnalyzing = true;
+    const cycleId = `improvement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    try {
+      // Step 1: Analyze current performance
+      const analysisResult = await this.analyzeCurrentPerformance();
+      
+      // Step 2: Create improvement cycle record
+      const cycle: SelfImprovementCycle = {
+        id: cycleId,
+        timestamp: new Date(),
+        cycleNumber: this.improvementHistory.length + 1,
+        analysisResult,
+        implementedChanges: [],
+        performanceBeforeAfter: {
+          before: analysisResult.performanceMetrics
+        },
+        status: "analyzing"
+      };
+
+      this.improvementHistory.push(cycle);
+      
+      // Step 3: Implement improvements based on analysis
+      await this.implementImprovements(cycle);
+      
+      // Step 4: Update meta-learning insights
+      this.updateMetaLearningInsights();
+      
+      this.lastAnalysisTime = new Date();
+      return cycle;
+      
+    } finally {
+      this.isAnalyzing = false;
+    }
+  }
+
+  /**
+   * Analyzes current performance across all systems
+   */
+  private static async analyzeCurrentPerformance(): Promise<CodeAnalysisResult> {
+    // Analyze conversation effectiveness
+    const conversationMetrics = this.analyzeConversationPerformance();
+    
+    // Analyze learning efficiency
+    const learningMetrics = this.analyzeLearningEfficiency();
+    
+    // Analyze personality adaptation
+    const personalityMetrics = this.analyzePersonalityAdaptation();
+    
+    // Analyze memory usage and efficiency
+    const memoryMetrics = await this.analyzeMemoryEfficiency();
+
+    const performanceMetrics = {
+      responseTime: conversationMetrics.avgResponseTime,
+      accuracy: learningMetrics.predictionAccuracy,
+      userSatisfaction: conversationMetrics.avgSatisfaction,
+      memoryEfficiency: memoryMetrics.efficiency
+    };
+
+    const identifiedIssues = [
+      ...this.identifyPerformanceIssues(performanceMetrics),
+      ...this.identifyLearningIssues(learningMetrics),
+      ...this.identifyPersonalityIssues(personalityMetrics)
+    ];
+
+    const optimizationOpportunities = [
+      ...this.identifyOptimizationOpportunities(performanceMetrics),
+      ...this.identifyLearningOptimizations(learningMetrics),
+      ...this.identifyPersonalityOptimizations(personalityMetrics)
+    ];
+
+    return {
+      performanceMetrics,
+      identifiedIssues,
+      optimizationOpportunities
+    };
+  }
+
+  /**
+   * Implements improvements based on analysis results
+   */
+  private static async implementImprovements(cycle: SelfImprovementCycle): Promise<void> {
+    cycle.status = "implementing";
+    
+    // Sort opportunities by potential gain and implementation complexity
+    const prioritizedOpportunities = cycle.analysisResult.optimizationOpportunities
+      .sort((a, b) => {
+        const complexityWeight = { low: 3, medium: 2, high: 1 };
+        const aScore = a.potentialGain * complexityWeight[a.implementationComplexity];
+        const bScore = b.potentialGain * complexityWeight[b.implementationComplexity];
+        return bScore - aScore;
+      });
+
+    // Implement top 3 improvements to avoid system instability
+    const implementationPromises = prioritizedOpportunities
+      .slice(0, 3)
+      .map(opportunity => this.implementSpecificImprovement(opportunity, cycle));
+
+    await Promise.all(implementationPromises);
+    
+    cycle.status = "testing";
+    
+    // Test the improvements
+    const testResults = await this.testImprovements(cycle);
+    
+    if (testResults.overallSuccess) {
+      cycle.status = "completed";
+      cycle.performanceBeforeAfter.after = testResults.newMetrics;
+    } else {
+      // Rollback if improvements caused degradation
+      await this.rollbackImprovements(cycle);
+      cycle.status = "rolled_back";
+    }
+  }
+
+  /**
+   * Implements a specific improvement
+   */
+  private static async implementSpecificImprovement(
+    opportunity: CodeAnalysisResult["optimizationOpportunities"][0], 
+    cycle: SelfImprovementCycle
+  ): Promise<void> {
+    const change = {
+      type: this.categorizeImprovement(opportunity.area),
+      description: opportunity.description,
+      expectedImprovement: opportunity.potentialGain,
+    };
+
+    try {
+      switch (change.type) {
+        case "algorithm":
+          await this.improveAlgorithms(opportunity);
+          break;
+        case "personality":
+          await this.improvePersonalitySystem(opportunity);
+          break;
+        case "learning":
+          await this.improveLearningSystem(opportunity);
+          break;
+        case "response":
+          await this.improveResponseGeneration(opportunity);
+          break;
+      }
+      
+      cycle.implementedChanges.push(change);
+      console.log(`Successfully implemented improvement: ${change.description}`);
+      
+    } catch (error) {
+      console.error(`Failed to implement improvement: ${change.description}`, error);
+    }
+  }
+
+  /**
+   * Analyzes conversation performance metrics
+   */
+  private static analyzeConversationPerformance() {
+    // Get recent conversation data from LearningEngine
+    const recentMetrics = Array.from(LearningEngine["conversationMetrics"].values()).slice(-20);
+    
+    return {
+      avgResponseTime: recentMetrics.reduce((sum, m) => sum + m.responseTime, 0) / Math.max(recentMetrics.length, 1),
+      avgSatisfaction: recentMetrics.reduce((sum, m) => sum + m.userSatisfactionScore, 0) / Math.max(recentMetrics.length, 1),
+      engagementTrend: this.calculateTrend(recentMetrics.map(m => m.userSatisfactionScore))
+    };
+  }
+
+  /**
+   * Analyzes learning system efficiency
+   */
+  private static analyzeLearningEfficiency() {
+    const feedbackHistory = Array.from(LearningEngine["feedbackHistory"].values()).flat();
+    const recentFeedback = feedbackHistory.slice(-50);
+    
+    const positiveRate = recentFeedback.filter(f => f.rating === "positive").length / Math.max(recentFeedback.length, 1);
+    
+    return {
+      predictionAccuracy: positiveRate * 100,
+      adaptationSpeed: this.calculateAdaptationSpeed(recentFeedback),
+      learningTrend: this.calculateTrend(recentFeedback.map((f, i) => f.rating === "positive" ? 1 : 0))
+    };
+  }
+
+  /**
+   * Analyzes personality adaptation effectiveness
+   */
+  private static analyzePersonalityAdaptation() {
+    const preferences = Array.from(LearningEngine["personalityPreferences"].values());
+    
+    return {
+      adaptationAccuracy: preferences.reduce((sum, p) => sum + p.learningConfidence, 0) / Math.max(preferences.length, 1),
+      personalityDistribution: this.calculatePersonalityDistribution(preferences),
+      userSatisfactionByMode: this.calculateSatisfactionByPersonalityMode()
+    };
+  }
+
+  /**
+   * Analyzes memory system efficiency
+   */
+  private static async analyzeMemoryEfficiency(): Promise<{ efficiency: number; issues: string[] }> {
+    // This would integrate with the memory service to analyze memory usage patterns
+    return {
+      efficiency: 75, // Placeholder - would calculate actual memory efficiency
+      issues: []
+    };
+  }
+
+  /**
+   * Updates meta-learning insights based on improvement history
+   */
+  private static updateMetaLearningInsights(): void {
+    const completedCycles = this.improvementHistory.filter(c => c.status === "completed");
+    const rolledBackCycles = this.improvementHistory.filter(c => c.status === "rolled_back");
+    
+    const successfulImprovements = completedCycles
+      .flatMap(c => c.implementedChanges)
+      .filter(change => (change.actualImprovement || 0) > 0);
+    
+    const failedImprovements = rolledBackCycles
+      .flatMap(c => c.implementedChanges)
+      .map(change => change.description);
+
+    this.metaLearningInsights = {
+      learningPatterns: {
+        mostEffectiveImprovements: successfulImprovements
+          .sort((a, b) => (b.actualImprovement || 0) - (a.actualImprovement || 0))
+          .slice(0, 5)
+          .map(i => i.description),
+        failedAttempts: failedImprovements,
+        optimalCycleFrequency: this.calculateOptimalCycleFrequency()
+      },
+      adaptationTrends: {
+        personalityAdjustments: this.calculatePersonalityTrends(),
+        responsePatternEvolution: this.calculateResponsePatternTrends(),
+        ethicalComplianceImprovements: this.calculateEthicalTrends()
+      },
+      futureOpportunities: this.identifyFutureOpportunities()
+    };
+  }
+
+  /**
+   * Determines if it's time to run another improvement cycle
+   */
+  static shouldRunImprovementCycle(): boolean {
+    if (this.isAnalyzing) return false;
+    if (!this.lastAnalysisTime) return true;
+    
+    const timeSinceLastAnalysis = Date.now() - this.lastAnalysisTime.getTime();
+    return timeSinceLastAnalysis >= this.ANALYSIS_INTERVAL_MS;
+  }
+
+  /**
+   * Gets the current improvement status and metrics
+   */
+  static getImprovementStatus() {
+    return {
+      totalCycles: this.improvementHistory.length,
+      successfulCycles: this.improvementHistory.filter(c => c.status === "completed").length,
+      isCurrentlyImproving: this.isAnalyzing,
+      lastImprovement: this.improvementHistory[this.improvementHistory.length - 1],
+      metaInsights: this.metaLearningInsights,
+      nextCycleDue: this.shouldRunImprovementCycle()
+    };
+  }
+
+  // Helper methods for analysis and improvement implementation
+  private static calculateTrend(values: number[]): "improving" | "declining" | "stable" {
+    if (values.length < 2) return "stable";
+    const recent = values.slice(-5);
+    const older = values.slice(-10, -5);
+    const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+    const olderAvg = older.reduce((a, b) => a + b, 0) / older.length;
+    
+    if (recentAvg > olderAvg * 1.05) return "improving";
+    if (recentAvg < olderAvg * 0.95) return "declining";
+    return "stable";
+  }
+
+  private static calculateAdaptationSpeed(feedback: UserFeedback[]): number {
+    // Calculate how quickly the system adapts to feedback
+    return 0.75; // Placeholder implementation
+  }
+
+  private static calculatePersonalityDistribution(preferences: PersonalityPreference[]) {
+    // Calculate distribution of personality modes
+    return {}; // Placeholder implementation
+  }
+
+  private static calculateSatisfactionByPersonalityMode() {
+    // Calculate user satisfaction by personality mode
+    return {}; // Placeholder implementation
+  }
+
+  private static calculateOptimalCycleFrequency(): number {
+    // Calculate optimal improvement cycle frequency based on success rates
+    return this.ANALYSIS_INTERVAL_MS;
+  }
+
+  private static calculatePersonalityTrends(): Record<PersonalityMode, number> {
+    // Calculate trends in personality mode usage and effectiveness
+    return {} as Record<PersonalityMode, number>;
+  }
+
+  private static calculateResponsePatternTrends(): string[] {
+    // Calculate trends in response patterns
+    return [];
+  }
+
+  private static calculateEthicalTrends(): number {
+    // Calculate trends in ethical compliance scores
+    return 0;
+  }
+
+  private static identifyFutureOpportunities(): MetaLearningInsights["futureOpportunities"] {
+    // Identify future improvement opportunities based on trends
+    return [];
+  }
+
+  private static identifyPerformanceIssues(metrics: CodeAnalysisResult["performanceMetrics"]) {
+    const issues = [];
+    if (metrics.responseTime > 2000) {
+      issues.push({
+        type: "performance" as const,
+        severity: "medium" as const,
+        description: "Response time exceeds optimal threshold",
+        suggestedFix: "Optimize response generation algorithms"
+      });
+    }
+    if (metrics.userSatisfaction < 70) {
+      issues.push({
+        type: "accuracy" as const,
+        severity: "high" as const,
+        description: "User satisfaction below acceptable level",
+        suggestedFix: "Improve personality detection and response matching"
+      });
+    }
+    return issues;
+  }
+
+  private static identifyLearningIssues(metrics: any) {
+    // Identify issues with learning system
+    return [];
+  }
+
+  private static identifyPersonalityIssues(metrics: any) {
+    // Identify issues with personality adaptation
+    return [];
+  }
+
+  private static identifyOptimizationOpportunities(metrics: CodeAnalysisResult["performanceMetrics"]) {
+    const opportunities = [];
+    if (metrics.responseTime > 1000) {
+      opportunities.push({
+        area: "response_optimization",
+        potentialGain: 25,
+        implementationComplexity: "medium" as const,
+        description: "Optimize response generation algorithms for faster processing"
+      });
+    }
+    return opportunities;
+  }
+
+  private static identifyLearningOptimizations(metrics: any) {
+    // Identify learning system optimizations
+    return [];
+  }
+
+  private static identifyPersonalityOptimizations(metrics: any) {
+    // Identify personality system optimizations
+    return [];
+  }
+
+  private static categorizeImprovement(area: string): "algorithm" | "personality" | "learning" | "response" {
+    if (area.includes("response")) return "response";
+    if (area.includes("learning")) return "learning";
+    if (area.includes("personality")) return "personality";
+    return "algorithm";
+  }
+
+  private static async improveAlgorithms(opportunity: any): Promise<void> {
+    // Implement algorithmic improvements
+    console.log("Implementing algorithmic improvement:", opportunity.description);
+  }
+
+  private static async improvePersonalitySystem(opportunity: any): Promise<void> {
+    // Implement personality system improvements
+    console.log("Implementing personality system improvement:", opportunity.description);
+  }
+
+  private static async improveLearningSystem(opportunity: any): Promise<void> {
+    // Implement learning system improvements
+    console.log("Implementing learning system improvement:", opportunity.description);
+  }
+
+  private static async improveResponseGeneration(opportunity: any): Promise<void> {
+    // Implement response generation improvements
+    console.log("Implementing response generation improvement:", opportunity.description);
+  }
+
+  private static async testImprovements(cycle: SelfImprovementCycle): Promise<{ overallSuccess: boolean; newMetrics: CodeAnalysisResult["performanceMetrics"] }> {
+    // Test implemented improvements
+    const newMetrics = await this.analyzeCurrentPerformance();
+    const overallSuccess = this.comparePerformanceMetrics(cycle.performanceBeforeAfter.before, newMetrics.performanceMetrics);
+    
+    return {
+      overallSuccess,
+      newMetrics: newMetrics.performanceMetrics
+    };
+  }
+
+  private static comparePerformanceMetrics(before: CodeAnalysisResult["performanceMetrics"], after: CodeAnalysisResult["performanceMetrics"]): boolean {
+    // Compare performance metrics to determine if improvements were successful
+    const improvementThreshold = 0.05; // 5% improvement threshold
+    
+    const responseTimeImproved = (before.responseTime - after.responseTime) / before.responseTime > improvementThreshold;
+    const accuracyImproved = (after.accuracy - before.accuracy) / before.accuracy > improvementThreshold;
+    const satisfactionImproved = (after.userSatisfaction - before.userSatisfaction) / before.userSatisfaction > improvementThreshold;
+    
+    // At least 2 out of 3 metrics should improve
+    return [responseTimeImproved, accuracyImproved, satisfactionImproved].filter(Boolean).length >= 2;
+  }
+
+  private static async rollbackImprovements(cycle: SelfImprovementCycle): Promise<void> {
+    // Rollback improvements that caused performance degradation
+    console.log("Rolling back improvements for cycle:", cycle.id);
+    // Implementation would restore previous system state
+  }
+}
+
+// ========================================
 // SYSTEM STATUS AND MONITORING
 // ========================================
 
@@ -971,6 +1480,7 @@ export interface SystemStatus {
   backendServer: "online" | "offline" | "error";
   personalityMatrix: "enabled" | "disabled";
   ethicalCompliance: "enforced" | "monitoring" | "warning";
+  selfImprovement: "active" | "inactive" | "analyzing" | "error";
 }
 
 export const getSystemStatus = (): SystemStatus => ({
@@ -978,7 +1488,8 @@ export const getSystemStatus = (): SystemStatus => ({
   aiIntegration: "online", // OpenAI integration is now active
   backendServer: "online",
   personalityMatrix: "enabled", 
-  ethicalCompliance: "enforced"
+  ethicalCompliance: "enforced",
+  selfImprovement: SelfImprovementEngine.getImprovementStatus().isCurrentlyImproving ? "analyzing" : "active"
 });
 
 // ========================================
@@ -989,6 +1500,7 @@ export default {
   PersonalityDetectionEngine,
   ResponseGenerator,
   LearningEngine,
+  SelfImprovementEngine,
   personalityModes,
   ETHICAL_FRAMEWORK,
   getSystemStatus
