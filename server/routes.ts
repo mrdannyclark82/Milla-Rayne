@@ -748,7 +748,7 @@ Project: Milla Rayne - AI Virtual Assistant
       } catch (error) {
         console.error("Error fetching repository data:", error);
         return res.status(404).json({
-          error: `I couldn't access the repository ${repoInfo.fullName}. It might be private, doesn't exist, or GitHub is having issues. Double-check the URL for me?`,
+          error: `*looks thoughtful* I couldn't access the repository ${repoInfo.fullName}, love. It might be private, doesn't exist, or GitHub is having issues. If it's private, you'd need to make it public for me to analyze it, or double-check the URL for me?`,
           success: false
         });
       }
