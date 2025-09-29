@@ -123,18 +123,38 @@ export async function generateMistralResponse(
       contentLength: msg.content ? msg.content.length : 0 
     })));
 
-    const response = await mistralClient.chat.complete({
-      model: "mistral-large-latest",
-      messages: messages,
-      maxTokens: 800,
-      temperature: 0.8,
+    // Use direct HTTP request instead of SDK to avoid URL issues
+    const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.MISTRAL_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "mistral-large-latest",
+        messages: messages,
+        max_tokens: 800,
+        temperature: 0.8,
+      }),
     });
 
     const endTime = Date.now();
     console.log(`Mistral API call latency: ${endTime - startTime}ms`);
 
-    if (response.choices && response.choices.length > 0) {
-      const content = response.choices[0].message?.content;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("Mistral API error:", response.status, errorData);
+      return {
+        content: "", // Return empty content so routes.ts can handle fallback
+        success: false,
+        error: `Mistral API error: ${response.status}`
+      };
+    }
+
+    const data = await response.json();
+
+    if (data.choices && data.choices.length > 0) {
+      const content = data.choices[0].message?.content;
       if (content && typeof content === 'string') {
         // Filter out any generic AI assistant language that might slip through
         const filteredContent = filterGenericLanguage(content.trim());
