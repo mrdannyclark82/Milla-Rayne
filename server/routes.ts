@@ -19,6 +19,8 @@ import { analyzeVideo, generateVideoInsights } from "./gemini";
 import { generateMistralResponse } from "./mistralService";
 import { generateXAIResponse } from "./xaiService";
 import { generateOpenRouterResponse } from "./openrouterService";
+import { analyzeYouTubeVideo, isValidYouTubeUrl, searchVideoMemories } from "./youtubeAnalysisService";
+import { getRealWorldInfo } from "./realWorldInfoService";
 import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
 
 // Fallback image analysis when AI services are unavailable
@@ -640,6 +642,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // YouTube video analysis endpoint
+  app.post("/api/analyze-youtube", async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({
+          error: "YouTube URL is required"
+        });
+      }
+
+      if (!isValidYouTubeUrl(url)) {
+        return res.status(400).json({
+          error: "Invalid YouTube URL provided"
+        });
+      }
+
+      console.log(`Analyzing YouTube video: ${url}`);
+      
+      const analysis = await analyzeYouTubeVideo(url);
+      
+      res.json({
+        success: true,
+        analysis,
+        message: `Successfully analyzed "${analysis.videoInfo.title}" and stored in my memory!`
+      });
+      
+    } catch (error: any) {
+      console.error("YouTube analysis error:", error);
+      res.status(500).json({
+        error: `I had trouble analyzing that YouTube video: ${error?.message || 'Unknown error'}`
+      });
+    }
+  });
+
+  // YouTube video search endpoint
+  app.get("/api/search-videos", async (req, res) => {
+    try {
+      const { query } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({
+          error: "Search query is required"
+        });
+      }
+      
+      const results = await searchVideoMemories(query);
+      
+      res.json({
+        success: true,
+        results,
+        query
+      });
+      
+    } catch (error) {
+      console.error("Video search error:", error);
+      res.status(500).json({
+        error: "Error searching video memories"
+      });
+    }
+  });
+
+  // Real-world information endpoint
+  app.get("/api/real-world-info", async (req, res) => {
+    try {
+      const { query } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({
+          error: "Query parameter is required"
+        });
+      }
+      
+      const info = await getRealWorldInfo(query);
+      
+      res.json({
+        success: true,
+        info
+      });
+      
+    } catch (error) {
+      console.error("Real-world info error:", error);
+      res.status(500).json({
+        error: "Error fetching real-world information"
+      });
+    }
+  });
+
   // AI Enhancement Suggestions endpoint
   app.get("/api/suggest-enhancements", async (req, res) => {
     try {
@@ -904,7 +994,7 @@ Project: Milla Rayne - AI Virtual Assistant
       // Store the error interaction
       try {
         await storage.createMessage({
-          content: `Here's a repository I'd like you to analyze: ${repositoryUrl}`,
+          content: `Here's a repository I'd like you to analyze: ${req.body.repositoryUrl}`,
           role: "user",
           userId: null,
         });
@@ -1535,6 +1625,25 @@ async function generateAIResponse(
       // Fallback: Milla responds based on context and timing
       const fallbackResponse = generateImageAnalysisFallback(userMessage);
       return { content: fallbackResponse };
+    }
+  }
+
+  // Check for YouTube URL in the message
+  const youtubeUrlMatch = userMessage.match(/(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (youtubeUrlMatch) {
+    const youtubeUrl = youtubeUrlMatch[0].startsWith('http') ? youtubeUrlMatch[0] : `https://${youtubeUrlMatch[0]}`;
+    
+    try {
+      console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
+      const analysis = await analyzeYouTubeVideo(youtubeUrl);
+      
+      const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
+      
+      return { content: response };
+    } catch (error: any) {
+      console.error("YouTube analysis error in chat:", error);
+      const response = `I noticed you shared a YouTube link! I tried to analyze it but ran into some trouble: ${error?.message || 'Unknown error'}. Could you tell me what the video is about instead?`;
+      return { content: response };
     }
   }
 
