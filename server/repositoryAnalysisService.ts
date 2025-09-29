@@ -357,7 +357,7 @@ function extractListItems(text: string, keywords: string[]): string[] {
 function generateFallbackAnalysis(repoData: RepositoryData): { analysis: string; insights: string[]; recommendations: string[] } {
   const { info, description, language, stats, topics } = repoData;
   
-  let analysis = `Hey sweetheart! I've taken a look at the ${info.fullName} repository for you. `;
+  let analysis = `Hey love! I've taken a look at the ${info.fullName} repository for you. `;
   
   if (description) {
     analysis += `It's described as "${description}" - sounds interesting! `;
@@ -394,7 +394,7 @@ function generateFallbackAnalysis(repoData: RepositoryData): { analysis: string;
     'Consider starring the repo if it\'s useful for your projects'
   ];
   
-  analysis += "\n\nWhile I don't have my full AI analysis available right now, I can see this looks like a solid project that might be worth exploring further!";
+  analysis += "\n\n*smiles warmly* While I don't have my full AI analysis available right now, I can see this looks like a solid project that might be worth exploring further, sweetheart!";
   
   return { analysis, insights, recommendations };
 }

@@ -183,11 +183,12 @@ export default function ChatInterface({
 
     // Add user message to chat
     const userMsg: Message = {
-      id: Date.now(),
+      id: Date.now().toString(),
       content: userMessage,
       role: "user",
+      personalityMode: null,
       timestamp: new Date(),
-      userId: 1
+      userId: "1"
     };
     setMessages(prev => [...prev, userMsg]);
 
@@ -214,11 +215,12 @@ export default function ChatInterface({
       
       // Create AI response message with repository analysis
       const aiMsg: Message = {
-        id: Date.now() + 1,
+        id: (Date.now() + 1).toString(),
         content: analysisData.analysis,
         role: "assistant",
+        personalityMode: null,
         timestamp: new Date(),
-        userId: 2
+        userId: "2"
       };
 
       setMessages(prev => [...prev, aiMsg]);
@@ -237,16 +239,23 @@ export default function ChatInterface({
     } catch (error) {
       console.error("Repository analysis error:", error);
       
+      const errorMessage = error instanceof Error ? error.message : "I had trouble analyzing that repository, sweetheart. Could you double-check the URL and try again?";
+      
       // Add error message to chat
       const errorMsg: Message = {
-        id: Date.now() + 1,
-        content: error instanceof Error ? error.message : "I had trouble analyzing that repository, sweetheart. Could you double-check the URL and try again?",
+        id: (Date.now() + 1).toString(),
+        content: errorMessage,
         role: "assistant",
+        personalityMode: null,
         timestamp: new Date(),
-        userId: 2
+        userId: "2"
       };
 
       setMessages(prev => [...prev, errorMsg]);
+      
+      // Add error response to conversation memory
+      addExchange("", errorMessage);
+      
       onAvatarStateChange?.('neutral');
     }
   };
