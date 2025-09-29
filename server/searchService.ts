@@ -4,6 +4,7 @@ export interface SearchResult {
   description: string;
 }
 import { queryWolframAlpha } from "./wolframAlphaService";
+import { getRealWorldInfo, enhanceSearchWithRealWorldInfo } from "./realWorldInfoService";
 
 export interface SearchResponse {
   query: string;
@@ -12,12 +13,23 @@ export interface SearchResponse {
 }
 
 export async function performWebSearch(query: string): Promise<SearchResponse | null> {
+  // Try real-world information first for current/contextual queries
+  const realWorldQuery = query.toLowerCase();
+  if (realWorldQuery.includes('current') || realWorldQuery.includes('today') || 
+      realWorldQuery.includes('news') || realWorldQuery.includes('weather') ||
+      realWorldQuery.includes('time') || realWorldQuery.includes('date')) {
+    const realWorldResponse = await getRealWorldInfo(query);
+    if (realWorldResponse.results.length > 0) {
+      return realWorldResponse;
+    }
+  }
+
   // Try Wolfram Alpha first for factual/computational queries
   const WOLFRAM_APPID = process.env.WOLFRAM_ALPHA_APPID;
   if (WOLFRAM_APPID) {
     const wolframResult = await queryWolframAlpha(query, WOLFRAM_APPID);
     if (wolframResult) {
-      return {
+      const baseResponse = {
         query,
         results: [
           {
@@ -28,6 +40,9 @@ export async function performWebSearch(query: string): Promise<SearchResponse | 
         ],
         summary: wolframResult
       };
+      
+      // Enhance with real-world info
+      return await enhanceSearchWithRealWorldInfo(baseResponse);
     }
   }
 
@@ -93,18 +108,21 @@ export async function performWebSearch(query: string): Promise<SearchResponse | 
         };
       } else {
         console.log("No results from Perplexity, falling back to knowledge base");
-        return generateKnowledgeBasedResponse(query);
+        const fallbackResponse = generateKnowledgeBasedResponse(query);
+        return await enhanceSearchWithRealWorldInfo(fallbackResponse);
       }
     } catch (error) {
       console.error("Search error:", error);
       console.log("Falling back to knowledge-based search");
-      return generateKnowledgeBasedResponse(query);
+      const fallbackResponse = generateKnowledgeBasedResponse(query);
+      return await enhanceSearchWithRealWorldInfo(fallbackResponse);
     }
   }
 
   // Fallback to knowledge base
   console.warn("No search API keys found, using knowledge base fallback");
-  return generateKnowledgeBasedResponse(query);
+  const fallbackResponse = generateKnowledgeBasedResponse(query);
+  return await enhanceSearchWithRealWorldInfo(fallbackResponse);
 }
 
 function generateKnowledgeBasedResponse(query: string): SearchResponse {
@@ -120,7 +138,17 @@ function generateKnowledgeBasedResponse(query: string): SearchResponse {
     
     "blockchain": "Blockchain is a distributed ledger technology that maintains a continuously growing list of records (blocks) that are linked and secured using cryptography. It's the underlying technology behind cryptocurrencies like Bitcoin and has applications in supply chain management, digital identity, and smart contracts.",
     
-    "climate change": "Climate change refers to long-term shifts in global temperatures and weather patterns. While climate variations are natural, scientific evidence shows that human activities, particularly greenhouse gas emissions from burning fossil fuels, are the primary driver of climate change since the 1800s."
+    "climate change": "Climate change refers to long-term shifts in global temperatures and weather patterns. While climate variations are natural, scientific evidence shows that human activities, particularly greenhouse gas emissions from burning fossil fuels, are the primary driver of climate change since the 1800s.",
+    
+    "current events": "For the most current events and news, I recommend checking reliable news sources like BBC, Reuters, AP News, or NPR. These sources provide up-to-date information on global and local events, politics, economics, and social issues.",
+    
+    "weather": "Weather information varies by location and changes frequently. For current weather conditions and forecasts, check local weather services, weather.com, or your local meteorological service.",
+    
+    "cryptocurrency": "Cryptocurrency is a digital or virtual currency secured by cryptography. Bitcoin, Ethereum, and other cryptocurrencies use blockchain technology for decentralized transactions. The market is highly volatile and regulatory frameworks are still evolving globally.",
+    
+    "space exploration": "Space exploration involves the investigation of outer space through manned and unmanned spacecraft. Recent developments include Mars rovers, the James Webb Space Telescope, commercial spaceflight companies like SpaceX, and international cooperation through the International Space Station.",
+    
+    "renewable energy": "Renewable energy comes from natural sources that replenish themselves, including solar, wind, hydroelectric, geothermal, and biomass energy. These technologies are increasingly important for reducing carbon emissions and achieving energy independence."
   };
   
   // Check for direct matches
