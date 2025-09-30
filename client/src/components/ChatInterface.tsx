@@ -361,8 +361,8 @@ export default function ChatInterface({
       // Create AI response message with repository analysis
       let analysisContent = analysisData.analysis;
       
-      // Add a helpful note about improvements
-      analysisContent += `\n\n💡 *Would you like me to suggest specific improvements for this repository? Just ask me "suggest improvements" or "improve this repo" and I'll generate actionable recommendations!*`;
+      // Add repository actions marker that will be detected by the frontend
+      analysisContent += `\n\n[REPO_ACTIONS:${repositoryUrl}]`;
       
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -562,6 +562,42 @@ export default function ChatInterface({
     }
   };
 
+  // Extract repository URL from message content if it contains REPO_ACTIONS marker
+  const extractRepoUrl = (content: string): string | null => {
+    const match = content.match(/\[REPO_ACTIONS:([^\]]+)\]/);
+    return match ? match[1] : null;
+  };
+
+  // Remove the REPO_ACTIONS marker from message content for display
+  const cleanMessageContent = (content: string): string => {
+    return content.replace(/\[REPO_ACTIONS:[^\]]+\]/g, '').trim();
+  };
+
+  // Handle "Suggest Improvements" button click
+  const handleSuggestImprovements = async (repoUrl: string) => {
+    // Set loading state
+    setIsLoading(true);
+    onAvatarStateChange?.('thinking');
+
+    // Store the repo URL for the function to use
+    (window as any).lastRepositoryUrl = repoUrl;
+
+    try {
+      // Call the improvements handler (it will add the user message internally)
+      await handleRepositoryImprovements("suggest improvements");
+    } catch (error) {
+      console.error("Error suggesting improvements:", error);
+    } finally {
+      setIsLoading(false);
+      onAvatarStateChange?.('neutral');
+    }
+  };
+
+  // Handle "View Repository" button click
+  const handleViewRepository = (repoUrl: string) => {
+    window.open(repoUrl, '_blank');
+  };
+
   const getMessageBubbleClass = (role: "user" | "assistant") => {
     const baseClass = "max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm";
     
@@ -610,23 +646,50 @@ export default function ChatInterface({
           </div>
         )}
         
-        {messages.map((message) => (
-          <div key={message.id} className="flex">
-            <div className={getMessageBubbleClass(message.role)}>
-              <div className="whitespace-pre-wrap break-words">
-                {message.content}
+        {messages.map((message) => {
+          const repoUrl = extractRepoUrl(message.content);
+          const cleanContent = cleanMessageContent(message.content);
+          
+          return (
+            <div key={message.id} className="flex flex-col">
+              <div className="flex">
+                <div className={getMessageBubbleClass(message.role)}>
+                  <div className="whitespace-pre-wrap break-words">
+                    {cleanContent}
+                  </div>
+                  <div className={`text-xs mt-1 opacity-60 ${
+                    message.role === "user" ? "text-right" : "text-left"
+                  }`}>
+                    {new Date(message.timestamp).toLocaleTimeString([], { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </div>
+                </div>
               </div>
-              <div className={`text-xs mt-1 opacity-60 ${
-                message.role === "user" ? "text-right" : "text-left"
-              }`}>
-                {new Date(message.timestamp).toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-              </div>
+              
+              {/* Interactive buttons for repository analysis */}
+              {repoUrl && message.role === "assistant" && (
+                <div className="flex gap-2 mt-2 ml-0 mr-auto">
+                  <Button
+                    onClick={() => handleSuggestImprovements(repoUrl)}
+                    className="bg-gradient-to-r from-purple-500/80 to-blue-500/80 hover:from-purple-500 hover:to-blue-500 text-white text-sm px-3 py-1.5 rounded-lg transition-all duration-200"
+                    size="sm"
+                  >
+                    💡 Suggest Improvements
+                  </Button>
+                  <Button
+                    onClick={() => handleViewRepository(repoUrl)}
+                    className="bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-600 hover:to-gray-700 text-white text-sm px-3 py-1.5 rounded-lg transition-all duration-200"
+                    size="sm"
+                  >
+                    📁 View Repository
+                  </Button>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         
         {isLoading && (
           <div className="flex">

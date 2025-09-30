@@ -1054,6 +1054,7 @@ Project: Milla Rayne - AI Virtual Assistant
         analysis: analysis.analysis,
         insights: analysis.insights,
         recommendations: analysis.recommendations,
+        repositoryUrl: repositoryUrl,
         success: true
       });
 
