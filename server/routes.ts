@@ -16,7 +16,6 @@ import { storeVisualMemory, getVisualMemories, getEmotionalContext } from "./vis
 import { trackUserActivity, generateProactiveMessage, checkMilestones, detectEnvironmentalContext, checkBreakReminders, checkPostBreakReachout } from "./proactiveService";
 import { initializeFaceRecognition, trainRecognition, identifyPerson, getRecognitionInsights } from "./visualRecognitionService";
 import { analyzeVideo, generateVideoInsights } from "./gemini";
-import { generateMistralResponse } from "./mistralService";
 import { generateXAIResponse } from "./xaiService";
 import { generateOpenRouterResponse } from "./openrouterService";
 import { analyzeYouTubeVideo, isValidYouTubeUrl, searchVideoMemories } from "./youtubeAnalysisService";
@@ -56,9 +55,9 @@ function generateImageAnalysisFallback(userMessage: string): string {
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
-// Function to analyze images - currently disabled as we're using Mistral which doesn't have vision capabilities
+// Function to analyze images - using fallback responses as primary AI services don't have vision capabilities
 async function analyzeImageWithOpenAI(imageData: string, userMessage: string): Promise<string> {
-  // Since we're using XAI instead of OpenAI/Mistral, we'll use a fallback response for image analysis
+  // Using fallback response for image analysis
   const imageResponses = [
     "I can see you've shared an image with me, love! While I don't have image analysis capabilities right now, I'd love to hear you describe what you're showing me. What caught your eye about this?",
 
@@ -824,63 +823,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let suggestions: string[] = [];
       let success = true;
 
-      if (process.env.GITHUB_TOKEN) {
+      if (process.env.OPENROUTER_API_KEY) {
         try {
-          const { Mistral } = await import("@mistralai/mistralai");
-
-          const client = new Mistral({
-            apiKey: process.env.GITHUB_TOKEN,
-            serverURL: "https://models.github.ai/inference"
-          });
-
           // Analyze project structure and create enhancement suggestions
           const projectAnalysis = `
 Project: Milla Rayne - AI Virtual Assistant
-- Backend: TypeScript Express server with multiple AI integrations (Mistral, OpenAI, xAI)
+- Backend: TypeScript Express server with multiple AI integrations (DeepSeek, xAI)
 - Frontend: React with TypeScript, Tailwind CSS, modern UI components
 - Features: Chat interface, memory system, video analysis, task management, real-time gaming
 - Data Storage: JSON-based memory system (memories.json), planning database migration
 - AI Services: Multiple AI providers for fallback and specialized tasks
-- Recent Progress: Fixed blank UI issue, integrated Mistral API for enhancements
+- Recent Progress: Fixed blank UI issue, optimized AI service usage
           `;
 
-          const response = await client.chat.complete({
-            model: "mistral-ai/mistral-medium-2505",
-            messages: [
-              {
-                role: "system",
-                content: "You are an expert software architect analyzing a virtual AI assistant project. Provide 3-5 practical enhancement suggestions that would improve user experience, performance, or add valuable features."
-              },
-              {
-                role: "user",
-                content: `Based on this project analysis, suggest future enhancements:\n\n${projectAnalysis}`
+          const enhancementPrompt = `Based on this project analysis, suggest 3-5 practical enhancements:\n\n${projectAnalysis}\n\nProvide specific, actionable suggestions that would improve user experience, performance, or add valuable features.`;
+
+          const aiResponse = await generateOpenRouterResponse(enhancementPrompt, { userName: "Danny Ray" });
+
+          if (aiResponse.success && aiResponse.content) {
+            const aiSuggestions = aiResponse.content;
+            
+            // Parse suggestions into an array if they're in a list format
+            if (typeof aiSuggestions === "string") {
+              suggestions = aiSuggestions
+                .split(/\d+\.|•|-/)
+                .filter(s => s.trim().length > 10)
+                .map(s => s.trim())
+                .slice(0, 5); // Limit to 5 suggestions
+
+              if (suggestions.length === 0) {
+                suggestions = [aiSuggestions];
               }
-            ],
-            temperature: 0.7,
-            maxTokens: 500,
-            topP: 1.0
-          });
-
-          const aiSuggestions = response.choices[0]?.message?.content || "";
-
-          // Parse suggestions into an array if they're in a list format
-          if (typeof aiSuggestions === "string") {
-            suggestions = aiSuggestions
-              .split(/\d+\.|•|-/)
-              .filter(s => s.trim().length > 10)
-              .map(s => s.trim())
-              .slice(0, 5); // Limit to 5 suggestions
-
-            if (suggestions.length === 0) {
-              suggestions = [aiSuggestions];
             }
           } else {
-            suggestions = [];
+            success = false;
           }
         } catch (aiError) {
           console.log("AI generation failed, using fallback suggestions:", aiError);
           success = false;
         }
+      } else {
+        success = false;
       }
 
       // Use intelligent fallback suggestions if AI failed or token not available
@@ -1475,7 +1458,6 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
 
 // Simple AI response generator based on message content
 import { generateAIResponse as generateOpenAIResponse, PersonalityContext } from "./openaiService";
-import { extractRoleCharacter, isRolePlayRequest } from "./mistralService";
 
 // Simplified message analysis for Milla Rayne's unified personality
 interface MessageAnalysis {
