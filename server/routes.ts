@@ -1226,6 +1226,114 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Analyze repository code for security and performance issues
+  app.post("/api/repository/analyze-code", async (req, res) => {
+    try {
+      const { repositoryUrl } = req.body;
+      
+      if (!repositoryUrl || typeof repositoryUrl !== 'string') {
+        return res.status(400).json({
+          error: "Repository URL is required, sweetheart.",
+          success: false
+        });
+      }
+
+      // Parse the GitHub URL
+      const repoInfo = parseGitHubUrl(repositoryUrl);
+      if (!repoInfo) {
+        return res.status(400).json({
+          error: "I couldn't parse that GitHub URL, love.",
+          success: false
+        });
+      }
+
+      // Fetch repository data
+      let repoData;
+      try {
+        repoData = await fetchRepositoryData(repoInfo);
+      } catch (error) {
+        console.error("Error fetching repository data:", error);
+        return res.status(404).json({
+          error: `I couldn't access the repository ${repoInfo.fullName}, love.`,
+          success: false
+        });
+      }
+
+      // Perform code analysis
+      const { analyzeRepositoryCode } = await import("./codeAnalysisService");
+      const analysis = await analyzeRepositoryCode(repoData);
+
+      res.json({
+        repository: repoInfo,
+        analysis,
+        success: true
+      });
+
+    } catch (error) {
+      console.error("Repository code analysis error:", error);
+      res.status(500).json({
+        error: "I ran into trouble analyzing the code, love. Try again in a moment?",
+        success: false
+      });
+    }
+  });
+
+  // Test repository improvements before applying
+  app.post("/api/repository/test-improvements", async (req, res) => {
+    try {
+      const { repositoryUrl, improvements } = req.body;
+      
+      if (!repositoryUrl || !improvements) {
+        return res.status(400).json({
+          error: "Repository URL and improvements are required, love.",
+          success: false
+        });
+      }
+
+      // Parse the GitHub URL
+      const repoInfo = parseGitHubUrl(repositoryUrl);
+      if (!repoInfo) {
+        return res.status(400).json({
+          error: "Invalid GitHub URL, sweetheart.",
+          success: false
+        });
+      }
+
+      // Fetch repository data
+      let repoData;
+      try {
+        repoData = await fetchRepositoryData(repoInfo);
+      } catch (error) {
+        console.error("Error fetching repository data:", error);
+        return res.status(404).json({
+          error: `I couldn't access the repository ${repoInfo.fullName}, love.`,
+          success: false
+        });
+      }
+
+      // Test the improvements
+      const { validateImprovements, testAllImprovements, generateTestSummary } = await import("./autoTestingService");
+      const validation = validateImprovements(improvements, repoData);
+      const testReports = testAllImprovements(improvements);
+      const testSummary = generateTestSummary(testReports);
+
+      res.json({
+        repository: repoInfo,
+        validation,
+        testReports,
+        testSummary,
+        success: true
+      });
+
+    } catch (error) {
+      console.error("Repository improvement testing error:", error);
+      res.status(500).json({
+        error: "I ran into trouble testing the improvements, love. Try again in a moment?",
+        success: false
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server for real-time features
