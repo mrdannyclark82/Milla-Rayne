@@ -5,7 +5,6 @@
  * to GitHub repositories based on analysis and recommendations.
  */
 
-import { generateMistralResponse } from "./mistralService";
 import { generateOpenRouterResponse } from "./openrouterService";
 import { RepositoryData, RepositoryInfo } from "./repositoryAnalysisService";
 import { 
@@ -105,7 +104,7 @@ Format your response as JSON with this structure:
   try {
     let aiResponse: { content: string; success: boolean } | null = null;
     
-    // Try OpenRouter first
+    // Use OpenRouter (DeepSeek) for AI improvement generation
     try {
       aiResponse = await generateOpenRouterResponse(improvementPrompt, { userName: "Danny Ray" });
       if (aiResponse.success && aiResponse.content) {
@@ -115,17 +114,7 @@ Format your response as JSON with this structure:
       console.warn('OpenRouter improvement generation failed:', error);
     }
 
-    // Try Mistral as fallback
-    try {
-      const mistralResponse = await generateMistralResponse(improvementPrompt, { userName: "Danny Ray" });
-      if (mistralResponse.success && mistralResponse.content) {
-        return parseImprovementResponse(mistralResponse.content);
-      }
-    } catch (error) {
-      console.warn('Mistral improvement generation failed:', error);
-    }
-
-    // Fallback to simple improvements
+    // Fallback to simple improvements if OpenRouter fails
     return generateFallbackImprovements(repoData, focusArea);
     
   } catch (error) {
