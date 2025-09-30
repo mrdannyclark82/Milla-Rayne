@@ -10,6 +10,8 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Memory System**: Maintains conversation context and relationship history
 - **Real-time Chat**: Instant messaging with personality-aware responses
 - **Visual Recognition**: Video analysis and face recognition capabilities
+- **Repository Analysis**: Analyze GitHub repositories to understand codebase structure and quality
+- **Repository Improvements**: Generate actionable improvement suggestions for GitHub repositories
 
 ## AI Service Configuration
 
@@ -94,3 +96,66 @@ This project requires API keys for full functionality. **NEVER commit actual API
 - **Mistral**: [console.mistral.ai](https://console.mistral.ai) - Fallback AI service  
 - **xAI**: [console.x.ai](https://console.x.ai) - Alternative AI service
 - **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) - For repository analysis
+
+## 🔧 Repository Analysis & Improvement
+
+Milla can analyze GitHub repositories and suggest specific improvements to enhance your codebase.
+
+### How to Use
+
+1. **Analyze a Repository**: Simply paste a GitHub repository URL in the chat
+   ```
+   https://github.com/username/repository
+   ```
+   
+2. **Get Improvement Suggestions**: After analysis, ask Milla to suggest improvements
+   ```
+   suggest improvements
+   improve this repo
+   enhance the code
+   ```
+
+### What Milla Can Do
+
+- **Analyze Repository Structure**: Understand the codebase architecture and organization
+- **Identify Improvements**: Suggest specific file changes and enhancements
+- **Generate Documentation**: Recommend README improvements and documentation additions
+- **Code Quality**: Suggest .gitignore files, CI/CD workflows, and best practices
+- **Actionable Recommendations**: Provide specific file paths, changes, and commit messages
+
+### API Endpoints
+
+- `POST /api/analyze-repository` - Analyze a GitHub repository
+  - Body: `{ "repositoryUrl": "https://github.com/owner/repo" }`
+  
+- `POST /api/repository/improvements` - Generate improvement suggestions
+  - Body: `{ "repositoryUrl": "https://github.com/owner/repo", "focusArea": "optional" }`
+  
+- `POST /api/repository/apply-improvements` - Get instructions for applying improvements
+  - Body: `{ "repositoryUrl": "...", "improvements": [...], "githubToken": "optional" }`
+
+### Example Workflow
+
+```
+User: https://github.com/myusername/myproject
+Milla: *analyzes the repository* 
+       I can see this is a TypeScript project with...
+       [analysis details]
+       
+       💡 Would you like me to suggest improvements?
+
+User: yes, suggest improvements
+Milla: *generates improvement suggestions*
+       
+       1. Add comprehensive README
+          - Create/update README.md with setup instructions
+          - Files: README.md
+          - Reason: Good documentation helps users understand the project
+          
+       2. Add .gitignore file
+          - Prevent committing sensitive files
+          - Files: .gitignore
+          - Reason: Protects API keys and prevents node_modules in git
+       
+       [more suggestions...]
+```
