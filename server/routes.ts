@@ -22,6 +22,7 @@ import { generateOpenRouterResponse } from "./openrouterService";
 import { analyzeYouTubeVideo, isValidYouTubeUrl, searchVideoMemories } from "./youtubeAnalysisService";
 import { getRealWorldInfo } from "./realWorldInfoService";
 import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
+import { generateRepositoryImprovements, applyRepositoryImprovements, previewImprovements } from "./repositoryModificationService";
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -1096,6 +1097,130 @@ Project: Milla Rayne - AI Virtual Assistant
       
       res.status(500).json({
         error: errorMessage,
+        success: false
+      });
+    }
+  });
+
+  // Generate repository improvements
+  app.post("/api/repository/improvements", async (req, res) => {
+    try {
+      const { repositoryUrl, focusArea } = req.body;
+      
+      if (!repositoryUrl || typeof repositoryUrl !== 'string') {
+        return res.status(400).json({
+          error: "Repository URL is required, love. Please provide a GitHub repository URL.",
+          success: false
+        });
+      }
+
+      console.log(`Repository Improvements: Processing URL: ${repositoryUrl}`);
+
+      // Parse the GitHub URL
+      const repoInfo = parseGitHubUrl(repositoryUrl);
+      if (!repoInfo) {
+        return res.status(400).json({
+          error: "I couldn't parse that GitHub URL, sweetheart. Please make sure it's valid.",
+          success: false
+        });
+      }
+
+      // Fetch repository data
+      let repoData;
+      try {
+        repoData = await fetchRepositoryData(repoInfo);
+      } catch (error) {
+        console.error("Error fetching repository data:", error);
+        return res.status(404).json({
+          error: `I couldn't access the repository ${repoInfo.fullName}, love. Make sure it exists and is accessible.`,
+          success: false
+        });
+      }
+
+      // Generate improvements
+      const improvements = await generateRepositoryImprovements(repoData, focusArea);
+
+      // Store the interaction
+      try {
+        await storage.createMessage({
+          content: `Generate improvements for repository: ${repositoryUrl}${focusArea ? ` (focus: ${focusArea})` : ''}`,
+          role: "user",
+          userId: null,
+        });
+
+        const previewText = previewImprovements(improvements);
+        await storage.createMessage({
+          content: previewText,
+          role: "assistant",
+          userId: null,
+        });
+      } catch (storageError) {
+        console.warn("Failed to store improvement generation in memory:", storageError);
+      }
+
+      res.json({
+        repository: repoInfo,
+        improvements,
+        preview: previewImprovements(improvements),
+        success: true
+      });
+
+    } catch (error) {
+      console.error("Repository improvement generation error:", error);
+      res.status(500).json({
+        error: "I ran into some technical difficulties generating improvements, sweetheart. Try again in a moment?",
+        success: false
+      });
+    }
+  });
+
+  // Apply repository improvements
+  app.post("/api/repository/apply-improvements", async (req, res) => {
+    try {
+      const { repositoryUrl, improvements, githubToken } = req.body;
+      
+      if (!repositoryUrl || !improvements) {
+        return res.status(400).json({
+          error: "Repository URL and improvements are required, love.",
+          success: false
+        });
+      }
+
+      // Parse the GitHub URL
+      const repoInfo = parseGitHubUrl(repositoryUrl);
+      if (!repoInfo) {
+        return res.status(400).json({
+          error: "Invalid GitHub URL, sweetheart.",
+          success: false
+        });
+      }
+
+      // Apply improvements
+      const result = await applyRepositoryImprovements(repoInfo, improvements, githubToken);
+
+      // Store the interaction
+      try {
+        await storage.createMessage({
+          content: `Apply improvements to repository: ${repositoryUrl}`,
+          role: "user",
+          userId: null,
+        });
+
+        await storage.createMessage({
+          content: result.message,
+          role: "assistant",
+          userId: null,
+        });
+      } catch (storageError) {
+        console.warn("Failed to store improvement application in memory:", storageError);
+      }
+
+      res.json(result);
+
+    } catch (error) {
+      console.error("Repository improvement application error:", error);
+      res.status(500).json({
+        error: "I ran into trouble applying those improvements, love. Let me know if you want to try again.",
         success: false
       });
     }
