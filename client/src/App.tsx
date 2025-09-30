@@ -7,12 +7,14 @@ import { ConversationProvider } from "@/contexts/ConversationContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import SelfImprovementPage from "@/pages/self-improvement";
+import AIAgentPage from "@/pages/ai-agent";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/self-improvement" component={SelfImprovementPage} />
+      <Route path="/ai-agent" component={AIAgentPage} />
       <Route component={NotFound} />
     </Switch>
   );
