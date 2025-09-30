@@ -5,7 +5,6 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateMistralResponse } from "./mistralService";
 import { generateOpenRouterResponse } from "./openrouterService";
 
 export interface RepositoryInfo {
@@ -235,10 +234,9 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-    // Try AI services in order of preference
+    // Use OpenRouter (DeepSeek) for AI analysis
     let aiResponse: { content: string; success: boolean } | null = null;
     
-    // Try OpenRouter first
     try {
       aiResponse = await generateOpenRouterResponse(analysisPrompt, { userName: "Danny Ray" });
       if (aiResponse.success && aiResponse.content) {
@@ -248,17 +246,7 @@ Keep your response conversational and supportive, as you're helping your partner
       console.warn('OpenRouter analysis failed:', error);
     }
 
-    // Try Mistral as fallback
-    try {
-      const mistralResponse = await generateMistralResponse(analysisPrompt, { userName: "Danny Ray" });
-      if (mistralResponse.success && mistralResponse.content) {
-        return parseAnalysisResponse(mistralResponse.content);
-      }
-    } catch (error) {
-      console.warn('Mistral analysis failed:', error);
-    }
-
-    // Fallback to manual analysis
+    // Fallback to manual analysis if OpenRouter fails
     return generateFallbackAnalysis(repoData);
     
   } catch (error) {
