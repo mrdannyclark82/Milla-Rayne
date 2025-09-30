@@ -6,6 +6,9 @@ vite.config.ts.*
 *.tar.gz
 .avatar-backup
 
+# Memory backups
+memory/*.backup-*
+
 # Environment variables with sensitive data (NEVER commit these!)
 .env
 .env.local
