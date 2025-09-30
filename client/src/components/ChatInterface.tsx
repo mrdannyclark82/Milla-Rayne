@@ -114,6 +114,19 @@ export default function ChatInterface({
       // Check if message contains a GitHub repository URL
       const githubUrlPattern = /github\.com\/[^\/\s]+\/[^\/\s]+/i;
       const isRepositoryAnalysisRequest = githubUrlPattern.test(userMessage);
+      
+      // Check if user is asking for repository improvements
+      const improvementKeywords = ['improve', 'improvement', 'enhance', 'enhancement', 'suggest', 'fix', 'better'];
+      const repoKeywords = ['repo', 'repository', 'code', 'this'];
+      const hasRepoContext = !!(window as any).lastRepositoryUrl || 
+                            messages.some(msg => msg.content.match(/github\.com\/[^\/\s]+\/[^\/\s]+/i));
+      
+      const isImprovementRequest = improvementKeywords.some(keyword => 
+        userMessage.toLowerCase().includes(keyword)
+      ) && (
+        repoKeywords.some(keyword => userMessage.toLowerCase().includes(keyword)) ||
+        hasRepoContext
+      );
 
       if (isYouTubeAnalysisRequest) {
         // Handle YouTube video analysis
@@ -121,6 +134,9 @@ export default function ChatInterface({
       } else if (isRepositoryAnalysisRequest) {
         // Handle repository analysis
         await handleRepositoryAnalysis(userMessage);
+      } else if (isImprovementRequest && !isRepositoryAnalysisRequest) {
+        // Handle repository improvement suggestions
+        await handleRepositoryImprovements(userMessage);
       } else {
         // Handle normal chat message
         await handleNormalMessage(userMessage);
@@ -343,9 +359,14 @@ export default function ChatInterface({
       const analysisData = await response.json();
       
       // Create AI response message with repository analysis
+      let analysisContent = analysisData.analysis;
+      
+      // Add a helpful note about improvements
+      analysisContent += `\n\n💡 *Would you like me to suggest specific improvements for this repository? Just ask me "suggest improvements" or "improve this repo" and I'll generate actionable recommendations!*`;
+      
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
-        content: analysisData.analysis,
+        content: analysisContent,
         role: "assistant",
         personalityMode: null,
         timestamp: new Date(),
@@ -354,8 +375,11 @@ export default function ChatInterface({
 
       setMessages(prev => [...prev, aiMsg]);
       
+      // Store repository URL for later use
+      (window as any).lastRepositoryUrl = repositoryUrl;
+      
       // Add to conversation memory
-      addExchange("", analysisData.analysis);
+      addExchange("", analysisContent);
 
       // Set avatar to responding state
       onAvatarStateChange?.('responding');
@@ -385,6 +409,148 @@ export default function ChatInterface({
       // Add error response to conversation memory
       addExchange("", errorMessage);
       
+      onAvatarStateChange?.('neutral');
+    }
+  };
+
+  const handleRepositoryImprovements = async (userMessage: string) => {
+    // Find the most recent repository URL from chat history or window storage
+    let repositoryUrl = '';
+    
+    // Check if URL is in the current message
+    const githubUrlMatch = userMessage.match(/https?:\/\/github\.com\/[^\/\s]+\/[^\/\s]+/i) ||
+                          userMessage.match(/github\.com\/[^\/\s]+\/[^\/\s]+/i);
+    
+    if (githubUrlMatch) {
+      repositoryUrl = githubUrlMatch[0];
+      if (!repositoryUrl.startsWith('http')) {
+        repositoryUrl = 'https://' + repositoryUrl;
+      }
+    } else {
+      // Get from window storage
+      repositoryUrl = (window as any).lastRepositoryUrl || '';
+      
+      // If not in window storage, search recent messages for GitHub URLs
+      if (!repositoryUrl) {
+        for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); i--) {
+          const msg = messages[i];
+          const urlMatch = msg.content.match(/https?:\/\/github\.com\/[^\/\s]+\/[^\/\s]+/i);
+          if (urlMatch) {
+            repositoryUrl = urlMatch[0];
+            break;
+          }
+        }
+      }
+    }
+
+    if (!repositoryUrl) {
+      // No repository URL found
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "I don't have a repository URL to work with, sweetheart. Could you share a GitHub repository link first?",
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+      setMessages(prev => [...prev, errorMsg]);
+      addExchange("", errorMsg.content);
+      return;
+    }
+
+    // Add user message to chat
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      content: userMessage,
+      role: "user",
+      personalityMode: null,
+      timestamp: new Date(),
+      userId: "1"
+    };
+    setMessages(prev => [...prev, userMsg]);
+    addExchange(userMessage, "");
+
+    try {
+      // Add a loading message
+      const loadingMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "*analyzing the repository and generating improvement suggestions... this might take a moment, love* 💭",
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+      setMessages(prev => [...prev, loadingMsg]);
+
+      const response = await fetch("/api/repository/improvements", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          repositoryUrl: repositoryUrl
+        }),
+      });
+
+      // Remove loading message
+      setMessages(prev => prev.filter(msg => msg.id !== loadingMsg.id));
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate improvements');
+      }
+
+      const improvementsData = await response.json();
+      
+      // Format improvements as a friendly message
+      let improvementText = `*smiles warmly* I've analyzed ${repositoryUrl} and have some suggestions for you!\n\n`;
+      
+      if (improvementsData.improvements && improvementsData.improvements.length > 0) {
+        improvementsData.improvements.forEach((improvement: any, index: number) => {
+          improvementText += `\n**${index + 1}. ${improvement.title}**\n`;
+          improvementText += `${improvement.description}\n`;
+          improvementText += `Files to modify: ${improvement.files.map((f: any) => f.path).join(', ')}\n`;
+          improvementText += `Commit message: "${improvement.commitMessage}"\n`;
+        });
+        
+        improvementText += `\n\n💡 These are actionable improvements you can apply to enhance your repository. Would you like me to provide more details about any of these suggestions?`;
+      } else {
+        improvementText = `I looked at the repository but couldn't generate specific improvements right now, love. The codebase might already be well-structured, or I might need more context. Feel free to ask me about specific areas you'd like to improve!`;
+      }
+      
+      const aiMsg: Message = {
+        id: (Date.now() + 2).toString(),
+        content: improvementText,
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+
+      setMessages(prev => [...prev, aiMsg]);
+      addExchange("", improvementText);
+
+      onAvatarStateChange?.('responding');
+      setTimeout(() => {
+        onAvatarStateChange?.('neutral');
+      }, 3000);
+
+    } catch (error) {
+      console.error("Repository improvement generation error:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : "I had trouble generating improvements for that repository, sweetheart. Want to try again?";
+      
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        content: errorMessage,
+        role: "assistant",
+        personalityMode: null,
+        timestamp: new Date(),
+        userId: "2"
+      };
+
+      setMessages(prev => [...prev, errorMsg]);
+      addExchange("", errorMessage);
       onAvatarStateChange?.('neutral');
     }
   };
