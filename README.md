@@ -99,7 +99,13 @@ This project requires API keys for full functionality. **NEVER commit actual API
 
 ## 🔧 Repository Analysis & Improvement
 
-Milla can analyze GitHub repositories and suggest specific improvements to enhance your codebase.
+Milla can analyze GitHub repositories and suggest specific improvements to enhance your codebase, with advanced features including:
+
+- **🔒 Security Scanning**: Identifies potential security vulnerabilities
+- **⚡ Performance Analysis**: Detects performance bottlenecks and optimization opportunities
+- **🧪 Automated Testing**: Validates suggested changes before applying them
+- **🤖 Automatic Pull Requests**: Creates PRs directly via GitHub API
+- **📝 Language-Specific Patterns**: Provides best practices for different programming languages
 
 ### How to Use
 
@@ -115,13 +121,23 @@ Milla can analyze GitHub repositories and suggest specific improvements to enhan
    enhance the code
    ```
 
+3. **Automatic PR Creation** (New!): Provide a GitHub token to create pull requests automatically
+   ```
+   Apply these changes with my token: ghp_...
+   ```
+
 ### What Milla Can Do
 
 - **Analyze Repository Structure**: Understand the codebase architecture and organization
-- **Identify Improvements**: Suggest specific file changes and enhancements
+- **Security Scanning**: Detect hardcoded credentials, SQL injection risks, XSS vulnerabilities
+- **Performance Analysis**: Identify inefficient code patterns and optimization opportunities
+- **Code Quality**: Check for code smells, commented code, and maintainability issues
+- **Language-Specific Suggestions**: TypeScript, JavaScript, Python, Java, Go best practices
 - **Generate Documentation**: Recommend README improvements and documentation additions
-- **Code Quality**: Suggest .gitignore files, CI/CD workflows, and best practices
-- **Actionable Recommendations**: Provide specific file paths, changes, and commit messages
+- **CI/CD Automation**: Suggest GitHub Actions workflows with security scanning
+- **Security Policy**: Generate SECURITY.md for vulnerability reporting
+- **Automated Testing**: Validate improvements before applying them
+- **GitHub API Integration**: Create pull requests automatically with proper testing
 
 ### API Endpoints
 
@@ -130,9 +146,39 @@ Milla can analyze GitHub repositories and suggest specific improvements to enhan
   
 - `POST /api/repository/improvements` - Generate improvement suggestions
   - Body: `{ "repositoryUrl": "https://github.com/owner/repo", "focusArea": "optional" }`
+  - Focus areas: `"security"`, `"performance"`, `"documentation"`, etc.
   
-- `POST /api/repository/apply-improvements` - Get instructions for applying improvements
+- `POST /api/repository/analyze-code` - Perform deep code analysis (New!)
+  - Body: `{ "repositoryUrl": "https://github.com/owner/repo" }`
+  - Returns: Security issues, performance issues, code quality issues, language-specific suggestions
+  
+- `POST /api/repository/test-improvements` - Test improvements before applying (New!)
+  - Body: `{ "repositoryUrl": "...", "improvements": [...] }`
+  - Returns: Validation results, test reports, risk assessment
+  
+- `POST /api/repository/apply-improvements` - Apply improvements via GitHub API (Enhanced!)
   - Body: `{ "repositoryUrl": "...", "improvements": [...], "githubToken": "optional" }`
+  - With token: Creates pull request automatically
+  - Without token: Provides manual instructions
+
+### GitHub Token Setup (for Automatic PRs)
+
+To enable automatic pull request creation, you need a GitHub Personal Access Token:
+
+1. Go to [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens)
+2. Click "Generate new token (classic)"
+3. Give it a descriptive name (e.g., "Milla Repository Improvements")
+4. Select scopes:
+   - ✅ `repo` (Full control of private repositories)
+   - ✅ `workflow` (Update GitHub Action workflows)
+5. Click "Generate token"
+6. Copy the token (starts with `ghp_`)
+7. Add to your `.env` file:
+   ```env
+   GITHUB_TOKEN=ghp_your_token_here
+   ```
+
+**Security Note**: The token allows write access to your repositories. Keep it secret!
 
 ### Example Workflow
 
@@ -157,5 +203,51 @@ Milla: *generates improvement suggestions*
           - Files: .gitignore
           - Reason: Protects API keys and prevents node_modules in git
        
+       3. Add CI/CD workflow with security scanning
+          - Automate testing and security analysis
+          - Files: .github/workflows/ci.yml
+          - Reason: Catches bugs and vulnerabilities early
+       
        [more suggestions...]
+
+User: Apply these changes automatically
+Milla: *creates pull request via GitHub API*
+       
+       🎉 Pull request created!
+       🔗 https://github.com/myusername/myproject/pull/42
+       
+       The PR includes:
+       ✅ All syntax tests passed
+       ⚠️ 2 warnings (review recommended)
+       📊 Risk level: Low
+```
+
+### Code Analysis Features
+
+#### Security Scanning
+- Detects hardcoded passwords and API keys (CWE-798)
+- Identifies eval() usage and code injection risks (CWE-95)
+- Finds XSS vulnerabilities from innerHTML (CWE-79)
+- Checks for insecure random number generation (CWE-338)
+- Language-specific security patterns for JS, TS, Python, Java, Go
+
+#### Performance Analysis
+- DOM queries inside loops
+- High-frequency intervals
+- Inefficient string concatenation
+- Array operations in loops
+- JSON.parse(JSON.stringify()) deep cloning
+
+#### Code Quality
+- Long functions (>100 lines)
+- Unresolved TODO/FIXME comments
+- Excessive commented-out code
+- Language-specific best practices
+
+#### Automated Testing
+- Syntax validation (JSON, YAML, Markdown, JS/TS)
+- File size checks
+- Risk assessment (low/medium/high)
+- Impact estimation (lines changed, files modified)
+- Comprehensive test reports
 ```
