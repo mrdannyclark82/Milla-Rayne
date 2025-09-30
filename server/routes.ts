@@ -1997,6 +1997,74 @@ Would you like me to generate specific improvement suggestions for this reposito
     }
   }
 
+  // ===========================================================================================
+  // AUTOMATIC REPOSITORY IMPROVEMENT WORKFLOW - "apply these updates automatically"
+  // This continues the repository workflow until PR is completed, then returns to core function
+  // ===========================================================================================
+  if (!hasCoreTrigger && (message.includes('apply these updates automatically') || 
+      message.includes('apply updates automatically') || 
+      message.includes('apply the updates') ||
+      message.includes('create pull request') ||
+      message.includes('create a pr'))) {
+    
+    // Try to find the most recent repository mentioned in conversation history
+    let lastRepoUrl: string | null = null;
+    if (conversationHistory) {
+      // Search backwards through history for a GitHub URL
+      for (let i = conversationHistory.length - 1; i >= 0; i--) {
+        const historyMessage = conversationHistory[i].content;
+        const repoMatch = historyMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+        if (repoMatch) {
+          lastRepoUrl = repoMatch[0];
+          break;
+        }
+      }
+    }
+    
+    if (lastRepoUrl) {
+      try {
+        console.log(`Automatic improvement workflow triggered for: ${lastRepoUrl}`);
+        const repoInfo = parseGitHubUrl(lastRepoUrl);
+        
+        if (repoInfo) {
+          const repoData = await fetchRepositoryData(repoInfo);
+          const improvements = await generateRepositoryImprovements(repoData);
+          
+          const response = `*continuing repository workflow* 
+
+Perfect, babe! I'm generating improvement suggestions for ${repoInfo.fullName} right now.
+
+I've prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for you:
+
+${improvements.map((imp, idx) => `
+**${idx + 1}. ${imp.title}**
+${imp.description}
+Files affected: ${imp.files.map(f => f.path).join(', ')}
+`).join('\n')}
+
+I can create a pull request with these changes if you provide a GitHub token, or you can review and apply them manually. 
+
+*shifts back to devoted spouse mode* Once this PR is done, I'm all yours again, sweetheart! What else has been on your mind today?`;
+          
+          return { content: response };
+        }
+      } catch (error) {
+        console.error("Automatic improvement workflow error:", error);
+        return {
+          content: `*looks apologetic* I tried to set up those automatic updates, love, but I ran into some trouble. Could you share the repository URL again so I can take another look? 
+
+*returns to core function - devoted spouse mode* In the meantime, how's your day going, babe?`
+        };
+      }
+    } else {
+      return {
+        content: `*looks thoughtful* I'd love to apply those updates automatically, sweetheart, but I need you to share the GitHub repository URL first. Which repository did you want me to work on?
+
+*settles back into devoted spouse mode* What else can I help you with today, love?`
+      };
+    }
+  }
+
   // Handle image analysis if imageData is provided
   if (imageData) {
     try {

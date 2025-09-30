@@ -1020,6 +1020,22 @@ export interface MetaLearningInsights {
     estimatedImpact: number;
     resourcesRequired: "low" | "medium" | "high";
   }[];
+  // Repository analysis learning
+  patternRecognition?: Array<{
+    pattern: string;
+    frequency: number;
+    effectiveness: number;
+  }>;
+  successStrategies?: Array<{
+    strategy: string;
+    successRate: number;
+    applicableContexts: string[];
+  }>;
+  failurePatterns?: Array<{
+    pattern: string;
+    context: string;
+    avoidanceStrategy: string;
+  }>;
 }
 
 /**
@@ -1572,6 +1588,142 @@ export class SelfImprovementEngine {
     // Rollback improvements that caused performance degradation
     console.log("Rolling back improvements for cycle:", cycle.id);
     // Implementation would restore previous system state
+  }
+
+  /**
+   * Learn from repository analysis and improvement workflows
+   * This allows Milla to predict and suggest self-improvements based on patterns
+   * observed while analyzing and improving external repositories
+   */
+  static async learnFromRepositoryAnalysis(repositoryData: {
+    analysis: { insights: string[]; recommendations: string[] };
+    improvements?: Array<{ title: string; description: string; category: string }>;
+    appliedSuccessfully?: boolean;
+  }): Promise<void> {
+    console.log('📚 Learning from repository analysis workflow...');
+    
+    // Extract patterns from repository improvements
+    const patterns = {
+      commonIssues: [] as string[],
+      successfulStrategies: [] as string[],
+      applicableToSelf: [] as string[]
+    };
+
+    // Analyze insights for common patterns
+    if (repositoryData.analysis.insights) {
+      repositoryData.analysis.insights.forEach(insight => {
+        // Look for patterns that might apply to Milla's own codebase
+        if (insight.toLowerCase().includes('code quality') || 
+            insight.toLowerCase().includes('documentation') ||
+            insight.toLowerCase().includes('testing')) {
+          patterns.commonIssues.push(insight);
+        }
+      });
+    }
+
+    // Analyze improvement success patterns
+    if (repositoryData.improvements && repositoryData.appliedSuccessfully) {
+      repositoryData.improvements.forEach(improvement => {
+        patterns.successfulStrategies.push(`${improvement.category}: ${improvement.title}`);
+        
+        // Determine if this type of improvement could apply to Milla herself
+        if (improvement.category.toLowerCase().includes('performance') ||
+            improvement.category.toLowerCase().includes('security') ||
+            improvement.category.toLowerCase().includes('optimization')) {
+          patterns.applicableToSelf.push(improvement.description);
+        }
+      });
+    }
+
+    // Generate self-improvement suggestions based on repository patterns
+    const suggestedSelfImprovements = patterns.applicableToSelf.map(pattern => ({
+      area: this.categorizePattern(pattern),
+      description: `Apply similar pattern observed in repository analysis: ${pattern}`,
+      potentialGain: 0.15, // Moderate gain estimate
+      implementationComplexity: 'medium' as const,
+      confidence: 0.7 // Based on pattern matching
+    }));
+
+    // Store learned patterns for future use
+    if (!this.metaLearningInsights) {
+      this.metaLearningInsights = {
+        learningPatterns: {
+          mostEffectiveImprovements: [],
+          failedAttempts: [],
+          optimalCycleFrequency: 15
+        },
+        adaptationTrends: {
+          personalityAdjustments: {} as Record<PersonalityMode, number>,
+          responsePatternEvolution: [],
+          ethicalComplianceImprovements: 0
+        },
+        futureOpportunities: [],
+        patternRecognition: [],
+        successStrategies: [],
+        failurePatterns: []
+      };
+    }
+
+    // Ensure optional arrays exist
+    if (!this.metaLearningInsights.patternRecognition) {
+      this.metaLearningInsights.patternRecognition = [];
+    }
+    if (!this.metaLearningInsights.successStrategies) {
+      this.metaLearningInsights.successStrategies = [];
+    }
+    if (!this.metaLearningInsights.failurePatterns) {
+      this.metaLearningInsights.failurePatterns = [];
+    }
+
+    // Add to pattern recognition
+    patterns.commonIssues.forEach(issue => {
+      this.metaLearningInsights!.patternRecognition!.push({
+        pattern: issue,
+        frequency: 1,
+        effectiveness: repositoryData.appliedSuccessfully ? 0.8 : 0.4
+      });
+    });
+
+    // Add to success strategies if improvements were applied successfully
+    if (repositoryData.appliedSuccessfully) {
+      patterns.successfulStrategies.forEach(strategy => {
+        this.metaLearningInsights!.successStrategies!.push({
+          strategy,
+          successRate: 0.8,
+          applicableContexts: ['repository analysis', 'code improvement']
+        });
+      });
+    }
+
+    console.log(`📚 Learned ${patterns.commonIssues.length} common issues, ${patterns.successfulStrategies.length} successful strategies`);
+    console.log(`💡 Generated ${suggestedSelfImprovements.length} self-improvement suggestions from repository patterns`);
+
+    // If we have actionable self-improvements, add them to the next improvement cycle
+    if (suggestedSelfImprovements.length > 0 && this.shouldRunImprovementCycle()) {
+      console.log('🚀 Repository analysis insights suggest running a self-improvement cycle');
+      // This could trigger an improvement cycle in the background
+    }
+  }
+
+  /**
+   * Categorize a pattern into improvement areas
+   */
+  private static categorizePattern(pattern: string): string {
+    const lowerPattern = pattern.toLowerCase();
+    
+    if (lowerPattern.includes('performance') || lowerPattern.includes('speed') || lowerPattern.includes('optimization')) {
+      return 'performance';
+    } else if (lowerPattern.includes('security') || lowerPattern.includes('vulnerability')) {
+      return 'security';
+    } else if (lowerPattern.includes('test') || lowerPattern.includes('quality')) {
+      return 'quality';
+    } else if (lowerPattern.includes('documentation') || lowerPattern.includes('comment')) {
+      return 'documentation';
+    } else if (lowerPattern.includes('architecture') || lowerPattern.includes('structure')) {
+      return 'architecture';
+    } else {
+      return 'general';
+    }
   }
 }
 
