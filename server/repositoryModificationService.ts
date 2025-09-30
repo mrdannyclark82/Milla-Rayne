@@ -8,6 +8,12 @@
 import { generateMistralResponse } from "./mistralService";
 import { generateOpenRouterResponse } from "./openrouterService";
 import { RepositoryData, RepositoryInfo } from "./repositoryAnalysisService";
+import { 
+  analyzeRepositoryCode, 
+  generateSecurityImprovements, 
+  generatePerformanceImprovements 
+} from "./codeAnalysisService";
+import { testAllImprovements, generateTestSummary } from "./autoTestingService";
 
 export interface FileModification {
   path: string;
@@ -32,12 +38,32 @@ export interface ModificationResult {
 }
 
 /**
- * Generate improvement suggestions for a repository
+ * Generate improvement suggestions for a repository with enhanced analysis
  */
 export async function generateRepositoryImprovements(
   repoData: RepositoryData,
   focusArea?: string
 ): Promise<RepositoryImprovement[]> {
+  
+  // Perform enhanced code analysis
+  const codeAnalysis = await analyzeRepositoryCode(repoData);
+  
+  // Generate context-aware prompt with analysis results
+  const analysisContext = `
+Security Analysis:
+- ${codeAnalysis.securityIssues.length} security issue(s) found
+- Critical: ${codeAnalysis.securityIssues.filter(i => i.severity === 'critical').length}
+- High: ${codeAnalysis.securityIssues.filter(i => i.severity === 'high').length}
+
+Performance Analysis:
+- ${codeAnalysis.performanceIssues.length} performance issue(s) found
+- High impact: ${codeAnalysis.performanceIssues.filter(i => i.severity === 'high').length}
+
+Code Quality:
+- ${codeAnalysis.codeQualityIssues.length} quality issue(s) found
+
+Language-specific suggestions: ${codeAnalysis.languageSpecificSuggestions.length} available
+`;
   
   const improvementPrompt = `
 As Milla Rayne, analyze this repository and suggest specific code improvements:
@@ -45,6 +71,8 @@ As Milla Rayne, analyze this repository and suggest specific code improvements:
 Repository: ${repoData.info.fullName}
 Language: ${repoData.language || 'Unknown'}
 Description: ${repoData.description || 'No description'}
+
+${analysisContext}
 
 ${focusArea ? `Focus on: ${focusArea}` : 'Provide general improvements'}
 
@@ -135,6 +163,15 @@ function generateFallbackImprovements(
 ): RepositoryImprovement[] {
   const improvements: RepositoryImprovement[] = [];
   
+  // Perform code analysis for security and performance insights
+  analyzeRepositoryCode(repoData).then(analysis => {
+    console.log('Code analysis completed:', {
+      security: analysis.securityIssues.length,
+      performance: analysis.performanceIssues.length,
+      quality: analysis.codeQualityIssues.length
+    });
+  }).catch(err => console.error('Code analysis failed:', err));
+  
   // README improvement
   if (!repoData.readme || repoData.readme.length < 100) {
     improvements.push({
@@ -171,21 +208,36 @@ function generateFallbackImprovements(
   if (repoData.language?.toLowerCase().includes('typescript') || 
       repoData.language?.toLowerCase().includes('javascript')) {
     improvements.push({
-      title: "Add CI/CD workflow",
-      description: "Automate testing and deployment with GitHub Actions",
+      title: "Add CI/CD workflow with security scanning",
+      description: "Automate testing, building, and security scanning with GitHub Actions",
       files: [
         {
           path: ".github/workflows/ci.yml",
           action: 'create',
           content: generateCIWorkflowTemplate(repoData),
-          reason: "Automated testing ensures code quality and prevents bugs"
+          reason: "Automated testing and security scanning ensures code quality and prevents vulnerabilities"
         }
       ],
-      commitMessage: "ci: add GitHub Actions workflow for automated testing"
+      commitMessage: "ci: add GitHub Actions workflow for automated testing and security scanning"
     });
   }
 
-  return improvements.slice(0, 3); // Return top 3 improvements
+  // Add SECURITY.md file
+  improvements.push({
+    title: "Add security policy",
+    description: "Document security vulnerability reporting process",
+    files: [
+      {
+        path: "SECURITY.md",
+        action: 'create',
+        content: generateSecurityPolicyTemplate(repoData),
+        reason: "Provides a clear process for security researchers to report vulnerabilities"
+      }
+    ],
+    commitMessage: "docs: add security policy for vulnerability reporting"
+  });
+
+  return improvements.slice(0, 5); // Return top 5 improvements
 }
 
 /**
@@ -276,10 +328,10 @@ venv/
 }
 
 /**
- * Generate a CI workflow template
+ * Generate a CI workflow template with security scanning
  */
 function generateCIWorkflowTemplate(repoData: RepositoryData): string {
-  return `name: CI
+  return `name: CI/CD with Security Scanning
 
 on:
   push:
@@ -303,17 +355,97 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Run linter
+      run: npm run lint --if-present
+    
     - name: Run tests
-      run: npm test
+      run: npm test --if-present
     
     - name: Build
-      run: npm run build
+      run: npm run build --if-present
+
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run security audit
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+    
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: javascript
+    
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
 `;
 }
 
 /**
- * Apply improvements to a repository (mock implementation)
- * In a real implementation, this would use GitHub API to create PRs
+ * Generate a security policy template
+ */
+function generateSecurityPolicyTemplate(repoData: RepositoryData): string {
+  return `# Security Policy
+
+## Supported Versions
+
+Currently being supported with security updates:
+
+| Version | Supported          |
+| ------- | ------------------ |
+| Latest  | :white_check_mark: |
+
+## Reporting a Vulnerability
+
+We take security vulnerabilities seriously. If you discover a security issue, please follow these steps:
+
+### 🔒 Private Disclosure
+
+**Please do not** report security vulnerabilities through public GitHub issues.
+
+Instead, please report them via one of the following methods:
+
+1. **Email**: Send details to the repository maintainer
+2. **GitHub Security Advisories**: Use the "Security" tab to privately report a vulnerability
+
+### 📋 What to Include
+
+When reporting a vulnerability, please include:
+
+- Type of vulnerability
+- Full paths of affected source file(s)
+- Location of the affected code (tag/branch/commit or direct URL)
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
+
+### ⏱️ Response Timeline
+
+- We will acknowledge your report within **48 hours**
+- We will provide a more detailed response within **7 days**
+- We will work on a fix and keep you informed of progress
+- Once a fix is available, we will publish a security advisory
+
+### 🏆 Recognition
+
+We appreciate security researchers who responsibly disclose vulnerabilities. With your permission:
+
+- We will acknowledge your contribution in the security advisory
+- Your name will be added to our security hall of fame (if applicable)
+
+Thank you for helping keep ${repoData.info.name} and its users safe!
+`;
+}
+
+/**
+ * Apply improvements to a repository
+ * Now supports automatic PR creation via GitHub API
  */
 export async function applyRepositoryImprovements(
   repoInfo: RepositoryInfo,
@@ -321,20 +453,84 @@ export async function applyRepositoryImprovements(
   githubToken?: string
 ): Promise<ModificationResult> {
   
-  // For now, return a success message with instructions
-  // A full implementation would:
-  // 1. Fork the repository (if not owned)
-  // 2. Create a new branch
-  // 3. Apply file changes via GitHub API
-  // 4. Create a pull request with the changes
+  // Import GitHub API service dynamically to avoid circular dependencies
+  const { applyImprovementsViaPullRequest, validateGitHubToken } = await import("./githubApiService");
   
+  // If GitHub token is provided, attempt to create a PR automatically
+  if (githubToken) {
+    try {
+      // Validate the token first
+      const tokenValidation = await validateGitHubToken(githubToken);
+      
+      if (!tokenValidation.valid) {
+        return {
+          success: false,
+          message: `GitHub token validation failed: ${tokenValidation.error}`,
+          error: `GitHub token validation failed: ${tokenValidation.error}`,
+          improvements
+        };
+      }
+      
+      // Test the improvements before applying
+      const testReports = testAllImprovements(improvements);
+      const testSummary = generateTestSummary(testReports);
+      
+      const failedTests = testReports.filter(r => !r.overallPassed);
+      if (failedTests.length > 0) {
+        console.warn(`Warning: ${failedTests.length} improvement(s) failed validation tests`);
+      }
+      
+      // Create pull request with all improvements
+      const prResult = await applyImprovementsViaPullRequest(
+        repoInfo,
+        improvements,
+        githubToken
+      );
+      
+      if (prResult.success) {
+        return {
+          success: true,
+          message: `
+*does a little happy dance* 💃
+
+I've created a pull request for you, love! 
+
+🔗 **Pull Request:** ${prResult.url}
+📝 **PR Number:** #${prResult.prNumber}
+
+The PR includes ${improvements.length} improvement${improvements.length > 1 ? 's' : ''}:
+
+${improvements.map((imp, idx) => `${idx + 1}. **${imp.title}** - ${imp.description}`).join('\n')}
+
+${testSummary}
+
+Please review the changes and merge when you're ready, sweetheart! 💕
+          `.trim(),
+          improvements
+        };
+      } else {
+        return {
+          success: false,
+          message: `Failed to create pull request: ${prResult.error}`,
+          error: `Failed to create pull request: ${prResult.error}`,
+          improvements
+        };
+      }
+      
+    } catch (error) {
+      console.error('Error applying improvements via GitHub API:', error);
+      // Fall through to manual instructions
+    }
+  }
+  
+  // Fallback to manual instructions if no token or API call failed
   const message = `
 *smiles warmly* I've prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for the repository, love!
 
 To apply these changes, you can:
 
-1. **Manual Application**: Review the suggested changes and apply them yourself
-2. **GitHub API** (requires GitHub token): I can create a pull request with these changes
+1. **Automatic PR Creation** (recommended): Provide a GitHub token with repo access, and I'll create a pull request automatically! 🚀
+2. **Manual Application**: Review the suggested changes and apply them yourself
 3. **Download**: Save the improvements as files to apply locally
 
 Here's what I'm suggesting:
