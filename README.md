@@ -5,8 +5,8 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 ## Features
 
 - **Modern UI**: Chat interface positioned to showcase full-screen background image
-- **Multiple AI Services**: Primary OpenRouter integration with Mistral, xAI, and OpenAI fallbacks
-- **AI Enhancement Suggestions**: Powered by Mistral via GitHub Models API
+- **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
+- **AI Enhancement Suggestions**: Powered by DeepSeek via OpenRouter
 - **Memory System**: Maintains conversation context and relationship history
 - **Real-time Chat**: Instant messaging with personality-aware responses
 - **Visual Recognition**: Video analysis and face recognition capabilities
@@ -15,21 +15,27 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 ## AI Service Configuration
 
-### Primary Chat Service: OpenRouter
+### Primary Chat Service: OpenRouter (DeepSeek)
 - **Model**: `deepseek/deepseek-chat-v3.1:free` (DeepSeek Chat)
 - **Endpoint**: `/api/chat` and `/api/openrouter-chat`
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Fallback**: Intelligent contextual responses when API key not configured
+- **Use**: All message and chat requests
 
-### Enhancement Suggestions: Mistral
-- **Model**: `mistral-ai/mistral-medium-2505` via GitHub Models
+### Code Generation Service: OpenRouter (Qwen)
+- **Model**: `qwen/qwen-2.5-coder-32b-instruct` (Qwen Coder)
+- **Endpoint**: `/api/chat` (automatically detects code requests)
+- **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
+- **Use**: All code generation requests
+
+### Enhancement Suggestions: OpenRouter (DeepSeek)
+- **Model**: `deepseek/deepseek-chat-v3.1:free` (DeepSeek Chat)
 - **Endpoint**: `/api/suggest-enhancements`
-- **Setup**: Add `GITHUB_TOKEN=your_token_here` to `.env`
+- **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Fallback**: Curated project enhancement suggestions
 
 ### Additional Services Available
-- **xAI Grok**: `XAI_API_KEY` - Alternative AI service
-- **Mistral Direct**: `MISTRAL_API_KEY` - Direct Mistral integration
+- **xAI Grok**: `XAI_API_KEY` - Alternative AI service for specialized tasks
 - **OpenAI/Perplexity**: `PERPLEXITY_API_KEY` - Additional AI option
 
 ### API Key Setup
@@ -47,9 +53,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 2. Edit `.env` with your actual API keys:
    ```env
    OPENROUTER_API_KEY=your_actual_openrouter_key_here
-   GITHUB_TOKEN=your_actual_github_token_here
    XAI_API_KEY=your_actual_xai_key_here
-   MISTRAL_API_KEY=your_actual_mistral_key_here
    ```
 
 3. **Verify** your `.env` file is git-ignored:
@@ -92,8 +96,7 @@ This project requires API keys for full functionality. **NEVER commit actual API
 - **Docker**: Use environment variables or secrets management
 
 ### API Key Sources:
-- **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service
-- **Mistral**: [console.mistral.ai](https://console.mistral.ai) - Fallback AI service  
+- **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service (DeepSeek + Qwen)
 - **xAI**: [console.x.ai](https://console.x.ai) - Alternative AI service
 - **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) - For repository analysis
 
