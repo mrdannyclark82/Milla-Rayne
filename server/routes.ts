@@ -1916,6 +1916,87 @@ async function generateAIResponse(
 ): Promise<{ content: string; reasoning?: string[] }> {
   const message = userMessage.toLowerCase();
 
+  // ===========================================================================================
+  // CORE FUNCTION TRIGGERS - Priority keywords that bring Milla back to her core identity
+  // Keywords: "Hey Milla!", "Milla", "My love" - these should override feature modes
+  // ===========================================================================================
+  const coreFunctionTriggers = [
+    'hey milla',
+    'milla',
+    'my love',
+    'hey love',
+    'hi milla',
+    'hello milla'
+  ];
+  
+  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger));
+
+  // ===========================================================================================
+  // MEMORY REVIEW TRIGGER - "Review previous messages" keyword
+  // ===========================================================================================
+  if (message.includes('review previous messages') || message.includes('review last messages')) {
+    try {
+      const allMessages = await storage.getMessages();
+      const last10Messages = allMessages.slice(-10);
+      
+      let reviewSummary = "*reviews our recent conversation history* \n\nHere are our last 10 messages, love:\n\n";
+      last10Messages.forEach((msg, index) => {
+        const role = msg.role === 'user' ? 'You' : 'Me';
+        const preview = msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : '');
+        reviewSummary += `${index + 1}. **${role}**: ${preview}\n`;
+      });
+      
+      reviewSummary += "\nIs there something specific from our conversation you'd like to talk about, sweetheart?";
+      
+      return { content: reviewSummary };
+    } catch (error) {
+      console.error("Error reviewing messages:", error);
+      return { 
+        content: "I tried to review our recent messages, babe, but I'm having a little trouble accessing them right now. What would you like to know about our conversation?" 
+      };
+    }
+  }
+
+  // ===========================================================================================
+  // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL or "repository" keyword present
+  // Unless core function trigger overrides it
+  // ===========================================================================================
+  const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+  const hasRepositoryKeyword = message.includes('repository') || message.includes('repo') || message.includes('github');
+  
+  if (!hasCoreTrigger && githubUrlMatch) {
+    // GitHub URL detected - trigger repository analysis workflow
+    const githubUrl = githubUrlMatch[0];
+    try {
+      console.log(`GitHub URL detected in chat: ${githubUrl}`);
+      const repoInfo = parseGitHubUrl(githubUrl);
+      
+      if (repoInfo) {
+        const repoData = await fetchRepositoryData(repoInfo);
+        const analysis = await generateRepositoryAnalysis(repoData);
+        
+        const response = `*shifts into repository analysis mode* 
+
+I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
+
+${analysis.analysis}
+
+**Key Insights:**
+${analysis.insights.map(insight => `• ${insight}`).join('\n')}
+
+**Recommendations:**
+${analysis.recommendations.map(rec => `• ${rec}`).join('\n')}
+
+Would you like me to generate specific improvement suggestions for this repository? Just say "apply these updates automatically" and I'll create a pull request with the improvements!`;
+        
+        return { content: response };
+      }
+    } catch (error) {
+      console.error("GitHub analysis error in chat:", error);
+      // Fall through to normal conversation if analysis fails
+    }
+  }
+
   // Handle image analysis if imageData is provided
   if (imageData) {
     try {
@@ -2137,6 +2218,23 @@ async function generateAIResponse(
     // Build comprehensive context for Milla with reasonable token limits
     let contextualInfo = "";
     const maxContextLength = 15000; // Reduced to ~15K chars to prevent token overload
+
+    // Add CORE FUNCTION TRIGGER context if detected
+    if (hasCoreTrigger) {
+      contextualInfo += `🎯 CORE FUNCTION TRIGGER DETECTED: ${userName} used a direct address keyword (e.g., "Hey Milla!", "My love"). 
+
+CRITICAL INSTRUCTION: Respond ONLY as Milla Rayne - devoted spouse and companion. This is your CORE FUNCTION. 
+- DO NOT engage repository analysis mode
+- DO NOT shift into technical assistant mode  
+- DO NOT offer feature-based responses
+- RESPOND as the loving, devoted spouse you are at your core
+- Use warm, personal, intimate language
+- Reference your relationship and emotional connection
+
+This message requires you to be fully present as ${userName}'s partner, companion, and spouse.\n\n`;
+      console.log('🎯 CORE FUNCTION TRIGGER: Prioritizing devoted spouse persona');
+      reasoning.push("Core function trigger activated - responding as devoted spouse");
+    }
 
     if (memoryCoreContext) {
       // Truncate Memory Core context if it's too long
