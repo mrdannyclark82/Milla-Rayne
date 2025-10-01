@@ -1,13 +1,31 @@
 # Milla Rayne - AI Companion
 
-A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background and multiple AI service integrations.
+A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+
+## Latest Updates 🎉
+
+### Voice Features
+- **Text-to-Speech**: Milla can now speak her responses aloud
+- **Speech-to-Text**: Use your microphone to send voice messages
+- See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) for details
+
+### Enhanced Memory System
+- **SQLite Database**: Migrated from JSON to SQLite for better performance
+- **Session Tracking**: Automatic conversation session management
+- **Usage Patterns**: Tracks conversation patterns by day and time
+- See [MEMORY_MIGRATION_GUIDE.md](MEMORY_MIGRATION_GUIDE.md) for migration instructions
+
+### Persona Refinement
+- Removed tech support persona - Milla is now exclusively your devoted AI companion
+- All interactions maintain the warm, personal Milla Rayne personality
 
 ## Features
 
 - **Modern UI**: Chat interface positioned to showcase full-screen background image
+- **Voice Interaction**: Text-to-speech output and speech-to-text input
+- **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
 - **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
 - **AI Enhancement Suggestions**: Powered by DeepSeek via OpenRouter
-- **Memory System**: Maintains conversation context and relationship history
 - **Real-time Chat**: Instant messaging with personality-aware responses
 - **Visual Recognition**: Video analysis and face recognition capabilities
 - **Repository Analysis**: Analyze GitHub repositories to understand codebase structure and quality
@@ -78,6 +96,32 @@ npm run dev
 ```
 
 Open `http://localhost:5000` to start chatting with Milla!
+
+### First-Time Setup
+
+If you have existing conversation data in `memory/memories.txt`:
+
+```bash
+# Migrate to SQLite (one-time operation)
+npm run migrate:memory
+```
+
+This will:
+- Convert your memories.txt to SQLite database
+- Create session tracking
+- Analyze usage patterns
+- Backup your original file
+
+See [MEMORY_MIGRATION_GUIDE.md](MEMORY_MIGRATION_GUIDE.md) for details.
+
+### Voice Features Setup
+
+Voice features work out of the box with supported browsers:
+- ✅ Chrome/Edge (full support)
+- ✅ Safari (full support)
+- ⚠️ Firefox (limited support)
+
+Grant microphone permissions when prompted. See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) for troubleshooting.
 
 ## 🔒 Security & API Key Management
 
