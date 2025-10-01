@@ -1,6 +1,15 @@
 {
   "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "exclude": [
+    "node_modules", 
+    "build", 
+    "dist", 
+    "**/*.test.ts",
+    "client/src/components/AvatarCustomizer.tsx",
+    "client/src/components/SettingsPanel.tsx",
+    "client/src/components/VideoAnalyzer.tsx",
+    "client/src/lib/MillaCore (copy).ts"
+  ],
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
