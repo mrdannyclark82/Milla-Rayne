@@ -9,6 +9,11 @@ vite.config.ts.*
 # Memory backups
 memory/*.backup-*
 
+# SQLite database files (local development data)
+memory/*.db
+memory/*.db-shm
+memory/*.db-wal
+
 # Environment variables with sensitive data (NEVER commit these!)
 .env
 .env.local
