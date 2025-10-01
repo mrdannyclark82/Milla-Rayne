@@ -93,7 +93,7 @@ async function encryptSessions(db: Database.Database, memoryKey: string, dryRun:
   
   try {
     // Get all sessions with last_two_messages
-    const sessions = db.prepare('SELECT id, last_two_messages FROM sessions WHERE last_two_messages IS NOT NULL AND last_two_messages != ""').all() as Array<{ id: string; last_two_messages: string }>;
+    const sessions = db.prepare("SELECT id, last_two_messages FROM sessions WHERE last_two_messages IS NOT NULL AND last_two_messages != ''").all() as Array<{ id: string; last_two_messages: string }>;
     stats.total = sessions.length;
     
     console.log(`Found ${stats.total} sessions with last_two_messages`);
