@@ -1,31 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import type { Message } from "@shared/schema";
 
 export default function AIAgentUI() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([
-    { role: 'assistant', content: 'Hello! How can I assist you today?' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState('Aura');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Load messages on mount
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const loadMessages = async () => {
+    try {
+      const response = await fetch("/api/messages");
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data || []);
+      }
+    } catch (error) {
+      console.error("Error loading messages:", error);
+    }
+  };
 
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
 
     const userMessage = input.trim();
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setInput("");
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'This is a placeholder response. The AI will respond here.' 
-      }]);
-    }, 500);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.userMessage) {
+          setMessages(prev => [...prev, data.userMessage]);
+        }
+        if (data.aiMessage) {
+          setMessages(prev => [...prev, data.aiMessage]);
+        }
+      } else {
+        console.error("Failed to send message");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -117,7 +156,7 @@ export default function AIAgentUI() {
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((msg, idx) => (
             <div 
-              key={idx}
+              key={msg.id || idx}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div 
@@ -131,6 +170,14 @@ export default function AIAgentUI() {
               </div>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-700 text-gray-100 rounded-lg p-3">
+                <span className="animate-pulse">Thinking...</span>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area (Bottom) */}
@@ -157,6 +204,7 @@ export default function AIAgentUI() {
               variant="outline"
               size="icon"
               className="bg-gray-800 text-white border-gray-600 hover:bg-gray-700"
+              disabled={isLoading}
             >
               🎙️
             </Button>
@@ -164,10 +212,11 @@ export default function AIAgentUI() {
             {/* Send Button */}
             <Button
               onClick={handleSendMessage}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isLoading || !input.trim()}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="mr-2">✈️</span>
-              Send
+              {isLoading ? 'Sending...' : 'Send'}
             </Button>
           </div>
         </div>
