@@ -8,6 +8,8 @@ vite.config.ts.*
 
 # Memory backups
 memory/*.backup-*
+memory/milla.db
+memory/visual_memories.json
 
 # SQLite database files (may contain sensitive data)
 *.db

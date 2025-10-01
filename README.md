@@ -178,6 +178,94 @@ See [SECURITY.md](SECURITY.md) for detailed security documentation.
 - **xAI**: [console.x.ai](https://console.x.ai) - Alternative AI service
 - **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) - For repository analysis
 
+### Memory Encryption Key (MEMORY_KEY)
+
+Milla encrypts sensitive conversation data using AES-256-GCM encryption. You need to set a `MEMORY_KEY` environment variable.
+
+#### Initial Setup
+
+1. **Generate a secure key**:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
+
+2. **Add to your `.env` file**:
+   ```env
+   MEMORY_KEY=your_generated_64_character_hex_key_here
+   ```
+
+3. **Run the encryption migration** (one-time):
+   ```bash
+   npx tsx server/encryptMigration.ts
+   ```
+
+This will encrypt all existing messages in the SQLite database and visual_memories.json file.
+
+#### Key Rotation
+
+If you need to change your encryption key:
+
+1. **Decrypt with old key**: Set old `MEMORY_KEY` in `.env`
+2. **Export data**: Back up your `memory/milla.db` and `memory/visual_memories.json`
+3. **Generate new key**: Use the command above
+4. **Update `.env`**: Replace `MEMORY_KEY` with new key
+5. **Re-run migration**: `npx tsx server/encryptMigration.ts` to re-encrypt with new key
+
+⚠️ **Important**: 
+- Keep your `MEMORY_KEY` secure and backed up
+- Changing the key without proper migration will make existing data unreadable
+- The key must be at least 32 characters long
+
+#### Verification
+
+After running the migration, verify encryption:
+
+```bash
+# Check that messages start with "enc:v1:"
+sqlite3 memory/milla.db "SELECT content FROM messages LIMIT 1;"
+
+# Check visual memories (should show encrypted data)
+head -c 50 memory/visual_memories.json
+```
+
+### GitHub Token for Private Repositories
+
+To analyze private GitHub repositories, configure a GitHub Personal Access Token:
+
+#### Setup Instructions
+
+1. **Create token**: Go to [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens)
+2. **Click** "Generate new token (classic)"
+3. **Set name**: e.g., "Milla Repository Analysis"
+4. **Select scopes**:
+   - ✅ `repo` - Full control of private repositories (includes repo:read)
+   - ✅ `workflow` - Update GitHub Action workflows (optional)
+   - For public repos only: `public_repo` is sufficient
+5. **Generate** and copy the token (starts with `ghp_`)
+6. **Add to `.env`**:
+   ```env
+   GITHUB_TOKEN=ghp_your_actual_token_here
+   ```
+
+#### Usage
+
+- **Public repos**: Work without token (but token improves API rate limits)
+- **Private repos**: Require token with `repo` scope
+- **Error messages**: If you see 403/404 errors, check:
+  - Token is set correctly
+  - Token has necessary permissions
+  - Repository name is correct
+  - You have access to the repository
+
+#### Token Security
+
+⚠️ **Never commit your GitHub token to version control!**
+
+- Tokens grant write access to your repositories
+- Rotate tokens regularly for security
+- Revoke tokens you're no longer using
+- Store tokens in environment variables only
+
 ## 🔧 Repository Analysis & Improvement
 
 Milla can analyze GitHub repositories and suggest specific improvements to enhance your codebase, with advanced features including:
