@@ -121,6 +121,27 @@ This will:
 
 See [MEMORY_MIGRATION_GUIDE.md](MEMORY_MIGRATION_GUIDE.md) for details.
 
+### Predictive Updates Behavior
+
+Milla can share daily improvement suggestions when enabled:
+
+**Configuration** (in `.env`):
+- `ENABLE_PREDICTIVE_UPDATES=true` - Enable daily suggestions feature
+- `AI_UPDATES_CRON="0 9 * * *"` - Schedule (default: 9:00 AM daily)
+- `ENABLE_DEV_TALK=false` - Control automatic development/analysis talk
+- `ADMIN_TOKEN=your_token` - Optional token for accessing AI updates API
+
+**Behavior**:
+- **Daily Suggestion**: Milla shares one concise suggestion per day when you first chat
+- **Manual Control**: Ask "what's new?" to see today's suggestion anytime
+- **Dev Talk Gating**: When `ENABLE_DEV_TALK=false` (default):
+  - GitHub URLs won't trigger automatic analysis
+  - Milla won't mention development capabilities unless you explicitly ask
+  - Use phrases like "analyze this repo" or "improve this code" to activate analysis features
+- **Explicit Requests Always Work**: Analysis endpoints and explicit commands always function regardless of settings
+
+This keeps Milla focused on her core companion personality while making development features available on-demand.
+
 ### Voice Features Setup
 
 Voice features work out of the box with supported browsers:
