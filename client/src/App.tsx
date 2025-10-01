@@ -56,10 +56,9 @@ function App() {
 
       {/* Chat Interface - Fixed Right Side */}
       <div className="fixed top-0 right-0 w-1/3 h-screen p-4 bg-black">
-        <div className="h-full flex flex-col">
-          <div className="flex-1 flex flex-col space-y-4">
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
+        <div className="h-full flex flex-col space-y-4">
+          {/* Messages - Fixed height with scrolling */}
+          <div className="h-[calc(100vh-120px)] overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
               {messages.length === 0 ? (
                 <p className="text-gray-400 text-center">
                   Start a conversation with Milla...
@@ -80,10 +79,10 @@ function App() {
                   </div>
                 ))
               )}
-            </div>
+          </div>
 
-            {/* Input */}
-            <div className="flex gap-2">
+          {/* Input - Fixed at bottom */}
+          <div className="flex gap-2">
               <input
                 type="text"
                 value={message}
@@ -98,8 +97,7 @@ function App() {
                 disabled={isLoading || !message.trim()}
               >
                 {isLoading ? 'Sending...' : 'Send'}
-              </Button>
-            </div>
+            </Button>
           </div>
         </div>
       </div>

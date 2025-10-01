@@ -1968,11 +1968,10 @@ async function generateAIResponse(
   }
 
   // ===========================================================================================
-  // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL or "repository" keyword present
+  // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL is present
   // Unless core function trigger overrides it
   // ===========================================================================================
   const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
-  const hasRepositoryKeyword = message.includes('repository') || message.includes('repo') || message.includes('github');
 
   if (!hasCoreTrigger && githubUrlMatch) {
     // GitHub URL detected - trigger repository analysis workflow
