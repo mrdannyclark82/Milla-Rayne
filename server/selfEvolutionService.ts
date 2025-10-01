@@ -357,25 +357,6 @@ export class ServerSelfEvolutionEngine {
     return timeSinceLastCheck >= this.EVOLUTION_CHECK_INTERVAL;
   }
 
-  /**
-   * Gets current evolution status and statistics
-   */
-  static getEvolutionStatus() {
-    const successfulEvolutions = this.evolutionHistory.filter(e => e.success).length;
-    const totalEvolutions = this.evolutionHistory.length;
-    const successRate = totalEvolutions > 0 ? successfulEvolutions / totalEvolutions : 0;
-    
-    return {
-      totalEvolutions,
-      successfulEvolutions,
-      successRate,
-      lastEvolution: this.evolutionHistory[this.evolutionHistory.length - 1],
-      activeOptimizations: this.activeOptimizations.size,
-      performanceBaseline: this.performanceBaseline,
-      nextEvolutionDue: this.shouldRunEvolution()
-    };
-  }
-
   // Helper methods for performance calculation and optimization
   private static async performQuickPerformanceTest(): Promise<void> {
     // Quick performance test to measure response time
