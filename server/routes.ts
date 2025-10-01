@@ -450,14 +450,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recursive Self-Improvement API endpoints
   app.get("/api/self-improvement/status", async (req, res) => {
     try {
-      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      // Note: Client-side SelfImprovementEngine not currently implemented
+      // const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionStatus } = await import("./selfEvolutionService");
 
-      const clientStatus = SelfImprovementEngine.getImprovementStatus();
+      // const clientStatus = SelfImprovementEngine.getImprovementStatus();
       const serverStatus = getServerEvolutionStatus();
 
       res.json({
-        client: clientStatus,
+        // client: clientStatus,
         server: serverStatus,
         success: true
       });
@@ -469,15 +470,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/self-improvement/trigger", async (req, res) => {
     try {
-      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      // Note: Client-side SelfImprovementEngine not currently implemented
+      // const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { triggerServerEvolution } = await import("./selfEvolutionService");
 
-      // Trigger both client and server improvement cycles
-      const clientCycle = await SelfImprovementEngine.initiateImprovementCycle();
+      // Trigger server improvement cycles
+      // const clientCycle = await SelfImprovementEngine.initiateImprovementCycle();
       const serverEvolutions = await triggerServerEvolution();
 
       res.json({
-        clientCycle,
+        // clientCycle,
         serverEvolutions,
         message: "Self-improvement cycle initiated successfully",
         success: true
@@ -491,10 +493,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get detailed improvement history
   app.get("/api/self-improvement/history", async (req, res) => {
     try {
-      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      // Note: Client-side SelfImprovementEngine not currently implemented
+      // const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionHistory } = await import("./selfEvolutionService");
 
-      const clientHistory = SelfImprovementEngine.getImprovementHistory();
+      // const clientHistory = SelfImprovementEngine.getImprovementHistory();
+      const clientHistory: any[] = []; // Placeholder until client-side engine is implemented
       const serverHistory = await getServerEvolutionHistory();
 
       // Parse query parameters for filtering
@@ -505,20 +509,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Apply filters
       if (type && type !== 'all') {
-        filteredServerHistory = serverHistory.filter(h => h.evolutionType === type);
+        filteredServerHistory = serverHistory.filter((h: any) => h.evolutionType === type);
       }
       if (status && status !== 'all') {
-        filteredClientHistory = clientHistory.filter(h => h.status === status);
+        filteredClientHistory = clientHistory.filter((h: any) => h.status === status);
       }
       if (dateFrom) {
         const fromDate = new Date(dateFrom as string);
-        filteredClientHistory = filteredClientHistory.filter(h => new Date(h.timestamp) >= fromDate);
-        filteredServerHistory = filteredServerHistory.filter(h => new Date(h.timestamp) >= fromDate);
+        filteredClientHistory = filteredClientHistory.filter((h: any) => new Date(h.timestamp) >= fromDate);
+        filteredServerHistory = filteredServerHistory.filter((h: any) => new Date(h.timestamp) >= fromDate);
       }
       if (dateTo) {
         const toDate = new Date(dateTo as string);
-        filteredClientHistory = filteredClientHistory.filter(h => new Date(h.timestamp) <= toDate);
-        filteredServerHistory = filteredServerHistory.filter(h => new Date(h.timestamp) <= toDate);
+        filteredClientHistory = filteredClientHistory.filter((h: any) => new Date(h.timestamp) <= toDate);
+        filteredServerHistory = filteredServerHistory.filter((h: any) => new Date(h.timestamp) <= toDate);
       }
 
       // Apply limit
@@ -546,10 +550,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get improvement analytics and trends
   app.get("/api/self-improvement/analytics", async (req, res) => {
     try {
-      const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
+      // Note: Client-side SelfImprovementEngine not currently implemented
+      // const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionAnalytics } = await import("./selfEvolutionService");
 
-      const clientAnalytics = SelfImprovementEngine.getImprovementAnalytics();
+      // const clientAnalytics = SelfImprovementEngine.getImprovementAnalytics();
+      const clientAnalytics = { totalCycles: 0, successfulCycles: 0, trends: { frequency: 'stable' } };
       const serverAnalytics = await getServerEvolutionAnalytics();
 
       res.json({
