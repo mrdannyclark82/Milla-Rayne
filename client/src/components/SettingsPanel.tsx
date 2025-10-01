@@ -515,7 +515,7 @@ function PersonalTasksSection() {
 
   const startTask = async (taskId: string) => {
     try {
-      await apiRequest("POST", `/api/personal-tasks/${taskId}/start`, {});
+      await apiRequest(`/api/personal-tasks/${taskId}/start`, { method: 'POST' });
       window.location.reload();
     } catch (error) {
       console.error('Failed to start task:', error);
@@ -524,7 +524,10 @@ function PersonalTasksSection() {
 
   const completeTask = async (taskId: string, insights: string) => {
     try {
-      await apiRequest("POST", `/api/personal-tasks/${taskId}/complete`, { insights });
+      await apiRequest(`/api/personal-tasks/${taskId}/complete`, { 
+        method: 'POST',
+        body: JSON.stringify({ insights })
+      });
       setSelectedTask(null);
       window.location.reload();
     } catch (error) {

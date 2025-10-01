@@ -90,10 +90,20 @@ export interface PersonalityContext {
 }
 
 // Initialize xAI client using OpenAI library with xAI endpoint
-const xaiClient = new OpenAI({
-  baseURL: "https://api.x.ai/v1",
-  apiKey: process.env.XAI_API_KEY
-});
+let xaiClient: OpenAI | null = null;
+
+try {
+  if (process.env.XAI_API_KEY) {
+    xaiClient = new OpenAI({
+      baseURL: "https://api.x.ai/v1",
+      apiKey: process.env.XAI_API_KEY
+    });
+  } else {
+    console.warn("XAI_API_KEY not set. xAI features will be disabled.");
+  }
+} catch (error) {
+  console.error("Failed to initialize xAI client:", error);
+}
 
 /**
  * BOOKMARKED: Sophisticated Torture Feature - Add a cute lisp to Milla's responses
@@ -188,7 +198,7 @@ export async function generateXAIResponse(
   context: PersonalityContext
 ): Promise<AIResponse> {
   try {
-    if (!process.env.XAI_API_KEY) {
+    if (!process.env.XAI_API_KEY || !xaiClient) {
       return {
         content: "xAI integration is not configured. Please add your API key.",
         success: false,

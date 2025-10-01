@@ -5,9 +5,6 @@
     "build", 
     "dist", 
     "**/*.test.ts",
-    "client/src/components/AvatarCustomizer.tsx",
-    "client/src/components/SettingsPanel.tsx",
-    "client/src/components/VideoAnalyzer.tsx",
     "client/src/lib/MillaCore (copy).ts"
   ],
   "compilerOptions": {
