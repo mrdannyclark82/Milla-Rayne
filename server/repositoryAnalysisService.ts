@@ -87,13 +87,22 @@ export function parseGitHubUrl(url: string): RepositoryInfo | null {
     // Remove protocol if present
     cleanUrl = cleanUrl.replace(/^https?:\/\//, '');
     
+    // Helper regex: GitHub owner and repo names may only contain alphanumeric characters, dashes, underscores and dots.
+    const safeNameRegex = /^[A-Za-z0-9_.-]+$/;
+    
     for (const pattern of patterns) {
       const match = cleanUrl.match(pattern);
       if (match) {
-        const [, owner, name] = match;
+        let [, owner, name] = match;
+        // Remove .git from name if present
+        name = name.replace(/\.git$/, '');
+        // Validate extracted owner and repo names
+        if (!safeNameRegex.test(owner) || !safeNameRegex.test(name)) {
+          return null;
+        }
         return {
           owner,
-          name: name.replace(/\.git$/, ''),
+          name,
           url: `https://github.com/${owner}/${name}`,
           fullName: `${owner}/${name}`
         };
