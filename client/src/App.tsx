@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import { Button } f              {/* Messages */}
-              <div className="flex-1 w-full overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                {messages.length === 0 ? (
-                  <p className="text-gray-400 text-center">
-                    Start a conversation with Milla...
-                  </p>/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 function App() {
   const [message, setMessage] = useState('');
