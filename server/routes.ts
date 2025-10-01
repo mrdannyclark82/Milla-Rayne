@@ -2357,8 +2357,8 @@ This message requires you to be fully present as ${userName}'s partner, companio
       console.log(`Conversation history length: ${conversationHistory?.length || 0} messages`);
     }
 
-    // Use OpenRouter for AI responses
-    const aiResponse = await generateOpenRouterResponse(enhancedMessage, {
+    // Use xAI for AI responses
+    const aiResponse = await generateXAIResponse(enhancedMessage, {
       conversationHistory: conversationHistory,
       userEmotionalState: analysis.sentiment,
       urgency: analysis.urgency,
