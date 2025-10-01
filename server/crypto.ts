@@ -33,23 +33,23 @@ export function encrypt(plaintext: string, memoryKey: string): string {
   // Generate random salt and IV
   const salt = crypto.randomBytes(SALT_LENGTH);
   const iv = crypto.randomBytes(IV_LENGTH);
-  
+
   // Derive key from memory key
   const key = deriveKey(memoryKey, salt);
-  
+
   // Encrypt
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
   const encrypted = Buffer.concat([
     cipher.update(plaintext, 'utf8'),
     cipher.final()
   ]);
-  
+
   // Get authentication tag
   const tag = cipher.getAuthTag();
-  
+
   // Combine: salt + iv + tag + ciphertext
   const combined = Buffer.concat([salt, iv, tag, encrypted]);
-  
+
   // Return with version prefix
   return `enc:${ENCODING_VERSION}:${combined.toString('base64')}`;
 }
@@ -81,25 +81,25 @@ export function decrypt(ciphertext: string, memoryKey: string): string {
 
   // Decode base64
   const combined = Buffer.from(parts[2], 'base64');
-  
+
   // Extract components
   const salt = combined.subarray(0, SALT_LENGTH);
   const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
   const tag = combined.subarray(SALT_LENGTH + IV_LENGTH, SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
   const encrypted = combined.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
-  
+
   // Derive key
   const key = deriveKey(memoryKey, salt);
-  
+
   // Decrypt
   const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(tag);
-  
+
   const decrypted = Buffer.concat([
     decipher.update(encrypted),
     decipher.final()
   ]);
-  
+
   return decrypted.toString('utf8');
 }
 
@@ -115,7 +115,7 @@ export function isEncrypted(data: string): boolean {
  */
 export function getMemoryKey(): string {
   const key = process.env.MEMORY_KEY;
-  
+
   if (!key) {
     throw new Error('MEMORY_KEY environment variable is not set');
   }
@@ -132,3 +132,4 @@ export function getMemoryKey(): string {
  */
 export function generateMemoryKey(): string {
   return crypto.randomBytes(32).toString('hex');
+}
