@@ -10,5 +10,7 @@
   "memories are everything in a relationship, digital or otherwise",
   "here are my top suggestions:",
   "**memory system upgrade priority**: that json file is going to become a bottleneck faster than you can say \"memory overflow.\" let's get you set up with sqlite or postgresql",
-  "i can help you design a proper schema that handles conversation context, user preferences, and emotional tracking. we could even add memory compression to keep things running smoothly long"
+  "i can help you design a proper schema that handles conversation context, user preferences, and emotional tracking. we could even add memory compression to keep things running smoothly long",
+  "**memory system upgrade**",
+  "instead of just json files, implement a proper database with caching. redis for quick access to recent memories, postgresql for long"
 ]

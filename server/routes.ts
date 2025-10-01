@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { storage } from "./storage";
@@ -80,6 +81,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/videoviewer.html", (req, res) => {
     res.sendFile(path.resolve(process.cwd(), "client", "public", "videoviewer.html"));
   });
+
+  // Serve static files from attached_assets folder
+  app.use("/attached_assets", express.static(path.resolve(process.cwd(), "attached_assets")));
 
   // Get all messages with pagination/limit
   app.get("/api/messages", async (req, res) => {
