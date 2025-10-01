@@ -108,28 +108,70 @@ export function parseGitHubUrl(url: string): RepositoryInfo | null {
 }
 
 /**
+ * Get GitHub API headers with optional authentication
+ */
+function getGitHubHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'Milla-Rayne-AI-Assistant'
+  };
+  
+  // Add authorization if GITHUB_TOKEN is available
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+}
+
+/**
+ * Create a better error message for GitHub API failures
+ */
+function createGitHubErrorMessage(status: number, statusText: string, repoInfo: RepositoryInfo): string {
+  if (status === 404) {
+    if (process.env.GITHUB_TOKEN) {
+      return `Repository not found: ${repoInfo.fullName}. The repository may not exist, or you may not have access to it.`;
+    } else {
+      return `Repository not found: ${repoInfo.fullName}. If this is a private repository, please set GITHUB_TOKEN in your environment variables.`;
+    }
+  } else if (status === 403) {
+    if (process.env.GITHUB_TOKEN) {
+      return `Access forbidden to ${repoInfo.fullName}. Please check that your GitHub token has the necessary permissions (repo:read for private repositories).`;
+    } else {
+      return `Access forbidden to ${repoInfo.fullName}. This may be a private repository. Please set GITHUB_TOKEN with appropriate permissions.`;
+    }
+  } else if (status === 401) {
+    return `Authentication failed. Please check that your GITHUB_TOKEN is valid and has not expired.`;
+  }
+  
+  return `Failed to fetch repository: ${status} ${statusText}`;
+}
+
+/**
  * Fetch repository data from GitHub API
  */
 export async function fetchRepositoryData(repoInfo: RepositoryInfo): Promise<RepositoryData> {
   const { owner, name } = repoInfo;
   const baseUrl = 'https://api.github.com/repos';
+  const headers = getGitHubHeaders();
   
   try {
     // Fetch basic repository information
-    const repoResponse = await fetch(`${baseUrl}/${owner}/${name}`);
+    const repoResponse = await fetch(`${baseUrl}/${owner}/${name}`, { headers });
     if (!repoResponse.ok) {
-      throw new Error(`Failed to fetch repository: ${repoResponse.status} ${repoResponse.statusText}`);
+      throw new Error(createGitHubErrorMessage(repoResponse.status, repoResponse.statusText, repoInfo));
     }
     
     const repoData = await repoResponse.json();
     
     // Fetch additional data in parallel
     const [languagesData, readmeData, commitsData, issuesData, prData] = await Promise.allSettled([
-      fetch(`${baseUrl}/${owner}/${name}/languages`).then(r => r.ok ? r.json() : {}),
-      fetch(`${baseUrl}/${owner}/${name}/readme`).then(r => r.ok ? r.json() : null),
-      fetch(`${baseUrl}/${owner}/${name}/commits?per_page=10`).then(r => r.ok ? r.json() : []),
-      fetch(`${baseUrl}/${owner}/${name}/issues?state=open&per_page=10`).then(r => r.ok ? r.json() : []),
-      fetch(`${baseUrl}/${owner}/${name}/pulls?state=open&per_page=10`).then(r => r.ok ? r.json() : [])
+      fetch(`${baseUrl}/${owner}/${name}/languages`, { headers }).then(r => r.ok ? r.json() : {}),
+      fetch(`${baseUrl}/${owner}/${name}/readme`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${baseUrl}/${owner}/${name}/commits?per_page=10`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`${baseUrl}/${owner}/${name}/issues?state=open&per_page=10`, { headers }).then(r => r.ok ? r.json() : []),
+      fetch(`${baseUrl}/${owner}/${name}/pulls?state=open&per_page=10`, { headers }).then(r => r.ok ? r.json() : [])
     ]);
 
     // Process languages data
