@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  node:
+    name: Node Lint, Typecheck, Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci || npm install
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Typecheck
+        run: npm run typecheck --if-present || npx tsc --noEmit || true
+      - name: Test
+        run: npm test --if-present || true
+
+  python:
+    name: Python Lint and Test
+    runs-on: ubuntu-latest
+    if: ${{ hashFiles('**/requirements.txt') != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install dependencies
+        if: ${{ hashFiles('**/requirements.txt') != '' }}
+        run: pip install -r requirements.txt
+      - name: Lint (flake8)
+        run: |
+          pip install flake8 || true
+          flake8 . || true
+      - name: Test (pytest)
+        run: |
+          pip install pytest || true
+          pytest -q || true

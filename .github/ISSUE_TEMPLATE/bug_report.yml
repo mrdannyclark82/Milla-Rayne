@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible problem
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the bug and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Steps to reproduce the behavior.
+      placeholder: "1. Go to ... 2. Click ... 3. Observe ..."
+  - type: input
+    id: version
+    attributes:
+      label: Version/Commit
+      description: App version or commit SHA
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      render: shell
