@@ -244,24 +244,6 @@ export default function Sidebar({ avatarState = "neutral" }: SidebarProps) {
               </div>
             </div>
           </Card>
-
-          {/* Navigation */}
-          <Card className="bg-muted/10 border border-border">
-            <div className="p-4">
-              <h3 className="text-sm font-semibold text-primary mb-3">
-                <i className="fas fa-compass mr-2"></i>System Tools
-              </h3>
-              <div className="space-y-2">
-                <a 
-                  href="/self-improvement"
-                  className="flex items-center space-x-2 text-xs text-muted-foreground hover:text-primary transition-colors p-2 rounded hover:bg-muted/20"
-                >
-                  <i className="fas fa-brain w-4"></i>
-                  <span>Self-Improvement Tracker</span>
-                </a>
-              </div>
-            </div>
-          </Card>
         </div>
       </div>
     </aside>

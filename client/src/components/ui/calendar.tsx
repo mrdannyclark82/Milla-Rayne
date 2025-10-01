@@ -66,4 +66,3 @@ function Calendar({
 Calendar.displayName = "Calendar"
 
 export { Calendar }
-export default Calendar

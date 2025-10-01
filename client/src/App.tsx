@@ -6,13 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ConversationProvider } from "@/contexts/ConversationContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
-import SelfImprovementPage from "@/pages/self-improvement";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/self-improvement" component={SelfImprovementPage} />
       <Route component={NotFound} />
     </Switch>
   );
