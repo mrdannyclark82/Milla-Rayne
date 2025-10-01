@@ -44,6 +44,29 @@ MISTRAL_API_KEY=your_mistral_api_key_here
 ```
 This enables AI responses for queries not found in the memory database.
 
+### Memory Encryption (Recommended for Privacy)
+To encrypt sensitive conversation data at rest:
+
+1. Generate a secure encryption key:
+   ```bash
+   openssl rand -base64 32
+   ```
+
+2. Add to your `.env` file:
+   ```env
+   MEMORY_KEY=your_generated_encryption_key_here
+   ```
+
+3. Restart the application - all new messages will be encrypted automatically
+
+**Benefits:**
+- Protects personal conversations stored in the SQLite database
+- AES-256-GCM encryption with authentication
+- Backward compatible - works with existing unencrypted data
+- No impact on application performance
+
+**Important:** Store your `MEMORY_KEY` securely - encrypted data cannot be recovered without it!
+
 ### Other Optional APIs
 - **OpenAI** (for additional AI capabilities)
 - **Weather Service** (for weather-related queries)
