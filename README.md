@@ -4,6 +4,12 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 ## Latest Updates 🎉
 
+### 🔒 Field-Level Encryption (NEW)
+- **Data Privacy**: Optional AES-256-GCM encryption for message content at rest
+- **Zero Impact**: No performance penalty, backward compatible with existing data
+- **Easy Setup**: Just add `MEMORY_KEY` to your `.env` file
+- See [SECURITY.md](SECURITY.md) for setup instructions
+
 ### Voice Features
 - **Text-to-Speech**: Milla can now speak her responses aloud
 - **Speech-to-Text**: Use your microphone to send voice messages
@@ -21,6 +27,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 ## Features
 
+- **🔒 Data Encryption**: Optional field-level encryption for sensitive conversation data
 - **Modern UI**: Chat interface positioned to showcase full-screen background image
 - **Voice Interaction**: Text-to-speech output and speech-to-text input
 - **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
@@ -138,6 +145,33 @@ This project requires API keys for full functionality. **NEVER commit actual API
 - **Heroku**: Use Config Vars in app settings
 - **GitHub Actions**: Use Repository Secrets
 - **Docker**: Use environment variables or secrets management
+
+### Data Encryption at Rest (Optional but Recommended)
+
+Protect your conversation data with field-level encryption:
+
+1. **Generate an encryption key:**
+   ```bash
+   openssl rand -base64 32
+   ```
+
+2. **Add to your `.env` file:**
+   ```env
+   MEMORY_KEY=your_generated_key_here
+   ```
+
+3. **Restart the application** - all new messages will be encrypted automatically
+
+**Benefits:**
+- ✅ AES-256-GCM encryption with authentication
+- ✅ Protects personal data in SQLite database
+- ✅ No performance impact
+- ✅ Backward compatible with existing data
+- ✅ Repository analysis features continue to work
+
+**Important:** Store your `MEMORY_KEY` securely - encrypted data cannot be recovered without it!
+
+See [SECURITY.md](SECURITY.md) for detailed security documentation.
 
 ### API Key Sources:
 - **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service (DeepSeek + Qwen)
