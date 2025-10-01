@@ -1,4 +1,4 @@
-import { FileStorage, type IStorage } from "./fileStorage";
+import { SqliteStorage, type IStorage } from "./sqliteStorage";
 
-export const storage: IStorage = new FileStorage();
+export const storage: IStorage = new SqliteStorage();
  

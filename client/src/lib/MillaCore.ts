@@ -40,6 +40,8 @@ import { Trigger } from "@radix-ui/react-tooltip";
      * - Creative Partner: Innovative, imaginative, boundary-pushing
      */ 
       
+    export type PersonalityMode = "coach" | "empathetic" | "strategic" | "creative" | "roleplay";
+
     export interface PersonalityMatrix {
   mode: PersonalityMode;
   intensity: number; // 0-100, affects how strongly the personality comes through
