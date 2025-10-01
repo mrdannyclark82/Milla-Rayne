@@ -1373,6 +1373,73 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // AI Updates endpoints for predictive updates feature
+  app.get("/api/ai-updates", async (req, res) => {
+    try {
+      const { getAIUpdates, getUpdateStats } = await import("./aiUpdatesService");
+      const { source, minRelevance, limit, offset, stats } = req.query;
+      
+      if (stats === 'true') {
+        const statistics = getUpdateStats();
+        res.json({ success: true, stats: statistics });
+      } else {
+        const updates = getAIUpdates({
+          source: source as string | undefined,
+          minRelevance: minRelevance ? parseFloat(minRelevance as string) : undefined,
+          limit: limit ? parseInt(limit as string, 10) : 50,
+          offset: offset ? parseInt(offset as string, 10) : undefined,
+        });
+        res.json({ success: true, updates, count: updates.length });
+      }
+    } catch (error) {
+      console.error("Error getting AI updates:", error);
+      res.status(500).json({ error: "Failed to get AI updates" });
+    }
+  });
+
+  app.post("/api/ai-updates/fetch", async (req, res) => {
+    try {
+      // Check for admin token if set
+      const adminToken = process.env.ADMIN_TOKEN;
+      if (adminToken) {
+        const providedToken = req.headers['x-admin-token'];
+        if (providedToken !== adminToken) {
+          res.status(403).json({ error: "Forbidden: Invalid admin token" });
+          return;
+        }
+      }
+
+      const { fetchAIUpdates } = await import("./aiUpdatesService");
+      console.log("Manual AI updates fetch triggered");
+      const result = await fetchAIUpdates();
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching AI updates:", error);
+      res.status(500).json({ error: "Failed to fetch AI updates" });
+    }
+  });
+
+  app.get("/api/ai-updates/recommendations", async (req, res) => {
+    try {
+      const { generateRecommendations, getRecommendationSummary } = await import("./predictiveRecommendations");
+      const { minRelevance, maxRecommendations, summary } = req.query;
+      
+      if (summary === 'true') {
+        const summaryData = getRecommendationSummary();
+        res.json({ success: true, summary: summaryData });
+      } else {
+        const recommendations = generateRecommendations({
+          minRelevance: minRelevance ? parseFloat(minRelevance as string) : 0.2,
+          maxRecommendations: maxRecommendations ? parseInt(maxRecommendations as string, 10) : 10,
+        });
+        res.json({ success: true, recommendations, count: recommendations.length });
+      }
+    } catch (error) {
+      console.error("Error generating recommendations:", error);
+      res.status(500).json({ error: "Failed to generate recommendations" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server for real-time features

@@ -16,6 +16,11 @@ memory/visual_memories.json
 *.db-shm
 *.db-wal
 
+# SQLite database files (local development data)
+memory/*.db
+memory/*.db-shm
+memory/*.db-wal
+
 # Environment variables with sensitive data (NEVER commit these!)
 .env
 .env.local

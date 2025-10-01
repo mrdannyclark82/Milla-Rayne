@@ -419,4 +419,168 @@ Milla: *creates pull request via GitHub API*
 - Risk assessment (low/medium/high)
 - Impact estimation (lines changed, files modified)
 - Comprehensive test reports
+
+## 🔮 Predictive Updates
+
+Milla can automatically track AI industry updates from curated sources and generate actionable feature recommendations tailored to this project.
+
+### Overview
+
+The predictive updates system:
+- **Fetches AI news**: Monitors RSS feeds from OpenAI, xAI, Perplexity, HuggingFace, GitHub Changelog, and more
+- **Computes relevance**: Analyzes updates based on project stack (OpenRouter, xAI, SQLite, voice features, etc.)
+- **Generates recommendations**: Converts relevant updates into concrete implementation suggestions
+- **Scheduled updates**: Optionally runs on a configurable cron schedule
+
+### Setup
+
+1. **Enable the feature** in your `.env`:
+   ```env
+   ENABLE_PREDICTIVE_UPDATES=true
+   ```
+
+2. **Configure sources** (optional - defaults to OpenAI, xAI, Perplexity, HuggingFace, GitHub):
+   ```env
+   AI_UPDATES_SOURCES=https://openai.com/blog/rss.xml,https://x.ai/blog/rss
+   ```
+
+3. **Set up scheduling** (optional - leave empty to disable automatic fetching):
+   ```env
+   # Fetch daily at midnight
+   AI_UPDATES_CRON=0 0 * * *
+   
+   # Or every 6 hours
+   AI_UPDATES_CRON=0 */6 * * *
+   
+   # Or weekly on Monday at 9am
+   AI_UPDATES_CRON=0 9 * * 1
+   ```
+
+4. **Secure admin endpoint** (optional - if set, fetch endpoint requires this token):
+   ```env
+   ADMIN_TOKEN=your_secure_token_here
+   ```
+
+### API Endpoints
+
+#### Get AI Updates
+```http
+GET /api/ai-updates?source=&minRelevance=0.3&limit=50
+```
+List stored AI updates with optional filtering.
+
+Query parameters:
+- `source` (optional): Filter by source URL
+- `minRelevance` (optional): Minimum relevance score (0-1)
+- `limit` (optional): Max results (default: 50)
+- `offset` (optional): Pagination offset
+- `stats=true` (optional): Get statistics instead of updates
+
+Response:
+```json
+{
+  "success": true,
+  "updates": [
+    {
+      "id": "uuid",
+      "title": "OpenAI releases new GPT model",
+      "url": "https://...",
+      "source": "https://openai.com/blog/rss.xml",
+      "published": "2025-01-15T10:00:00Z",
+      "summary": "...",
+      "tags": "openai, gpt, api",
+      "relevance": 0.75,
+      "createdAt": "2025-01-15T10:05:00Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+#### Trigger Manual Fetch
+```http
+POST /api/ai-updates/fetch
+Headers: X-Admin-Token: your_token (if ADMIN_TOKEN is set)
+```
+Manually trigger a fetch of all configured sources.
+
+Response:
+```json
+{
+  "success": true,
+  "itemsAdded": 42,
+  "errors": []
+}
+```
+
+#### Get Recommendations
+```http
+GET /api/ai-updates/recommendations?minRelevance=0.2&maxRecommendations=10
+```
+Generate actionable recommendations from stored updates.
+
+Query parameters:
+- `minRelevance` (optional): Minimum relevance threshold (default: 0.2)
+- `maxRecommendations` (optional): Max recommendations (default: 10)
+- `summary=true` (optional): Get summary statistics instead
+
+Response:
+```json
+{
+  "success": true,
+  "recommendations": [
+    {
+      "title": "Consider integrating new AI model: GPT-5 Released",
+      "rationale": "A new or updated AI model has been announced...",
+      "suggestedChanges": [
+        "server/openrouterService.ts - Add new model endpoint",
+        "server/routes.ts - Update model selection logic",
+        "README.md - Document new model capability"
+      ],
+      "confidence": 0.85,
+      "sourceUpdates": ["https://..."]
+    }
+  ],
+  "count": 1
+}
+```
+
+### How to Act on Recommendations
+
+1. **Review recommendations**: Call `/api/ai-updates/recommendations` to see suggestions
+2. **Evaluate relevance**: Check the `confidence` score and `rationale`
+3. **Implement changes**: Follow `suggestedChanges` to update your codebase
+4. **Create PRs**: Use GitHub or the repository modification feature to apply changes
+
+### Example Workflow
+
+```bash
+# Enable predictive updates
+echo "ENABLE_PREDICTIVE_UPDATES=true" >> .env
+
+# Manually fetch updates
+curl -X POST http://localhost:5000/api/ai-updates/fetch
+
+# View all updates
+curl http://localhost:5000/api/ai-updates?limit=10
+
+# Get recommendations
+curl http://localhost:5000/api/ai-updates/recommendations
+
+# Get statistics
+curl http://localhost:5000/api/ai-updates?stats=true
+```
+
+### Relevance Scoring
+
+Updates are scored based on keywords matching the project's technology stack:
+- **Keywords**: OpenRouter, xAI, Qwen, DeepSeek, SQLite, voice, TTS, STT, GitHub Actions, security, API, TypeScript, React, Express, WebSocket, LLM, GPT, Claude, Mistral, Grok
+
+Higher relevance scores indicate updates more likely to benefit this project.
+
+### Non-Goals
+
+- ❌ No UI components in this release (API-only)
+- ❌ No automatic PR creation on updates (use repository modification feature separately)
+- ❌ No real-time push notifications (polling-based via API)
 ```

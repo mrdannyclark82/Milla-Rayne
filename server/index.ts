@@ -89,6 +89,10 @@ if (!globalThis.crypto) {
   const { initializeEnhancementTaskSystem } = await import("./enhancementService");
   await initializeEnhancementTaskSystem();
   
+  // Initialize AI Updates Scheduler for predictive updates
+  const { initializeAIUpdatesScheduler } = await import("./aiUpdatesScheduler");
+  initializeAIUpdatesScheduler();
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
