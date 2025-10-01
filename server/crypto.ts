@@ -1,132 +1,134 @@
 /**
- * Cryptographic utilities for field-level encryption
- * Uses AES-256-GCM for authenticated encryption of sensitive data
+
+ * Cryptographic utilities for encrypting/decrypting sensitive data
+ * Uses AES-256-GCM for authenticated encryption
  */
 
-import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+import crypto from 'crypto';
 
-// Encryption version for future compatibility
-const ENCRYPTION_VERSION = 'v1';
-const ENCRYPTION_PREFIX = 'enc:';
-
-// Algorithm configuration
 const ALGORITHM = 'aes-256-gcm';
-const KEY_LENGTH = 32; // 256 bits
 const IV_LENGTH = 16; // 128 bits
-const SALT_LENGTH = 16; // 128 bits
-const AUTH_TAG_LENGTH = 16; // 128 bits
+const SALT_LENGTH = 32; // 256 bits
+const TAG_LENGTH = 16; // 128 bits
+const KEY_LENGTH = 32; // 256 bits
+const ITERATIONS = 100000;
+const ENCODING_VERSION = 'v1';
 
 /**
- * Get or generate encryption key from environment variable
+ * Derive a key from the MEMORY_KEY using PBKDF2
  */
-function getEncryptionKey(): Buffer {
-  const memoryKey = process.env.MEMORY_KEY;
-  
+function deriveKey(memoryKey: string, salt: Buffer): Buffer {
+  return crypto.pbkdf2Sync(memoryKey, salt, ITERATIONS, KEY_LENGTH, 'sha256');
+}
+
+/**
+ * Encrypt plaintext using AES-256-GCM
+ * Returns: enc:v1:base64(salt:iv:tag:ciphertext)
+ */
+export function encrypt(plaintext: string, memoryKey: string): string {
   if (!memoryKey) {
-    console.warn('MEMORY_KEY not set - encryption disabled. Data will be stored in plaintext.');
-    return Buffer.alloc(0);
+    throw new Error('MEMORY_KEY is required for encryption');
   }
+
+  // Generate random salt and IV
+  const salt = crypto.randomBytes(SALT_LENGTH);
+  const iv = crypto.randomBytes(IV_LENGTH);
   
-  // Derive a proper key from the MEMORY_KEY using scrypt
-  const salt = Buffer.from('milla-rayne-salt'); // Static salt for deterministic key
-  return scryptSync(memoryKey, salt, KEY_LENGTH);
+  // Derive key from memory key
+  const key = deriveKey(memoryKey, salt);
+  
+  // Encrypt
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+  const encrypted = Buffer.concat([
+    cipher.update(plaintext, 'utf8'),
+    cipher.final()
+  ]);
+  
+  // Get authentication tag
+  const tag = cipher.getAuthTag();
+  
+  // Combine: salt + iv + tag + ciphertext
+  const combined = Buffer.concat([salt, iv, tag, encrypted]);
+  
+  // Return with version prefix
+  return `enc:${ENCODING_VERSION}:${combined.toString('base64')}`;
 }
 
 /**
- * Check if encryption is enabled
+ * Decrypt ciphertext using AES-256-GCM
+ * Expects: enc:v1:base64(salt:iv:tag:ciphertext)
  */
-export function isEncryptionEnabled(): boolean {
-  return !!process.env.MEMORY_KEY;
+export function decrypt(ciphertext: string, memoryKey: string): string {
+  if (!memoryKey) {
+    throw new Error('MEMORY_KEY is required for decryption');
+  }
+
+  // Check for encryption prefix
+  if (!ciphertext.startsWith('enc:')) {
+    throw new Error('Invalid encrypted data format');
+  }
+
+  // Parse version and data
+  const parts = ciphertext.split(':');
+  if (parts.length !== 3 || parts[0] !== 'enc') {
+    throw new Error('Invalid encrypted data format');
+  }
+
+  const version = parts[1];
+  if (version !== ENCODING_VERSION) {
+    throw new Error(`Unsupported encryption version: ${version}`);
+  }
+
+  // Decode base64
+  const combined = Buffer.from(parts[2], 'base64');
+  
+  // Extract components
+  const salt = combined.subarray(0, SALT_LENGTH);
+  const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+  const tag = combined.subarray(SALT_LENGTH + IV_LENGTH, SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
+  const encrypted = combined.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
+  
+  // Derive key
+  const key = deriveKey(memoryKey, salt);
+  
+  // Decrypt
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(tag);
+  
+  const decrypted = Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final()
+  ]);
+  
+  return decrypted.toString('utf8');
 }
 
 /**
- * Encrypt a string value using AES-256-GCM
- * Format: enc:v1:<base64-encoded-data>
- * 
- * @param plaintext - The text to encrypt
- * @returns Encrypted string with version prefix, or plaintext if encryption disabled
+ * Check if data is already encrypted
  */
-export function encrypt(plaintext: string): string {
-  if (!isEncryptionEnabled()) {
-    return plaintext;
-  }
-  
-  try {
-    const key = getEncryptionKey();
-    const iv = randomBytes(IV_LENGTH);
-    const cipher = createCipheriv(ALGORITHM, key, iv);
-    
-    let encrypted = cipher.update(plaintext, 'utf8');
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    
-    const authTag = cipher.getAuthTag();
-    
-    // Combine IV + encrypted data + auth tag
-    const combined = Buffer.concat([iv, encrypted, authTag]);
-    
-    // Format: enc:v1:<base64-data>
-    return `${ENCRYPTION_PREFIX}${ENCRYPTION_VERSION}:${combined.toString('base64')}`;
-  } catch (error) {
-    console.error('Encryption error:', error);
-    throw new Error('Failed to encrypt data');
-  }
+export function isEncrypted(data: string): boolean {
+  return data.startsWith('enc:v1:');
 }
 
 /**
- * Decrypt an encrypted string value
- * Supports format: enc:v1:<base64-encoded-data>
- * 
- * @param ciphertext - The encrypted text to decrypt
- * @returns Decrypted plaintext, or original string if not encrypted
+ * Get MEMORY_KEY from environment with validation
  */
-export function decrypt(ciphertext: string): string {
-  // If not encrypted, return as-is (backward compatibility)
-  if (!ciphertext.startsWith(ENCRYPTION_PREFIX)) {
-    return ciphertext;
-  }
+export function getMemoryKey(): string {
+  const key = process.env.MEMORY_KEY;
   
-  if (!isEncryptionEnabled()) {
-    throw new Error('Cannot decrypt data: MEMORY_KEY not set');
+  if (!key) {
+    throw new Error('MEMORY_KEY environment variable is not set');
   }
-  
-  try {
-    // Parse format: enc:v1:<base64-data>
-    const parts = ciphertext.split(':');
-    if (parts.length !== 3 || parts[0] !== 'enc') {
-      throw new Error('Invalid encrypted data format');
-    }
-    
-    const version = parts[1];
-    const encodedData = parts[2];
-    
-    if (version !== ENCRYPTION_VERSION) {
-      throw new Error(`Unsupported encryption version: ${version}`);
-    }
-    
-    const key = getEncryptionKey();
-    const combined = Buffer.from(encodedData, 'base64');
-    
-    // Extract components: IV + encrypted data + auth tag
-    const iv = combined.subarray(0, IV_LENGTH);
-    const authTag = combined.subarray(combined.length - AUTH_TAG_LENGTH);
-    const encrypted = combined.subarray(IV_LENGTH, combined.length - AUTH_TAG_LENGTH);
-    
-    const decipher = createDecipheriv(ALGORITHM, key, iv);
-    decipher.setAuthTag(authTag);
-    
-    let decrypted = decipher.update(encrypted);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    
-    return decrypted.toString('utf8');
-  } catch (error) {
-    console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt data');
+
+  if (key.length < 32) {
+    throw new Error('MEMORY_KEY must be at least 32 characters long');
   }
+
+  return key;
 }
 
 /**
- * Check if a value is encrypted
+ * Generate a secure random MEMORY_KEY
  */
-export function isEncrypted(value: string): boolean {
-  return value.startsWith(ENCRYPTION_PREFIX);
-}
+export function generateMemoryKey(): string {
+  return crypto.randomBytes(32).toString('hex');
