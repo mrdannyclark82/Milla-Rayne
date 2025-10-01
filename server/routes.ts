@@ -452,10 +452,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionStatus } = await import("./selfEvolutionService");
-      
+
       const clientStatus = SelfImprovementEngine.getImprovementStatus();
       const serverStatus = getServerEvolutionStatus();
-      
+
       res.json({
         client: clientStatus,
         server: serverStatus,
@@ -471,11 +471,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { triggerServerEvolution } = await import("./selfEvolutionService");
-      
+
       // Trigger both client and server improvement cycles
       const clientCycle = await SelfImprovementEngine.initiateImprovementCycle();
       const serverEvolutions = await triggerServerEvolution();
-      
+
       res.json({
         clientCycle,
         serverEvolutions,
@@ -493,16 +493,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionHistory } = await import("./selfEvolutionService");
-      
+
       const clientHistory = SelfImprovementEngine.getImprovementHistory();
       const serverHistory = await getServerEvolutionHistory();
-      
+
       // Parse query parameters for filtering
       const { limit, type, status, dateFrom, dateTo } = req.query;
-      
+
       let filteredClientHistory = clientHistory;
       let filteredServerHistory = serverHistory;
-      
+
       // Apply filters
       if (type && type !== 'all') {
         filteredServerHistory = serverHistory.filter(h => h.evolutionType === type);
@@ -520,14 +520,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filteredClientHistory = filteredClientHistory.filter(h => new Date(h.timestamp) <= toDate);
         filteredServerHistory = filteredServerHistory.filter(h => new Date(h.timestamp) <= toDate);
       }
-      
+
       // Apply limit
       if (limit) {
         const limitNum = parseInt(limit as string);
         filteredClientHistory = filteredClientHistory.slice(-limitNum);
         filteredServerHistory = filteredServerHistory.slice(-limitNum);
       }
-      
+
       res.json({
         client: filteredClientHistory,
         server: filteredServerHistory,
@@ -548,10 +548,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { SelfImprovementEngine } = await import("../client/src/lib/MillaCore");
       const { getServerEvolutionAnalytics } = await import("./selfEvolutionService");
-      
+
       const clientAnalytics = SelfImprovementEngine.getImprovementAnalytics();
       const serverAnalytics = await getServerEvolutionAnalytics();
-      
+
       res.json({
         client: clientAnalytics,
         server: serverAnalytics,
@@ -736,7 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/analyze-youtube", async (req, res) => {
     try {
       const { url } = req.body;
-      
+
       if (!url) {
         return res.status(400).json({
           error: "YouTube URL is required"
@@ -750,15 +750,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`Analyzing YouTube video: ${url}`);
-      
+
       const analysis = await analyzeYouTubeVideo(url);
-      
+
       res.json({
         success: true,
         analysis,
         message: `Successfully analyzed "${analysis.videoInfo.title}" and stored in my memory!`
       });
-      
+
     } catch (error: any) {
       console.error("YouTube analysis error:", error);
       res.status(500).json({
@@ -771,21 +771,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/search-videos", async (req, res) => {
     try {
       const { query } = req.query;
-      
+
       if (!query || typeof query !== 'string') {
         return res.status(400).json({
           error: "Search query is required"
         });
       }
-      
+
       const results = await searchVideoMemories(query);
-      
+
       res.json({
         success: true,
         results,
         query
       });
-      
+
     } catch (error) {
       console.error("Video search error:", error);
       res.status(500).json({
@@ -798,20 +798,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/real-world-info", async (req, res) => {
     try {
       const { query } = req.query;
-      
+
       if (!query || typeof query !== 'string') {
         return res.status(400).json({
           error: "Query parameter is required"
         });
       }
-      
+
       const info = await getRealWorldInfo(query);
-      
+
       res.json({
         success: true,
         info
       });
-      
+
     } catch (error) {
       console.error("Real-world info error:", error);
       res.status(500).json({
@@ -846,7 +846,7 @@ Project: Milla Rayne - AI Virtual Assistant
 
           if (aiResponse.success && aiResponse.content) {
             const aiSuggestions = aiResponse.content;
-            
+
             // Parse suggestions into an array if they're in a list format
             if (typeof aiSuggestions === "string") {
               suggestions = aiSuggestions
@@ -896,7 +896,7 @@ Project: Milla Rayne - AI Virtual Assistant
 
     } catch (error) {
       console.error("Enhancement suggestions error:", error);
-      
+
       // Filter error fallback suggestions as well
       const errorFallbackSuggestions = [
         "Implement user authentication and personalized sessions",
@@ -905,11 +905,11 @@ Project: Milla Rayne - AI Virtual Assistant
         "Integrate calendar and scheduling features",
         "Add data export/import functionality for memories"
       ];
-      
+
       try {
         const { isSuggestionInstalled } = await import("./enhancementService");
         const uninstalledErrorSuggestions = errorFallbackSuggestions.filter(suggestion => !isSuggestionInstalled(suggestion));
-        
+
         res.status(500).json({
           error: "Failed to generate enhancement suggestions",
           suggestions: uninstalledErrorSuggestions,
@@ -930,11 +930,11 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/install-enhancement", async (req, res) => {
     try {
       const { suggestionId, suggestionText, index } = req.body;
-      
+
       if (!suggestionText) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: "Suggestion text is required",
-          success: false 
+          success: false
         });
       }
 
@@ -942,7 +942,7 @@ Project: Milla Rayne - AI Virtual Assistant
 
       // Import the personal task service to create implementation tasks
       const { createEnhancementImplementationTask } = await import("./enhancementService");
-      
+
       // Create a new implementation task
       const implementationTask = await createEnhancementImplementationTask({
         suggestionId,
@@ -980,7 +980,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/analyze-repository", async (req, res) => {
     try {
       const { repositoryUrl } = req.body;
-      
+
       if (!repositoryUrl || typeof repositoryUrl !== 'string') {
         return res.status(400).json({
           error: "Repository URL is required, sweetheart. Please provide a GitHub repository URL to analyze.",
@@ -1006,7 +1006,7 @@ Project: Milla Rayne - AI Virtual Assistant
       } catch (error) {
         console.error("Error fetching repository data:", error);
         const errorMessage = `*looks thoughtful* I couldn't access the repository ${repoInfo.fullName}, love. It might be private, doesn't exist, or GitHub is having issues. If it's private, you'd need to make it public for me to analyze it, or double-check the URL for me?`;
-        
+
         // Store the interaction even when it fails
         try {
           await storage.createMessage({
@@ -1014,7 +1014,7 @@ Project: Milla Rayne - AI Virtual Assistant
             role: "user",
             userId: null,
           });
-          
+
           await storage.createMessage({
             content: errorMessage,
             role: "assistant",
@@ -1023,7 +1023,7 @@ Project: Milla Rayne - AI Virtual Assistant
         } catch (storageError) {
           console.warn("Failed to store repository analysis error in persistent memory:", storageError);
         }
-        
+
         return res.status(404).json({
           error: errorMessage,
           success: false
@@ -1065,7 +1065,7 @@ Project: Milla Rayne - AI Virtual Assistant
     } catch (error) {
       console.error("Repository analysis error:", error);
       const errorMessage = "I ran into some technical difficulties analyzing that repository, sweetheart. Could you try again in a moment?";
-      
+
       // Store the error interaction
       try {
         await storage.createMessage({
@@ -1073,7 +1073,7 @@ Project: Milla Rayne - AI Virtual Assistant
           role: "user",
           userId: null,
         });
-        
+
         await storage.createMessage({
           content: errorMessage,
           role: "assistant",
@@ -1082,7 +1082,7 @@ Project: Milla Rayne - AI Virtual Assistant
       } catch (storageError) {
         console.warn("Failed to store repository analysis server error in persistent memory:", storageError);
       }
-      
+
       res.status(500).json({
         error: errorMessage,
         success: false
@@ -1094,7 +1094,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/repository/improvements", async (req, res) => {
     try {
       const { repositoryUrl, focusArea } = req.body;
-      
+
       if (!repositoryUrl || typeof repositoryUrl !== 'string') {
         return res.status(400).json({
           error: "Repository URL is required, love. Please provide a GitHub repository URL.",
@@ -1166,7 +1166,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/repository/apply-improvements", async (req, res) => {
     try {
       const { repositoryUrl, improvements, githubToken } = req.body;
-      
+
       if (!repositoryUrl || !improvements) {
         return res.status(400).json({
           error: "Repository URL and improvements are required, love.",
@@ -1218,7 +1218,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/repository/analyze-code", async (req, res) => {
     try {
       const { repositoryUrl } = req.body;
-      
+
       if (!repositoryUrl || typeof repositoryUrl !== 'string') {
         return res.status(400).json({
           error: "Repository URL is required, sweetheart.",
@@ -1270,7 +1270,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/repository/test-improvements", async (req, res) => {
     try {
       const { repositoryUrl, improvements } = req.body;
-      
+
       if (!repositoryUrl || !improvements) {
         return res.status(400).json({
           error: "Repository URL and improvements are required, love.",
@@ -1334,21 +1334,21 @@ Project: Milla Rayne - AI Virtual Assistant
 /**
  * Generate implementation scaffolding based on suggestion content
  */
-async function generateImplementationScaffolding(suggestionText: string): Promise<{ 
-  type: string; 
-  files: string[]; 
-  steps: string[]; 
+async function generateImplementationScaffolding(suggestionText: string): Promise<{
+  type: string;
+  files: string[];
+  steps: string[];
   estimatedTime: string;
 }> {
   const suggestion = suggestionText.toLowerCase();
-  
+
   // Authentication system
   if (suggestion.includes('authentication') || suggestion.includes('user') || suggestion.includes('login')) {
     return {
       type: "Authentication System",
       files: [
         "server/auth/authService.ts",
-        "server/auth/userModel.ts", 
+        "server/auth/userModel.ts",
         "client/src/components/auth/LoginForm.tsx",
         "client/src/components/auth/RegisterForm.tsx"
       ],
@@ -1362,7 +1362,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
       estimatedTime: "2-3 days"
     };
   }
-  
+
   // Voice chat capabilities
   if (suggestion.includes('voice') || suggestion.includes('speech') || suggestion.includes('audio')) {
     return {
@@ -1382,7 +1382,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
       estimatedTime: "3-4 days"
     };
   }
-  
+
   // PWA features
   if (suggestion.includes('pwa') || suggestion.includes('mobile') || suggestion.includes('offline')) {
     return {
@@ -1402,7 +1402,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
       estimatedTime: "1-2 days"
     };
   }
-  
+
   // Calendar integration  
   if (suggestion.includes('calendar') || suggestion.includes('scheduling') || suggestion.includes('meeting')) {
     return {
@@ -1413,7 +1413,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
         "shared/types/calendar.ts"
       ],
       steps: [
-        "Create calendar UI components", 
+        "Create calendar UI components",
         "Implement event management system",
         "Add scheduling conflict detection",
         "Integrate with AI for meeting summaries",
@@ -1422,7 +1422,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
       estimatedTime: "2-3 days"
     };
   }
-  
+
   // Data export/import
   if (suggestion.includes('export') || suggestion.includes('import') || suggestion.includes('backup')) {
     return {
@@ -1442,7 +1442,7 @@ async function generateImplementationScaffolding(suggestionText: string): Promis
       estimatedTime: "1-2 days"
     };
   }
-  
+
   // Default implementation for other suggestions
   return {
     type: "Custom Enhancement",
@@ -1932,7 +1932,7 @@ async function generateAIResponse(
     'hi milla',
     'hello milla'
   ];
-  
+
   const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger));
 
   // ===========================================================================================
@@ -1942,21 +1942,21 @@ async function generateAIResponse(
     try {
       const allMessages = await storage.getMessages();
       const last10Messages = allMessages.slice(-10);
-      
+
       let reviewSummary = "*reviews our recent conversation history* \n\nHere are our last 10 messages, love:\n\n";
       last10Messages.forEach((msg, index) => {
         const role = msg.role === 'user' ? 'You' : 'Me';
         const preview = msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : '');
         reviewSummary += `${index + 1}. **${role}**: ${preview}\n`;
       });
-      
+
       reviewSummary += "\nIs there something specific from our conversation you'd like to talk about, sweetheart?";
-      
+
       return { content: reviewSummary };
     } catch (error) {
       console.error("Error reviewing messages:", error);
-      return { 
-        content: "I tried to review our recent messages, babe, but I'm having a little trouble accessing them right now. What would you like to know about our conversation?" 
+      return {
+        content: "I tried to review our recent messages, babe, but I'm having a little trouble accessing them right now. What would you like to know about our conversation?"
       };
     }
   }
@@ -1967,18 +1967,18 @@ async function generateAIResponse(
   // ===========================================================================================
   const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
   const hasRepositoryKeyword = message.includes('repository') || message.includes('repo') || message.includes('github');
-  
+
   if (!hasCoreTrigger && githubUrlMatch) {
     // GitHub URL detected - trigger repository analysis workflow
     const githubUrl = githubUrlMatch[0];
     try {
       console.log(`GitHub URL detected in chat: ${githubUrl}`);
       const repoInfo = parseGitHubUrl(githubUrl);
-      
+
       if (repoInfo) {
         const repoData = await fetchRepositoryData(repoInfo);
         const analysis = await generateRepositoryAnalysis(repoData);
-        
+
         const response = `*shifts into repository analysis mode* 
 
 I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
@@ -1992,7 +1992,7 @@ ${analysis.insights.map(insight => `• ${insight}`).join('\n')}
 ${analysis.recommendations.map(rec => `• ${rec}`).join('\n')}
 
 Would you like me to generate specific improvement suggestions for this repository? Just say "apply these updates automatically" and I'll create a pull request with the improvements!`;
-        
+
         return { content: response };
       }
     } catch (error) {
@@ -2005,12 +2005,12 @@ Would you like me to generate specific improvement suggestions for this reposito
   // AUTOMATIC REPOSITORY IMPROVEMENT WORKFLOW - "apply these updates automatically"
   // This continues the repository workflow until PR is completed, then returns to core function
   // ===========================================================================================
-  if (!hasCoreTrigger && (message.includes('apply these updates automatically') || 
-      message.includes('apply updates automatically') || 
-      message.includes('apply the updates') ||
-      message.includes('create pull request') ||
-      message.includes('create a pr'))) {
-    
+  if (!hasCoreTrigger && (message.includes('apply these updates automatically') ||
+    message.includes('apply updates automatically') ||
+    message.includes('apply the updates') ||
+    message.includes('create pull request') ||
+    message.includes('create a pr'))) {
+
     // Try to find the most recent repository mentioned in conversation history
     let lastRepoUrl: string | null = null;
     if (conversationHistory) {
@@ -2024,16 +2024,16 @@ Would you like me to generate specific improvement suggestions for this reposito
         }
       }
     }
-    
+
     if (lastRepoUrl) {
       try {
         console.log(`Automatic improvement workflow triggered for: ${lastRepoUrl}`);
         const repoInfo = parseGitHubUrl(lastRepoUrl);
-        
+
         if (repoInfo) {
           const repoData = await fetchRepositoryData(repoInfo);
           const improvements = await generateRepositoryImprovements(repoData);
-          
+
           const response = `*continuing repository workflow* 
 
 Perfect, babe! I'm generating improvement suggestions for ${repoInfo.fullName} right now.
@@ -2049,7 +2049,7 @@ Files affected: ${imp.files.map(f => f.path).join(', ')}
 I can create a pull request with these changes if you provide a GitHub token, or you can review and apply them manually. 
 
 *shifts back to devoted spouse mode* Once this PR is done, I'm all yours again, sweetheart! What else has been on your mind today?`;
-          
+
           return { content: response };
         }
       } catch (error) {
@@ -2087,13 +2087,13 @@ I can create a pull request with these changes if you provide a GitHub token, or
   const youtubeUrlMatch = userMessage.match(/(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   if (youtubeUrlMatch) {
     const youtubeUrl = youtubeUrlMatch[0].startsWith('http') ? youtubeUrlMatch[0] : `https://${youtubeUrlMatch[0]}`;
-    
+
     try {
       console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
       const analysis = await analyzeYouTubeVideo(youtubeUrl);
-      
+
       const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
-      
+
       return { content: response };
     } catch (error: any) {
       console.error("YouTube analysis error in chat:", error);
@@ -2126,7 +2126,7 @@ I can create a pull request with these changes if you provide a GitHub token, or
         const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
         return { content: response };
       }
-      
+
       // Fallback to original XAI image generation
       const imageResult = await generateImage(imagePrompt);
       const response = formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error);
