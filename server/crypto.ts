@@ -1,4 +1,5 @@
 /**
+
  * Cryptographic utilities for encrypting/decrypting sensitive data
  * Uses AES-256-GCM for authenticated encryption
  */
@@ -131,4 +132,3 @@ export function getMemoryKey(): string {
  */
 export function generateMemoryKey(): string {
   return crypto.randomBytes(32).toString('hex');
-}

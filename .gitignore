@@ -11,6 +11,11 @@ memory/*.backup-*
 memory/milla.db
 memory/visual_memories.json
 
+# SQLite database files (may contain sensitive data)
+*.db
+*.db-shm
+*.db-wal
+
 # Environment variables with sensitive data (NEVER commit these!)
 .env
 .env.local

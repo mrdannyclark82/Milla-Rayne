@@ -9,6 +9,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import { encrypt, decrypt, isEncryptionEnabled } from "./crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,7 +137,8 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
     `);
 
-    console.log('SQLite database initialized at:', DB_PATH);
+    const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
+    console.log(`SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`);
   }
 
   // User methods
@@ -172,6 +174,9 @@ export class SqliteStorage implements IStorage {
     const id = randomUUID();
     const timestamp = new Date();
     
+    // Encrypt message content before storing
+    const encryptedContent = encrypt(message.content);
+    
     const stmt = this.db.prepare(`
       INSERT INTO messages (id, content, role, personality_mode, timestamp, user_id, session_id) 
       VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM sessions WHERE user_id = ? AND end_time IS NULL ORDER BY start_time DESC LIMIT 1))
@@ -179,7 +184,7 @@ export class SqliteStorage implements IStorage {
     
     stmt.run(
       id,
-      message.content,
+      encryptedContent,
       message.role,
       message.personalityMode || null,
       timestamp.toISOString(),
@@ -199,7 +204,7 @@ export class SqliteStorage implements IStorage {
 
     return {
       id,
-      content: message.content,
+      content: message.content, // Return original plaintext
       role: message.role,
       personalityMode: message.personalityMode || null,
       timestamp,
@@ -209,15 +214,18 @@ export class SqliteStorage implements IStorage {
 
   async getMessages(userId?: string): Promise<Message[]> {
     let stmt;
+    let messages;
     if (userId) {
       stmt = this.db.prepare('SELECT * FROM messages WHERE user_id = ? ORDER BY timestamp ASC');
+      messages = stmt.all(userId) as any[];
     } else {
       stmt = this.db.prepare('SELECT * FROM messages ORDER BY timestamp ASC');
+      messages = stmt.all() as any[];
     }
     
-    const messages = stmt.all(userId) as any[];
     return messages.map(msg => ({
       ...msg,
+      content: decrypt(msg.content), // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
@@ -232,6 +240,7 @@ export class SqliteStorage implements IStorage {
     
     return {
       ...msg,
+      content: decrypt(msg.content), // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
