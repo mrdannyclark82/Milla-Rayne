@@ -1328,6 +1328,51 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Session management endpoints
+  app.post("/api/session/start", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const session = await (storage as any).createSession(userId || 'default-user');
+      res.json({ success: true, session });
+    } catch (error) {
+      console.error("Error starting session:", error);
+      res.status(500).json({ error: "Failed to start session" });
+    }
+  });
+
+  app.post("/api/session/end", async (req, res) => {
+    try {
+      const { sessionId, lastMessages } = req.body;
+      await (storage as any).endSession(sessionId, lastMessages || []);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error ending session:", error);
+      res.status(500).json({ error: "Failed to end session" });
+    }
+  });
+
+  app.get("/api/session/stats", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const stats = await (storage as any).getSessionStats(userId as string);
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error("Error getting session stats:", error);
+      res.status(500).json({ error: "Failed to get session stats" });
+    }
+  });
+
+  app.get("/api/usage-patterns", async (req, res) => {
+    try {
+      const { userId } = req.query;
+      const patterns = await (storage as any).getUsagePatterns(userId as string);
+      res.json({ success: true, patterns });
+    } catch (error) {
+      console.error("Error getting usage patterns:", error);
+      res.status(500).json({ error: "Failed to get usage patterns" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server for real-time features
