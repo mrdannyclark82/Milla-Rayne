@@ -1825,7 +1825,8 @@ async function shouldSurfaceDailySuggestion(
     'today\'s update'
   ];
 
-  if (explicitQueries.some(query => messageLower.includes(query))) {
+  const hasExplicitQuery = explicitQueries.some(query => messageLower.includes(query));
+  if (hasExplicitQuery) {
     return true;
   }
 
