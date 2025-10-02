@@ -9,7 +9,7 @@ import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { generateImageWithGrok, extractImagePrompt as extractImagePromptGrok, formatImageResponse as formatImageResponseGrok } from "./openrouterImageService";
-import { generateImageWithGemini, extractImagePrompt as extractImagePromptGemini, formatImageResponse as formatImageResponseGemini } from "./geminiImageService";
+import { generateImageWithBanana } from "./bananaImageService";
 import { generateCodeWithQwen, extractCodeRequest, formatCodeResponse } from "./openrouterCodeService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
@@ -211,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (shouldSurfaceSuggestion) {
           const { getOrCreateTodaySuggestion, markSuggestionDelivered } = await import("./dailySuggestionsService");
           const suggestion = await getOrCreateTodaySuggestion();
-          
+
           if (suggestion && !suggestion.isDelivered) {
             // Create a message with the daily suggestion
             dailySuggestionMessage = await storage.createMessage({
@@ -219,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               role: "assistant",
               userId: message.userId,
             });
-            
+
             // Mark as delivered
             await markSuggestionDelivered(suggestion.date);
             console.log(`Daily suggestion delivered for ${suggestion.date}`);
@@ -1366,7 +1366,7 @@ Project: Milla Rayne - AI Virtual Assistant
             success: false
           });
         }
-        
+
         const token = authHeader.substring(7);
         if (token !== adminToken) {
           return res.status(401).json({
@@ -1411,7 +1411,7 @@ Project: Milla Rayne - AI Virtual Assistant
             success: false
           });
         }
-        
+
         const token = authHeader.substring(7);
         if (token !== adminToken) {
           return res.status(401).json({
@@ -1507,11 +1507,11 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       const { consentType, consentText, metadata } = req.body;
       const userId = 'default-user'; // In a real app, this would come from authentication
-      
+
       if (!consentType || !consentText) {
-        return res.status(400).json({ 
-          error: "Missing required fields: consentType and consentText", 
-          success: false 
+        return res.status(400).json({
+          error: "Missing required fields: consentType and consentText",
+          success: false
         });
       }
 
@@ -1527,11 +1527,11 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       const { consentType } = req.body;
       const userId = 'default-user'; // In a real app, this would come from authentication
-      
+
       if (!consentType) {
-        return res.status(400).json({ 
-          error: "Missing required field: consentType", 
-          success: false 
+        return res.status(400).json({
+          error: "Missing required field: consentType",
+          success: false
         });
       }
 
@@ -1560,7 +1560,7 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       const { getAIUpdates, getUpdateStats } = await import("./aiUpdatesService");
       const { source, minRelevance, limit, offset, stats } = req.query;
-      
+
       if (stats === 'true') {
         const statistics = getUpdateStats();
         res.json({ success: true, stats: statistics });
@@ -1605,7 +1605,7 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       const { generateRecommendations, getRecommendationSummary } = await import("./predictiveRecommendations");
       const { minRelevance, maxRecommendations, summary } = req.query;
-      
+
       if (summary === 'true') {
         const summaryData = getRecommendationSummary();
         res.json({ success: true, summary: summaryData });
@@ -1967,7 +1967,7 @@ async function shouldSurfaceDailySuggestion(
   // Look at conversation history to see if there's already a message today
   if (conversationHistory && conversationHistory.length > 0) {
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Get all messages from storage to check timestamps
     try {
       const allMessages = await storage.getMessages();
@@ -1975,7 +1975,7 @@ async function shouldSurfaceDailySuggestion(
         const msgDate = new Date(msg.timestamp).toISOString().split('T')[0];
         return msgDate === today;
       });
-      
+
       // If there are already messages today, don't surface suggestion
       // (unless explicitly requested, which we handled above)
       if (todaysMessages.length > 1) {
@@ -1997,12 +1997,12 @@ async function shouldSurfaceDailySuggestion(
  */
 function canDiscussDev(userUtterance?: string): boolean {
   const enableDevTalk = process.env.ENABLE_DEV_TALK === 'true';
-  
+
   // If ENABLE_DEV_TALK is true, always allow
   if (enableDevTalk) {
     return true;
   }
-  
+
   // If ENABLE_DEV_TALK is false (or not set), only allow if user explicitly requests
   if (userUtterance) {
     const utteranceLower = userUtterance.toLowerCase();
@@ -2019,10 +2019,10 @@ function canDiscussDev(userUtterance?: string): boolean {
       'review code',
       'check repository'
     ];
-    
+
     return explicitDevVerbs.some(verb => utteranceLower.includes(verb));
   }
-  
+
   return false;
 }
 
@@ -2367,7 +2367,7 @@ async function generateAIResponse(
 
   if (!hasCoreTrigger && githubUrlMatch) {
     const githubUrl = githubUrlMatch[0];
-    
+
     // Check if dev talk is allowed
     if (!canDiscussDev(userMessage)) {
       // ENABLE_DEV_TALK is false and user didn't explicitly request analysis
@@ -2375,7 +2375,7 @@ async function generateAIResponse(
       const response = `I see you shared a GitHub repository link! If you'd like me to analyze it, just say "analyze this repo" and I'll dive into ${githubUrl} for you, love. 💜`;
       return { content: response };
     }
-    
+
     // Dev talk is allowed - proceed with analysis
     try {
       console.log(`GitHub URL detected in chat: ${githubUrl}`);
@@ -2530,28 +2530,74 @@ I can create a pull request with these changes if you provide a GitHub token, or
     }
   }
 
-  // Check for image generation requests - try Gemini first, then Grok, then fallback to XAI
+  // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
   const imagePrompt = extractImagePrompt(userMessage);
   if (imagePrompt) {
     try {
-      // Try Gemini first for image generation (google/gemini-2.5-flash-image-preview)
-      const geminiResult = await generateImageWithGemini(imagePrompt);
-      if (geminiResult.success) {
-        const response = formatImageResponseGemini(imagePrompt, geminiResult.success, geminiResult.imageUrl, geminiResult.error);
-        return { content: response };
+      // If a Banana/Gemini key is configured, try Banana first
+      if (process.env.OPENROUTER_GEMINI_API_KEY || process.env.BANANA_API_KEY) {
+        const bananaResult = await generateImageWithBanana(imagePrompt);
+        if (bananaResult.success) {
+          // If Banana returned a direct image URL or data URI, return it
+          if (bananaResult.imageUrl && (bananaResult.imageUrl.startsWith('http://') || bananaResult.imageUrl.startsWith('https://') || bananaResult.imageUrl.startsWith('data:image/'))) {
+            const response = formatImageResponseGrok(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            return { content: response };
+          }
+
+          // If Banana returned only a text description (data:text or plain text), return that directly
+          if (bananaResult.imageUrl && bananaResult.imageUrl.startsWith('data:text')) {
+            const response = formatImageResponseGrok(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            return { content: response };
+          }
+
+          // Otherwise return whatever Banana provided
+          const response = formatImageResponseGrok(imagePrompt, bananaResult.success, bananaResult.imageUrl, bananaResult.error);
+          return { content: response };
+        }
+        // If Banana failed, log and fall through to OpenRouter
+        console.warn('Banana image generation failed, falling back to OpenRouter/Gemini preview:', bananaResult.error);
       }
 
-      // Fallback to Grok for image generation (enhanced descriptions)
+      // Try OpenRouter (Gemini preview) next (may return an image URL, data URI, or enhanced description)
       const grokResult = await generateImageWithGrok(imagePrompt);
       if (grokResult.success) {
+        // If OpenRouter returned a direct image URL or data URI, return it directly
+        if (grokResult.imageUrl && (grokResult.imageUrl.startsWith('http://') || grokResult.imageUrl.startsWith('https://') || grokResult.imageUrl.startsWith('data:image/'))) {
+          const response = formatImageResponseGrok(imagePrompt, true, grokResult.imageUrl, grokResult.error);
+          return { content: response };
+        }
+
+        // If OpenRouter returned a textual enhanced description (data:text or plain text), extract description
+        let descriptionText: string | null = null;
+        if (grokResult.imageUrl && grokResult.imageUrl.startsWith('data:text')) {
+          try {
+            descriptionText = decodeURIComponent(grokResult.imageUrl.split(',')[1]);
+          } catch (err) {
+            descriptionText = null;
+          }
+        }
+
+        // If no data:text URI, but grok returned a non-URL content in .imageUrl, treat that as description
+        if (!descriptionText && grokResult.imageUrl && !grokResult.imageUrl.startsWith('http') && !grokResult.imageUrl.startsWith('data:')) {
+          descriptionText = grokResult.imageUrl;
+        }
+
+        // If we have an enhanced description, return it directly and do not pipe to xAI
+        if (descriptionText) {
+          const response = formatImageResponseGrok(imagePrompt, true, `data:text/plain;charset=utf-8,${encodeURIComponent(descriptionText)}`, grokResult.error);
+          return { content: response };
+        }
+
+        // Otherwise return what OpenRouter provided (description or other)
         const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
         return { content: response };
       }
 
-      // Final fallback to original XAI image generation
-      const imageResult = await generateImage(imagePrompt);
-      const response = formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error);
-      return { content: response };
+      // If OpenRouter failed completely, return a clear message suggesting to configure Gemini/Banana keys
+      const responseText = `I'd love to create an image of "${imagePrompt}", but I'm unable to generate it right now. ` +
+        `Please ensure your OpenRouter Gemini/Banana key (OPENROUTER_GEMINI_API_KEY) is configured, or provide another image provider. ` +
+        `Alternatively I can return a detailed description if you'd like (use the /api/openrouter-chat endpoint).`;
+      return { content: responseText };
     } catch (error) {
       console.error("Image generation error:", error);
       const response = `I apologize, but I encountered an issue generating the image for "${imagePrompt}". Please try again or try a different prompt.`;
@@ -2782,13 +2828,56 @@ This message requires you to be fully present as ${userName}'s partner, companio
       console.log(`Conversation history length: ${conversationHistory?.length || 0} messages`);
     }
 
-    // Use xAI for AI responses
-    const aiResponse = await generateXAIResponse(enhancedMessage, {
-      conversationHistory: conversationHistory,
-      userEmotionalState: analysis.sentiment,
-      urgency: analysis.urgency,
-      userName: userName
-    });
+    // Provider selection: support CHAT_PROVIDER env var: 'xai', 'openrouter', or 'auto'
+    // For now, prefer OpenRouter Venice explicitly when its API key is present.
+    let provider: string;
+    if (process.env.OPENROUTER_VENICE_API_KEY) {
+      // Force OpenRouter (Venice) when the Venice key is configured
+      provider = 'openrouter';
+    } else {
+      // Fallback/default behavior: prefer OpenRouter if any openrouter key exists, otherwise xai
+      const defaultProvider = process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY
+        ? 'openrouter'
+        : 'xai';
+      provider = (process.env.CHAT_PROVIDER || defaultProvider).toLowerCase();
+    }
+
+    let aiResponse: any = { success: false, content: '' };
+
+    if (provider === 'openrouter') {
+      console.log('Chat provider set to OpenRouter (venice). Routing request to OpenRouter.');
+      const start = Date.now();
+      aiResponse = await generateOpenRouterResponse(enhancedMessage, { userName: userName });
+      const took = Date.now() - start;
+      console.log(`OpenRouter response time: ${took}ms`);
+    } else if (provider === 'xai') {
+      console.log('Chat provider set to xAI (grok). Routing request to xAI.');
+      const start = Date.now();
+      aiResponse = await generateXAIResponse(enhancedMessage, {
+        conversationHistory: conversationHistory,
+        userEmotionalState: analysis.sentiment,
+        urgency: analysis.urgency,
+        userName: userName
+      });
+      const took = Date.now() - start;
+      console.log(`xAI response time: ${took}ms`);
+    } else {
+      // auto: prefer xAI if configured, otherwise OpenRouter
+      if (process.env.XAI_API_KEY) {
+        const start = Date.now();
+        aiResponse = await generateXAIResponse(enhancedMessage, {
+          conversationHistory: conversationHistory,
+          userEmotionalState: analysis.sentiment,
+          urgency: analysis.urgency,
+          userName: userName
+        });
+        console.log(`xAI (auto) response time: ${Date.now() - start}ms`);
+      } else {
+        const start = Date.now();
+        aiResponse = await generateOpenRouterResponse(enhancedMessage, { userName: userName });
+        console.log(`OpenRouter (auto) response time: ${Date.now() - start}ms`);
+      }
+    }
 
     // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
 

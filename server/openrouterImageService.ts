@@ -1,5 +1,6 @@
 /**
- * OpenRouter Image Generation Service using x-ai/grok-4-fast:free
+ * OpenRouter Image Generation Service using OpenRouter-hosted image preview models
+ * We will attempt to use Google Gemini image preview via OpenRouter when available.
  */
 
 import nodeFetch from 'node-fetch';
@@ -12,12 +13,14 @@ export interface OpenRouterImageGenerationResult {
 }
 
 /**
- * Generate image using x-ai/grok-4-fast:free via OpenRouter
- * Note: Since Grok might not have direct image generation, we'll generate detailed descriptions
- * that could be used with other image generation APIs
+ * Generate image (or an image preview/URL) using OpenRouter.
+ * Preferred model: google/gemini-2.5-flash-image-preview:free
+ * Falls back to generating an enhanced description if the model doesn't return an image URL.
  */
 export async function generateImageWithGrok(prompt: string): Promise<OpenRouterImageGenerationResult> {
-  if (!process.env.OPENROUTER_GROK_API_KEY && !process.env.OPENROUTER_API_KEY) {
+  // Use a provider-specific key if available, otherwise fall back to the general OpenRouter key
+  const openrouterKey = process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_GROK_API_KEY || process.env.OPENROUTER_VENICE_API_KEY || process.env.OPENROUTER_API_KEY;
+  if (!openrouterKey) {
     return {
       success: false,
       error: "OpenRouter API key is not configured. Please set OPENROUTER_GROK_API_KEY or OPENROUTER_API_KEY in your environment."
@@ -29,34 +32,34 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_GROK_API_KEY || process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${openrouterKey}`,
         "Content-Type": "application/json",
         "X-Title": "Milla Rayne AI Assistant - Image Generation",
       },
       body: JSON.stringify({
-        model: "x-ai/grok-beta", // Using available model (grok-4-fast:free may not be available)
+  // Attempt to use the Gemini image-preview model via OpenRouter which may return an image preview or image URL.
+  model: "google/gemini-2.5-flash-image-preview",
         messages: [
           {
             role: "system",
-            content: "You are an expert at creating detailed, vivid image descriptions for AI image generation. Create a comprehensive description that captures all visual elements, style, composition, lighting, and artistic details."
+            content: "You are an image generation assistant. When possible, generate an image preview or return a direct image URL that represents the user's prompt. If the model cannot return binary images, instead produce a JSON-safe enhanced image description with composition, lighting, colors, style, and other details."
           },
           {
             role: "user",
-            content: `Create a detailed image description for: ${prompt}. Make it vivid and specific enough for an AI image generator to create a high-quality image.`
+            content: `Generate an image for the following prompt: ${prompt}. If possible return an image URL or an inline base64-encoded image. If not possible, return a thorough, production-ready image description.`
           }
         ],
-        max_tokens: 1000,
+        max_tokens: 1400,
         temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("OpenRouter Grok image API error:", response.status, errorData);
-      
+      console.error("OpenRouter image API error:", response.status, errorData);
       return {
         success: false,
-        error: `OpenRouter Grok API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`
+        error: `OpenRouter image API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`
       };
     }
 
@@ -70,15 +73,32 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
       };
     }
 
-    const enhancedDescription = data.choices[0].message.content;
-    
-    // For now, return the enhanced description as a "generated image" response
-    // In a full implementation, this description could be fed to an actual image generation API
-    console.log("Grok generated enhanced image description:", enhancedDescription);
-    
+    const messageContent = data.choices[0].message.content || '';
+
+    // If the model returned a JSON object or an image URL, try to extract it
+    // Some OpenRouter-hosted image-preview models may return an image URL directly in the content
+    const urlMatch = messageContent.match(/https?:\/\/.+\.(png|jpg|jpeg|webp|gif)(\?.*)?/i);
+    if (urlMatch) {
+      return {
+        success: true,
+        imageUrl: urlMatch[0]
+      };
+    }
+
+    // If the model returned base64 data URI, return it directly
+    const dataUriMatch = messageContent.match(/data:image\/[a-zA-Z]+;base64,[A-Za-z0-9+/=]+/i);
+    if (dataUriMatch) {
+      return {
+        success: true,
+        imageUrl: dataUriMatch[0]
+      };
+    }
+
+    // Otherwise treat the content as an enhanced description and return as a data:text URL
+    console.log("OpenRouter generated enhanced image description (no direct image):", messageContent.substring(0, 200));
     return {
       success: true,
-      imageUrl: `data:text/plain;charset=utf-8,${encodeURIComponent(enhancedDescription)}`,
+      imageUrl: `data:text/plain;charset=utf-8,${encodeURIComponent(messageContent)}`,
       error: undefined
     };
 
