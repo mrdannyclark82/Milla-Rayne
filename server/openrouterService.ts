@@ -23,7 +23,8 @@ export async function generateOpenRouterResponse(
   context: OpenRouterContext = {}
 ): Promise<OpenRouterResponse> {
   try {
-    if (!process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+    // Venice API key is now required for primary model
+    if (!process.env.OPENROUTER_VENICE_API_KEY || process.env.OPENROUTER_VENICE_API_KEY === 'your_openrouter_api_key_here') {
       // Temporary fallback for demo purposes - in production, add your OPENROUTER_API_KEY
       console.log("OpenRouter API key not configured, using intelligent fallback response");
 
@@ -75,13 +76,13 @@ export async function generateOpenRouterResponse(
     // Add conversation history if available - ensure proper alternation and content validation
     if (context.conversationHistory) {
       const recentHistory = context.conversationHistory.slice(-4); // Reduced to 4 messages for better token usage
-      
+
       // Filter out empty messages and ensure proper alternation
-      const validMessages = recentHistory.filter(msg => 
-        msg.content && msg.content.trim().length > 0 && 
+      const validMessages = recentHistory.filter(msg =>
+        msg.content && msg.content.trim().length > 0 &&
         (msg.role === 'user' || msg.role === 'assistant')
       );
-      
+
       // Find the start of a proper user->assistant pattern
       let startIndex = 0;
       for (let i = 0; i < validMessages.length; i++) {
@@ -90,7 +91,7 @@ export async function generateOpenRouterResponse(
           break;
         }
       }
-      
+
       // Add messages starting from proper user message, maintaining alternation
       let expectedRole = 'user';
       for (let i = startIndex; i < validMessages.length; i++) {
@@ -123,32 +124,55 @@ export async function generateOpenRouterResponse(
 
     // Debug: Log the messages array for debugging (only in development)
     if (process.env.NODE_ENV === 'development') {
-      console.log('OpenRouter messages:', messages.map((msg, index) => ({ 
-        index, 
-        role: msg.role, 
-        hasContent: !!msg.content, 
+      console.log('OpenRouter messages:', messages.map((msg, index) => ({
+        index,
+        role: msg.role,
+        hasContent: !!msg.content,
         contentLength: msg.content ? msg.content.length : 0,
         preview: msg.content ? msg.content.substring(0, 50) + '...' : ''
       })));
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    // Try Venice Dolphin-Mistral first
+    let response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${process.env.OPENROUTER_VENICE_API_KEY}`,
         "Content-Type": "application/json",
         "X-Title": "Milla Rayne AI Assistant", // Optional: for logs
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat-v3.1:free", // DeepSeek Chat model via OpenRouter
+        model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
         messages: messages,
-        temperature: 0.8, // Increased for more variety
+        temperature: 0.8,
         max_tokens: 1000,
-        top_p: 0.9, // Reduced for better focus while maintaining variety
-        frequency_penalty: 0.6, // Added to reduce repetitive phrases
-        presence_penalty: 0.4, // Added to encourage new topics/approaches
+        top_p: 0.9,
+        frequency_penalty: 0.6,
+        presence_penalty: 0.4,
       }),
     });
+
+    // If Venice fails, fallback to DeepSeek
+    if (!response.ok) {
+      console.warn("Venice model failed, falling back to DeepSeek");
+      response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "X-Title": "Milla Rayne AI Assistant",
+        },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-chat-v3.1:free",
+          messages: messages,
+          temperature: 0.8,
+          max_tokens: 1000,
+          top_p: 0.9,
+          frequency_penalty: 0.6,
+          presence_penalty: 0.4,
+        }),
+      });
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

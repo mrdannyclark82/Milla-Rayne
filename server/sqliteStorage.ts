@@ -9,7 +9,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import { encrypt, decrypt, isEncryptionEnabled } from "./crypto";
+import { encrypt, decrypt, getMemoryKey } from "./crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +24,7 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(userId?: string): Promise<Message[]>;
   getMessageById(id: string): Promise<Message | undefined>;
-  
+
   // Enhanced session tracking methods
   createSession(userId: string): Promise<SessionInfo>;
   endSession(sessionId: string, lastMessages: string[]): Promise<void>;
@@ -154,7 +154,13 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_ai_updates_published ON ai_updates(published);
     `);
 
-    const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
+    let encryptionStatus: string;
+    try {
+      getMemoryKey();
+      encryptionStatus = 'enabled';
+    } catch {
+      encryptionStatus = 'disabled';
+    }
     console.log(`SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`);
   }
 
@@ -178,7 +184,7 @@ export class SqliteStorage implements IStorage {
       VALUES (?, ?, ?)
     `);
     stmt.run(id, user.username, user.password);
-    
+
     return {
       id,
       username: user.username,
@@ -190,15 +196,15 @@ export class SqliteStorage implements IStorage {
   async createMessage(message: InsertMessage): Promise<Message> {
     const id = randomUUID();
     const timestamp = new Date();
-    
+
     // Encrypt message content before storing
-    const encryptedContent = encrypt(message.content);
-    
+    const encryptedContent = encrypt(message.content, getMemoryKey());
+
     const stmt = this.db.prepare(`
       INSERT INTO messages (id, content, role, personality_mode, timestamp, user_id, session_id) 
       VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM sessions WHERE user_id = ? AND end_time IS NULL ORDER BY start_time DESC LIMIT 1))
     `);
-    
+
     stmt.run(
       id,
       encryptedContent,
@@ -239,10 +245,10 @@ export class SqliteStorage implements IStorage {
       stmt = this.db.prepare('SELECT * FROM messages ORDER BY timestamp ASC');
       messages = stmt.all() as any[];
     }
-    
+
     return messages.map(msg => ({
       ...msg,
-      content: decrypt(msg.content), // Decrypt content on read
+      content: decrypt(msg.content, getMemoryKey()), // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
@@ -252,12 +258,12 @@ export class SqliteStorage implements IStorage {
   async getMessageById(id: string): Promise<Message | undefined> {
     const stmt = this.db.prepare('SELECT * FROM messages WHERE id = ?');
     const msg = stmt.get(id) as any;
-    
+
     if (!msg) return undefined;
-    
+
     return {
       ...msg,
-      content: decrypt(msg.content), // Decrypt content on read
+      content: decrypt(msg.content, getMemoryKey()), // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
@@ -299,18 +305,18 @@ export class SqliteStorage implements IStorage {
 
   async endSession(sessionId: string, lastMessages: string[] = []): Promise<void> {
     const endTime = new Date();
-    
+
     // Get session start time to calculate duration
     const sessionStmt = this.db.prepare('SELECT start_time FROM sessions WHERE id = ?');
     const session = sessionStmt.get(sessionId) as any;
-    
+
     if (!session) return;
-    
+
     const startTime = new Date(session.start_time);
     const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
-    
+
     const lastTwoMessages = lastMessages.slice(-2).join(' ||| ');
-    
+
     const stmt = this.db.prepare(`
       UPDATE sessions 
       SET end_time = ?,
@@ -342,9 +348,9 @@ export class SqliteStorage implements IStorage {
         WHERE end_time IS NOT NULL
       `);
     }
-    
+
     const stats = stmt.get(userId) as any;
-    
+
     // Calculate average time between sessions
     let avgTimeBetween = 0;
     const timeStmt = userId
@@ -360,7 +366,7 @@ export class SqliteStorage implements IStorage {
           WHERE end_time IS NOT NULL 
           ORDER BY start_time ASC
         `);
-    
+
     const sessions = timeStmt.all(userId) as any[];
     if (sessions.length > 1) {
       const timeDiffs: number[] = [];
@@ -397,7 +403,7 @@ export class SqliteStorage implements IStorage {
         ORDER BY session_count DESC
       `);
     }
-    
+
     const patterns = stmt.all(userId) as any[];
     return patterns.map(p => ({
       dayOfWeek: p.day_of_week,
