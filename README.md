@@ -11,9 +11,12 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - See [SECURITY.md](SECURITY.md) for setup instructions
 
 ### Voice Features
-- **Text-to-Speech**: Milla can now speak her responses aloud
+- **Multi-Provider TTS**: Support for Google Cloud, Azure, ElevenLabs, and browser-native voices
+- **US English (Southern) Accent**: Prioritized natural, expressive female voices
+- **Low Latency**: Optimized for conversational response times
+- **Automatic Fallback**: Seamless switching between providers
 - **Speech-to-Text**: Use your microphone to send voice messages
-- See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) for details
+- See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) and [VOICE_ENGINE_README.md](VOICE_ENGINE_README.md) for details
 
 ### Enhanced Memory System
 - **SQLite Database**: Migrated from JSON to SQLite for better performance
@@ -29,7 +32,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 - **🔒 Data Encryption**: Optional field-level encryption for sensitive conversation data
 - **Modern UI**: Chat interface positioned to showcase full-screen background image
-- **Voice Interaction**: Text-to-speech output and speech-to-text input
+- **🎙️ Multi-Provider Voice**: Support for Google Cloud, Azure, ElevenLabs TTS with automatic fallback
 - **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
 - **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
 - **AI Enhancement Suggestions**: Powered by DeepSeek via OpenRouter

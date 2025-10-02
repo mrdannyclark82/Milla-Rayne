@@ -193,7 +193,7 @@ function App() {
   const toggleVoice = () => {
     setVoiceEnabled(!voiceEnabled);
     if (voiceEnabled) {
-      window.speechSynthesis.cancel();
+      voiceService.cancel();
     }
   };
 
