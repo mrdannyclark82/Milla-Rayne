@@ -8,6 +8,23 @@
 import { RepositoryInfo, RepositoryData } from "./repositoryAnalysisService";
 import { RepositoryImprovement } from "./repositoryModificationService";
 
+
+// SSRF mitigation: Only allow safe relative file paths removing traversal, null bytes, etc.
+function isSafeGitHubFilePath(filePath: string): boolean {
+  // Disallow absolute paths, backslash, path traversal, and suspicious chars
+  if (
+    typeof filePath !== 'string' ||
+    filePath.length === 0 ||
+    filePath[0] === "/" ||
+    filePath.includes("\\") ||
+    filePath.includes("..") ||
+    filePath.includes("\x00") || // null byte
+    /[:@%]/.test(filePath) // disallow colon, @, percent
+  ) return false;
+  // Optionally: restrict path to only certain extensions
+  if (!/^[\w\-./]+$/.test(filePath)) return false;
+  return true;
+}
 export interface GitHubPullRequestOptions {
   title: string;
   body: string;
@@ -113,6 +130,10 @@ export async function updateGitHubFile(
   githubToken: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // SSRF/path traversal mitigation
+    if (!isSafeGitHubFilePath(filePath)) {
+      throw new Error(`Unsafe or invalid file path: ${filePath}`);
+    }
     // Check if file exists to get its SHA
     let fileSha: string | undefined;
     try {
