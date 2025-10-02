@@ -139,21 +139,6 @@ export class SqliteStorage implements IStorage {
       )
     `);
 
-    // Create AI updates table for predictive updates feature
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS ai_updates (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        url TEXT NOT NULL UNIQUE,
-        source TEXT NOT NULL,
-        published DATETIME,
-        summary TEXT,
-        tags TEXT,
-        relevance REAL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
     // Create indexes for better query performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
@@ -161,8 +146,6 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_published ON ai_updates(published);
     `);
 
     // Create ai_updates table for predictive updates
