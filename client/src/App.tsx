@@ -67,7 +67,8 @@ function App() {
         const response = await fetch('/api/voice-consent/check/voice_synthesis');
         const data = await response.json();
         if (data.success) {
-          setHasVoiceConsent(data.hasConsent);
+          // Voice consent checked - could be used to enable/disable voice features
+          console.log('Voice consent status:', data.hasConsent);
         }
       } catch (error) {
         console.error('Error checking voice consent:', error);
@@ -209,7 +210,7 @@ function App() {
   const toggleVoice = () => {
     setVoiceEnabled(!voiceEnabled);
     if (voiceEnabled) {
-      voiceService.cancel();
+      window.speechSynthesis.cancel();
     }
   };
 
