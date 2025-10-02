@@ -9,6 +9,7 @@ import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
 import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
 import { generateImageWithGrok, extractImagePrompt as extractImagePromptGrok, formatImageResponse as formatImageResponseGrok } from "./openrouterImageService";
+import { generateImageWithGemini, extractImagePrompt as extractImagePromptGemini, formatImageResponse as formatImageResponseGemini } from "./geminiImageService";
 import { generateCodeWithQwen, extractCodeRequest, formatCodeResponse } from "./openrouterCodeService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
@@ -2464,18 +2465,25 @@ I can create a pull request with these changes if you provide a GitHub token, or
     }
   }
 
-  // Check for image generation requests - try Grok first, fallback to XAI
+  // Check for image generation requests - try Gemini first, then Grok, then fallback to XAI
   const imagePrompt = extractImagePrompt(userMessage);
   if (imagePrompt) {
     try {
-      // Try Grok first for image generation (enhanced descriptions)
+      // Try Gemini first for image generation (google/gemini-2.5-flash-image-preview)
+      const geminiResult = await generateImageWithGemini(imagePrompt);
+      if (geminiResult.success) {
+        const response = formatImageResponseGemini(imagePrompt, geminiResult.success, geminiResult.imageUrl, geminiResult.error);
+        return { content: response };
+      }
+
+      // Fallback to Grok for image generation (enhanced descriptions)
       const grokResult = await generateImageWithGrok(imagePrompt);
       if (grokResult.success) {
         const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
         return { content: response };
       }
 
-      // Fallback to original XAI image generation
+      // Final fallback to original XAI image generation
       const imageResult = await generateImage(imagePrompt);
       const response = formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error);
       return { content: response };
