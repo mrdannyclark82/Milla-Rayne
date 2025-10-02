@@ -14,21 +14,21 @@ export interface OpenRouterImageGenerationResult {
 
 /**
  * Generate image (or an image preview/URL) using OpenRouter.
- * Preferred model: google/gemini-2.5-flash-image-preview:free
+ * Preferred model: google/gemini-2.5-flash-image-preview
  * Falls back to generating an enhanced description if the model doesn't return an image URL.
  */
-export async function generateImageWithGrok(prompt: string): Promise<OpenRouterImageGenerationResult> {
+export async function generateImageWithGemini(prompt: string): Promise<OpenRouterImageGenerationResult> {
   // Use a provider-specific key if available, otherwise fall back to the general OpenRouter key
-  const openrouterKey = process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_GROK_API_KEY || process.env.OPENROUTER_VENICE_API_KEY || process.env.OPENROUTER_API_KEY;
+  const openrouterKey = process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!openrouterKey) {
     return {
       success: false,
-      error: "OpenRouter API key is not configured. Please set OPENROUTER_GROK_API_KEY or OPENROUTER_API_KEY in your environment."
+      error: "OpenRouter API key is not configured. Please set OPENROUTER_GEMINI_API_KEY or OPENROUTER_API_KEY in your environment."
     };
   }
 
   try {
-    // Use Grok to generate a detailed description that could be used for image generation
+    // Use Gemini to generate a detailed description that could be used for image generation
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -66,10 +66,10 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
     const data = await response.json();
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Unexpected OpenRouter Grok response format:", data);
+      console.error("Unexpected OpenRouter Gemini response format:", data);
       return {
         success: false,
-        error: "Invalid response format from OpenRouter Grok"
+        error: "Invalid response format from OpenRouter Gemini"
       };
     }
 
@@ -103,10 +103,10 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
     };
 
   } catch (error) {
-    console.error("OpenRouter Grok image service error:", error);
+    console.error("OpenRouter Gemini image service error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error during OpenRouter Grok image generation"
+      error: error instanceof Error ? error.message : "Unknown error during OpenRouter Gemini image generation"
     };
   }
 }
@@ -147,14 +147,14 @@ export function formatImageResponse(prompt: string, success: boolean, imageUrl?:
     // Check if it's an enhanced description (data URL) or actual image URL
     if (imageUrl.indexOf('data:text/plain') === 0) {
       const description = decodeURIComponent(imageUrl.split(',')[1]);
-      return `🎨 I've created an enhanced visual description based on your prompt "${prompt}" using Grok:
+      return `🎨 I've created an enhanced visual description based on your prompt "${prompt}" using Gemini:
 
 **Enhanced Image Description:**
 ${description}
 
-While I can't generate actual images with Grok (it's a language model), this detailed description could be used with other image generation tools. I can help you refine this description or discuss visual elements you'd like to emphasize!`;
+While I can't generate actual images with Gemini (it's a language model), this detailed description could be used with other image generation tools. I can help you refine this description or discuss visual elements you'd like to emphasize!`;
     } else {
-      return `🎨 I've created an image based on your prompt: "${prompt}"\n\n![Generated Image](${imageUrl})\n\nThe image has been generated using Grok through OpenRouter. If you'd like me to create a variation or adjust anything, just let me know!`;
+      return `🎨 I've created an image based on your prompt: "${prompt}"\n\n![Generated Image](${imageUrl})\n\nThe image has been generated using Gemini through OpenRouter. If you'd like me to create a variation or adjust anything, just let me know!`;
     }
   } else {
     return `I'd love to create an image of "${prompt}" for you, babe, but I'm having some trouble with image generation right now. ${error ? `Error: ${error}` : "However, I can help you brainstorm ideas, describe what the image might look like, or suggest other creative approaches! What would you like to explore instead?"}`;

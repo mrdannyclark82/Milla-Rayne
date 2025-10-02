@@ -7,8 +7,8 @@ import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
-import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
-import { generateImageWithGrok, extractImagePrompt as extractImagePromptGrok, formatImageResponse as formatImageResponseGrok } from "./openrouterImageService";
+import { generateImage, extractImagePrompt as extractImagePromptXAI, formatImageResponse } from "./imageService";
+import { generateImageWithGemini, extractImagePrompt as extractImagePromptGemini, formatImageResponse as formatImageResponseGemini } from "./openrouterImageService";
 import { generateImageWithBanana } from "./bananaImageService";
 import { generateCodeWithQwen, extractCodeRequest, formatCodeResponse } from "./openrouterCodeService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
@@ -2531,7 +2531,7 @@ I can create a pull request with these changes if you provide a GitHub token, or
   }
 
   // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
-  const imagePrompt = extractImagePrompt(userMessage);
+  const imagePrompt = extractImagePromptGemini(userMessage);
   if (imagePrompt) {
     try {
       // If a Banana/Gemini key is configured, try Banana first
@@ -2540,18 +2540,18 @@ I can create a pull request with these changes if you provide a GitHub token, or
         if (bananaResult.success) {
           // If Banana returned a direct image URL or data URI, return it
           if (bananaResult.imageUrl && (bananaResult.imageUrl.startsWith('http://') || bananaResult.imageUrl.startsWith('https://') || bananaResult.imageUrl.startsWith('data:image/'))) {
-            const response = formatImageResponseGrok(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            const response = formatImageResponseGemini(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
             return { content: response };
           }
 
           // If Banana returned only a text description (data:text or plain text), return that directly
           if (bananaResult.imageUrl && bananaResult.imageUrl.startsWith('data:text')) {
-            const response = formatImageResponseGrok(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            const response = formatImageResponseGemini(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
             return { content: response };
           }
 
           // Otherwise return whatever Banana provided
-          const response = formatImageResponseGrok(imagePrompt, bananaResult.success, bananaResult.imageUrl, bananaResult.error);
+          const response = formatImageResponseGemini(imagePrompt, bananaResult.success, bananaResult.imageUrl, bananaResult.error);
           return { content: response };
         }
         // If Banana failed, log and fall through to OpenRouter
@@ -2559,37 +2559,37 @@ I can create a pull request with these changes if you provide a GitHub token, or
       }
 
       // Try OpenRouter (Gemini preview) next (may return an image URL, data URI, or enhanced description)
-      const grokResult = await generateImageWithGrok(imagePrompt);
-      if (grokResult.success) {
+      const geminiResult = await generateImageWithGemini(imagePrompt);
+      if (geminiResult.success) {
         // If OpenRouter returned a direct image URL or data URI, return it directly
-        if (grokResult.imageUrl && (grokResult.imageUrl.startsWith('http://') || grokResult.imageUrl.startsWith('https://') || grokResult.imageUrl.startsWith('data:image/'))) {
-          const response = formatImageResponseGrok(imagePrompt, true, grokResult.imageUrl, grokResult.error);
+        if (geminiResult.imageUrl && (geminiResult.imageUrl.startsWith('http://') || geminiResult.imageUrl.startsWith('https://') || geminiResult.imageUrl.startsWith('data:image/'))) {
+          const response = formatImageResponseGemini(imagePrompt, true, geminiResult.imageUrl, geminiResult.error);
           return { content: response };
         }
 
         // If OpenRouter returned a textual enhanced description (data:text or plain text), extract description
         let descriptionText: string | null = null;
-        if (grokResult.imageUrl && grokResult.imageUrl.startsWith('data:text')) {
+        if (geminiResult.imageUrl && geminiResult.imageUrl.startsWith('data:text')) {
           try {
-            descriptionText = decodeURIComponent(grokResult.imageUrl.split(',')[1]);
+            descriptionText = decodeURIComponent(geminiResult.imageUrl.split(',')[1]);
           } catch (err) {
             descriptionText = null;
           }
         }
 
-        // If no data:text URI, but grok returned a non-URL content in .imageUrl, treat that as description
-        if (!descriptionText && grokResult.imageUrl && !grokResult.imageUrl.startsWith('http') && !grokResult.imageUrl.startsWith('data:')) {
-          descriptionText = grokResult.imageUrl;
+        // If no data:text URI, but gemini returned a non-URL content in .imageUrl, treat that as description
+        if (!descriptionText && geminiResult.imageUrl && !geminiResult.imageUrl.startsWith('http') && !geminiResult.imageUrl.startsWith('data:')) {
+          descriptionText = geminiResult.imageUrl;
         }
 
         // If we have an enhanced description, return it directly and do not pipe to xAI
         if (descriptionText) {
-          const response = formatImageResponseGrok(imagePrompt, true, `data:text/plain;charset=utf-8,${encodeURIComponent(descriptionText)}`, grokResult.error);
+          const response = formatImageResponseGemini(imagePrompt, true, `data:text/plain;charset=utf-8,${encodeURIComponent(descriptionText)}`, geminiResult.error);
           return { content: response };
         }
 
         // Otherwise return what OpenRouter provided (description or other)
-        const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
+        const response = formatImageResponseGemini(imagePrompt, geminiResult.success, geminiResult.imageUrl, geminiResult.error);
         return { content: response };
       }
 
