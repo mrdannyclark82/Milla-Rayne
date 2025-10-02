@@ -114,3 +114,21 @@ export interface VoiceProviderChain {
   fallbacks: VoiceProvider[];
   timeout?: number; // Timeout before trying fallback (ms)
 }
+
+/**
+ * TTS Provider interface that all voice providers must implement
+ * Defines the contract for the multi-provider TTS layer
+ */
+export interface ITTSProvider {
+  /**
+   * Synthesize speech from text
+   * @param request - Voice synthesis request with text and configuration
+   * @returns Promise resolving to synthesis response with success status
+   */
+  speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse>;
+
+  /**
+   * Cancel any ongoing speech synthesis
+   */
+  cancel(): void;
+}

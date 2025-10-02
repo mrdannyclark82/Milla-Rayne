@@ -11,7 +11,8 @@ import type {
   VoiceProviderCapabilities,
   VoiceProviderChain,
   Platform,
-  VoiceAccent
+  VoiceAccent,
+  ITTSProvider
 } from '@shared/voiceTypes';
 
 /**
@@ -157,7 +158,7 @@ export function getProviderCapabilities(provider: VoiceProvider): VoiceProviderC
 /**
  * Browser-native TTS implementation (Web Speech API)
  */
-class BrowserNativeTTS {
+class BrowserNativeTTS implements ITTSProvider {
   private synth: SpeechSynthesis | null = null;
 
   constructor() {
@@ -230,7 +231,7 @@ class BrowserNativeTTS {
 /**
  * Google Cloud TTS implementation (placeholder)
  */
-class GoogleCloudTTS {
+class GoogleCloudTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Google Cloud TTS API integration
     console.warn('Google Cloud TTS not yet implemented, falling back to browser-native');
@@ -248,7 +249,7 @@ class GoogleCloudTTS {
 /**
  * Azure TTS implementation (placeholder)
  */
-class AzureTTS {
+class AzureTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Azure TTS API integration
     console.warn('Azure TTS not yet implemented, falling back to browser-native');
@@ -266,7 +267,7 @@ class AzureTTS {
 /**
  * ElevenLabs TTS implementation (placeholder)
  */
-class ElevenLabsTTS {
+class ElevenLabsTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement ElevenLabs API integration
     console.warn('ElevenLabs TTS not yet implemented, falling back to browser-native');
@@ -284,7 +285,7 @@ class ElevenLabsTTS {
 /**
  * Coqui TTS implementation (placeholder)
  */
-class CoquiTTS {
+class CoquiTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Coqui TTS integration
     console.warn('Coqui TTS not yet implemented, falling back to browser-native');
@@ -303,7 +304,7 @@ class CoquiTTS {
  * Main Voice Service class with provider abstraction and fallback
  */
 export class VoiceService {
-  private providers: Map<VoiceProvider, any> = new Map();
+  private providers: Map<VoiceProvider, ITTSProvider> = new Map();
   private currentProvider: VoiceProvider = 'browser-native';
   private fallbackChain: VoiceProviderChain = DEFAULT_FALLBACK_CHAIN;
 
