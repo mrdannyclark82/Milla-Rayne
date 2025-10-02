@@ -225,17 +225,52 @@ recognitionRef.current.lang = 'de-DE'; // German
 - Click microphone before each input
 - Review text before sending
 
+## New UI Features (Recently Added)
+
+### Voice Selection Dialog
+- Advanced voice picker with search and filters
+- Filter by gender (all/female/male) and accent
+- Preview any voice before selecting
+- Adjust rate, pitch, and volume with sliders
+- Quick style presets (Friendly, Professional, Excited, etc.)
+
+### Voice Visualizer
+- Real-time waveform display during listening
+- Speaking animation during voice output
+- Visual feedback for voice activity
+
+### Playback Controls
+- Pause/Resume current speech
+- Stop speech immediately
+- Replay last message
+- Live captions toggle
+
+### Mobile Enhancements
+- Press-and-hold to talk
+- Swipe to cancel recording
+- Haptic feedback (vibration)
+- Optimized touch targets
+
+### Accessibility Features
+- High contrast mode
+- Dyslexia-friendly font option
+- Large touch targets
+- Color blind modes (Protanopia, Deuteranopia, Tritanopia)
+- Full ARIA support for screen readers
+
+See [UI_IMPROVEMENTS_GUIDE.md](UI_IMPROVEMENTS_GUIDE.md) for detailed documentation.
+
 ## Future Enhancements
 
 Planned improvements:
-- [ ] Voice settings panel (rate, pitch, volume)
-- [ ] Voice selection dropdown
 - [ ] Continuous listening mode
 - [ ] Wake word activation ("Hey Milla")
 - [ ] Voice activity detection
 - [ ] Custom voice training
 - [ ] Emotion detection from voice
 - [ ] Background noise cancellation
+- [ ] Save voice preferences to local storage
+- [ ] Multi-language UI support
 
 ## Support
 
