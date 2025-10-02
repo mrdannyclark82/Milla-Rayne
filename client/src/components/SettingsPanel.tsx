@@ -8,7 +8,6 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarCustomizer } from "./AvatarCustomizer";
 import { AccessibilitySettings } from "./AccessibilitySettings";
-import { Shield, AlertCircle } from "lucide-react";
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
