@@ -66,7 +66,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Model**: `google/gemini-2.5-flash-image-preview` (Gemini 2.5 Flash Image Preview)
 - **Endpoint**: `/api/chat` (automatically detects image generation requests)
 - **Setup**: Add `OPENROUTER_GEMINI_API_KEY=your_key_here` to `.env`
-- **Fallback**: Grok (enhanced descriptions) → XAI image generation
+- **Fallback**: Enhanced descriptions using Gemini language model
 - **Use**: Create images from text prompts (e.g., "create an image of a sunset")
 
 ### Additional Services Available
