@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -20,6 +20,30 @@ export const messages = pgTable("messages", {
   userId: varchar("user_id"),
 });
 
+export const aiUpdates = pgTable("ai_updates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: varchar("category", { 
+    enum: ["feature", "enhancement", "optimization", "bugfix", "documentation"] 
+  }).notNull(),
+  priority: integer("priority").notNull().default(5), // 1-10 scale
+  relevanceScore: integer("relevance_score").default(0),
+  metadata: jsonb("metadata"), // For storing additional context
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  appliedAt: timestamp("applied_at"),
+});
+
+export const dailySuggestions = pgTable("daily_suggestions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  date: varchar("date").notNull().unique(), // Format: YYYY-MM-DD
+  suggestionText: text("suggestion_text").notNull(),
+  metadata: jsonb("metadata"), // Store related ai_updates ids, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  deliveredAt: timestamp("delivered_at"),
+  isDelivered: boolean("is_delivered").notNull().default(false),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -32,7 +56,26 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   userId: true,
 });
 
+export const insertAiUpdateSchema = createInsertSchema(aiUpdates).pick({
+  title: true,
+  description: true,
+  category: true,
+  priority: true,
+  relevanceScore: true,
+  metadata: true,
+});
+
+export const insertDailySuggestionSchema = createInsertSchema(dailySuggestions).pick({
+  date: true,
+  suggestionText: true,
+  metadata: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
+export type InsertAiUpdate = z.infer<typeof insertAiUpdateSchema>;
+export type AiUpdate = typeof aiUpdates.$inferSelect;
+export type InsertDailySuggestion = z.infer<typeof insertDailySuggestionSchema>;
+export type DailySuggestion = typeof dailySuggestions.$inferSelect;

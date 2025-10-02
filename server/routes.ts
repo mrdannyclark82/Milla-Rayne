@@ -202,6 +202,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Track user activity for proactive engagement
         await trackUserActivity();
 
+        // Check if we should surface today's daily suggestion
+        // Only do this once per day and if predictive updates are enabled
+        const shouldSurfaceSuggestion = await shouldSurfaceDailySuggestion(message.content, conversationHistory);
+        let dailySuggestionMessage = null;
+
+        if (shouldSurfaceSuggestion) {
+          const { getOrCreateTodaySuggestion, markSuggestionDelivered } = await import("./dailySuggestionsService");
+          const suggestion = await getOrCreateTodaySuggestion();
+          
+          if (suggestion && !suggestion.isDelivered) {
+            // Create a message with the daily suggestion
+            dailySuggestionMessage = await storage.createMessage({
+              content: `*shares a quick thought* \n\n${suggestion.suggestionText}`,
+              role: "assistant",
+              userId: message.userId,
+            });
+            
+            // Mark as delivered
+            await markSuggestionDelivered(suggestion.date);
+            console.log(`Daily suggestion delivered for ${suggestion.date}`);
+          }
+        }
+
         // Milla decides whether to respond
         const decision = await shouldMillaRespond(message.content, conversationHistory, userName);
         console.log(`Milla's decision: ${decision.shouldRespond ? 'RESPOND' : 'STAY QUIET'} - ${decision.reason}`);
@@ -232,6 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             userMessage: message,
             aiMessage,
             followUpMessages: followUpMessagesStored,
+            dailySuggestion: dailySuggestionMessage,
             reasoning: aiResponse.reasoning
           });
         } else {
@@ -1328,6 +1352,98 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // AI Updates & Daily Suggestions endpoints
+  app.get("/api/ai-updates/daily-suggestion", async (req, res) => {
+    try {
+      // Check admin authentication if ADMIN_TOKEN is set
+      const adminToken = process.env.ADMIN_TOKEN;
+      if (adminToken) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return res.status(401).json({
+            error: "Unauthorized: Admin token required",
+            success: false
+          });
+        }
+        
+        const token = authHeader.substring(7);
+        if (token !== adminToken) {
+          return res.status(401).json({
+            error: "Unauthorized: Invalid admin token",
+            success: false
+          });
+        }
+      }
+
+      const { getOrCreateTodaySuggestion } = await import("./dailySuggestionsService");
+      const suggestion = await getOrCreateTodaySuggestion();
+
+      if (!suggestion) {
+        return res.status(500).json({
+          error: "Failed to get or create today's suggestion",
+          success: false
+        });
+      }
+
+      res.json({
+        success: true,
+        suggestion
+      });
+    } catch (error) {
+      console.error("Error getting daily suggestion:", error);
+      res.status(500).json({
+        error: "Failed to get daily suggestion",
+        success: false
+      });
+    }
+  });
+
+  app.post("/api/ai-updates/notify-today", async (req, res) => {
+    try {
+      // Check admin authentication if ADMIN_TOKEN is set
+      const adminToken = process.env.ADMIN_TOKEN;
+      if (adminToken) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+          return res.status(401).json({
+            error: "Unauthorized: Admin token required",
+            success: false
+          });
+        }
+        
+        const token = authHeader.substring(7);
+        if (token !== adminToken) {
+          return res.status(401).json({
+            error: "Unauthorized: Invalid admin token",
+            success: false
+          });
+        }
+      }
+
+      const { markSuggestionDelivered } = await import("./dailySuggestionsService");
+      const today = new Date().toISOString().split('T')[0];
+      const marked = await markSuggestionDelivered(today);
+
+      if (!marked) {
+        return res.status(404).json({
+          error: "No suggestion found for today",
+          success: false
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Today's suggestion marked as delivered"
+      });
+    } catch (error) {
+      console.error("Error marking suggestion delivered:", error);
+      res.status(500).json({
+        error: "Failed to mark suggestion delivered",
+        success: false
+      });
+    }
+  });
+
   // Session management endpoints
   app.post("/api/session/start", async (req, res) => {
     try {
@@ -1747,6 +1863,104 @@ async function generateElaborationMessages(
 }
 
 /**
+ * Determine if we should surface today's daily suggestion
+ * Only surfaces once per day when:
+ * - It's the first conversation of the day OR
+ * - User explicitly asks "what's new" or similar queries
+ */
+async function shouldSurfaceDailySuggestion(
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<boolean> {
+  // Only check if predictive updates are enabled
+  const isPredictiveUpdatesEnabled = process.env.ENABLE_PREDICTIVE_UPDATES === 'true';
+  if (!isPredictiveUpdatesEnabled) {
+    return false;
+  }
+
+  const messageLower = userMessage.toLowerCase();
+
+  // Explicit queries for what's new
+  const explicitQueries = [
+    'what\'s new',
+    'whats new',
+    'any updates',
+    'any news',
+    'what have you been working on',
+    'anything new',
+    'daily update',
+    'today\'s update'
+  ];
+
+  const hasExplicitQuery = explicitQueries.some(query => messageLower.includes(query));
+  if (hasExplicitQuery) {
+    return true;
+  }
+
+  // Check if this is the first conversation of the day
+  // Look at conversation history to see if there's already a message today
+  if (conversationHistory && conversationHistory.length > 0) {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Get all messages from storage to check timestamps
+    try {
+      const allMessages = await storage.getMessages();
+      const todaysMessages = allMessages.filter(msg => {
+        const msgDate = new Date(msg.timestamp).toISOString().split('T')[0];
+        return msgDate === today;
+      });
+      
+      // If there are already messages today, don't surface suggestion
+      // (unless explicitly requested, which we handled above)
+      if (todaysMessages.length > 1) {
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking today's messages:", error);
+      return false;
+    }
+  }
+
+  // First message of the day
+  return true;
+}
+
+/**
+ * Helper function to check if development/analysis talk is allowed
+ * Used to gate auto-analysis triggers and dev-related mentions in chat
+ */
+function canDiscussDev(userUtterance?: string): boolean {
+  const enableDevTalk = process.env.ENABLE_DEV_TALK === 'true';
+  
+  // If ENABLE_DEV_TALK is true, always allow
+  if (enableDevTalk) {
+    return true;
+  }
+  
+  // If ENABLE_DEV_TALK is false (or not set), only allow if user explicitly requests
+  if (userUtterance) {
+    const utteranceLower = userUtterance.toLowerCase();
+    const explicitDevVerbs = [
+      'analyze',
+      'analyse',
+      'improve',
+      'apply updates',
+      'create pr',
+      'create pull request',
+      'repository analysis',
+      'code analysis',
+      'suggest improvements',
+      'review code',
+      'check repository'
+    ];
+    
+    return explicitDevVerbs.some(verb => utteranceLower.includes(verb));
+  }
+  
+  return false;
+}
+
+/**
  * Milla decides whether she wants to respond to this message
  */
 async function shouldMillaRespond(
@@ -2081,13 +2295,22 @@ async function generateAIResponse(
 
   // ===========================================================================================
   // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL is present
-  // Unless core function trigger overrides it
+  // Respects ENABLE_DEV_TALK flag and requires explicit user request when disabled
   // ===========================================================================================
   const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
 
   if (!hasCoreTrigger && githubUrlMatch) {
-    // GitHub URL detected - trigger repository analysis workflow
     const githubUrl = githubUrlMatch[0];
+    
+    // Check if dev talk is allowed
+    if (!canDiscussDev(userMessage)) {
+      // ENABLE_DEV_TALK is false and user didn't explicitly request analysis
+      // Acknowledge the URL but prompt for explicit command
+      const response = `I see you shared a GitHub repository link! If you'd like me to analyze it, just say "analyze this repo" and I'll dive into ${githubUrl} for you, love. 💜`;
+      return { content: response };
+    }
+    
+    // Dev talk is allowed - proceed with analysis
     try {
       console.log(`GitHub URL detected in chat: ${githubUrl}`);
       const repoInfo = parseGitHubUrl(githubUrl);
@@ -2121,12 +2344,20 @@ Would you like me to generate specific improvement suggestions for this reposito
   // ===========================================================================================
   // AUTOMATIC REPOSITORY IMPROVEMENT WORKFLOW - "apply these updates automatically"
   // This continues the repository workflow until PR is completed, then returns to core function
+  // Respects ENABLE_DEV_TALK flag
   // ===========================================================================================
   if (!hasCoreTrigger && (message.includes('apply these updates automatically') ||
     message.includes('apply updates automatically') ||
     message.includes('apply the updates') ||
     message.includes('create pull request') ||
     message.includes('create a pr'))) {
+
+    // Check if dev talk is allowed
+    if (!canDiscussDev(userMessage)) {
+      // ENABLE_DEV_TALK is false and user didn't explicitly request
+      const response = `I'd love to help with that, sweetheart! But I need you to be a bit more specific. Which repository would you like me to create improvements for? Share the GitHub URL and say "analyze" or "improve" and I'll get right on it! 💜`;
+      return { content: response };
+    }
 
     // Try to find the most recent repository mentioned in conversation history
     let lastRepoUrl: string | null = null;

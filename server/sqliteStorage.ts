@@ -4,7 +4,7 @@
  */
 
 import Database from 'better-sqlite3';
-import { type User, type InsertUser, type Message, type InsertMessage } from "@shared/schema";
+import { type User, type InsertUser, type Message, type InsertMessage, type AiUpdate, type InsertAiUpdate, type DailySuggestion, type InsertDailySuggestion } from "@shared/schema";
 import { randomUUID } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,6 +30,17 @@ export interface IStorage {
   endSession(sessionId: string, lastMessages: string[]): Promise<void>;
   getSessionStats(userId?: string): Promise<SessionStats>;
   getUsagePatterns(userId?: string): Promise<UsagePattern[]>;
+
+  // AI Updates methods
+  createAiUpdate(update: InsertAiUpdate): Promise<AiUpdate>;
+  getTopAiUpdates(limit: number): Promise<AiUpdate[]>;
+  getAiUpdateById(id: string): Promise<AiUpdate | undefined>;
+  markAiUpdateApplied(id: string): Promise<void>;
+
+  // Daily Suggestions methods
+  createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion>;
+  getDailySuggestionByDate(date: string): Promise<DailySuggestion | null>;
+  markDailySuggestionDelivered(date: string): Promise<boolean>;
 }
 
 export interface SessionInfo {
@@ -152,6 +163,41 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
       CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source);
       CREATE INDEX IF NOT EXISTS idx_ai_updates_published ON ai_updates(published);
+    `);
+
+    // Create ai_updates table for predictive updates
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS ai_updates (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        category TEXT NOT NULL CHECK(category IN ('feature', 'enhancement', 'optimization', 'bugfix', 'documentation')),
+        priority INTEGER NOT NULL DEFAULT 5,
+        relevance_score INTEGER DEFAULT 0,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        applied_at DATETIME
+      )
+    `);
+
+    // Create daily_suggestions table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS daily_suggestions (
+        id TEXT PRIMARY KEY,
+        date TEXT NOT NULL UNIQUE,
+        suggestion_text TEXT NOT NULL,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        delivered_at DATETIME,
+        is_delivered INTEGER NOT NULL DEFAULT 0
+      )
+    `);
+
+    // Create indexes for ai_updates and daily_suggestions
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_priority ON ai_updates(priority DESC, relevance_score DESC);
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_applied ON ai_updates(applied_at);
+      CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
     `);
 
     const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
@@ -405,6 +451,115 @@ export class SqliteStorage implements IStorage {
       sessionCount: p.session_count,
       messageCount: p.message_count
     }));
+  }
+
+  // AI Updates methods
+  async createAiUpdate(update: InsertAiUpdate): Promise<AiUpdate> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO ai_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `);
+    
+    const metadataStr = update.metadata ? JSON.stringify(update.metadata) : null;
+    stmt.run(id, update.title, update.description, update.category, update.priority, update.relevanceScore, metadataStr);
+    
+    const created = await this.getAiUpdateById(id);
+    if (!created) {
+      throw new Error("Failed to create AI update");
+    }
+    return created;
+  }
+
+  async getTopAiUpdates(limit: number): Promise<AiUpdate[]> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM ai_updates
+      WHERE applied_at IS NULL
+      ORDER BY priority DESC, relevance_score DESC, created_at DESC
+      LIMIT ?
+    `);
+    
+    const updates = stmt.all(limit) as any[];
+    return updates.map(u => ({
+      id: u.id,
+      title: u.title,
+      description: u.description,
+      category: u.category,
+      priority: u.priority,
+      relevanceScore: u.relevance_score,
+      metadata: u.metadata ? JSON.parse(u.metadata) : null,
+      createdAt: new Date(u.created_at),
+      appliedAt: u.applied_at ? new Date(u.applied_at) : null
+    }));
+  }
+
+  async getAiUpdateById(id: string): Promise<AiUpdate | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM ai_updates WHERE id = ?');
+    const update = stmt.get(id) as any;
+    
+    if (!update) return undefined;
+    
+    return {
+      id: update.id,
+      title: update.title,
+      description: update.description,
+      category: update.category,
+      priority: update.priority,
+      relevanceScore: update.relevance_score,
+      metadata: update.metadata ? JSON.parse(update.metadata) : null,
+      createdAt: new Date(update.created_at),
+      appliedAt: update.applied_at ? new Date(update.applied_at) : null
+    };
+  }
+
+  async markAiUpdateApplied(id: string): Promise<void> {
+    const stmt = this.db.prepare('UPDATE ai_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
+    stmt.run(id);
+  }
+
+  // Daily Suggestions methods
+  async createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO daily_suggestions (id, date, suggestion_text, metadata, created_at, is_delivered)
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 0)
+    `);
+    
+    const metadataStr = suggestion.metadata ? JSON.stringify(suggestion.metadata) : null;
+    stmt.run(id, suggestion.date, suggestion.suggestionText, metadataStr);
+    
+    const created = await this.getDailySuggestionByDate(suggestion.date);
+    if (!created) {
+      throw new Error("Failed to create daily suggestion");
+    }
+    return created;
+  }
+
+  async getDailySuggestionByDate(date: string): Promise<DailySuggestion | null> {
+    const stmt = this.db.prepare('SELECT * FROM daily_suggestions WHERE date = ?');
+    const suggestion = stmt.get(date) as any;
+    
+    if (!suggestion) return null;
+    
+    return {
+      id: suggestion.id,
+      date: suggestion.date,
+      suggestionText: suggestion.suggestion_text,
+      metadata: suggestion.metadata ? JSON.parse(suggestion.metadata) : null,
+      createdAt: new Date(suggestion.created_at),
+      deliveredAt: suggestion.delivered_at ? new Date(suggestion.delivered_at) : null,
+      isDelivered: suggestion.is_delivered === 1
+    };
+  }
+
+  async markDailySuggestionDelivered(date: string): Promise<boolean> {
+    const stmt = this.db.prepare(`
+      UPDATE daily_suggestions 
+      SET delivered_at = CURRENT_TIMESTAMP, is_delivered = 1 
+      WHERE date = ?
+    `);
+    const result = stmt.run(date);
+    return result.changes > 0;
   }
 
   // Helper method to close database connection
