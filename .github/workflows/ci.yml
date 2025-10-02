@@ -10,6 +10,23 @@ permissions:
   contents: read
 
 jobs:
+  check-python:
+    name: Check for Python Requirements
+    runs-on: ubuntu-latest
+    outputs:
+      requirements-exists: ${{ steps.check-reqs.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Check for requirements.txt
+        id: check-reqs
+        shell: bash
+        run: |
+          if [ -f requirements.txt ] || find . -name "requirements.txt" -type f | grep -q .; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
   node:
     name: Node Lint, Typecheck, Test
     runs-on: ubuntu-latest
@@ -36,7 +53,8 @@ jobs:
   python:
     name: Python Lint and Test
     runs-on: ubuntu-latest
-    if: ${{ hashFiles('**/requirements.txt') != '' }}
+    needs: check-python
+    if: ${{ needs.check-python.outputs.requirements-exists == 'true' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -44,7 +62,6 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
       - name: Install dependencies
-        if: ${{ hashFiles('**/requirements.txt') != '' }}
         run: pip install -r requirements.txt
       - name: Lint (flake8)
         run: |
