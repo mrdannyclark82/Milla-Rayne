@@ -263,11 +263,11 @@ function App() {
               onClick={() => setShowVoicePicker(true)}
               variant="outline"
               size={getButtonSize()}
-              title="Voice settings"
+              title="Voice settings - Select voice, adjust pitch, rate, and volume"
               aria-label="Open voice settings"
             >
               <i className="fas fa-cog mr-1"></i>
-              Settings
+              Voice Settings
             </Button>
             {!isMobile && (
               <Button
