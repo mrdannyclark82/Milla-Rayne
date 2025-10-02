@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { voiceService } from '@/services/voiceService';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -95,18 +96,18 @@ function App() {
   };
 
   const speakMessage = (text: string) => {
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
-
-    window.speechSynthesis.speak(utterance);
+    // Use the new voice service with automatic fallback
+    voiceService.speak(text, {
+      provider: 'browser-native', // Start with browser-native, can be configured
+      accent: 'en-US-Southern',
+      quality: 'low-latency',
+      rate: 0.95,
+      pitch: 1.0,
+      volume: 1.0,
+      voiceName: selectedVoice?.name
+    }).catch(error => {
+      console.error('Error speaking message:', error);
+    });
   };
 
   const toggleListening = () => {
@@ -126,7 +127,7 @@ function App() {
   const toggleVoice = () => {
     setVoiceEnabled(!voiceEnabled);
     if (voiceEnabled) {
-      window.speechSynthesis.cancel();
+      voiceService.cancel();
     }
   };
 
