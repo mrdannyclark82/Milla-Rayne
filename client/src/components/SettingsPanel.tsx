@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarCustomizer } from "./AvatarCustomizer";
-import { Shield, AlertCircle } from "lucide-react";
+import { AccessibilitySettings } from "./AccessibilitySettings";
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -624,6 +624,18 @@ export default function SettingsPanel({
 
           {/* Personal Tasks Section */}
 \n\n          <PersonalTasksSection />
+
+          {/* Accessibility Section */}
+          <AccessibilitySettings
+            highContrast={false}
+            onHighContrastChange={() => {}}
+            dyslexiaFont={false}
+            onDyslexiaFontChange={() => {}}
+            colorBlindMode="none"
+            onColorBlindModeChange={() => {}}
+            largeTouchTargets={false}
+            onLargeTouchTargetsChange={() => {}}
+          />
         </div>
 
         <Separator className="bg-white/20" />

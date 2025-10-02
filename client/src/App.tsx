@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import VoiceConsentDialog from '@/components/VoiceConsentDialog';
+import { VoicePickerDialog } from '@/components/VoicePickerDialog';
+import { VoiceVisualizer } from '@/components/VoiceVisualizer';
+import { VoiceControls } from '@/components/VoiceControls';
+import { MobileVoiceControls } from '@/components/MobileVoiceControls';
+import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -10,9 +14,30 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [showConsentDialog, setShowConsentDialog] = useState(false);
-  const [hasVoiceConsent, setHasVoiceConsent] = useState(false);
+  const [speechRate, setSpeechRate] = useState(1.0);
+  const [voicePitch, setVoicePitch] = useState(1.0);
+  const [voiceVolume, setVoiceVolume] = useState(0.8);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(false);
+  const [lastMessage, setLastMessage] = useState('');
+  const [highContrast, setHighContrast] = useState(false);
+  const [dyslexiaFont, setDyslexiaFont] = useState(false);
+  const [colorBlindMode, setColorBlindMode] = useState<"none" | "protanopia" | "deuteranopia" | "tritanopia">("none");
+  const [largeTouchTargets, setLargeTouchTargets] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Initialize speech synthesis voices
   useEffect(() => {
@@ -121,11 +146,44 @@ function App() {
     if (selectedVoice) {
       utterance.voice = selectedVoice;
     }
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    utterance.rate = speechRate;
+    utterance.pitch = voicePitch;
+    utterance.volume = voiceVolume;
 
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+    };
+
+    currentUtteranceRef.current = utterance;
+    setLastMessage(text);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const pauseSpeech = () => {
+    window.speechSynthesis.pause();
+  };
+
+  const resumeSpeech = () => {
+    window.speechSynthesis.resume();
+  };
+
+  const stopSpeech = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const replaySpeech = () => {
+    if (lastMessage) {
+      speakMessage(lastMessage);
+    }
   };
 
   const toggleListening = () => {
@@ -142,53 +200,35 @@ function App() {
     }
   };
 
+  const cancelListening = () => {
+    recognitionRef.current?.abort();
+    setIsListening(false);
+    setMessage('');
+  };
+
   const toggleVoice = () => {
-    if (!voiceEnabled && !hasVoiceConsent) {
-      // Show consent dialog if trying to enable voice without consent
-      setShowConsentDialog(true);
-    } else {
-      setVoiceEnabled(!voiceEnabled);
-      if (voiceEnabled) {
-        window.speechSynthesis.cancel();
-      }
+    setVoiceEnabled(!voiceEnabled);
+    if (voiceEnabled) {
+      voiceService.cancel();
     }
   };
 
-  const handleConsentResponse = async (granted: boolean) => {
-    setShowConsentDialog(false);
-    
-    if (granted) {
-      try {
-        const response = await fetch('/api/voice-consent/grant', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            consentType: 'voice_synthesis',
-            consentText: 'User consented to voice synthesis features including text-to-speech output.',
-            metadata: {
-              timestamp: new Date().toISOString(),
-              userAgent: navigator.userAgent,
-            },
-          }),
-        });
+  // Apply accessibility settings
+  const getContainerClasses = () => {
+    let classes = "min-h-screen bg-black";
+    if (highContrast) classes += " contrast-150";
+    if (dyslexiaFont) classes += " font-opendyslexic";
+    return classes;
+  };
 
-        const data = await response.json();
-        if (data.success) {
-          setHasVoiceConsent(true);
-          setVoiceEnabled(true);
-        }
-      } catch (error) {
-        console.error('Error granting consent:', error);
-      }
-    }
+  const getButtonSize = () => {
+    return largeTouchTargets ? "default" : "sm";
   };
 
 
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className={getContainerClasses()}>
       {/* Portrait Image - Left Side */}
       <div className="fixed top-0 left-0 w-2/3 h-screen flex items-center justify-center bg-gray-900">
         <img
@@ -207,29 +247,63 @@ function App() {
       <div className="fixed top-0 right-0 w-1/3 h-screen p-4 bg-black">
         <div className="h-full flex flex-col space-y-4">
           {/* Voice controls */}
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end flex-wrap">
             <Button
               onClick={toggleVoice}
               variant={voiceEnabled ? "default" : "outline"}
-              size="sm"
+              size={getButtonSize()}
               title="Toggle voice output"
+              aria-label="Toggle voice output"
+              aria-pressed={voiceEnabled}
             >
               {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
             </Button>
             <Button
-              onClick={toggleListening}
-              variant={isListening ? "default" : "outline"}
-              size="sm"
-              disabled={isLoading}
-              title="Click to speak"
-              className={isListening ? 'animate-pulse' : ''}
+              onClick={() => setShowVoicePicker(true)}
+              variant="outline"
+              size={getButtonSize()}
+              title="Voice settings"
+              aria-label="Open voice settings"
             >
-              {isListening ? '🎤' : '🎙️'} {isListening ? 'Listening...' : 'Speak'}
+              <i className="fas fa-cog mr-1"></i>
+              Settings
             </Button>
+            {!isMobile && (
+              <Button
+                onClick={toggleListening}
+                variant={isListening ? "default" : "outline"}
+                size={getButtonSize()}
+                disabled={isLoading}
+                title="Click to speak"
+                className={isListening ? 'animate-pulse' : ''}
+                aria-label={isListening ? "Stop listening" : "Start listening"}
+                aria-pressed={isListening}
+              >
+                {isListening ? '🎤' : '🎙️'} {isListening ? 'Listening...' : 'Speak'}
+              </Button>
+            )}
           </div>
 
+          {/* Voice Visualizer */}
+          <VoiceVisualizer
+            isListening={isListening}
+            isSpeaking={isSpeaking}
+            className="h-16"
+          />
+
+          {/* Voice Controls */}
+          <VoiceControls
+            isSpeaking={isSpeaking}
+            onPause={pauseSpeech}
+            onResume={resumeSpeech}
+            onStop={stopSpeech}
+            onReplay={replaySpeech}
+            showCaptions={showCaptions}
+            onToggleCaptions={setShowCaptions}
+          />
+
           {/* Messages - Fixed height with scrolling */}
-          <div className="h-[calc(100vh-180px)] overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
+          <div className="h-[calc(100vh-400px)] overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
             {messages.length === 0 ? (
               <p className="text-gray-400 text-center">
                 Start a conversation with Milla...
@@ -247,47 +321,93 @@ function App() {
                     {msg.role === 'user' ? 'You' : 'Milla'}
                   </p>
                   <p className="text-sm">{msg.content}</p>
+                  {showCaptions && msg.role === 'assistant' && (
+                    <div className="mt-2 p-2 bg-black/50 rounded text-xs border border-white/20">
+                      {msg.content}
+                    </div>
+                  )}
                 </div>
               ))
             )}
           </div>
 
           {/* Input - Fixed at bottom */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="Type your message or click the microphone to speak..."
-              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={toggleListening}
-              variant={isListening ? "default" : "outline"}
-              disabled={isLoading}
-              title="Click to speak"
-              className={isListening ? 'animate-pulse' : ''}
-            >
-              {isListening ? '🎤' : '🎙️'}
-            </Button>
-            <Button
-              onClick={handleSendMessage}
-              disabled={isLoading || !message.trim()}
-            >
-              {isLoading ? 'Sending...' : 'Send'}
-            </Button>
-          </div>
+          {isMobile ? (
+            <div className="flex flex-col gap-2">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your message..."
+                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                disabled={isLoading}
+              />
+              <div className="flex gap-2 items-center justify-between">
+                <MobileVoiceControls
+                  onStartListening={toggleListening}
+                  onStopListening={toggleListening}
+                  isListening={isListening}
+                  onCancel={cancelListening}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !message.trim()}
+                  className="flex-1"
+                  size={getButtonSize()}
+                >
+                  {isLoading ? 'Sending...' : 'Send'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Type your message or click the microphone to speak..."
+                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={toggleListening}
+                variant={isListening ? "default" : "outline"}
+                disabled={isLoading}
+                title="Click to speak"
+                className={isListening ? 'animate-pulse' : ''}
+                size={getButtonSize()}
+                aria-label={isListening ? "Stop listening" : "Start listening"}
+                aria-pressed={isListening}
+              >
+                {isListening ? '🎤' : '🎙️'}
+              </Button>
+              <Button
+                onClick={handleSendMessage}
+                disabled={isLoading || !message.trim()}
+                size={getButtonSize()}
+              >
+                {isLoading ? 'Sending...' : 'Send'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Voice Consent Dialog */}
-      <VoiceConsentDialog
-        open={showConsentDialog}
-        onOpenChange={setShowConsentDialog}
-        onConsent={handleConsentResponse}
-        consentType="voice_synthesis"
+      {/* Voice Picker Dialog */}
+      <VoicePickerDialog
+        open={showVoicePicker}
+        onOpenChange={setShowVoicePicker}
+        availableVoices={availableVoices}
+        selectedVoice={selectedVoice}
+        onVoiceSelect={setSelectedVoice}
+        speechRate={speechRate}
+        onSpeechRateChange={setSpeechRate}
+        voicePitch={voicePitch}
+        onVoicePitchChange={setVoicePitch}
+        voiceVolume={voiceVolume}
+        onVoiceVolumeChange={setVoiceVolume}
       />
     </div>
   );
