@@ -94,7 +94,7 @@ export async function generateImage(prompt: string): Promise<ImageGenerationResu
 
 export function extractImagePrompt(userMessage: string): string | null {
   const message = userMessage.toLowerCase();
-  
+
   // Match patterns like "create an image of..." or "draw a picture of..."
   const patterns = [
     /create an image of\s+(.+)/i,

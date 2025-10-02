@@ -37,8 +37,8 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
         "X-Title": "Milla Rayne AI Assistant - Image Generation",
       },
       body: JSON.stringify({
-  // Attempt to use the Gemini image-preview model via OpenRouter which may return an image preview or image URL.
-  model: "google/gemini-2.5-flash-image-preview",
+        // Attempt to use the Gemini image-preview model via OpenRouter which may return an image preview or image URL.
+        model: "google/gemini-2.5-flash-image-preview",
         messages: [
           {
             role: "system",
@@ -116,7 +116,7 @@ export async function generateImageWithGrok(prompt: string): Promise<OpenRouterI
  */
 export function extractImagePrompt(userMessage: string): string | null {
   const message = userMessage.toLowerCase();
-  
+
   // Match patterns like "create an image of..." or "draw a picture of..."
   const patterns = [
     /create an image of\s+(.+)/i,
