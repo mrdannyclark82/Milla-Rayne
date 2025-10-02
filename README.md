@@ -62,6 +62,13 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Fallback**: Curated project enhancement suggestions
 
+### Image Generation Service: OpenRouter (Gemini)
+- **Model**: `google/gemini-2.5-flash-image-preview` (Gemini 2.5 Flash Image Preview)
+- **Endpoint**: `/api/chat` (automatically detects image generation requests)
+- **Setup**: Add `OPENROUTER_GEMINI_API_KEY=your_key_here` to `.env`
+- **Fallback**: Grok (enhanced descriptions) → XAI image generation
+- **Use**: Create images from text prompts (e.g., "create an image of a sunset")
+
 ### Additional Services Available
 - **xAI Grok**: `XAI_API_KEY` - Alternative AI service for specialized tasks
 - **OpenAI/Perplexity**: `PERPLEXITY_API_KEY` - Additional AI option
@@ -81,6 +88,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 2. Edit `.env` with your actual API keys:
    ```env
    OPENROUTER_API_KEY=your_actual_openrouter_key_here
+   OPENROUTER_GEMINI_API_KEY=your_actual_openrouter_gemini_key_here
    XAI_API_KEY=your_actual_xai_key_here
    ```
 
@@ -198,7 +206,7 @@ Protect your conversation data with field-level encryption:
 See [SECURITY.md](SECURITY.md) for detailed security documentation.
 
 ### API Key Sources:
-- **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service (DeepSeek + Qwen)
+- **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service (DeepSeek + Qwen + Gemini Image Generation)
 - **xAI**: [console.x.ai](https://console.x.ai) - Alternative AI service
 - **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) - For repository analysis
 
