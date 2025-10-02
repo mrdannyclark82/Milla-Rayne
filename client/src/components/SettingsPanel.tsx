@@ -52,9 +52,9 @@ interface SettingsPanelProps {
   onPersonalitySettingsChange?: (settings: any) => void;
 }
 
-export default function SettingsPanel({ 
-  children, 
-  voiceEnabled = false, 
+export default function SettingsPanel({
+  children,
+  voiceEnabled = false,
   onVoiceToggle,
   speechRate = 1.0,
   onSpeechRateChange,
@@ -86,7 +86,7 @@ export default function SettingsPanel({
     voice_persona: false,
     voice_cloning: false,
   });
-  
+
   const defaultAvatarSettings: AvatarSettings = {
     style: 'realistic',
     hairColor: 'auburn',
@@ -98,14 +98,14 @@ export default function SettingsPanel({
     lighting: 75,
     glow: 60
   };
-  
+
   const defaultPersonalitySettings = {
     communicationStyle: 'adaptive' as const,
     formalityLevel: 'balanced' as const,
     responseLength: 'medium' as const,
     emotionalIntelligence: 'high' as const
   };
-  
+
   const avatarSettings = externalAvatarSettings || defaultAvatarSettings;
   const currentPersonalitySettings = personalitySettings || defaultPersonalitySettings;
 
@@ -123,34 +123,34 @@ export default function SettingsPanel({
     if (speechRate >= 1.5) return "Fast";
     return "Normal";
   };
-  
+
   const handleVoicePitchChange = () => {
     const newPitch = voicePitch >= 1.5 ? 0.8 : voicePitch + 0.1;
     onVoicePitchChange?.(Math.round(newPitch * 10) / 10);
   };
-  
+
   const getVoicePitchLabel = () => {
     if (voicePitch <= 0.8) return "Low";
     if (voicePitch >= 1.4) return "High";
     return "Normal";
   };
-  
+
   const handleVoiceVolumeChange = () => {
     const newVolume = voiceVolume >= 1.0 ? 0.3 : voiceVolume + 0.2;
     onVoiceVolumeChange?.(Math.round(newVolume * 10) / 10);
   };
-  
+
   const getVoiceVolumeLabel = () => {
     if (voiceVolume <= 0.4) return "Quiet";
     if (voiceVolume >= 0.9) return "Loud";
     return "Normal";
   };
-  
+
   const handleVoiceChange = (voiceName: string) => {
     const voice = availableVoices.find(v => v.name === voiceName) || null;
     onVoiceChange?.(voice);
   };
-  
+
   const getVoiceDisplayName = () => {
     if (!selectedVoice) return "Auto (Female)";
     const shortName = selectedVoice.name.split(' ')[0] || selectedVoice.name;
@@ -171,7 +171,7 @@ export default function SettingsPanel({
         'voice_persona',
         'voice_cloning'
       ];
-      
+
       const results = await Promise.all(
         types.map(type =>
           fetch(`/api/voice-consent/check/${type}`)
@@ -204,7 +204,7 @@ export default function SettingsPanel({
       if (data.success) {
         // Refresh consent status
         fetchVoiceConsents();
-        
+
         // If voice synthesis consent was revoked, disable voice
         if (consentType === 'voice_synthesis' && voiceEnabled) {
           onVoiceToggle?.(false);
@@ -224,7 +224,7 @@ export default function SettingsPanel({
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-white">Settings</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-3 mt-4">
           {/* Appearance Section */}
           <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
@@ -238,24 +238,22 @@ export default function SettingsPanel({
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Theme</span>
                 <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className={`border-white/30 text-white/70 hover:text-white ${
-                      theme === 'light' ? 'bg-white/20 border-white/50' : ''
-                    }`}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`border-white/30 text-white/70 hover:text-white ${theme === 'light' ? 'bg-white/20 border-white/50' : ''
+                      }`}
                     onClick={() => onThemeChange?.('light')}
                     data-testid="button-theme-light"
                   >
                     <i className="fas fa-sun mr-1"></i>
                     Light
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className={`border-white/30 text-white/70 hover:text-white ${
-                      theme === 'dark' ? 'bg-white/20 border-white/50' : ''
-                    }`}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`border-white/30 text-white/70 hover:text-white ${theme === 'dark' ? 'bg-white/20 border-white/50' : ''
+                      }`}
                     onClick={() => onThemeChange?.('dark')}
                     data-testid="button-theme-dark"
                   >
@@ -299,9 +297,9 @@ export default function SettingsPanel({
 
           {/* Avatar Customization Section */}
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
-            <AvatarCustomizer 
+            <AvatarCustomizer
               currentSettings={avatarSettings}
-              onSettingsChange={onAvatarSettingsChange || (() => {})}
+              onSettingsChange={onAvatarSettingsChange || (() => { })}
             />
           </div>
 
@@ -316,15 +314,15 @@ export default function SettingsPanel({
             <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Communication Style</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-white/30 text-white/70 hover:text-white"
                   onClick={() => {
                     const styles = ['adaptive', 'formal', 'casual', 'friendly'] as const;
                     const currentIndex = styles.indexOf(currentPersonalitySettings.communicationStyle);
                     const nextStyle = styles[(currentIndex + 1) % styles.length];
-                    onPersonalitySettingsChange?.({...currentPersonalitySettings, communicationStyle: nextStyle});
+                    onPersonalitySettingsChange?.({ ...currentPersonalitySettings, communicationStyle: nextStyle });
                   }}
                   data-testid="button-communication-style"
                 >
@@ -334,15 +332,15 @@ export default function SettingsPanel({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Formality Level</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-white/30 text-white/70 hover:text-white"
                   onClick={() => {
                     const levels = ['formal', 'balanced', 'casual'] as const;
                     const currentIndex = levels.indexOf(currentPersonalitySettings.formalityLevel);
                     const nextLevel = levels[(currentIndex + 1) % levels.length];
-                    onPersonalitySettingsChange?.({...currentPersonalitySettings, formalityLevel: nextLevel});
+                    onPersonalitySettingsChange?.({ ...currentPersonalitySettings, formalityLevel: nextLevel });
                   }}
                   data-testid="button-formality-level"
                 >
@@ -352,15 +350,15 @@ export default function SettingsPanel({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Response Length</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-white/30 text-white/70 hover:text-white"
                   onClick={() => {
                     const lengths = ['short', 'medium', 'long'] as const;
                     const currentIndex = lengths.indexOf(currentPersonalitySettings.responseLength);
                     const nextLength = lengths[(currentIndex + 1) % lengths.length];
-                    onPersonalitySettingsChange?.({...currentPersonalitySettings, responseLength: nextLength});
+                    onPersonalitySettingsChange?.({ ...currentPersonalitySettings, responseLength: nextLength });
                   }}
                   data-testid="button-response-length"
                 >
@@ -370,15 +368,15 @@ export default function SettingsPanel({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Emotional Intelligence</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-white/30 text-white/70 hover:text-white"
                   onClick={() => {
                     const levels = ['low', 'medium', 'high'] as const;
                     const currentIndex = levels.indexOf(currentPersonalitySettings.emotionalIntelligence);
                     const nextLevel = levels[(currentIndex + 1) % levels.length];
-                    onPersonalitySettingsChange?.({...currentPersonalitySettings, emotionalIntelligence: nextLevel});
+                    onPersonalitySettingsChange?.({ ...currentPersonalitySettings, emotionalIntelligence: nextLevel });
                   }}
                   data-testid="button-emotional-intelligence"
                 >
@@ -400,9 +398,9 @@ export default function SettingsPanel({
             <CardContent className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Voice Responses</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className={`border-white/30 text-white/70 hover:text-white ${voiceEnabled ? 'bg-green-600/20 border-green-400/50 text-green-300' : ''}`}
                   onClick={handleVoiceToggle}
                   data-testid="button-voice-toggle"
@@ -420,9 +418,9 @@ export default function SettingsPanel({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/80">Speech Rate</span>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="border-white/30 text-white/70 hover:text-white"
                   onClick={handleSpeechRateChange}
                   data-testid="button-speech-rate"
@@ -431,29 +429,29 @@ export default function SettingsPanel({
                   {getSpeechRateLabel()}
                 </Button>
               </div>
-              
+
               {voiceEnabled && (
                 <>
                   <div className="flex items-center justify-between">
                     <span className="text-white/80">Voice Selection</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="border-white/30 text-white/70 hover:text-white"
                       onClick={() => {
-                        const femaleVoices = availableVoices.filter(v => 
-                          v.lang.startsWith('en') && 
+                        const femaleVoices = availableVoices.filter(v =>
+                          v.lang.startsWith('en') &&
                           (v.name.toLowerCase().includes('female') ||
-                           v.name.toLowerCase().includes('woman') ||
-                           v.name.toLowerCase().includes('zira') ||
-                           v.name.toLowerCase().includes('hazel') ||
-                           v.name.toLowerCase().includes('samantha'))
+                            v.name.toLowerCase().includes('woman') ||
+                            v.name.toLowerCase().includes('zira') ||
+                            v.name.toLowerCase().includes('hazel') ||
+                            v.name.toLowerCase().includes('samantha'))
                         );
                         const allEnglishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
                         const voicesToCycle = femaleVoices.length > 0 ? femaleVoices : allEnglishVoices;
-                        
+
                         if (voicesToCycle.length === 0) return;
-                        
+
                         const currentIndex = selectedVoice ? voicesToCycle.findIndex(v => v.name === selectedVoice.name) : -1;
                         const nextIndex = (currentIndex + 1) % voicesToCycle.length;
                         onVoiceChange?.(voicesToCycle[nextIndex]);
@@ -464,12 +462,12 @@ export default function SettingsPanel({
                       {getVoiceDisplayName()}
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-white/80">Voice Pitch</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="border-white/30 text-white/70 hover:text-white"
                       onClick={handleVoicePitchChange}
                       data-testid="button-voice-pitch"
@@ -478,12 +476,12 @@ export default function SettingsPanel({
                       {getVoicePitchLabel()}
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-white/80">Voice Volume</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="border-white/30 text-white/70 hover:text-white"
                       onClick={handleVoiceVolumeChange}
                       data-testid="button-voice-volume"
@@ -509,7 +507,7 @@ export default function SettingsPanel({
               <p className="text-sm text-white/60 mb-3">
                 Manage your consent for voice features. You can revoke consent at any time.
               </p>
-              
+
               {/* Voice Synthesis Consent */}
               <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                 <div className="flex items-start justify-between mb-2">
@@ -616,7 +614,7 @@ export default function SettingsPanel({
                 <p className="text-xs text-blue-300 flex items-start gap-2">
                   <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>
-                    Your privacy matters. All consent records are stored securely and you can revoke consent at any time. 
+                    Your privacy matters. All consent records are stored securely and you can revoke consent at any time.
                     See <span className="underline cursor-pointer">VOICE_CLONING_CONSENT.md</span> for details.
                   </span>
                 </p>
@@ -625,18 +623,18 @@ export default function SettingsPanel({
           </Card>
 
           {/* Personal Tasks Section */}
-\n\n          <PersonalTasksSection />
+          \n\n          <PersonalTasksSection />
 
           {/* Accessibility Section */}
           <AccessibilitySettings
             highContrast={false}
-            onHighContrastChange={() => {}}
+            onHighContrastChange={() => { }}
             dyslexiaFont={false}
-            onDyslexiaFontChange={() => {}}
+            onDyslexiaFontChange={() => { }}
             colorBlindMode="none"
-            onColorBlindModeChange={() => {}}
+            onColorBlindModeChange={() => { }}
             largeTouchTargets={false}
-            onLargeTouchTargetsChange={() => {}}
+            onLargeTouchTargetsChange={() => { }}
           />
         </div>
 
@@ -644,14 +642,14 @@ export default function SettingsPanel({
 
         {/* Footer */}
         <div className="flex justify-between items-center pt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setIsOpen(false)}
             className="border-white/30 text-white/70 hover:text-white"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsOpen(false)}
             className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
           >
@@ -733,7 +731,7 @@ function PersonalTasksSection() {
 
   const completeTask = async (taskId: string, insights: string) => {
     try {
-      await apiRequest(`/api/personal-tasks/${taskId}/complete`, { 
+      await apiRequest(`/api/personal-tasks/${taskId}/complete`, {
         method: 'POST',
         body: JSON.stringify({ insights })
       });
@@ -768,7 +766,7 @@ function PersonalTasksSection() {
             {summary.completed} completed
           </span>
         </div>
-        
+
         {/* Recent Tasks */}
         <div className="space-y-1 max-h-32 overflow-y-auto">
           {tasks.length === 0 ? (

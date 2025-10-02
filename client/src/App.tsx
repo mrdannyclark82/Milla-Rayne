@@ -178,10 +178,10 @@ function App() {
   const resumeSpeech = () => {
     window.speechSynthesis.resume();
   };
-        {/* small React mount indicator */}
-        <div style={{ position: 'fixed', left: 8, top: 36, zIndex: 100000, color: '#0f0' }}>
-          React mounted
-        </div>
+  {/* small React mount indicator */ }
+  <div style={{ position: 'fixed', left: 8, top: 36, zIndex: 100000, color: '#0f0' }}>
+    React mounted
+  </div>
 
   const stopSpeech = () => {
     window.speechSynthesis.cancel();
