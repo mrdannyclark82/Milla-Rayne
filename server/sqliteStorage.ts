@@ -41,6 +41,12 @@ export interface IStorage {
   createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion>;
   getDailySuggestionByDate(date: string): Promise<DailySuggestion | null>;
   markDailySuggestionDelivered(date: string): Promise<boolean>;
+
+  // Voice Consent methods
+  getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null>;
+  grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent>;
+  revokeVoiceConsent(userId: string, consentType: string): Promise<boolean>;
+  hasVoiceConsent(userId: string, consentType: string): Promise<boolean>;
 }
 
 export interface SessionInfo {
@@ -65,6 +71,18 @@ export interface UsagePattern {
   hourOfDay: number;
   sessionCount: number;
   messageCount: number;
+}
+
+export interface VoiceConsent {
+  id: string;
+  userId: string;
+  consentType: 'voice_cloning' | 'voice_persona' | 'voice_synthesis';
+  granted: boolean;
+  grantedAt?: Date;
+  revokedAt?: Date;
+  consentText: string;
+  metadata?: any;
+  createdAt: Date;
 }
 
 export class SqliteStorage implements IStorage {
@@ -181,6 +199,29 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_ai_updates_priority ON ai_updates(priority DESC, relevance_score DESC);
       CREATE INDEX IF NOT EXISTS idx_ai_updates_applied ON ai_updates(applied_at);
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
+    `);
+
+    // Create voice_consent table for tracking user consent for voice cloning/personas
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS voice_consent (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        consent_type TEXT NOT NULL CHECK(consent_type IN ('voice_cloning', 'voice_persona', 'voice_synthesis')),
+        granted INTEGER NOT NULL DEFAULT 0,
+        granted_at DATETIME,
+        revoked_at DATETIME,
+        consent_text TEXT NOT NULL,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, consent_type)
+      )
+    `);
+
+    // Create index for voice_consent
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_voice_consent_user ON voice_consent(user_id);
+      CREATE INDEX IF NOT EXISTS idx_voice_consent_type ON voice_consent(consent_type);
     `);
 
     const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
@@ -543,6 +584,72 @@ export class SqliteStorage implements IStorage {
     `);
     const result = stmt.run(date);
     return result.changes > 0;
+  }
+
+  // Voice Consent methods
+  async getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null> {
+    const stmt = this.db.prepare('SELECT * FROM voice_consent WHERE user_id = ? AND consent_type = ?');
+    const consent = stmt.get(userId, consentType) as any;
+    
+    if (!consent) return null;
+    
+    return {
+      id: consent.id,
+      userId: consent.user_id,
+      consentType: consent.consent_type as 'voice_cloning' | 'voice_persona' | 'voice_synthesis',
+      granted: consent.granted === 1,
+      grantedAt: consent.granted_at ? new Date(consent.granted_at) : undefined,
+      revokedAt: consent.revoked_at ? new Date(consent.revoked_at) : undefined,
+      consentText: consent.consent_text,
+      metadata: consent.metadata ? JSON.parse(consent.metadata) : null,
+      createdAt: new Date(consent.created_at)
+    };
+  }
+
+  async grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent> {
+    const id = randomUUID();
+    const metadataStr = metadata ? JSON.stringify(metadata) : null;
+    
+    // Check if consent record already exists
+    const existing = await this.getVoiceConsent(userId, consentType);
+    
+    if (existing) {
+      // Update existing record
+      const stmt = this.db.prepare(`
+        UPDATE voice_consent 
+        SET granted = 1, granted_at = CURRENT_TIMESTAMP, revoked_at = NULL, consent_text = ?, metadata = ?
+        WHERE user_id = ? AND consent_type = ?
+      `);
+      stmt.run(consentText, metadataStr, userId, consentType);
+    } else {
+      // Insert new record
+      const stmt = this.db.prepare(`
+        INSERT INTO voice_consent (id, user_id, consent_type, granted, granted_at, consent_text, metadata, created_at)
+        VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, CURRENT_TIMESTAMP)
+      `);
+      stmt.run(id, userId, consentType, consentText, metadataStr);
+    }
+    
+    const updated = await this.getVoiceConsent(userId, consentType);
+    if (!updated) {
+      throw new Error("Failed to grant voice consent");
+    }
+    return updated;
+  }
+
+  async revokeVoiceConsent(userId: string, consentType: string): Promise<boolean> {
+    const stmt = this.db.prepare(`
+      UPDATE voice_consent 
+      SET granted = 0, revoked_at = CURRENT_TIMESTAMP 
+      WHERE user_id = ? AND consent_type = ?
+    `);
+    const result = stmt.run(userId, consentType);
+    return result.changes > 0;
+  }
+
+  async hasVoiceConsent(userId: string, consentType: string): Promise<boolean> {
+    const consent = await this.getVoiceConsent(userId, consentType);
+    return consent !== null && consent.granted && !consent.revokedAt;
   }
 
   // Helper method to close database connection

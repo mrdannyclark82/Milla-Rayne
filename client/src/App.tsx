@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import VoiceConsentDialog from '@/components/VoiceConsentDialog';
 
 function App() {
   const [message, setMessage] = useState('');
@@ -9,6 +10,8 @@ function App() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [showConsentDialog, setShowConsentDialog] = useState(false);
+  const [hasVoiceConsent, setHasVoiceConsent] = useState(false);
   const recognitionRef = useRef<any>(null);
 
   // Initialize speech synthesis voices
@@ -30,6 +33,22 @@ function App() {
 
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
+
+  // Check for existing voice consent on mount
+  useEffect(() => {
+    const checkConsent = async () => {
+      try {
+        const response = await fetch('/api/voice-consent/check/voice_synthesis');
+        const data = await response.json();
+        if (data.success) {
+          setHasVoiceConsent(data.hasConsent);
+        }
+      } catch (error) {
+        console.error('Error checking voice consent:', error);
+      }
+    };
+    checkConsent();
   }, []);
 
   // Initialize speech recognition
@@ -124,9 +143,45 @@ function App() {
   };
 
   const toggleVoice = () => {
-    setVoiceEnabled(!voiceEnabled);
-    if (voiceEnabled) {
-      window.speechSynthesis.cancel();
+    if (!voiceEnabled && !hasVoiceConsent) {
+      // Show consent dialog if trying to enable voice without consent
+      setShowConsentDialog(true);
+    } else {
+      setVoiceEnabled(!voiceEnabled);
+      if (voiceEnabled) {
+        window.speechSynthesis.cancel();
+      }
+    }
+  };
+
+  const handleConsentResponse = async (granted: boolean) => {
+    setShowConsentDialog(false);
+    
+    if (granted) {
+      try {
+        const response = await fetch('/api/voice-consent/grant', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            consentType: 'voice_synthesis',
+            consentText: 'User consented to voice synthesis features including text-to-speech output.',
+            metadata: {
+              timestamp: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+            },
+          }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          setHasVoiceConsent(true);
+          setVoiceEnabled(true);
+        }
+      } catch (error) {
+        console.error('Error granting consent:', error);
+      }
     }
   };
 
@@ -226,6 +281,14 @@ function App() {
           </div>
         </div>
       </div>
+
+      {/* Voice Consent Dialog */}
+      <VoiceConsentDialog
+        open={showConsentDialog}
+        onOpenChange={setShowConsentDialog}
+        onConsent={handleConsentResponse}
+        consentType="voice_synthesis"
+      />
     </div>
   );
 }

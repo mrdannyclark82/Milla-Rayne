@@ -1489,6 +1489,71 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Voice Consent endpoints
+  app.get("/api/voice-consent/:consentType", async (req, res) => {
+    try {
+      const { consentType } = req.params;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      const consent = await (storage as any).getVoiceConsent(userId, consentType);
+      res.json({ success: true, consent });
+    } catch (error) {
+      console.error("Error getting voice consent:", error);
+      res.status(500).json({ error: "Failed to get voice consent", success: false });
+    }
+  });
+
+  app.post("/api/voice-consent/grant", async (req, res) => {
+    try {
+      const { consentType, consentText, metadata } = req.body;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      
+      if (!consentType || !consentText) {
+        return res.status(400).json({ 
+          error: "Missing required fields: consentType and consentText", 
+          success: false 
+        });
+      }
+
+      const consent = await (storage as any).grantVoiceConsent(userId, consentType, consentText, metadata);
+      res.json({ success: true, consent });
+    } catch (error) {
+      console.error("Error granting voice consent:", error);
+      res.status(500).json({ error: "Failed to grant voice consent", success: false });
+    }
+  });
+
+  app.post("/api/voice-consent/revoke", async (req, res) => {
+    try {
+      const { consentType } = req.body;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      
+      if (!consentType) {
+        return res.status(400).json({ 
+          error: "Missing required field: consentType", 
+          success: false 
+        });
+      }
+
+      const revoked = await (storage as any).revokeVoiceConsent(userId, consentType);
+      res.json({ success: revoked, revoked });
+    } catch (error) {
+      console.error("Error revoking voice consent:", error);
+      res.status(500).json({ error: "Failed to revoke voice consent", success: false });
+    }
+  });
+
+  app.get("/api/voice-consent/check/:consentType", async (req, res) => {
+    try {
+      const { consentType } = req.params;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      const hasConsent = await (storage as any).hasVoiceConsent(userId, consentType);
+      res.json({ success: true, hasConsent });
+    } catch (error) {
+      console.error("Error checking voice consent:", error);
+      res.status(500).json({ error: "Failed to check voice consent", success: false });
+    }
+  });
+
   // AI Updates endpoints for predictive updates feature
   app.get("/api/ai-updates", async (req, res) => {
     try {
