@@ -8,7 +8,9 @@
     <meta name="description" content="Your adaptive AI companion with personality" />
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Dev visual indicator: shows even if React fails to mount -->
+    <div id="dev-banner" style="position:fixed;top:0;left:0;right:0;background:#ff4444;color:#fff;padding:6px 8px;z-index:99999;font-weight:700;text-align:center">DEV: client bundle loaded (remove in production)</div>
+    <div id="root" style="padding-top:34px"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

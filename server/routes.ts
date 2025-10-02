@@ -368,6 +368,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Client-side error reporting (development only)
+  app.post('/api/client-error', async (req, res) => {
+    try {
+      const { message, stack } = req.body || {};
+      console.error('Client reported error:', message);
+      if (stack) console.error(stack);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ ok: false });
+    }
+  });
+
   // Proactive engagement endpoint
   app.get("/api/proactive-message", async (req, res) => {
     try {

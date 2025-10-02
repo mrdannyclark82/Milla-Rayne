@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { voiceService } from '@/services/voiceService';
 import { Button } from '@/components/ui/button';
 import { VoicePickerDialog } from '@/components/VoicePickerDialog';
 import { VoiceVisualizer } from '@/components/VoiceVisualizer';
@@ -7,6 +8,7 @@ import { MobileVoiceControls } from '@/components/MobileVoiceControls';
 import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 
 function App() {
+  console.log('App render start');
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +23,7 @@ function App() {
   const [showVoicePicker, setShowVoicePicker] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
   const [lastMessage, setLastMessage] = useState('');
+  const [hasVoiceConsent, setHasVoiceConsent] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [dyslexiaFont, setDyslexiaFont] = useState(false);
   const [colorBlindMode, setColorBlindMode] = useState<"none" | "protanopia" | "deuteranopia" | "tritanopia">("none");
@@ -175,6 +178,10 @@ function App() {
   const resumeSpeech = () => {
     window.speechSynthesis.resume();
   };
+        {/* small React mount indicator */}
+        <div style={{ position: 'fixed', left: 8, top: 36, zIndex: 100000, color: '#0f0' }}>
+          React mounted
+        </div>
 
   const stopSpeech = () => {
     window.speechSynthesis.cancel();
