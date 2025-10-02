@@ -196,6 +196,24 @@ export class SqliteStorage implements IStorage {
       )
     `);
 
+    // Create voice_consent table
+    console.debug('sqlite: creating voice_consent table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS voice_consent (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        consent_type TEXT NOT NULL CHECK(consent_type IN ('voice_cloning', 'voice_persona', 'voice_synthesis')),
+        granted INTEGER NOT NULL DEFAULT 0,
+        granted_at DATETIME,
+        revoked_at DATETIME,
+        consent_text TEXT NOT NULL,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, consent_type)
+      )
+    `);
+
     // Create indexes for ai_updates and daily_suggestions
     console.debug('sqlite: creating indexes');
     this.db.exec(`
