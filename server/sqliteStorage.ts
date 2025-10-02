@@ -226,6 +226,27 @@ export class SqliteStorage implements IStorage {
 
     const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
     console.log(`SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`);
+    
+    // Ensure default user exists for consent storage
+    this.ensureDefaultUser();
+  }
+
+  private ensureDefaultUser(): void {
+    try {
+      const stmt = this.db.prepare('SELECT id FROM users WHERE id = ?');
+      const existing = stmt.get('default-user');
+      
+      if (!existing) {
+        const insertStmt = this.db.prepare(`
+          INSERT INTO users (id, username, password, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `);
+        insertStmt.run('default-user', 'default', 'default');
+        console.log('Default user created for consent storage');
+      }
+    } catch (error) {
+      console.error('Error ensuring default user:', error);
+    }
   }
 
   // User methods
