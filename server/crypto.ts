@@ -20,7 +20,10 @@ const ENCODING_VERSION = 'v1';
 function deriveKey(memoryKey: string, salt: Buffer): Buffer {
   return crypto.pbkdf2Sync(memoryKey, salt, ITERATIONS, KEY_LENGTH, 'sha256');
 }
-
+export function isEncryptionEnabled(): boolean {
+  const key = process.env.MEMORY_KEY;
+  return !!(key && key.length >= 32);
+}
 /**
  * Encrypt plaintext using AES-256-GCM
  * Returns: enc:v1:base64(salt:iv:tag:ciphertext)
