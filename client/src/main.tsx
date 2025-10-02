@@ -12,7 +12,7 @@ if (import.meta.env.DEV) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: evt.error?.message || evt.message, stack: evt.error?.stack || null })
       });
-    } catch (_) {}
+    } catch (_) { }
   });
 
   window.addEventListener('unhandledrejection', (evt) => {
@@ -22,7 +22,7 @@ if (import.meta.env.DEV) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: evt.reason?.message || String(evt.reason), stack: evt.reason?.stack || null })
       });
-    } catch (_) {}
+    } catch (_) { }
   });
 }
 
