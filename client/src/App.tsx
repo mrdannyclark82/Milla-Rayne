@@ -60,6 +60,22 @@ function App() {
     window.speechSynthesis.onvoiceschanged = loadVoices;
   }, []);
 
+  // Check for existing voice consent on mount
+  useEffect(() => {
+    const checkConsent = async () => {
+      try {
+        const response = await fetch('/api/voice-consent/check/voice_synthesis');
+        const data = await response.json();
+        if (data.success) {
+          setHasVoiceConsent(data.hasConsent);
+        }
+      } catch (error) {
+        console.error('Error checking voice consent:', error);
+      }
+    };
+    checkConsent();
+  }, []);
+
   // Initialize speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
