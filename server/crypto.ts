@@ -128,6 +128,14 @@ export function getMemoryKey(): string {
 }
 
 /**
+ * Check if encryption is enabled (MEMORY_KEY is set)
+ */
+export function isEncryptionEnabled(): boolean {
+  const key = process.env.MEMORY_KEY;
+  return !!(key && key.length >= 32);
+}
+
+/**
  * Generate a secure random MEMORY_KEY
  */
 export function generateMemoryKey(): string {
