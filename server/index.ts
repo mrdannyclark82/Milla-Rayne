@@ -94,6 +94,10 @@ if (!globalThis.crypto) {
   const { initializeDailySuggestionScheduler } = await import("./dailySuggestionsService");
   initializeDailySuggestionScheduler();
 
+  // Initialize AI Updates Scheduler
+  const { initializeAIUpdatesScheduler } = await import("./aiUpdatesScheduler");
+  initializeAIUpdatesScheduler();
+
   
   const server = await registerRoutes(app);
 
