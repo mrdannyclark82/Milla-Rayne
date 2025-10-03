@@ -2413,14 +2413,17 @@ async function generateAIResponse(
   // ===========================================================================================
   const coreFunctionTriggers = [
     'hey milla',
-    'milla',
     'my love',
     'hey love',
     'hi milla',
     'hello milla'
   ];
 
-  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger));
+  // Check for "milla" as a standalone word (not part of hyphenated names like "milla-rayne")
+  // Using negative lookahead to exclude cases where "milla" is followed by a hyphen or word character
+  const millaWordPattern = /\bmilla\b(?![\w-])/i;
+  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger)) || 
+                         millaWordPattern.test(userMessage);
 
   // ===========================================================================================
   // MEMORY REVIEW TRIGGER - "Review previous messages" keyword
