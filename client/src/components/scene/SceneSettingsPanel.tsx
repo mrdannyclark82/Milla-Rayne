@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SceneSettings, SceneMood } from '@/types/scene';
-import { loadSceneSettings, saveSceneSettings, onSettingsChange } from '@/utils/sceneSettingsStore';
+import { loadSceneSettings, saveSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
 
 interface SceneSettingsPanelProps {
   onSettingsChange?: (settings: SceneSettings) => void;
@@ -33,10 +33,13 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
   // Listen for cross-tab settings changes
   useEffect(() => {
-    return onSettingsChange((newSettings) => {
+    const unsubscribe = subscribeToSettingsChange((newSettings: SceneSettings) => {
       setSettings(newSettings);
-      onSettingsChange?.(newSettings);
+      if (onSettingsChange) {
+        onSettingsChange(newSettings);
+      }
     });
+    return unsubscribe;
   }, [onSettingsChange]);
 
   const updateSetting = <K extends keyof SceneSettings>(

@@ -4,7 +4,7 @@ import { getSceneForContext, getCurrentTimeOfDay } from '@/utils/scenePresets';
 import { CSSSceneRenderer } from './CSSSceneRenderer';
 import { SceneDebugOverlay } from './SceneDebugOverlay';
 import { SceneSettings, AvatarState, SceneMood, TimeOfDay } from '@/types/scene';
-import { loadSceneSettings, onSettingsChange } from '@/utils/sceneSettingsStore';
+import { loadSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
 
 interface AdaptiveSceneManagerProps {
   avatarState?: AvatarState;
@@ -44,7 +44,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
     }
 
     // Subscribe to settings changes if not controlled by prop
-    return onSettingsChange((newSettings) => {
+    return subscribeToSettingsChange((newSettings: SceneSettings) => {
       setSettings(newSettings);
     });
   }, [propSettings]);
