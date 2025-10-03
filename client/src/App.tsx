@@ -9,6 +9,7 @@ import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { FloatingInput } from '@/components/FloatingInput';
 import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
+import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
 
 function App() {
   console.log('App render start');
@@ -285,6 +286,17 @@ function App() {
               <i className="fas fa-cog mr-1"></i>
               Voice Settings
             </Button>
+            <SceneSettingsDialog>
+              <Button
+                variant="outline"
+                size={getButtonSize()}
+                title="Open scene settings"
+                aria-label="Open scene settings"
+              >
+                <i className="fas fa-sliders-h mr-1"></i>
+                Scene
+              </Button>
+            </SceneSettingsDialog>
             <DeveloperModeToggle>
               <Button
                 variant="outline"

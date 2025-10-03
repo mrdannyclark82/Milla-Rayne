@@ -29,3 +29,14 @@ export interface ParticleConfig {
   density: 'low' | 'medium' | 'high';
   speed: number;
 }
+
+export interface SceneSettings {
+  enabled: boolean;
+  mood: SceneMood;
+  enableParticles: boolean;
+  enableParallax: boolean;
+  parallaxIntensity: number; // 0-75
+  particleDensity: 'off' | 'low' | 'medium' | 'high';
+  animationSpeed: number; // 0.5-1.5 (50%-150%)
+  devDebug: boolean;
+}
