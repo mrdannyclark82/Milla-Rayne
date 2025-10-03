@@ -6,6 +6,7 @@ import { VoiceVisualizer } from '@/components/VoiceVisualizer';
 import { VoiceControls } from '@/components/VoiceControls';
 import { MobileVoiceControls } from '@/components/MobileVoiceControls';
 import { AccessibilitySettings } from '@/components/AccessibilitySettings';
+import { FloatingInput } from '@/components/FloatingInput';
 
 function App() {
   console.log('App render start');
@@ -242,7 +243,7 @@ function App() {
         <img
           src="/milla_new.jpg"
           alt="Milla Portrait"
-          className="max-w-full max-h-full object-contain"
+          className="max-w-full max-h-full object-contain ai-style-change-2 ai-style-change-1"
           onError={(e) => {
             console.log('Image failed to load');
             e.currentTarget.style.display = 'none';
@@ -338,70 +339,22 @@ function App() {
               ))
             )}
           </div>
-
-          {/* Input - Fixed at bottom */}
-          {isMobile ? (
-            <div className="flex flex-col gap-2">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type your message..."
-                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
-                disabled={isLoading}
-              />
-              <div className="flex gap-2 items-center justify-between">
-                <MobileVoiceControls
-                  onStartListening={toggleListening}
-                  onStopListening={toggleListening}
-                  isListening={isListening}
-                  onCancel={cancelListening}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !message.trim()}
-                  className="flex-1"
-                  size={getButtonSize()}
-                >
-                  {isLoading ? 'Sending...' : 'Send'}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type your message or click the microphone to speak..."
-                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={toggleListening}
-                variant={isListening ? "default" : "outline"}
-                disabled={isLoading}
-                title="Click to speak"
-                className={isListening ? 'animate-pulse' : ''}
-                size={getButtonSize()}
-                aria-label={isListening ? "Stop listening" : "Start listening"}
-                aria-pressed={isListening}
-              >
-                {isListening ? '🎤' : '🎙️'}
-              </Button>
-              <Button
-                onClick={handleSendMessage}
-                disabled={isLoading || !message.trim()}
-                size={getButtonSize()}
-              >
-                {isLoading ? 'Sending...' : 'Send'}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Floating Input Component */}
+      <FloatingInput
+        message={message}
+        setMessage={setMessage}
+        onSendMessage={handleSendMessage}
+        isLoading={isLoading}
+        isListening={isListening}
+        toggleListening={toggleListening}
+        isMobile={isMobile}
+        getButtonSize={getButtonSize}
+        MobileVoiceControls={MobileVoiceControls}
+        cancelListening={cancelListening}
+      />
 
       {/* Voice Picker Dialog */}
       <VoicePickerDialog
