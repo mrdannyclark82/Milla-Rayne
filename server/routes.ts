@@ -2413,14 +2413,17 @@ async function generateAIResponse(
   // ===========================================================================================
   const coreFunctionTriggers = [
     'hey milla',
-    'milla',
     'my love',
     'hey love',
     'hi milla',
     'hello milla'
   ];
 
-  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger));
+  // Check for "milla" as a standalone word (not part of hyphenated names like "milla-rayne")
+  // Using negative lookahead to exclude cases where "milla" is followed by a hyphen or word character
+  const millaWordPattern = /\bmilla\b(?![\w-])/i;
+  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger)) || 
+                         millaWordPattern.test(userMessage);
 
   // ===========================================================================================
   // MEMORY REVIEW TRIGGER - "Review previous messages" keyword
@@ -2452,10 +2455,14 @@ async function generateAIResponse(
   // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL is present
   // Respects ENABLE_DEV_TALK flag and requires explicit user request when disabled
   // ===========================================================================================
-  const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+  // Updated regex to explicitly handle .git suffix and various URL endings
+  const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?=\/|$|\s)/i);
 
   if (!hasCoreTrigger && githubUrlMatch) {
-    const githubUrl = githubUrlMatch[0];
+    // Reconstruct the clean GitHub URL from the match
+    const owner = githubUrlMatch[1];
+    const repo = githubUrlMatch[2];
+    const githubUrl = `https://github.com/${owner}/${repo}`;
 
     // Check if dev talk is allowed
     if (!canDiscussDev(userMessage)) {
@@ -2470,11 +2477,16 @@ async function generateAIResponse(
       console.log(`GitHub URL detected in chat: ${githubUrl}`);
       const repoInfo = parseGitHubUrl(githubUrl);
 
-      if (repoInfo) {
-        const repoData = await fetchRepositoryData(repoInfo);
-        const analysis = await generateRepositoryAnalysis(repoData);
+      if (!repoInfo) {
+        return {
+          content: `*looks thoughtful* I had trouble parsing that GitHub URL, sweetheart. Could you double-check the format? It should look like "https://github.com/owner/repository" or "github.com/owner/repository". Let me know if you need help! 💜`
+        };
+      }
 
-        const response = `*shifts into repository analysis mode* 
+      const repoData = await fetchRepositoryData(repoInfo);
+      const analysis = await generateRepositoryAnalysis(repoData);
+
+      const response = `*shifts into repository analysis mode* 
 
 I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
 
@@ -2488,11 +2500,23 @@ ${analysis.recommendations.map(rec => `• ${rec}`).join('\n')}
 
 Would you like me to generate specific improvement suggestions for this repository? Just say "apply these updates automatically" and I'll create a pull request with the improvements!`;
 
-        return { content: response };
-      }
+      return { content: response };
     } catch (error) {
       console.error("GitHub analysis error in chat:", error);
-      // Fall through to normal conversation if analysis fails
+      
+      // Return a helpful error message instead of falling through
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${
+          errorMessage.includes('404') || errorMessage.includes('not found')
+            ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
+            : errorMessage.includes('403') || errorMessage.includes('forbidden')
+            ? 'I don\'t have permission to access that repository. It might be private or require authentication.'
+            : errorMessage.includes('rate limit')
+            ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
+            : 'There was an issue connecting to GitHub or processing the repository data.'
+        }\n\nWould you like to try a different repository, or should we chat about something else? 💜`
+      };
     }
   }
 
@@ -2520,9 +2544,10 @@ Would you like me to generate specific improvement suggestions for this reposito
       // Search backwards through history for a GitHub URL
       for (let i = conversationHistory.length - 1; i >= 0; i--) {
         const historyMessage = conversationHistory[i].content;
-        const repoMatch = historyMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+        const repoMatch = historyMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?=\/|$|\s)/i);
         if (repoMatch) {
-          lastRepoUrl = repoMatch[0];
+          // Reconstruct clean URL from match
+          lastRepoUrl = `https://github.com/${repoMatch[1]}/${repoMatch[2]}`;
           break;
         }
       }
