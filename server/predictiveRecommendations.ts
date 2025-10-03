@@ -149,14 +149,21 @@ export function generateRecommendations(options: {
   minRelevance?: number;
   maxRecommendations?: number;
 }): Recommendation[] {
+  console.log('predictiveRecommendations.generateRecommendations called with', options);
   const minRelevance = options.minRelevance ?? 0.2;
   const maxRecommendations = options.maxRecommendations ?? 10;
 
   // Get high-relevance updates
-  const updates = getAIUpdates({
-    minRelevance,
-    limit: 100, // Process top 100 relevant updates
-  });
+  try {
+    console.log('Fetching AI updates with minRelevance=', minRelevance);
+    const updates = getAIUpdates({
+      minRelevance,
+      limit: 100, // Process top 100 relevant updates
+    });
+
+    console.log(`Retrieved ${updates.length} updates`);
+
+    console.log('Analyzing updates for recommendations...');
 
   console.log(`Generating recommendations from ${updates.length} relevant updates...`);
 
@@ -175,9 +182,13 @@ export function generateRecommendations(options: {
   // Sort by confidence and return top N
   const sorted = merged.sort((a, b) => b.confidence - a.confidence);
   
-  console.log(`Generated ${sorted.length} recommendations`);
+    console.log(`Generated ${sorted.length} recommendations`);
   
   return sorted.slice(0, maxRecommendations);
+  } catch (err) {
+    console.error('Error inside generateRecommendations:', err);
+    throw err;
+  }
 }
 
 /**

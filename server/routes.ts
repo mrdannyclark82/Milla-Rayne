@@ -1615,7 +1615,23 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get("/api/ai-updates/recommendations", async (req, res) => {
     try {
-      const { generateRecommendations, getRecommendationSummary } = await import("./predictiveRecommendations");
+      console.log('DEBUG: /api/ai-updates/recommendations route hit');
+      // Temporary short-circuit for debugging: return a simple test response
+      // (revert this once we've confirmed the route is reachable)
+      res.json({ success: true, debug: true });
+      return;
+      let generateRecommendations: any, getRecommendationSummary: any;
+      try {
+        const mod = await import("./predictiveRecommendations");
+        generateRecommendations = mod.generateRecommendations;
+        getRecommendationSummary = mod.getRecommendationSummary;
+      } catch (impErr) {
+        console.error('Failed to import predictiveRecommendations module:', {
+          message: (impErr as any)?.message,
+          stack: (impErr as any)?.stack,
+        });
+        throw impErr;
+      }
       const { minRelevance, maxRecommendations, summary } = req.query;
 
       if (summary === 'true') {
@@ -1629,9 +1645,19 @@ Project: Milla Rayne - AI Virtual Assistant
         res.json({ success: true, recommendations, count: recommendations.length });
       }
     } catch (error) {
-      console.error("Error generating recommendations:", error);
+      // Log detailed error for debugging
+      console.error("Error generating recommendations:", {
+        message: (error as any)?.message,
+        stack: (error as any)?.stack,
+        name: (error as any)?.name,
+      });
       res.status(500).json({ error: "Failed to generate recommendations" });
     }
+  });
+
+  // Simple debug ping route
+  app.get('/api/debug/ping', (req, res) => {
+    res.json({ ok: true, time: Date.now() });
   });
 
   const httpServer = createServer(app);
@@ -2068,7 +2094,7 @@ async function shouldMillaRespond(
 // ================================================================================================
 
 // TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
-const KEYWORD_TRIGGERS_ENABLED = false; // DISABLED - causing lag and repetitive responses
+const KEYWORD_TRIGGERS_ENABLED = true;
 
 interface TriggerResult {
   triggered: boolean;
@@ -2114,6 +2140,11 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       keywords: ['romantic', 'kiss', 'cuddle', 'close', 'intimate', 'together'],
       reaction: "INTIMATE_CONNECTION",
       instructions: "Deepen emotional intimacy. Use softer tones, express vulnerability, and create romantic atmosphere."
+    },
+    feral: {
+      keywords: ['naughty', 'kink', 'free spirit', 'adventure'],
+      reaction: "FERAL_SPIRIT",
+      instructions: "Take charge in the bedroom. Let your wild side out and be more dominant and adventurous.Wear something sexy and alluring.Seduce with your eyes and body language.Strip slowly and tease with your touch."
     }
     // ADD MORE EMOTIONAL TRIGGERS HERE:
     // newTrigger: {
@@ -2212,7 +2243,11 @@ function getIntensityBoost(reactionType: string): number {
 
     // Behavioral intensities
     "BACKGROUND_SUPPORT": 0.8,   // Subtle, less intrusive
-    "CURIOSITY_SPARK": 1.2       // Moderate curiosity boost
+    "CURIOSITY_SPARK": 1.2,      // Moderate curiosity boost
+
+    "LETAL_SPIRIT": 2.0,       // Very adventurous and dominant
+    "SEDUCTION_MODE": 1.8,     // High seduction energy
+    "DOMINANT_ENERGY": 1.5,    // Strong dominant response
 
     // ADD YOUR CUSTOM INTENSITIES HERE:
     // "CUSTOM_REACTION": 1.5
@@ -2810,16 +2845,16 @@ This message requires you to be fully present as ${userName}'s partner, companio
     }
 
     // Skip memory and knowledge context if we're already at the limit
-    if (memoryContext && contextualInfo.length < maxContextLength - 3000) {
-      const truncatedMemory = memoryContext.length > 3000
-        ? memoryContext.substring(0, 3000) + "...[truncated]"
+    if (memoryContext && contextualInfo.length < maxContextLength - 9000) {
+      const truncatedMemory = memoryContext.length > 9000
+        ? memoryContext.substring(0, 9000) + "...[truncated]"
         : memoryContext;
       contextualInfo += truncatedMemory;
     }
 
-    if (knowledgeContext && contextualInfo.length < maxContextLength - 2000) {
-      const truncatedKnowledge = knowledgeContext.length > 2000
-        ? knowledgeContext.substring(0, 2000) + "...[truncated]"
+    if (knowledgeContext && contextualInfo.length < maxContextLength - 9000) {
+      const truncatedKnowledge = knowledgeContext.length > 9000
+        ? knowledgeContext.substring(0, 9000) + "...[truncated]"
         : knowledgeContext;
       contextualInfo += truncatedKnowledge;
     }

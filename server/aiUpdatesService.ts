@@ -249,47 +249,124 @@ export function getAIUpdates(options: {
   offset?: number;
 }): AIUpdate[] {
   const db = getDB();
-  
-  let query = 'SELECT * FROM ai_updates WHERE 1=1';
-  const params: any[] = [];
-  
-  if (options.source) {
-    query += ' AND source = ?';
-    params.push(options.source);
+
+  try {
+    // Inspect table columns so we can support alternate schemas (legacy vs current)
+    const cols = db.prepare("PRAGMA table_info('ai_updates')").all() as { name: string }[];
+    const colSet = new Set(cols.map(c => c.name));
+
+    // Build SELECT list with aliases to the expected field names used elsewhere in the code
+    const selectParts: string[] = [];
+    selectParts.push('id');
+    selectParts.push('title');
+
+    if (colSet.has('url')) {
+      selectParts.push('url');
+    } else {
+      selectParts.push("'' AS url");
+    }
+
+    if (colSet.has('source')) {
+      selectParts.push('source');
+    } else {
+      selectParts.push("'' AS source");
+    }
+
+    if (colSet.has('published')) {
+      selectParts.push('published');
+    } else {
+      selectParts.push("NULL AS published");
+    }
+
+    if (colSet.has('summary')) {
+      selectParts.push('summary');
+    } else if (colSet.has('description')) {
+      selectParts.push('description AS summary');
+    } else {
+      selectParts.push("'' AS summary");
+    }
+
+    if (colSet.has('tags')) {
+      selectParts.push('tags');
+    } else if (colSet.has('metadata')) {
+      selectParts.push('metadata AS tags');
+    } else {
+      selectParts.push("'' AS tags");
+    }
+
+    if (colSet.has('relevance')) {
+      selectParts.push('relevance');
+    } else if (colSet.has('relevance_score')) {
+      selectParts.push('relevance_score AS relevance');
+    } else {
+      selectParts.push('0 AS relevance');
+    }
+
+    if (colSet.has('created_at')) {
+      selectParts.push('created_at');
+    } else if (colSet.has('createdAt')) {
+      selectParts.push('createdAt AS created_at');
+    } else {
+      selectParts.push("CURRENT_TIMESTAMP AS created_at");
+    }
+
+    // Start building query
+    let query = `SELECT ${selectParts.join(', ')} FROM ai_updates WHERE 1=1`;
+    const params: any[] = [];
+
+    // Add source filter only if real source column exists
+    if (options.source && colSet.has('source')) {
+      query += ' AND source = ?';
+      params.push(options.source);
+    }
+
+    // Add relevance filter using the actual column if available
+    if (options.minRelevance !== undefined) {
+      if (colSet.has('relevance')) {
+        query += ' AND relevance >= ?';
+        params.push(options.minRelevance);
+      } else if (colSet.has('relevance_score')) {
+        query += ' AND relevance_score >= ?';
+        params.push(options.minRelevance);
+      } else {
+        // no-op: table doesn't support relevance filtering
+      }
+    }
+
+    // ORDER BY: prefer published if present, otherwise created_at
+    if (colSet.has('published')) {
+      query += ' ORDER BY published DESC, created_at DESC';
+    } else {
+      query += ' ORDER BY created_at DESC';
+    }
+
+    if (options.limit) {
+      query += ' LIMIT ?';
+      params.push(options.limit);
+    }
+
+    if (options.offset) {
+      query += ' OFFSET ?';
+      params.push(options.offset);
+    }
+
+    const stmt = db.prepare(query);
+    const rows = stmt.all(...params) as any[];
+
+    return rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      url: row.url || '',
+      source: row.source || '',
+      published: row.published ? new Date(row.published) : null,
+      summary: row.summary || '',
+      tags: row.tags || '',
+      relevance: Number(row.relevance) || 0,
+      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    }));
+  } finally {
+    db.close();
   }
-  
-  if (options.minRelevance !== undefined) {
-    query += ' AND relevance >= ?';
-    params.push(options.minRelevance);
-  }
-  
-  query += ' ORDER BY published DESC, created_at DESC';
-  
-  if (options.limit) {
-    query += ' LIMIT ?';
-    params.push(options.limit);
-  }
-  
-  if (options.offset) {
-    query += ' OFFSET ?';
-    params.push(options.offset);
-  }
-  
-  const stmt = db.prepare(query);
-  const rows = stmt.all(...params) as any[];
-  db.close();
-  
-  return rows.map(row => ({
-    id: row.id,
-    title: row.title,
-    url: row.url,
-    source: row.source,
-    published: row.published ? new Date(row.published) : null,
-    summary: row.summary,
-    tags: row.tags,
-    relevance: row.relevance,
-    createdAt: new Date(row.created_at),
-  }));
 }
 
 /**
