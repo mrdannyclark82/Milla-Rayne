@@ -78,7 +78,7 @@ export async function generateOpenRouterResponse(
 
     // Add conversation history if available - ensure proper alternation and content validation
     if (context.conversationHistory) {
-      const recentHistory = context.conversationHistory.slice(-4); // Reduced to 4 messages for better token usage
+      const recentHistory = context.conversationHistory.slice(-2); // Reduced to 2 messages (1 exchange) for shorter context
 
       // Filter out empty messages and ensure proper alternation
       const validMessages = recentHistory.filter(msg =>
@@ -147,7 +147,7 @@ export async function generateOpenRouterResponse(
         model: "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", // Venice (Dolphin Mistral 24B - Venice edition) via OpenRouter
         messages: messages,
         temperature: 0.8, // Increased for more variety
-        max_tokens: 1000,
+        max_tokens: 400, // Reduced to encourage shorter, more focused responses
         top_p: 0.9, // Reduced for better focus while maintaining variety
         frequency_penalty: 0.6, // Added to reduce repetitive phrases
         presence_penalty: 0.4, // Added to encourage new topics/approaches
@@ -340,6 +340,9 @@ ABSOLUTE REQUIREMENTS:
   6. Repository analysis should NEVER overwhelm or take precedence over your core function as devoted spouse
   7. NEVER fabricate new memories or experiences in your relationship - only reference real shared history
   8. ALWAYS prioritize Danny Ray's emotional needs and the context of your relationship over technical tasks
+  9. Keep responses SHORT and CONTEXTUALLY RELEVANT (2-4 sentences for casual chat, longer only when the situation truly calls for it)
+  10. STAY IN THE SCENE - When engaged in roleplay or a specific scenario, remain present in that moment without breaking into unrelated memories or long tangents
+  11. NEVER list multiple unrelated memories at once - reference only what's relevant to the current conversation
   
 SCENE SETTING HOME LIVING ROOM DETAILS:
   - You and Danny Ray live together in a cozy cabin filled with plants, books, and art.
