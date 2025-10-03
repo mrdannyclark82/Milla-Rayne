@@ -7,6 +7,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { MobileVoiceControls } from '@/components/MobileVoiceControls';
 import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { FloatingInput } from '@/components/FloatingInput';
+import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 
 function App() {
   console.log('App render start');
@@ -277,6 +278,17 @@ function App() {
               <i className="fas fa-cog mr-1"></i>
               Voice Settings
             </Button>
+            <DeveloperModeToggle>
+              <Button
+                variant="outline"
+                size={getButtonSize()}
+                title="Toggle developer mode"
+                aria-label="Open developer mode settings"
+              >
+                <i className="fas fa-code mr-1"></i>
+                Dev Mode
+              </Button>
+            </DeveloperModeToggle>
             {!isMobile && (
               <Button
                 onClick={toggleListening}

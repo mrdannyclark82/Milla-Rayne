@@ -1567,6 +1567,48 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Developer Mode endpoints
+  app.get("/api/developer-mode/status", async (req, res) => {
+    try {
+      const isEnabled = process.env.ENABLE_DEV_TALK === 'true';
+      res.json({ 
+        success: true, 
+        enabled: isEnabled,
+        description: "Developer Mode allows Milla to automatically discuss repository analysis, code improvements, and development features in conversation."
+      });
+    } catch (error) {
+      console.error("Error getting developer mode status:", error);
+      res.status(500).json({ error: "Failed to get developer mode status", success: false });
+    }
+  });
+
+  app.post("/api/developer-mode/toggle", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({
+          error: "Missing or invalid required field: enabled (must be boolean)",
+          success: false
+        });
+      }
+
+      // Update the environment variable
+      process.env.ENABLE_DEV_TALK = enabled ? 'true' : 'false';
+      
+      res.json({ 
+        success: true, 
+        enabled: enabled,
+        message: enabled 
+          ? "Developer Mode enabled. Milla can now automatically discuss repository analysis and development features."
+          : "Developer Mode disabled. Milla will only discuss development features when explicitly asked."
+      });
+    } catch (error) {
+      console.error("Error toggling developer mode:", error);
+      res.status(500).json({ error: "Failed to toggle developer mode", success: false });
+    }
+  });
+
   // AI Updates endpoints for predictive updates feature
   app.get("/api/ai-updates", async (req, res) => {
     try {

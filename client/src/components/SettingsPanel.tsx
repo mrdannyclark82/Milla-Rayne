@@ -85,6 +85,8 @@ export default function SettingsPanel({
     voice_persona: false,
     voice_cloning: false,
   });
+  const [developerMode, setDeveloperMode] = useState(false);
+  const [isDeveloperModeLoading, setIsDeveloperModeLoading] = useState(false);
 
   const defaultAvatarSettings: AvatarSettings = {
     style: 'realistic',
@@ -160,8 +162,44 @@ export default function SettingsPanel({
   useEffect(() => {
     if (isOpen) {
       fetchVoiceConsents();
+      fetchDeveloperModeStatus();
     }
   }, [isOpen]);
+
+  const fetchDeveloperModeStatus = async () => {
+    try {
+      const response = await fetch('/api/developer-mode/status');
+      const data = await response.json();
+      if (data.success) {
+        setDeveloperMode(data.enabled);
+      }
+    } catch (error) {
+      console.error('Error fetching developer mode status:', error);
+    }
+  };
+
+  const handleDeveloperModeToggle = async () => {
+    setIsDeveloperModeLoading(true);
+    try {
+      const newState = !developerMode;
+      const response = await fetch('/api/developer-mode/toggle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: newState }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setDeveloperMode(newState);
+      }
+    } catch (error) {
+      console.error('Error toggling developer mode:', error);
+    } finally {
+      setIsDeveloperModeLoading(false);
+    }
+  };
 
   const fetchVoiceConsents = async () => {
     try {
@@ -615,6 +653,66 @@ export default function SettingsPanel({
                   <span>
                     Your privacy matters. All consent records are stored securely and you can revoke consent at any time.
                     See <span className="underline cursor-pointer">VOICE_CLONING_CONSENT.md</span> for details.
+                  </span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Developer Mode Section */}
+          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-white flex items-center">
+                <i className="fas fa-code mr-2 text-purple-400"></i>
+                Developer Mode
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-white/60 mb-3">
+                Enable Developer Mode to allow Milla to automatically discuss repository analysis, code improvements, and development features during conversations.
+              </p>
+              
+              <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/10">
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                    Developer Mode
+                    {developerMode ? (
+                      <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
+                        Enabled
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
+                        Disabled
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-xs text-white/60 mt-1">
+                    {developerMode 
+                      ? "Milla can discuss GitHub repositories and code analysis automatically"
+                      : "Milla will only discuss development when explicitly asked"}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeveloperModeToggle}
+                  disabled={isDeveloperModeLoading}
+                  className={`ml-3 border-white/30 text-white/70 hover:text-white ${
+                    developerMode ? 'bg-purple-600/20 border-purple-400/50 text-purple-300' : ''
+                  }`}
+                  data-testid="button-developer-mode-toggle"
+                >
+                  <i className={`fas ${developerMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+                  {isDeveloperModeLoading ? 'Updating...' : (developerMode ? 'On' : 'Off')}
+                </Button>
+              </div>
+
+              <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30 mt-3">
+                <p className="text-xs text-purple-300 flex items-start gap-2">
+                  <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+                  <span>
+                    When enabled, Milla can automatically analyze GitHub URLs you share and discuss code improvements. 
+                    When disabled, she'll only engage with development topics when you explicitly ask.
                   </span>
                 </p>
               </div>
