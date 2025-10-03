@@ -1,0 +1,31 @@
+name: Block large files (>10MB) from being committed
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main ]
+jobs:
+  check-large-files:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Find large files
+        run: |
+          set -e
+          MAX=10485760
+          git rev-list --objects --no-object-names HEAD |
+          while read -r path; do
+            if [ -f "$path" ]; then
+              sz=$(wc -c < "$path")
+              if [ "$sz" -gt "$MAX" ]; then
+                echo "Large file detected ($sz bytes): $path" >> large_files.txt
+              fi
+            fi
+          done
+          if [ -s large_files.txt ]; then
+            echo "Large files found:"
+            cat large_files.txt
+            exit 1
+          fi
