@@ -125,7 +125,7 @@ function mergeRecommendations(recommendations: Recommendation[]): Recommendation
 
   for (const rec of recommendations) {
     const key = rec.title.substring(0, 50); // Group by similar titles
-    
+
     if (merged.has(key)) {
       const existing = merged.get(key)!;
       // Merge source updates
@@ -165,26 +165,26 @@ export function generateRecommendations(options: {
 
     console.log('Analyzing updates for recommendations...');
 
-  console.log(`Generating recommendations from ${updates.length} relevant updates...`);
+    console.log(`Generating recommendations from ${updates.length} relevant updates...`);
 
-  const recommendations: Recommendation[] = [];
+    const recommendations: Recommendation[] = [];
 
-  for (const update of updates) {
-    const rec = analyzeUpdate(update);
-    if (rec) {
-      recommendations.push(rec);
+    for (const update of updates) {
+      const rec = analyzeUpdate(update);
+      if (rec) {
+        recommendations.push(rec);
+      }
     }
-  }
 
-  // Merge similar recommendations
-  const merged = mergeRecommendations(recommendations);
+    // Merge similar recommendations
+    const merged = mergeRecommendations(recommendations);
 
-  // Sort by confidence and return top N
-  const sorted = merged.sort((a, b) => b.confidence - a.confidence);
-  
+    // Sort by confidence and return top N
+    const sorted = merged.sort((a, b) => b.confidence - a.confidence);
+
     console.log(`Generated ${sorted.length} recommendations`);
-  
-  return sorted.slice(0, maxRecommendations);
+
+    return sorted.slice(0, maxRecommendations);
   } catch (err) {
     console.error('Error inside generateRecommendations:', err);
     throw err;

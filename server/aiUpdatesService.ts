@@ -50,7 +50,7 @@ const OPTIONAL_SOURCES = [
 
 // Keywords for relevance scoring (based on project stack/features)
 const RELEVANCE_KEYWORDS = [
-  'openrouter', 'xai', 'qwen', 'deepseek', 'sqlite', 
+  'openrouter', 'xai', 'qwen', 'deepseek', 'sqlite',
   'voice', 'tts', 'stt', 'github actions', 'security',
   'api', 'typescript', 'react', 'express', 'websocket',
   'llm', 'gpt', 'claude', 'mistral', 'grok'
@@ -75,13 +75,13 @@ function getConfiguredSources(): string[] {
 function computeRelevance(title: string, summary: string): number {
   const text = `${title} ${summary}`.toLowerCase();
   let score = 0;
-  
+
   for (const keyword of RELEVANCE_KEYWORDS) {
     if (text.includes(keyword.toLowerCase())) {
       score += 1;
     }
   }
-  
+
   // Normalize to 0-1 range
   return Math.min(score / RELEVANCE_KEYWORDS.length, 1.0);
 }
@@ -91,7 +91,7 @@ function computeRelevance(title: string, summary: string): number {
  */
 function extractTags(title: string, summary: string): string {
   const text = `${title} ${summary}`.toLowerCase();
-  const foundTags = RELEVANCE_KEYWORDS.filter(keyword => 
+  const foundTags = RELEVANCE_KEYWORDS.filter(keyword =>
     text.includes(keyword.toLowerCase())
   );
   return foundTags.join(', ');
@@ -138,7 +138,7 @@ function storeUpdate(db: Database.Database, update: Omit<AIUpdate, 'id' | 'creat
       INSERT OR IGNORE INTO ai_updates (id, title, url, source, published, summary, tags, relevance)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
+
     const result = stmt.run(
       randomUUID(),
       update.title,
@@ -149,7 +149,7 @@ function storeUpdate(db: Database.Database, update: Omit<AIUpdate, 'id' | 'creat
       update.tags,
       update.relevance
     );
-    
+
     return result.changes > 0;
   } catch (error) {
     console.error('Error storing update:', error);
@@ -195,7 +195,7 @@ export async function fetchAIUpdates(): Promise<{
   for (const sourceUrl of sources) {
     try {
       const items = await fetchRSSFeed(sourceUrl);
-      
+
       for (const item of items) {
         if (!item.title || !item.link) {
           continue;
@@ -203,7 +203,7 @@ export async function fetchAIUpdates(): Promise<{
 
         const summary = item.contentSnippet || item.content || '';
         const published = item.isoDate || item.pubDate;
-        
+
         const update = {
           title: item.title,
           url: item.link,
@@ -221,7 +221,7 @@ export async function fetchAIUpdates(): Promise<{
 
       // Cleanup old updates for this source
       cleanupOldUpdates(db, sourceUrl);
-      
+
     } catch (error) {
       const errorMsg = `Failed to fetch from ${sourceUrl}: ${error}`;
       console.error(errorMsg);
@@ -374,17 +374,17 @@ export function getAIUpdates(options: {
  */
 export function getUpdateStats(): { source: string; count: number; avgRelevance: number }[] {
   const db = getDB();
-  
+
   const stmt = db.prepare(`
     SELECT source, COUNT(*) as count, AVG(relevance) as avgRelevance
     FROM ai_updates
     GROUP BY source
     ORDER BY count DESC
   `);
-  
+
   const rows = stmt.all() as any[];
   db.close();
-  
+
   return rows.map(row => ({
     source: row.source,
     count: row.count,
