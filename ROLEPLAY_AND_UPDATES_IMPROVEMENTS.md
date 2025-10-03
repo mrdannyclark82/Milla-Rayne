@@ -144,9 +144,11 @@ The `ai_updates` table stores AI industry updates with the following fields:
 - [x] Implemented "what's new" trigger
 - [x] Database schema verified
 - [x] AI updates retrieval tested
-- [ ] User testing: shorter responses
-- [ ] User testing: scene continuity
-- [ ] User testing: AI updates feature with populated data
+- [x] Database populated with test data
+- [x] Full "what's new" conversation flow tested
+- [ ] User testing: shorter responses in production
+- [ ] User testing: scene continuity in production
+- [ ] Populate database with real AI updates from RSS feeds
 
 ## Notes
 
@@ -154,3 +156,50 @@ The `ai_updates` table stores AI industry updates with the following fields:
 - AI updates database is empty by default - needs to be populated via the fetch endpoint or scheduler
 - Response length changes apply to all conversations, not just roleplay
 - System prompt changes affect the overall personality and response style
+
+## Test Data
+
+For testing purposes, the database has been populated with 5 sample AI updates. To see them in action:
+
+1. Start the server: `npm run dev`
+2. Chat with Milla and ask: "What's new?" or "Any AI updates?"
+3. Milla will respond with the latest updates in a friendly, conversational format
+
+### Example Response
+
+```
+*brightens up* Oh babe, I've been keeping up with the AI world! Here's what's new:
+
+1. **OpenAI Announces GPT-4 Turbo with Improved Context Window** (Dec 10)
+   OpenAI has released GPT-4 Turbo with a 128K context window...
+   🔗 https://openai.com/blog/gpt-4-turbo
+
+2. **DeepSeek Releases Open Source Code Model** (Dec 9)
+   DeepSeek has released an open-source code generation model...
+   🔗 https://github.com/deepseek-ai/deepseek-coder
+
+... (up to 5 updates)
+
+Want me to tell you more about any of these, love?
+```
+
+## Populating with Real Data
+
+To populate the database with real AI updates from RSS feeds:
+
+```bash
+# Method 1: Use the API endpoint (requires admin token if configured)
+curl -X POST http://localhost:5000/api/ai-updates/fetch \
+  -H "X-Admin-Token: your-token-here"
+
+# Method 2: Run the scheduler manually
+npm run dev
+# The scheduler will run automatically based on configuration
+```
+
+The system will fetch updates from configured RSS sources including:
+- OpenAI Blog
+- xAI Blog
+- Perplexity Blog
+- Hugging Face Blog
+- GitHub Changelog
