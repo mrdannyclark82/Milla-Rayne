@@ -172,6 +172,22 @@ export class SqliteStorage implements IStorage {
       CREATE TABLE IF NOT EXISTS ai_updates (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
+        url TEXT UNIQUE NOT NULL,
+        source TEXT NOT NULL,
+        published TEXT,
+        summary TEXT,
+        tags TEXT,
+        relevance REAL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
+    // Create suggestion_updates table for daily AI improvement suggestions
+    console.debug('sqlite: creating suggestion_updates table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS suggestion_updates (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
         description TEXT NOT NULL,
         category TEXT NOT NULL CHECK(category IN ('feature', 'enhancement', 'optimization', 'bugfix', 'documentation')),
         priority INTEGER NOT NULL DEFAULT 5,
@@ -217,8 +233,10 @@ export class SqliteStorage implements IStorage {
     // Create indexes for ai_updates and daily_suggestions
     console.debug('sqlite: creating indexes');
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_priority ON ai_updates(priority DESC, relevance_score DESC);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_applied ON ai_updates(applied_at);
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_applied ON suggestion_updates(applied_at);
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
       CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
@@ -501,11 +519,11 @@ export class SqliteStorage implements IStorage {
     }));
   }
 
-  // AI Updates methods
+  // AI Updates methods (for suggestion_updates table)
   async createAiUpdate(update: InsertAiUpdate): Promise<AiUpdate> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
-      INSERT INTO ai_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
+      INSERT INTO suggestion_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
@@ -521,7 +539,7 @@ export class SqliteStorage implements IStorage {
 
   async getTopAiUpdates(limit: number): Promise<AiUpdate[]> {
     const stmt = this.db.prepare(`
-      SELECT * FROM ai_updates
+      SELECT * FROM suggestion_updates
       WHERE applied_at IS NULL
       ORDER BY priority DESC, relevance_score DESC, created_at DESC
       LIMIT ?
@@ -542,7 +560,7 @@ export class SqliteStorage implements IStorage {
   }
 
   async getAiUpdateById(id: string): Promise<AiUpdate | undefined> {
-    const stmt = this.db.prepare('SELECT * FROM ai_updates WHERE id = ?');
+    const stmt = this.db.prepare('SELECT * FROM suggestion_updates WHERE id = ?');
     const update = stmt.get(id) as any;
 
     if (!update) return undefined;
@@ -561,7 +579,7 @@ export class SqliteStorage implements IStorage {
   }
 
   async markAiUpdateApplied(id: string): Promise<void> {
-    const stmt = this.db.prepare('UPDATE ai_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
+    const stmt = this.db.prepare('UPDATE suggestion_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
     stmt.run(id);
   }
 
