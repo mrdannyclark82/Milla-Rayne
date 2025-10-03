@@ -8,6 +8,7 @@ import { MobileVoiceControls } from '@/components/MobileVoiceControls';
 import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { FloatingInput } from '@/components/FloatingInput';
 import DeveloperModeToggle from '@/components/DeveloperModeToggle';
+import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 
 function App() {
   console.log('App render start');
@@ -239,8 +240,14 @@ function App() {
 
   return (
     <div className={getContainerClasses()}>
+      {/* Adaptive Scene Background */}
+      <AdaptiveSceneManager 
+        mood="calm"
+        enableAnimations={true}
+      />
+
       {/* Portrait Image - Left Side */}
-      <div className="fixed top-0 left-0 w-2/3 h-screen flex items-center justify-center bg-gray-900">
+      <div className="fixed top-0 left-0 w-2/3 h-screen flex items-center justify-center">
         <img
           src="/milla_new.jpg"
           alt="Milla Portrait"
