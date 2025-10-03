@@ -166,8 +166,25 @@ export class SqliteStorage implements IStorage {
 
     // Create indexes for better query performance (moved to after ai_updates full schema)
 
-    // Create ai_updates table for predictive updates
+    // Create ai_updates table for predictive updates (RSS feed data)
+    // Check if table exists with old schema and migrate if needed
     console.debug('sqlite: creating ai_updates table');
+    
+    // Check if ai_updates table exists and has the correct schema
+    const tableInfo = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_updates'").get() as { name: string } | undefined;
+    
+    if (tableInfo) {
+      // Table exists, check if it has the 'source' column (new schema)
+      const columns = this.db.prepare("PRAGMA table_info('ai_updates')").all() as { name: string }[];
+      const hasSourceColumn = columns.some(col => col.name === 'source');
+      
+      if (!hasSourceColumn) {
+        // Old schema detected, drop and recreate table
+        console.log('sqlite: migrating ai_updates table to new schema (RSS feed structure)');
+        this.db.exec('DROP TABLE IF EXISTS ai_updates');
+      }
+    }
+    
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS ai_updates (
         id TEXT PRIMARY KEY,
