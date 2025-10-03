@@ -5,12 +5,18 @@ interface CSSSceneRendererProps {
   config: SceneConfig;
   interactive?: boolean;
   parallaxIntensity?: number;
+  enableParticles?: boolean;
+  particleDensity?: 'low' | 'medium' | 'high';
+  animationSpeed?: number;
 }
 
 export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
   config,
   interactive = true,
-  parallaxIntensity = 50
+  parallaxIntensity = 50,
+  enableParticles = true,
+  particleDensity = 'medium',
+  animationSpeed = 1.0
 }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -31,8 +37,10 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
   const gradientStyle = {
     background: `linear-gradient(135deg, ${config.colors.join(', ')})`,
     backgroundSize: '200% 200%',
-    animation: `gradient-shift 15s ease infinite`,
-    transition: 'all 1s ease-in-out'
+    animation: `gradient-shift ${15 / animationSpeed}s ease infinite`,
+    transition: 'all 1s ease-in-out',
+    // CSS variable for animation speed multiplier
+    ['--scene-anim-speed' as string]: animationSpeed.toString()
   };
 
   const parallaxTransform = interactive
@@ -70,14 +78,19 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
       />
 
       {/* Particle layer */}
-      {config.particles && <ParticleLayer config={config.particles} />}
+      {enableParticles && config.particles && (
+        <ParticleLayer 
+          config={{ ...config.particles, density: particleDensity }} 
+          animationSpeed={animationSpeed}
+        />
+      )}
 
       {/* Ambient glow overlay */}
       <div
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
           background: `radial-gradient(circle at center, ${config.colors[config.colors.length - 1]}, transparent)`,
-          animation: 'pulse 4s ease-in-out infinite'
+          animation: `pulse ${4 / animationSpeed}s ease-in-out infinite`
         }}
         aria-hidden="true"
       />
@@ -86,7 +99,10 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
 };
 
 // Particle layer component
-const ParticleLayer: React.FC<{ config: ParticleConfig }> = ({ config }) => {
+const ParticleLayer: React.FC<{ config: ParticleConfig; animationSpeed: number }> = ({ 
+  config, 
+  animationSpeed = 1.0 
+}) => {
   const particleCount = config.density === 'low' ? 20 : config.density === 'medium' ? 40 : 60;
   const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
@@ -105,7 +121,7 @@ const ParticleLayer: React.FC<{ config: ParticleConfig }> = ({ config }) => {
           style={{
             left: `${p.left}%`,
             top: `${p.top}%`,
-            animation: `float ${p.duration}s linear ${p.delay}s infinite, twinkle 3s ease-in-out infinite`,
+            animation: `float ${p.duration / animationSpeed}s linear ${p.delay}s infinite, twinkle ${3 / animationSpeed}s ease-in-out infinite`,
             filter: 'blur(1px)'
           }}
           aria-hidden="true"

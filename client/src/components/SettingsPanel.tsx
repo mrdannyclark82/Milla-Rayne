@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarCustomizer } from "./AvatarCustomizer";
 import { AccessibilitySettings } from "./AccessibilitySettings";
+import { SceneSettingsPanel } from "./scene/SceneSettingsPanel";
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -733,6 +734,11 @@ export default function SettingsPanel({
             largeTouchTargets={false}
             onLargeTouchTargetsChange={() => { }}
           />
+
+          {/* Scene Settings Section */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
+            <SceneSettingsPanel />
+          </div>
         </div>
 
         <Separator className="bg-white/20" />

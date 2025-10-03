@@ -137,3 +137,8 @@
     opacity: 1;
   }
 }
+
+/* Scene animation speed multiplier support */
+:root {
+  --scene-anim-speed: 1.0;
+}
