@@ -28,3 +28,7 @@ memory/*.db-wal
 .env.development
 .env.*.local
 *.env
+
+# Storage audit and cleanup temporary files
+audit_report.txt
+.bfg-deletions.txt
