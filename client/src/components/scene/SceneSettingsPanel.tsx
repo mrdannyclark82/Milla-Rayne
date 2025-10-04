@@ -115,6 +115,20 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           </Button>
         </div>
 
+        {/* Room overlays toggle */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <label className="text-sm font-medium">Room overlays (location silhouettes)</label>
+          <Button
+            variant={settings.sceneRoomOverlaysEnabled ? "default" : "outline"}
+            size="sm"
+            onClick={() => updateSetting('sceneRoomOverlaysEnabled', !settings.sceneRoomOverlaysEnabled)}
+            aria-pressed={settings.sceneRoomOverlaysEnabled}
+            disabled={!settings.enabled}
+          >
+            {settings.sceneRoomOverlaysEnabled ? 'ON' : 'OFF'}
+          </Button>
+        </div>
+
         {/* Parallax Intensity Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">

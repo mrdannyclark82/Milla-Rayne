@@ -4,7 +4,7 @@
  * Maps RP location to scene mood and determines indoor/outdoor settings
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, createContext, useContext } from 'react';
 import { useRPScene } from '@/hooks/useRPScene';
 import { SceneMood, TimeOfDay } from '@/types/scene';
 import { getCurrentTimeOfDay, getLocationMood } from '@/utils/scenePresets';
@@ -16,6 +16,24 @@ interface RPSceneBackgroundBridgeProps {
     timeOfDay?: TimeOfDay;
     location?: string;
   }) => React.ReactElement;
+}
+
+/**
+ * RP Scene Context - provides access to current RP scene state
+ */
+interface RPSceneContextValue {
+  location?: string;
+  timeOfDay?: TimeOfDay;
+  mood?: SceneMood;
+}
+
+const RPSceneContext = createContext<RPSceneContextValue>({});
+
+/**
+ * Hook to access RP scene context
+ */
+export function useRPSceneContext(): RPSceneContextValue {
+  return useContext(RPSceneContext);
 }
 
 /**
@@ -71,5 +89,9 @@ export const RPSceneBackgroundBridge: React.FC<RPSceneBackgroundBridgeProps> = (
     };
   }, [enabled, sceneData, isLoading]);
 
-  return children(sceneProps);
+  return (
+    <RPSceneContext.Provider value={sceneProps}>
+      {children(sceneProps)}
+    </RPSceneContext.Provider>
+  );
 };
