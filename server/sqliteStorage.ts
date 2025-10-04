@@ -212,6 +212,7 @@ export class SqliteStorage implements IStorage {
 
     // Create suggestion_updates table for daily AI improvement suggestions
     console.debug('sqlite: creating suggestion_updates table');
+    // Ensure migration compatibility: older schema may have used 'relevance' or 'relevance_score'
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS suggestion_updates (
         id TEXT PRIMARY KEY,
@@ -221,13 +222,31 @@ export class SqliteStorage implements IStorage {
         description TEXT,
         category TEXT,
         priority INTEGER DEFAULT 5,
-        relevance REAL DEFAULT 0,
+        relevance_score REAL DEFAULT 0,
         metadata TEXT,
         published DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         applied_at DATETIME
       )
     `);
+
+    // If an older column 'relevance' exists, migrate values into 'relevance_score' and drop the old column
+    try {
+      const cols = this.db.prepare("PRAGMA table_info('suggestion_updates')").all() as { name: string }[];
+      const hasRelevance = cols.some(c => c.name === 'relevance');
+      const hasRelevanceScore = cols.some(c => c.name === 'relevance_score');
+
+      if (hasRelevance && !hasRelevanceScore) {
+        console.log('sqlite: migrating suggestion_updates.relevance -> relevance_score');
+        // Add the new column
+        this.db.exec(`ALTER TABLE suggestion_updates ADD COLUMN relevance_score REAL DEFAULT 0`);
+        // Copy data
+        this.db.exec(`UPDATE suggestion_updates SET relevance_score = relevance`);
+        // Note: SQLite doesn't support DROP COLUMN prior to 3.35.0 in many environments, so we leave 'relevance' present.
+      }
+    } catch (err) {
+      console.warn('sqlite: warning during suggestion_updates migration', err);
+    }
 
     // Create daily_suggestions table
     console.debug('sqlite: creating daily_suggestions table');
@@ -264,9 +283,10 @@ export class SqliteStorage implements IStorage {
     // Create indexes for ai_updates and daily_suggestions
     console.debug('sqlite: creating indexes');
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
-      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
+  CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
+  CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
+  -- Ensure suggestion_updates index references existing columns; create or recreate safely
+  CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
       CREATE INDEX IF NOT EXISTS idx_suggestion_updates_applied ON suggestion_updates(applied_at);
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
