@@ -10,6 +10,7 @@ import { FloatingInput } from '@/components/FloatingInput';
 import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
+import { SceneLocation, SceneMood } from '@/types/scene';
 
 function App() {
   console.log('App render start');
@@ -35,6 +36,10 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = useRef<any>(null);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  
+  // Phase 3: RP scene state
+  const [currentLocation, setCurrentLocation] = useState<SceneLocation>('unknown');
+  const [sceneMood, setSceneMood] = useState<SceneMood>('calm');
 
   // Detect mobile device
   useEffect(() => {
@@ -134,6 +139,16 @@ function App() {
       const data = await response.json();
       const assistantMessage = data.response;
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+
+      // Phase 3: Update scene if metadata is provided
+      if (data.sceneContext) {
+        if (data.sceneContext.location) {
+          setCurrentLocation(data.sceneContext.location);
+        }
+        if (data.sceneContext.mood) {
+          setSceneMood(data.sceneContext.mood);
+        }
+      }
 
       // Speak the response if voice is enabled
       if (voiceEnabled && selectedVoice) {
@@ -241,9 +256,10 @@ function App() {
 
   return (
     <div className={getContainerClasses()}>
-      {/* Adaptive Scene Background */}
+      {/* Adaptive Scene Background - Phase 3: Now responds to RP scene location */}
       <AdaptiveSceneManager 
-        mood="calm"
+        mood={sceneMood}
+        location={currentLocation}
         enableAnimations={true}
       />
 

@@ -77,3 +77,23 @@ export function getCurrentTimeOfDay(): TimeOfDay {
   if (hour >= 17 && hour < 20) return 'dusk';
   return 'night';
 }
+
+/**
+ * Map location to mood for scene adaptation (Phase 3 - RP scenes)
+ * This provides mood suggestions based on scene location
+ */
+export function getLocationMood(location: string): SceneMood {
+  const locationMoodMap: Record<string, SceneMood> = {
+    living_room: 'calm',
+    bedroom: 'romantic',
+    kitchen: 'energetic',
+    bathroom: 'calm',
+    front_door: 'energetic',
+    dining_room: 'calm',
+    outdoor: 'playful',
+    car: 'energetic',
+    unknown: 'calm'
+  };
+  
+  return locationMoodMap[location] || 'calm';
+}
