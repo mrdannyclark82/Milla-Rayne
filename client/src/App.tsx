@@ -9,8 +9,10 @@ import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { FloatingInput } from '@/components/FloatingInput';
 import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
+import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
 import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
 import { SceneLocation, SceneMood } from '@/types/scene';
+import { loadSceneSettings } from '@/utils/sceneSettingsStore';
 
 function App() {
   console.log('App render start');
@@ -40,6 +42,18 @@ function App() {
   // Phase 3: RP scene state
   const [currentLocation, setCurrentLocation] = useState<SceneLocation>('unknown');
   const [sceneMood, setSceneMood] = useState<SceneMood>('calm');
+  const [sceneSettings, setSceneSettings] = useState(() => loadSceneSettings());
+
+  // Load scene settings on mount and listen for changes
+  useEffect(() => {
+    const loadSettings = () => {
+      setSceneSettings(loadSceneSettings());
+    };
+    
+    // Listen for storage changes (cross-tab sync)
+    window.addEventListener('storage', loadSettings);
+    return () => window.removeEventListener('storage', loadSettings);
+  }, []);
 
   // Detect mobile device
   useEffect(() => {
@@ -257,11 +271,16 @@ function App() {
   return (
     <div className={getContainerClasses()}>
       {/* Adaptive Scene Background - Phase 3: Now responds to RP scene location */}
-      <AdaptiveSceneManager 
-        mood={sceneMood}
-        location={currentLocation}
-        enableAnimations={true}
-      />
+      <RPSceneBackgroundBridge enabled={sceneSettings.sceneBackgroundFromRP ?? false}>
+        {(rpProps) => (
+          <AdaptiveSceneManager 
+            mood={rpProps.mood || sceneMood}
+            location={rpProps.location as SceneLocation || currentLocation}
+            timeOfDay={rpProps.timeOfDay}
+            enableAnimations={true}
+          />
+        )}
+      </RPSceneBackgroundBridge>
 
       {/* Portrait Image - Left Side */}
       <div className="fixed top-0 left-0 w-2/3 h-screen flex items-center justify-center">

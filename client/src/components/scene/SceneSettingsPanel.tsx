@@ -81,7 +81,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           <Select
             value={settings.mood}
             onValueChange={(value) => updateSetting('mood', value as SceneMood)}
-            disabled={!settings.enabled}
+            disabled={!settings.enabled || settings.sceneBackgroundFromRP}
           >
             <SelectTrigger>
               <SelectValue />
@@ -94,6 +94,25 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
               <SelectItem value="playful">Playful</SelectItem>
             </SelectContent>
           </Select>
+          {settings.sceneBackgroundFromRP && (
+            <p className="text-xs text-muted-foreground">
+              Mood is controlled by RP scene
+            </p>
+          )}
+        </div>
+
+        {/* Background mirrors RP scene toggle */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <label className="text-sm font-medium">Background mirrors RP scene</label>
+          <Button
+            variant={settings.sceneBackgroundFromRP ? "default" : "outline"}
+            size="sm"
+            onClick={() => updateSetting('sceneBackgroundFromRP', !settings.sceneBackgroundFromRP)}
+            aria-pressed={settings.sceneBackgroundFromRP}
+            disabled={!settings.enabled}
+          >
+            {settings.sceneBackgroundFromRP ? 'ON' : 'OFF'}
+          </Button>
         </div>
 
         {/* Parallax Intensity Slider */}

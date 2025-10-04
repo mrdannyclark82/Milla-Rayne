@@ -13,6 +13,7 @@ interface AdaptiveSceneManagerProps {
   settings?: SceneSettings;
   onSceneChange?: (timeOfDay: TimeOfDay, mood: SceneMood) => void;
   location?: SceneLocation; // Phase 3: RP scene location
+  timeOfDay?: TimeOfDay; // Phase 3: Optional time override from RP scene
   // Future: Avatar integration point
   // avatarPosition?: { x: number; y: number };
   // avatarVisible?: boolean;
@@ -24,18 +25,22 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   enableAnimations = true,
   settings: propSettings,
   onSceneChange,
-  location // Phase 3: RP scene location
+  location, // Phase 3: RP scene location
+  timeOfDay: propTimeOfDay // Phase 3: Optional time override
 }) => {
   const [capabilities] = useState(() => detectDeviceCapabilities());
-  const [timeOfDay, setTimeOfDay] = useState(getCurrentTimeOfDay());
+  const [autoTimeOfDay, setAutoTimeOfDay] = useState(getCurrentTimeOfDay());
   const [settings, setSettings] = useState<SceneSettings>(() => 
     propSettings || loadSceneSettings()
   );
 
+  // Use prop timeOfDay if provided, otherwise use auto-detected
+  const timeOfDay = propTimeOfDay || autoTimeOfDay;
+
   // Update time of day every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeOfDay(getCurrentTimeOfDay());
+      setAutoTimeOfDay(getCurrentTimeOfDay());
     }, 60000); // Check every minute
 
     return () => clearInterval(interval);
