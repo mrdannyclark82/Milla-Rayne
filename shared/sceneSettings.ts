@@ -11,6 +11,20 @@
  */
 
 /**
+ * Valid scene location keys
+ * Note: 'workspace' and 'guest_room' are also valid but not in scene detection service
+ */
+export type SceneLocationKey = 
+  | 'living_room' 
+  | 'kitchen' 
+  | 'dining_room' 
+  | 'bedroom' 
+  | 'bathroom' 
+  | 'workspace' 
+  | 'guest_room' 
+  | 'outdoor';
+
+/**
  * Home living room scene details
  */
 export const SCENE_LIVING_ROOM = `SCENE SETTING HOME LIVING ROOM DETAILS:
@@ -106,7 +120,7 @@ export const SCENE_LOCATION_MAP = {
 /**
  * Get scene details for a specific location
  */
-export function getSceneDetails(location: keyof typeof SCENE_LOCATION_MAP): string {
+export function getSceneDetails(location: SceneLocationKey): string {
   return SCENE_LOCATION_MAP[location] || '';
 }
 
@@ -130,9 +144,9 @@ export function getAllSceneSettings(): string {
  * Get scene settings for current context
  * This can be used with the scene detection service to provide contextual details
  */
-export function getContextualSceneSettings(currentLocation?: string): string {
+export function getContextualSceneSettings(currentLocation?: SceneLocationKey): string {
   if (currentLocation && currentLocation in SCENE_LOCATION_MAP) {
-    return getSceneDetails(currentLocation as keyof typeof SCENE_LOCATION_MAP);
+    return getSceneDetails(currentLocation);
   }
   // Return a subset of most common scenes if no specific location
   return [SCENE_LIVING_ROOM, SCENE_KITCHEN, SCENE_BEDROOM].join('\n');
