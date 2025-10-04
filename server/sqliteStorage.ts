@@ -179,8 +179,17 @@ export class SqliteStorage implements IStorage {
       const hasSourceColumn = columns.some(col => col.name === 'source');
       
       if (!hasSourceColumn) {
-        // Old schema detected, drop and recreate table
+        // Old schema detected, drop old indexes first, then recreate table
         console.log('sqlite: migrating ai_updates table to new schema (RSS feed structure)');
+        
+        // Drop any old indexes that might reference columns that no longer exist
+        this.db.exec(`
+          DROP INDEX IF EXISTS idx_ai_updates_priority;
+          DROP INDEX IF EXISTS idx_ai_updates_applied;
+          DROP INDEX IF EXISTS idx_ai_updates_category;
+        `);
+        
+        // Now drop and recreate the table
         this.db.exec('DROP TABLE IF EXISTS ai_updates');
       }
     }
