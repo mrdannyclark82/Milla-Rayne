@@ -87,9 +87,31 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
         alignItems: framing === 'full' ? 'flex-end' : 'center',
         justifyContent: 'center',
         pointerEvents: 'none',
-        paddingBottom: framing === 'full' ? '5%' : '0'
+        paddingBottom: framing === 'full' ? '5%' : '0',
+        position: 'relative'
       }}
     >
+      {/* Visible backdrop panel for contrast */}
+      <div
+        style={{
+          position: 'absolute',
+          width: framing === 'full' ? '60%' : '50%',
+          height: framing === 'full' ? '90%' : '70%',
+          maxWidth: '480px',
+          maxHeight: framing === 'full' ? '780px' : '480px',
+          background: 'linear-gradient(135deg, rgba(63, 181, 114, 0.12) 0%, rgba(255, 255, 255, 0.08) 50%, rgba(63, 181, 114, 0.08) 100%)',
+          borderRadius: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          bottom: framing === 'full' ? '5%' : '50%',
+          left: '50%',
+          transform: framing === 'full' ? 'translateX(-50%)' : 'translate(-50%, 50%)'
+        }}
+        aria-hidden="true"
+      />
+      
+      {/* Silhouette SVG */}
       <svg
         viewBox={viewBox}
         style={{
@@ -97,7 +119,9 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
           height: framing === 'full' ? '85%' : '65%',
           maxWidth: '450px',
           maxHeight: framing === 'full' ? '750px' : '450px',
-          filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.15)) drop-shadow(0 0 60px rgba(46, 139, 87, 0.2))',
+          filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4))',
+          position: 'relative',
+          zIndex: 1,
           ...getStateStyles
         }}
         aria-hidden="true"
@@ -120,42 +144,42 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
         {/* Body silhouette */}
         <g filter="url(#tint-overlay)">
           {/* Head */}
-          <ellipse cx="100" cy="60" rx="35" ry="40" fill={millaAppearance.skin.base} />
+          <ellipse cx="100" cy="60" rx="35" ry="40" fill={millaAppearance.skin.base} stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
           
           {/* Hair - curly volume */}
-          <ellipse cx="100" cy="45" rx="42" ry="35" fill={millaAppearance.hair.color} />
+          <ellipse cx="100" cy="45" rx="42" ry="35" fill={millaAppearance.hair.color} stroke="rgba(255, 255, 255, 0.1)" strokeWidth="1" />
           <circle cx="75" cy="50" r="18" fill={millaAppearance.hair.color} opacity="0.8" />
           <circle cx="125" cy="50" r="18" fill={millaAppearance.hair.color} opacity="0.8" />
-          <ellipse cx="100" cy="35" rx="38" ry="25" fill={millaAppearance.hair.highlight} opacity="0.3" />
+          <ellipse cx="100" cy="35" rx="38" ry="25" fill={millaAppearance.hair.highlight} opacity="0.4" />
           
           {/* Neck */}
-          <rect x="90" y="95" width="20" height="15" fill={millaAppearance.skin.base} rx="3" />
+          <rect x="90" y="95" width="20" height="15" fill={millaAppearance.skin.base} rx="3" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
           
           {/* Torso - cozy knit top */}
-          <ellipse cx="100" cy="140" rx="45" ry="35" fill={millaAppearance.wardrobe.primary} />
-          <rect x="55" y="120" width="90" height="60" fill={millaAppearance.wardrobe.primary} rx="8" />
+          <ellipse cx="100" cy="140" rx="45" ry="35" fill={millaAppearance.wardrobe.primary} stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
+          <rect x="55" y="120" width="90" height="60" fill={millaAppearance.wardrobe.primary} rx="8" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1" />
           
           {/* Collar/neckline detail */}
           <path d="M 85 110 Q 100 115, 115 110" stroke={millaAppearance.wardrobe.secondary} strokeWidth="2" fill="none" />
           
           {/* Arms */}
-          <ellipse cx="50" cy="145" rx="12" ry="45" fill={millaAppearance.wardrobe.secondary} />
-          <ellipse cx="150" cy="145" rx="12" ry="45" fill={millaAppearance.wardrobe.secondary} />
+          <ellipse cx="50" cy="145" rx="12" ry="45" fill={millaAppearance.wardrobe.secondary} stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
+          <ellipse cx="150" cy="145" rx="12" ry="45" fill={millaAppearance.wardrobe.secondary} stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
           
           {/* Full body elements (only if framing is 'full') */}
           {framing === 'full' && (
             <>
               {/* Waist/hips */}
-              <ellipse cx="100" cy="210" rx="42" ry="30" fill={millaAppearance.wardrobe.secondary} />
-              <rect x="58" y="190" width="84" height="50" fill={millaAppearance.wardrobe.secondary} rx="6" />
+              <ellipse cx="100" cy="210" rx="42" ry="30" fill={millaAppearance.wardrobe.secondary} stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
+              <rect x="58" y="190" width="84" height="50" fill={millaAppearance.wardrobe.secondary} rx="6" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
               
               {/* Legs */}
-              <rect x="70" y="230" width="25" height="140" fill="#4a5568" rx="4" />
-              <rect x="105" y="230" width="25" height="140" fill="#4a5568" rx="4" />
+              <rect x="70" y="230" width="25" height="140" fill="#6b7c8a" rx="4" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
+              <rect x="105" y="230" width="25" height="140" fill="#6b7c8a" rx="4" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
               
               {/* Feet */}
-              <ellipse cx="82" cy="375" rx="18" ry="10" fill="#2d3748" />
-              <ellipse cx="117" cy="375" rx="18" ry="10" fill="#2d3748" />
+              <ellipse cx="82" cy="375" rx="18" ry="10" fill="#4a5568" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
+              <ellipse cx="117" cy="375" rx="18" ry="10" fill="#4a5568" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="0.5" />
             </>
           )}
         </g>
