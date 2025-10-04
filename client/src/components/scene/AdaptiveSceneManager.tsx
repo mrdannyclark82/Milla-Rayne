@@ -14,6 +14,7 @@ interface AdaptiveSceneManagerProps {
   onSceneChange?: (timeOfDay: TimeOfDay, mood: SceneMood) => void;
   location?: SceneLocation; // Phase 3: RP scene location
   timeOfDay?: TimeOfDay; // Phase 3: Optional time override from RP scene
+  region?: 'full' | 'left-2-3'; // Visual V1: Region to render
   // Future: Avatar integration point
   // avatarPosition?: { x: number; y: number };
   // avatarVisible?: boolean;
@@ -26,7 +27,8 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   settings: propSettings,
   onSceneChange,
   location, // Phase 3: RP scene location
-  timeOfDay: propTimeOfDay // Phase 3: Optional time override
+  timeOfDay: propTimeOfDay, // Phase 3: Optional time override
+  region = 'full' // Visual V1: Default to full viewport
 }) => {
   const [capabilities] = useState(() => detectDeviceCapabilities());
   const [autoTimeOfDay, setAutoTimeOfDay] = useState(getCurrentTimeOfDay());
@@ -84,12 +86,26 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   // Respect reduced motion preference - always show static gradient
   if (capabilities.prefersReducedMotion || !enableAnimations) {
     const simpleScene = getSceneForContext(timeOfDay, activeMood);
+    
+    // Determine positioning based on region
+    const regionStyle = region === 'left-2-3' 
+      ? { 
+          position: 'fixed' as const,
+          top: 0,
+          left: 0,
+          width: '66.6667vw',
+          height: '100vh',
+          zIndex: -10
+        }
+      : {};
+    
     return (
       <>
         <div
           className="fixed inset-0 -z-10"
           style={{
-            background: `linear-gradient(135deg, ${simpleScene.colors.join(', ')})`
+            background: `linear-gradient(135deg, ${simpleScene.colors.join(', ')})`,
+            ...regionStyle
           }}
           aria-hidden="true"
           role="presentation"
@@ -132,6 +148,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
         enableParticles={showParticles}
         particleDensity={settings.particleDensity === 'off' ? 'low' : settings.particleDensity}
         animationSpeed={settings.animationSpeed}
+        region={region}
       />
       {settings.devDebug && (
         <SceneDebugOverlay

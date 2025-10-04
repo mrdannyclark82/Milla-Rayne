@@ -8,6 +8,7 @@ interface CSSSceneRendererProps {
   enableParticles?: boolean;
   particleDensity?: 'low' | 'medium' | 'high';
   animationSpeed?: number;
+  region?: 'full' | 'left-2-3'; // Region to render (full viewport or left 2/3)
 }
 
 export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
@@ -16,7 +17,8 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
   parallaxIntensity = 50,
   enableParticles = true,
   particleDensity = 'medium',
-  animationSpeed = 1.0
+  animationSpeed = 1.0,
+  region = 'full'
 }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -47,11 +49,24 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
     ? `translate(${mousePos.x * parallaxIntensity}px, ${mousePos.y * parallaxIntensity}px)`
     : 'none';
 
+  // Determine positioning based on region
+  const regionStyle = region === 'left-2-3' 
+    ? { 
+        position: 'fixed' as const,
+        top: 0,
+        left: 0,
+        width: '66.6667vw', // Left 2/3
+        height: '100vh',
+        zIndex: -10,
+        overflow: 'hidden'
+      }
+    : {};
+
   return (
     <div
       ref={sceneRef}
       className="fixed inset-0 -z-10 overflow-hidden"
-      style={gradientStyle}
+      style={{ ...gradientStyle, ...regionStyle }}
       aria-hidden="true"
       role="presentation"
     >

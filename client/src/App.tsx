@@ -11,8 +11,12 @@ import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
 import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
-import { SceneLocation, SceneMood } from '@/types/scene';
+import { RPStageAnchor } from '@/components/rp/RPStageAnchor';
+import { MillaSilhouette, VisualState } from '@/components/rp/placeholders/MillaSilhouette';
+import { SceneLocation, SceneMood, TimeOfDay } from '@/types/scene';
 import { loadSceneSettings } from '@/utils/sceneSettingsStore';
+import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
+import { getCurrentTimeOfDay } from '@/utils/scenePresets';
 
 function App() {
   console.log('App render start');
@@ -43,6 +47,10 @@ function App() {
   const [currentLocation, setCurrentLocation] = useState<SceneLocation>('unknown');
   const [sceneMood, setSceneMood] = useState<SceneMood>('calm');
   const [sceneSettings, setSceneSettings] = useState(() => loadSceneSettings());
+  
+  // Visual V1: Track time of day and reduced motion for Milla visual
+  const [currentTimeOfDay, setCurrentTimeOfDay] = useState<TimeOfDay>(() => getCurrentTimeOfDay());
+  const [capabilities] = useState(() => detectDeviceCapabilities());
 
   // Load scene settings on mount and listen for changes
   useEffect(() => {
@@ -53,6 +61,16 @@ function App() {
     // Listen for storage changes (cross-tab sync)
     window.addEventListener('storage', loadSettings);
     return () => window.removeEventListener('storage', loadSettings);
+  }, []);
+
+  // Update time of day every minute for visual tints
+  useEffect(() => {
+    const updateTimeOfDay = () => {
+      setCurrentTimeOfDay(getCurrentTimeOfDay());
+    };
+    
+    const interval = setInterval(updateTimeOfDay, 60000); // Every minute
+    return () => clearInterval(interval);
   }, []);
 
   // Detect mobile device
@@ -266,35 +284,39 @@ function App() {
     return largeTouchTargets ? "default" : "sm";
   };
 
+  // Visual V1: Compute Milla visual state from voice controls
+  const getMillaVisualState = (): VisualState => {
+    if (isSpeaking) return 'speaking';
+    if (isListening) return 'listening';
+    return 'idle';
+  };
 
 
   return (
     <div className={getContainerClasses()}>
       {/* Adaptive Scene Background - Phase 3: Now responds to RP scene location */}
+      {/* Visual V1: Constrained to left 2/3 with region prop */}
       <RPSceneBackgroundBridge enabled={sceneSettings.sceneBackgroundFromRP ?? false}>
         {(rpProps) => (
           <AdaptiveSceneManager 
             mood={rpProps.mood || sceneMood}
             location={rpProps.location as SceneLocation || currentLocation}
-            timeOfDay={rpProps.timeOfDay}
+            timeOfDay={rpProps.timeOfDay || currentTimeOfDay}
             enableAnimations={true}
+            region="left-2-3"
           />
         )}
       </RPSceneBackgroundBridge>
 
-      {/* Portrait Image - Left Side */}
-      <div className="fixed top-0 left-0 w-2/3 h-screen flex items-center justify-center">
-        <img
-          src="/milla_new.jpg"
-          alt="Milla Portrait"
-          className="max-w-full max-h-full object-contain ai-style-change-2 ai-style-change-1"
-          onError={(e) => {
-            console.log('Image failed to load');
-            e.currentTarget.style.display = 'none';
-            e.currentTarget.parentElement!.innerHTML = '<div class="text-white text-2xl">Image not found</div>';
-          }}
+      {/* Visual V1: Milla Stage - Left 2/3 of viewport */}
+      <RPStageAnchor>
+        <MillaSilhouette
+          state={getMillaVisualState()}
+          timeOfDay={currentTimeOfDay}
+          framing="full"
+          reducedMotion={capabilities.prefersReducedMotion}
         />
-      </div>
+      </RPStageAnchor>
 
       {/* Chat Interface - Fixed Right Side */}
       <div className="fixed top-0 right-0 w-1/3 h-screen p-4 bg-black">
