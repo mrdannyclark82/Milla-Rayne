@@ -86,16 +86,18 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
         display: 'flex',
         alignItems: framing === 'full' ? 'flex-end' : 'center',
         justifyContent: 'center',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        paddingBottom: framing === 'full' ? '5%' : '0'
       }}
     >
       <svg
         viewBox={viewBox}
         style={{
-          width: framing === 'full' ? '60%' : '50%',
-          height: framing === 'full' ? '90%' : '70%',
-          maxWidth: '500px',
-          maxHeight: framing === 'full' ? '800px' : '500px',
+          width: framing === 'full' ? '55%' : '45%',
+          height: framing === 'full' ? '85%' : '65%',
+          maxWidth: '450px',
+          maxHeight: framing === 'full' ? '750px' : '450px',
+          filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.15)) drop-shadow(0 0 60px rgba(46, 139, 87, 0.2))',
           ...getStateStyles
         }}
         aria-hidden="true"

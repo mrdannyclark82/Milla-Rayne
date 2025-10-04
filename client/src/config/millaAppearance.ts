@@ -34,22 +34,22 @@ export interface MillaAppearanceTokens {
  */
 export const millaAppearance: MillaAppearanceTokens = {
   eyes: {
-    color: '#2d8659', // Green eyes
-    highlight: '#4ade80'
+    color: '#3fb572', // Bright green eyes
+    highlight: '#5ae68d'
   },
   hair: {
-    color: '#8b3a2e', // Deep copper red
-    highlight: '#b85742',
+    color: '#d4735f', // Bright copper red
+    highlight: '#e89580',
     description: 'long, naturally curly with volume'
   },
   skin: {
-    base: '#f5dcc8', // Fair
+    base: '#ffebd8', // Very light peachy skin
     freckles: '#d4a17a',
     description: 'fair with light freckles'
   },
   wardrobe: {
-    primary: '#c9b896', // Sand
-    secondary: '#6b7c5d', // Olive
+    primary: '#e8d4b8', // Light sand
+    secondary: '#92a585', // Light olive/sage
     description: 'cozy knit style'
   }
 };
