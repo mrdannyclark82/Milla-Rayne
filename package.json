@@ -11,7 +11,8 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "migrate:memory": "tsx server/migrateToSqlite.ts",
-    "migrate:encrypt": "tsx server/encryptMigration.ts"
+    "migrate:encrypt": "tsx server/encryptMigration.ts",
+    "postinstall": "npm rebuild better-sqlite3"
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.20",
