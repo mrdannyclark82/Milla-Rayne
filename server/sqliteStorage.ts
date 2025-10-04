@@ -266,7 +266,7 @@ export class SqliteStorage implements IStorage {
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
       CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
-      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance DESC);
       CREATE INDEX IF NOT EXISTS idx_suggestion_updates_applied ON suggestion_updates(applied_at);
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
@@ -554,7 +554,7 @@ export class SqliteStorage implements IStorage {
   async createAiUpdate(update: InsertAiUpdate): Promise<AiUpdate> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
-      INSERT INTO suggestion_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
+      INSERT INTO suggestion_updates (id, title, description, category, priority, relevance, metadata, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
@@ -572,7 +572,7 @@ export class SqliteStorage implements IStorage {
     const stmt = this.db.prepare(`
       SELECT * FROM suggestion_updates
       WHERE applied_at IS NULL
-      ORDER BY priority DESC, relevance_score DESC, created_at DESC
+      ORDER BY priority DESC, relevance DESC, created_at DESC
       LIMIT ?
     `);
 
@@ -583,7 +583,7 @@ export class SqliteStorage implements IStorage {
       description: u.description,
       category: u.category,
       priority: u.priority,
-      relevanceScore: u.relevance_score,
+      relevanceScore: u.relevance,
       metadata: u.metadata ? JSON.parse(u.metadata) : null,
       createdAt: new Date(u.created_at),
       appliedAt: u.applied_at ? new Date(u.applied_at) : null
@@ -602,7 +602,7 @@ export class SqliteStorage implements IStorage {
       description: update.description,
       category: update.category,
       priority: update.priority,
-      relevanceScore: update.relevance_score,
+      relevanceScore: update.relevance,
       metadata: update.metadata ? JSON.parse(update.metadata) : null,
       createdAt: new Date(update.created_at),
       appliedAt: update.applied_at ? new Date(update.applied_at) : null
