@@ -19,6 +19,7 @@ import { loadSceneSettings } from '@/utils/sceneSettingsStore';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
 import { getCurrentTimeOfDay } from '@/utils/scenePresets';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
+import { getPredictiveUpdatesEnabled, fetchDailySuggestion } from '@/utils/predictiveUpdatesClient';
 
 function App() {
   console.log('App render start');
@@ -76,6 +77,27 @@ function App() {
     
     const interval = setInterval(updateTimeOfDay, 60000); // Every minute
     return () => clearInterval(interval);
+  }, []);
+
+  // Fetch daily suggestion on app load if predictive updates enabled
+  useEffect(() => {
+    const fetchOnLoad = async () => {
+      if (getPredictiveUpdatesEnabled()) {
+        console.log('Predictive updates enabled - fetching daily suggestion...');
+        try {
+          const result = await fetchDailySuggestion();
+          if (result.success) {
+            console.log('Daily suggestion fetched:', result.suggestion);
+          } else {
+            console.log('No daily suggestion available or error:', result.error);
+          }
+        } catch (error) {
+          console.error('Error fetching daily suggestion on load:', error);
+        }
+      }
+    };
+    
+    fetchOnLoad();
   }, []);
 
   // Detect mobile device
@@ -279,7 +301,7 @@ function App() {
 
   // Apply accessibility settings
   const getContainerClasses = () => {
-    let classes = "min-h-screen bg-black";
+    let classes = "min-h-screen";
     if (highContrast) classes += " contrast-150";
     if (dyslexiaFont) classes += " font-opendyslexic";
     return classes;
@@ -314,7 +336,7 @@ function App() {
             
             {/* Room Overlays V1: Location silhouettes (between background and stage) */}
             <RoomOverlay
-              enabled={sceneSettings.enabled}
+              enabled={sceneSettings.enabled && (sceneSettings.sceneRoomOverlaysEnabled ?? true)}
               timeOfDay={rpProps.timeOfDay || currentTimeOfDay}
               location={rpProps.location as SceneLocation || currentLocation}
               reducedMotion={capabilities.prefersReducedMotion}
@@ -365,7 +387,7 @@ function App() {
                 title="Open scene settings"
                 aria-label="Open scene settings"
               >
-                <i className="fas fa-sliders-h mr-1"></i>
+                <i className="fas fa-window-restore mr-1"></i>
                 Scene
               </Button>
             </SceneSettingsDialog>
@@ -376,7 +398,7 @@ function App() {
                 title="Toggle developer mode"
                 aria-label="Open developer mode settings"
               >
-                <i className="fas fa-code mr-1"></i>
+                <i className="fas fa-wrench mr-1"></i>
                 Dev Mode
               </Button>
             </DeveloperModeToggle>
