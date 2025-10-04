@@ -3,7 +3,11 @@
  * 
  * Parses user messages for italic star markers (*action*) and detects scene changes.
  * Returns scene metadata including location, mood, and time of day.
+ * 
+ * Integrates with centralized scene settings from shared/sceneSettings.ts
  */
+
+import { getSceneDetails, getContextualSceneSettings } from "../shared/sceneSettings";
 
 export type SceneLocation = 
   | 'living_room' 
@@ -187,3 +191,48 @@ export function getLocationMoodSuggestion(location: SceneLocation): SceneMood {
   
   return locationMoodMap[location];
 }
+
+/**
+ * Get scene description details for a detected location
+ * This integrates with the centralized scene settings
+ */
+export function getSceneDescription(location: SceneLocation): string {
+  // Map scene detection locations to centralized scene settings
+  const locationMap: Record<string, string> = {
+    'living_room': 'living_room',
+    'bedroom': 'bedroom',
+    'kitchen': 'kitchen',
+    'bathroom': 'bathroom',
+    'dining_room': 'dining_room',
+    'outdoor': 'outdoor',
+    'front_door': 'living_room', // Front door leads to living room
+    'car': 'outdoor', // Car is considered outdoor
+    'workspace': 'workspace',
+    'guest_room': 'guest_room'
+  };
+
+  const mappedLocation = locationMap[location];
+  if (mappedLocation) {
+    try {
+      return getSceneDetails(mappedLocation as any) || '';
+    } catch (error) {
+      console.warn(`Could not get scene details for location: ${location}`, error);
+      return '';
+    }
+  }
+  
+  return '';
+}
+
+/**
+ * Get contextual scene settings for current detected scene
+ * Useful for AI services to enhance responses with scene-specific details
+ */
+export function getSceneContextSettings(sceneContext: SceneContext): string {
+  if (sceneContext.location === 'unknown') {
+    return getContextualSceneSettings();
+  }
+  
+  return getSceneDescription(sceneContext.location) || getContextualSceneSettings();
+}
+
