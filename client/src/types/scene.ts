@@ -3,11 +3,24 @@ export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type AvatarState = 'neutral' | 'thinking' | 'responding' | 'listening';
 export type ParticleType = 'stars' | 'sparkles' | 'hearts' | 'petals' | 'mist';
 
+// Role-play scene locations (Phase 3)
+export type SceneLocation = 
+  | 'living_room' 
+  | 'bedroom' 
+  | 'kitchen' 
+  | 'bathroom'
+  | 'front_door'
+  | 'dining_room'
+  | 'outdoor'
+  | 'car'
+  | 'unknown';
+
 export interface SceneContext {
   mood: SceneMood;
   timeOfDay: TimeOfDay;
   avatarState: AvatarState;
   isActive: boolean;
+  location?: SceneLocation; // Phase 3: RP scene location
 }
 
 export interface DeviceCapabilities {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
-import { getSceneForContext, getCurrentTimeOfDay } from '@/utils/scenePresets';
+import { getSceneForContext, getCurrentTimeOfDay, getLocationMood } from '@/utils/scenePresets';
 import { CSSSceneRenderer } from './CSSSceneRenderer';
 import { SceneDebugOverlay } from './SceneDebugOverlay';
-import { SceneSettings, AvatarState, SceneMood, TimeOfDay } from '@/types/scene';
+import { SceneSettings, AvatarState, SceneMood, TimeOfDay, SceneLocation } from '@/types/scene';
 import { loadSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
 
 interface AdaptiveSceneManagerProps {
@@ -12,6 +12,10 @@ interface AdaptiveSceneManagerProps {
   enableAnimations?: boolean;
   settings?: SceneSettings;
   onSceneChange?: (timeOfDay: TimeOfDay, mood: SceneMood) => void;
+  location?: SceneLocation; // Phase 3: RP scene location
+  // Future: Avatar integration point
+  // avatarPosition?: { x: number; y: number };
+  // avatarVisible?: boolean;
 }
 
 export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
@@ -19,7 +23,8 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   mood: propMood,
   enableAnimations = true,
   settings: propSettings,
-  onSceneChange
+  onSceneChange,
+  location // Phase 3: RP scene location
 }) => {
   const [capabilities] = useState(() => detectDeviceCapabilities());
   const [timeOfDay, setTimeOfDay] = useState(getCurrentTimeOfDay());
@@ -49,8 +54,15 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
     });
   }, [propSettings]);
 
-  // Determine active mood from settings or prop
-  const activeMood = propMood || settings.mood;
+  // Determine active mood from settings, location, or prop
+  // Priority: propMood > location-based mood > settings mood
+  let activeMood = settings.mood;
+  if (location && location !== 'unknown') {
+    activeMood = getLocationMood(location);
+  }
+  if (propMood) {
+    activeMood = propMood;
+  }
 
   // Notify parent of scene changes
   useEffect(() => {

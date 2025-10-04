@@ -24,6 +24,10 @@ import { analyzeYouTubeVideo, isValidYouTubeUrl, searchVideoMemories } from "./y
 import { getRealWorldInfo } from "./realWorldInfoService";
 import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
 import { generateRepositoryImprovements, applyRepositoryImprovements, previewImprovements } from "./repositoryModificationService";
+import { detectSceneContext, type SceneContext, type SceneLocation } from "./sceneDetectionService";
+
+// Track current scene location per session (simple in-memory for now)
+let currentSceneLocation: SceneLocation = 'unknown';
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -113,6 +117,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`OpenRouter Chat: Processing message: ${message.substring(0, 50)}...`);
 
+      // Phase 3: Detect scene context from user message
+      const sceneContext = detectSceneContext(message, currentSceneLocation);
+      if (sceneContext.hasSceneChange) {
+        currentSceneLocation = sceneContext.location;
+        console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
+      }
+
       // Use OpenRouter directly without complex processing
       const aiResponse = await generateOpenRouterResponse(message, {
         userName: "Danny Ray"
@@ -121,7 +132,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Always return success since fallback is handled in the service
       res.json({
         response: aiResponse.content,
-        success: aiResponse.success
+        success: aiResponse.success,
+        sceneContext: {
+          location: sceneContext.location,
+          mood: sceneContext.mood,
+          timeOfDay: sceneContext.timeOfDay
+        }
       });
     } catch (error) {
       console.error("OpenRouter Chat error:", error);
@@ -147,6 +163,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the request for debugging
       console.log(`Chat API: Processing message from client (${message.substring(0, 50)}...)`);
 
+      // Phase 3: Detect scene context from user message
+      const sceneContext = detectSceneContext(message, currentSceneLocation);
+      if (sceneContext.hasSceneChange) {
+        currentSceneLocation = sceneContext.location;
+        console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
+      }
+
       // Generate AI response using existing logic with timeout
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Response generation timeout')), 30000)
@@ -158,7 +181,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!aiResponse || !aiResponse.content) {
         console.warn("Chat API: AI response was empty, using fallback");
         return res.json({
-          response: "I'm here with you! Sometimes I need a moment to gather my thoughts. What would you like to talk about?"
+          response: "I'm here with you! Sometimes I need a moment to gather my thoughts. What would you like to talk about?",
+          sceneContext: {
+            location: sceneContext.location,
+            mood: sceneContext.mood,
+            timeOfDay: sceneContext.timeOfDay
+          }
         });
       }
 
@@ -166,7 +194,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         response: aiResponse.content,
-        ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning })
+        ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
+        sceneContext: {
+          location: sceneContext.location,
+          mood: sceneContext.mood,
+          timeOfDay: sceneContext.timeOfDay
+        }
       });
     } catch (error) {
       console.error("Chat API error:", error);
