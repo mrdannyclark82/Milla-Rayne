@@ -10,6 +10,7 @@ import { FloatingInput } from '@/components/FloatingInput';
 import DeveloperModeToggle from '@/components/DeveloperModeToggle';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
+import { RoomOverlay } from '@/components/scene/RoomOverlay';
 import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
 import { RPStageAnchor } from '@/components/rp/RPStageAnchor';
 import { MillaSilhouette, VisualState } from '@/components/rp/placeholders/MillaSilhouette';
@@ -302,13 +303,23 @@ function App() {
       {/* Visual V1: Constrained to left 2/3 with region prop */}
       <RPSceneBackgroundBridge enabled={sceneSettings.sceneBackgroundFromRP ?? false}>
         {(rpProps) => (
-          <AdaptiveSceneManager 
-            mood={rpProps.mood || sceneMood}
-            location={rpProps.location as SceneLocation || currentLocation}
-            timeOfDay={rpProps.timeOfDay || currentTimeOfDay}
-            enableAnimations={true}
-            region="left-2-3"
-          />
+          <>
+            <AdaptiveSceneManager 
+              mood={rpProps.mood || sceneMood}
+              location={rpProps.location as SceneLocation || currentLocation}
+              timeOfDay={rpProps.timeOfDay || currentTimeOfDay}
+              enableAnimations={true}
+              region="left-2-3"
+            />
+            
+            {/* Room Overlays V1: Location silhouettes (between background and stage) */}
+            <RoomOverlay
+              enabled={sceneSettings.enabled}
+              timeOfDay={rpProps.timeOfDay || currentTimeOfDay}
+              location={rpProps.location as SceneLocation || currentLocation}
+              reducedMotion={capabilities.prefersReducedMotion}
+            />
+          </>
         )}
       </RPSceneBackgroundBridge>
 

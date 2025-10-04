@@ -53,4 +53,5 @@ export interface SceneSettings {
   animationSpeed: number; // 0.5-1.5 (50%-150%)
   devDebug: boolean;
   sceneBackgroundFromRP?: boolean; // Phase 3: Mirror RP scene in background
+  sceneRoomOverlaysEnabled?: boolean; // Room Overlays V1: Location silhouettes
 }

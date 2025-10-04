@@ -29,7 +29,8 @@ export function getDefaultSettings(): SceneSettings {
     particleDensity: 'medium',
     animationSpeed: 1.0,
     devDebug: false,
-    sceneBackgroundFromRP: true // Phase 3: Enabled by default
+    sceneBackgroundFromRP: true, // Phase 3: Enabled by default
+    sceneRoomOverlaysEnabled: true // Room Overlays V1: Enabled by default
   };
 }
 
@@ -71,7 +72,8 @@ export function loadSceneSettings(): SceneSettings {
         : 'medium',
       animationSpeed: clamp(settings.animationSpeed ?? 1.0, 0.5, 1.5),
       devDebug: typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
-      sceneBackgroundFromRP: typeof settings.sceneBackgroundFromRP === 'boolean' ? settings.sceneBackgroundFromRP : true
+      sceneBackgroundFromRP: typeof settings.sceneBackgroundFromRP === 'boolean' ? settings.sceneBackgroundFromRP : true,
+      sceneRoomOverlaysEnabled: typeof settings.sceneRoomOverlaysEnabled === 'boolean' ? settings.sceneRoomOverlaysEnabled : true
     };
   } catch (error) {
     console.error('Error loading scene settings:', error);
