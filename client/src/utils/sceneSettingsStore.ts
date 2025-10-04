@@ -28,7 +28,8 @@ export function getDefaultSettings(): SceneSettings {
     parallaxIntensity: 50,
     particleDensity: 'medium',
     animationSpeed: 1.0,
-    devDebug: false
+    devDebug: false,
+    sceneBackgroundFromRP: true // Phase 3: Enabled by default
   };
 }
 
@@ -69,7 +70,8 @@ export function loadSceneSettings(): SceneSettings {
         ? settings.particleDensity 
         : 'medium',
       animationSpeed: clamp(settings.animationSpeed ?? 1.0, 0.5, 1.5),
-      devDebug: typeof settings.devDebug === 'boolean' ? settings.devDebug : false
+      devDebug: typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
+      sceneBackgroundFromRP: typeof settings.sceneBackgroundFromRP === 'boolean' ? settings.sceneBackgroundFromRP : true
     };
   } catch (error) {
     console.error('Error loading scene settings:', error);

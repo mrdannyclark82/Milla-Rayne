@@ -28,6 +28,8 @@ import { detectSceneContext, type SceneContext, type SceneLocation } from "./sce
 
 // Track current scene location per session (simple in-memory for now)
 let currentSceneLocation: SceneLocation = 'unknown';
+let currentSceneMood: string = 'calm';
+let currentSceneUpdatedAt: number = Date.now();
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -121,6 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sceneContext = detectSceneContext(message, currentSceneLocation);
       if (sceneContext.hasSceneChange) {
         currentSceneLocation = sceneContext.location;
+        currentSceneMood = sceneContext.mood;
+        currentSceneUpdatedAt = Date.now();
         console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
       }
 
@@ -167,6 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sceneContext = detectSceneContext(message, currentSceneLocation);
       if (sceneContext.hasSceneChange) {
         currentSceneLocation = sceneContext.location;
+        currentSceneMood = sceneContext.mood;
+        currentSceneUpdatedAt = Date.now();
         console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
       }
 
@@ -1728,6 +1734,16 @@ Project: Milla Rayne - AI Virtual Assistant
       });
       res.status(500).json({ error: "Failed to generate recommendations" });
     }
+  });
+
+  // Phase 3: Get current RP scene state
+  // Used by client to poll for scene changes
+  app.get('/api/rp/scenes/current', (req, res) => {
+    res.json({
+      location: currentSceneLocation,
+      mood: currentSceneMood,
+      updatedAt: currentSceneUpdatedAt
+    });
   });
 
   // Simple debug ping route
