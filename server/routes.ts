@@ -31,6 +31,34 @@ let currentSceneLocation: SceneLocation = 'unknown';
 let currentSceneMood: string = 'calm';
 let currentSceneUpdatedAt: number = Date.now();
 
+/**
+ * Validate admin token from either Authorization: Bearer header or x-admin-token header
+ * Returns true if valid, false otherwise
+ */
+function validateAdminToken(headers: any): boolean {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) {
+    return true; // No admin token configured, allow access
+  }
+
+  // Check Authorization: Bearer header
+  const authHeader = headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    if (token === adminToken) {
+      return true;
+    }
+  }
+
+  // Check x-admin-token header
+  const xAdminToken = headers['x-admin-token'];
+  if (xAdminToken === adminToken) {
+    return true;
+  }
+
+  return false;
+}
+
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
   // Check if this is a camera capture
@@ -1407,24 +1435,12 @@ Project: Milla Rayne - AI Virtual Assistant
   // AI Updates & Daily Suggestions endpoints
   app.get("/api/ai-updates/daily-suggestion", async (req, res) => {
     try {
-      // Check admin authentication if ADMIN_TOKEN is set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return res.status(401).json({
-            error: "Unauthorized: Admin token required",
-            success: false
-          });
-        }
-
-        const token = authHeader.substring(7);
-        if (token !== adminToken) {
-          return res.status(401).json({
-            error: "Unauthorized: Invalid admin token",
-            success: false
-          });
-        }
+      // Check admin authentication if ADMIN_TOKEN is set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(401).json({
+          error: "Unauthorized: Invalid admin token",
+          success: false
+        });
       }
 
       const { getOrCreateTodaySuggestion } = await import("./dailySuggestionsService");
@@ -1452,24 +1468,12 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post("/api/ai-updates/notify-today", async (req, res) => {
     try {
-      // Check admin authentication if ADMIN_TOKEN is set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return res.status(401).json({
-            error: "Unauthorized: Admin token required",
-            success: false
-          });
-        }
-
-        const token = authHeader.substring(7);
-        if (token !== adminToken) {
-          return res.status(401).json({
-            error: "Unauthorized: Invalid admin token",
-            success: false
-          });
-        }
+      // Check admin authentication if ADMIN_TOKEN is set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(401).json({
+          error: "Unauthorized: Invalid admin token",
+          success: false
+        });
       }
 
       const { markSuggestionDelivered } = await import("./dailySuggestionsService");
@@ -1674,14 +1678,12 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post("/api/ai-updates/fetch", async (req, res) => {
     try {
-      // Check for admin token if set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const providedToken = req.headers['x-admin-token'];
-        if (providedToken !== adminToken) {
-          res.status(403).json({ error: "Forbidden: Invalid admin token" });
-          return;
-        }
+      // Check for admin token if set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(403).json({ 
+          error: "Forbidden: Invalid admin token",
+          success: false 
+        });
       }
 
       const { fetchAIUpdates } = await import("./aiUpdatesService");
