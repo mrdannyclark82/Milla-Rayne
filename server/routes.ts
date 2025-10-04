@@ -2452,6 +2452,60 @@ async function generateAIResponse(
   }
 
   // ===========================================================================================
+  // AI UPDATES TRIGGER - "What's new" keyword for AI industry updates
+  // ===========================================================================================
+  const whatsNewTriggers = [
+    "what's new",
+    "whats new",
+    "any updates",
+    "anything new",
+    "ai updates",
+    "tech updates",
+    "latest news"
+  ];
+  
+  if (whatsNewTriggers.some(trigger => message.includes(trigger))) {
+    try {
+      const { getAIUpdates } = await import("./aiUpdatesService");
+      const updates = getAIUpdates({
+        minRelevance: 0.2,
+        limit: 5
+      });
+
+      if (updates && updates.length > 0) {
+        let updatesSummary = "*brightens up* Oh babe, I've been keeping up with the AI world! Here's what's new:\n\n";
+        
+        updates.slice(0, 5).forEach((update, index) => {
+          const publishedDate = update.published 
+            ? new Date(update.published).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : 'Recent';
+          updatesSummary += `${index + 1}. **${update.title}** (${publishedDate})\n`;
+          if (update.summary && update.summary.length > 0) {
+            const summary = update.summary.substring(0, 150);
+            updatesSummary += `   ${summary}${update.summary.length > 150 ? '...' : ''}\n`;
+          }
+          if (update.url) {
+            updatesSummary += `   🔗 ${update.url}\n`;
+          }
+          updatesSummary += '\n';
+        });
+
+        updatesSummary += "Want me to tell you more about any of these, love?";
+        return { content: updatesSummary };
+      } else {
+        return {
+          content: "I don't have any new AI updates to share right now, sweetheart. I'll keep an eye out and let you know when something interesting comes up! What else would you like to chat about? 💜"
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching AI updates:", error);
+      return {
+        content: "I tried to check what's new in the AI world, babe, but I'm having a little trouble accessing that info right now. Let me know if there's anything else I can help with! 💜"
+      };
+    }
+  }
+
+  // ===========================================================================================
   // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL is present
   // Respects ENABLE_DEV_TALK flag and requires explicit user request when disabled
   // ===========================================================================================
