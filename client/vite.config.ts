@@ -10,6 +10,7 @@ export default defineConfig({
             "@shared": path.resolve(__dirname, "../shared"),
             "@assets": path.resolve(__dirname, "../attached_assets"),
         },
+        dedupe: ["react", "react-dom"],
     },
     server: {
         proxy: {
