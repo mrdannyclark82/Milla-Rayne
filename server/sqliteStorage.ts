@@ -9,7 +9,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import { encrypt, decrypt, getMemoryKey } from "./crypto";
+import { encrypt, decrypt, isEncryptionEnabled, getMemoryKey } from "./crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +41,12 @@ export interface IStorage {
   createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion>;
   getDailySuggestionByDate(date: string): Promise<DailySuggestion | null>;
   markDailySuggestionDelivered(date: string): Promise<boolean>;
+
+  // Voice Consent methods
+  getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null>;
+  grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent>;
+  revokeVoiceConsent(userId: string, consentType: string): Promise<boolean>;
+  hasVoiceConsent(userId: string, consentType: string): Promise<boolean>;
 }
 
 export interface SessionInfo {
@@ -67,6 +73,18 @@ export interface UsagePattern {
   messageCount: number;
 }
 
+export interface VoiceConsent {
+  id: string;
+  userId: string;
+  consentType: 'voice_cloning' | 'voice_persona' | 'voice_synthesis';
+  granted: boolean;
+  grantedAt?: Date;
+  revokedAt?: Date;
+  consentText: string;
+  metadata?: any;
+  createdAt: Date;
+}
+
 export class SqliteStorage implements IStorage {
   private db: Database.Database;
 
@@ -86,6 +104,7 @@ export class SqliteStorage implements IStorage {
     this.db.pragma('journal_mode = WAL');
 
     // Create users table
+    console.debug('sqlite: creating users table');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
@@ -96,6 +115,7 @@ export class SqliteStorage implements IStorage {
     `);
 
     // Create enhanced messages table with session tracking
+    console.debug('sqlite: creating messages table');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS messages (
         id TEXT PRIMARY KEY,
@@ -111,6 +131,7 @@ export class SqliteStorage implements IStorage {
     `);
 
     // Create sessions table for tracking conversation sessions
+    console.debug('sqlite: creating sessions table');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
         id TEXT PRIMARY KEY,
@@ -125,6 +146,7 @@ export class SqliteStorage implements IStorage {
     `);
 
     // Create usage patterns table
+    console.debug('sqlite: creating usage_patterns table');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS usage_patterns (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,32 +162,58 @@ export class SqliteStorage implements IStorage {
     `);
 
     // Create AI updates table for predictive updates feature
+    // AI updates table is defined later with the full schema (description, category, priority, etc.)
+
+    // Create indexes for better query performance (moved to after ai_updates full schema)
+
+    // Create ai_updates table for predictive updates (RSS feed data)
+    // Check if table exists with old schema and migrate if needed
+    console.debug('sqlite: creating ai_updates table');
+
+    // Check if ai_updates table exists and has the correct schema
+    const tableInfo = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_updates'").get() as { name: string } | undefined;
+
+    if (tableInfo) {
+      // Table exists, check if it has the 'source' column (new schema)
+      const columns = this.db.prepare("PRAGMA table_info('ai_updates')").all() as { name: string }[];
+      const hasSourceColumn = columns.some(col => col.name === 'source');
+
+      if (!hasSourceColumn) {
+        // Old schema detected, migrate to new RSS feed structure
+        console.log('sqlite: migrating ai_updates table to new schema (RSS feed structure)');
+
+        // Drop old indexes first to prevent "no such column" errors
+        // The old schema had indexes on 'priority', 'applied_at', 'category' columns
+        // which don't exist in the new RSS feed schema
+        this.db.exec(`
+          DROP INDEX IF EXISTS idx_ai_updates_priority;
+          DROP INDEX IF EXISTS idx_ai_updates_applied;
+          DROP INDEX IF EXISTS idx_ai_updates_category;
+        `);
+
+        // Now drop and recreate the table with new schema
+        this.db.exec('DROP TABLE IF EXISTS ai_updates');
+      }
+    }
+
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS ai_updates (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
-        url TEXT NOT NULL UNIQUE,
+        url TEXT UNIQUE NOT NULL,
         source TEXT NOT NULL,
-        published DATETIME,
+        published TEXT,
         summary TEXT,
         tags TEXT,
         relevance REAL DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
 
-    // Create indexes for better query performance
+    // Create suggestion_updates table for daily AI improvement suggestions
+    console.debug('sqlite: creating suggestion_updates table');
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
-      CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
-      CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
-      CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
-    `);
-
-    // Create ai_updates table for predictive updates (merged schema)
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS ai_updates (
+      CREATE TABLE IF NOT EXISTS suggestion_updates (
         id TEXT PRIMARY KEY,
         title TEXT NOT NULL,
         url TEXT,
@@ -182,6 +230,7 @@ export class SqliteStorage implements IStorage {
     `);
 
     // Create daily_suggestions table
+    console.debug('sqlite: creating daily_suggestions table');
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS daily_suggestions (
         id TEXT PRIMARY KEY,
@@ -194,23 +243,62 @@ export class SqliteStorage implements IStorage {
       )
     `);
 
-    // Create indexes for ai_updates and daily_suggestions
+    // Create voice_consent table
+    console.debug('sqlite: creating voice_consent table');
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_published ON ai_updates(published);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_priority ON ai_updates(priority DESC, relevance DESC);
-      CREATE INDEX IF NOT EXISTS idx_ai_updates_applied ON ai_updates(applied_at);
-      CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
+      CREATE TABLE IF NOT EXISTS voice_consent (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        consent_type TEXT NOT NULL CHECK(consent_type IN ('voice_cloning', 'voice_persona', 'voice_synthesis')),
+        granted INTEGER NOT NULL DEFAULT 0,
+        granted_at DATETIME,
+        revoked_at DATETIME,
+        consent_text TEXT NOT NULL,
+        metadata TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, consent_type)
+      )
     `);
 
-    let encryptionStatus: string;
-    try {
-      getMemoryKey();
-      encryptionStatus = 'enabled';
-    } catch {
-      encryptionStatus = 'disabled';
-    }
+    // Create indexes for ai_updates and daily_suggestions
+    console.debug('sqlite: creating indexes');
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
+      CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_applied ON suggestion_updates(applied_at);
+      CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
+      CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
+      CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
+      CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
+    `);
+
+    const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
     console.log(`SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`);
+
+    // Ensure default user exists for consent storage
+    this.ensureDefaultUser();
+  }
+
+  private ensureDefaultUser(): void {
+    try {
+      const stmt = this.db.prepare('SELECT id FROM users WHERE id = ?');
+      const existing = stmt.get('default-user');
+
+      if (!existing) {
+        const insertStmt = this.db.prepare(`
+          INSERT INTO users (id, username, password, created_at)
+          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        `);
+        insertStmt.run('default-user', 'default', 'default');
+        console.log('Default user created for consent storage');
+      }
+    } catch (error) {
+      console.error('Error ensuring default user:', error);
+    }
   }
 
   // User methods
@@ -246,8 +334,8 @@ export class SqliteStorage implements IStorage {
     const id = randomUUID();
     const timestamp = new Date();
 
-    // Encrypt message content before storing
-    const encryptedContent = encrypt(message.content, getMemoryKey());
+    // Encrypt message content before storing (when encryption enabled)
+    const encryptedContent = isEncryptionEnabled() ? encrypt(message.content, getMemoryKey()) : message.content;
 
     const stmt = this.db.prepare(`
       INSERT INTO messages (id, content, role, personality_mode, timestamp, user_id, session_id) 
@@ -297,7 +385,7 @@ export class SqliteStorage implements IStorage {
 
     return messages.map(msg => ({
       ...msg,
-      content: decrypt(msg.content, getMemoryKey()), // Decrypt content on read
+      content: isEncryptionEnabled() ? decrypt(msg.content, getMemoryKey()) : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
@@ -312,7 +400,7 @@ export class SqliteStorage implements IStorage {
 
     return {
       ...msg,
-      content: decrypt(msg.content, getMemoryKey()), // Decrypt content on read
+      content: isEncryptionEnabled() ? decrypt(msg.content, getMemoryKey()) : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
       userId: msg.user_id
@@ -462,17 +550,17 @@ export class SqliteStorage implements IStorage {
     }));
   }
 
-  // AI Updates methods
+  // AI Updates methods (for suggestion_updates table)
   async createAiUpdate(update: InsertAiUpdate): Promise<AiUpdate> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
-      INSERT INTO ai_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
+      INSERT INTO suggestion_updates (id, title, description, category, priority, relevance_score, metadata, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
-    
+
     const metadataStr = update.metadata ? JSON.stringify(update.metadata) : null;
     stmt.run(id, update.title, update.description, update.category, update.priority, update.relevanceScore, metadataStr);
-    
+
     const created = await this.getAiUpdateById(id);
     if (!created) {
       throw new Error("Failed to create AI update");
@@ -482,12 +570,12 @@ export class SqliteStorage implements IStorage {
 
   async getTopAiUpdates(limit: number): Promise<AiUpdate[]> {
     const stmt = this.db.prepare(`
-      SELECT * FROM ai_updates
+      SELECT * FROM suggestion_updates
       WHERE applied_at IS NULL
       ORDER BY priority DESC, relevance_score DESC, created_at DESC
       LIMIT ?
     `);
-    
+
     const updates = stmt.all(limit) as any[];
     return updates.map(u => ({
       id: u.id,
@@ -503,11 +591,11 @@ export class SqliteStorage implements IStorage {
   }
 
   async getAiUpdateById(id: string): Promise<AiUpdate | undefined> {
-    const stmt = this.db.prepare('SELECT * FROM ai_updates WHERE id = ?');
+    const stmt = this.db.prepare('SELECT * FROM suggestion_updates WHERE id = ?');
     const update = stmt.get(id) as any;
-    
+
     if (!update) return undefined;
-    
+
     return {
       id: update.id,
       title: update.title,
@@ -522,7 +610,7 @@ export class SqliteStorage implements IStorage {
   }
 
   async markAiUpdateApplied(id: string): Promise<void> {
-    const stmt = this.db.prepare('UPDATE ai_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
+    const stmt = this.db.prepare('UPDATE suggestion_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
     stmt.run(id);
   }
 
@@ -533,10 +621,10 @@ export class SqliteStorage implements IStorage {
       INSERT INTO daily_suggestions (id, date, suggestion_text, metadata, created_at, is_delivered)
       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 0)
     `);
-    
+
     const metadataStr = suggestion.metadata ? JSON.stringify(suggestion.metadata) : null;
     stmt.run(id, suggestion.date, suggestion.suggestionText, metadataStr);
-    
+
     const created = await this.getDailySuggestionByDate(suggestion.date);
     if (!created) {
       throw new Error("Failed to create daily suggestion");
@@ -547,9 +635,9 @@ export class SqliteStorage implements IStorage {
   async getDailySuggestionByDate(date: string): Promise<DailySuggestion | null> {
     const stmt = this.db.prepare('SELECT * FROM daily_suggestions WHERE date = ?');
     const suggestion = stmt.get(date) as any;
-    
+
     if (!suggestion) return null;
-    
+
     return {
       id: suggestion.id,
       date: suggestion.date,
@@ -569,6 +657,72 @@ export class SqliteStorage implements IStorage {
     `);
     const result = stmt.run(date);
     return result.changes > 0;
+  }
+
+  // Voice Consent methods
+  async getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null> {
+    const stmt = this.db.prepare('SELECT * FROM voice_consent WHERE user_id = ? AND consent_type = ?');
+    const consent = stmt.get(userId, consentType) as any;
+
+    if (!consent) return null;
+
+    return {
+      id: consent.id,
+      userId: consent.user_id,
+      consentType: consent.consent_type as 'voice_cloning' | 'voice_persona' | 'voice_synthesis',
+      granted: consent.granted === 1,
+      grantedAt: consent.granted_at ? new Date(consent.granted_at) : undefined,
+      revokedAt: consent.revoked_at ? new Date(consent.revoked_at) : undefined,
+      consentText: consent.consent_text,
+      metadata: consent.metadata ? JSON.parse(consent.metadata) : null,
+      createdAt: new Date(consent.created_at)
+    };
+  }
+
+  async grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent> {
+    const id = randomUUID();
+    const metadataStr = metadata ? JSON.stringify(metadata) : null;
+
+    // Check if consent record already exists
+    const existing = await this.getVoiceConsent(userId, consentType);
+
+    if (existing) {
+      // Update existing record
+      const stmt = this.db.prepare(`
+        UPDATE voice_consent 
+        SET granted = 1, granted_at = CURRENT_TIMESTAMP, revoked_at = NULL, consent_text = ?, metadata = ?
+        WHERE user_id = ? AND consent_type = ?
+      `);
+      stmt.run(consentText, metadataStr, userId, consentType);
+    } else {
+      // Insert new record
+      const stmt = this.db.prepare(`
+        INSERT INTO voice_consent (id, user_id, consent_type, granted, granted_at, consent_text, metadata, created_at)
+        VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, CURRENT_TIMESTAMP)
+      `);
+      stmt.run(id, userId, consentType, consentText, metadataStr);
+    }
+
+    const updated = await this.getVoiceConsent(userId, consentType);
+    if (!updated) {
+      throw new Error("Failed to grant voice consent");
+    }
+    return updated;
+  }
+
+  async revokeVoiceConsent(userId: string, consentType: string): Promise<boolean> {
+    const stmt = this.db.prepare(`
+      UPDATE voice_consent 
+      SET granted = 0, revoked_at = CURRENT_TIMESTAMP 
+      WHERE user_id = ? AND consent_type = ?
+    `);
+    const result = stmt.run(userId, consentType);
+    return result.changes > 0;
+  }
+
+  async hasVoiceConsent(userId: string, consentType: string): Promise<boolean> {
+    const consent = await this.getVoiceConsent(userId, consentType);
+    return consent !== null && consent.granted && !consent.revokedAt;
   }
 
   // Helper method to close database connection

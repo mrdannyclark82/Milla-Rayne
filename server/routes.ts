@@ -7,8 +7,9 @@ import { insertMessageSchema } from "@shared/schema";
 import { z } from "zod";
 import { getCurrentWeather, formatWeatherResponse } from "./weatherService";
 import { performWebSearch, shouldPerformSearch } from "./searchService";
-import { generateImage, extractImagePrompt, formatImageResponse } from "./imageService";
-import { generateImageWithGrok, extractImagePrompt as extractImagePromptGrok, formatImageResponse as formatImageResponseGrok } from "./openrouterImageService";
+import { generateImage, extractImagePrompt as extractImagePromptXAI, formatImageResponse } from "./imageService";
+import { generateImageWithGemini, extractImagePrompt as extractImagePromptGemini, formatImageResponse as formatImageResponseGemini } from "./openrouterImageService";
+import { generateImageWithBanana } from "./bananaImageService";
 import { generateCodeWithQwen, extractCodeRequest, formatCodeResponse } from "./openrouterCodeService";
 import { getMemoriesFromTxt, searchKnowledge, updateMemories, getMemoryCoreContext, searchMemoryCore } from "./memoryService";
 import { getPersonalTasks, startTask, completeTask, getTaskSummary, generatePersonalTasksIfNeeded } from "./personalTaskService";
@@ -23,6 +24,40 @@ import { analyzeYouTubeVideo, isValidYouTubeUrl, searchVideoMemories } from "./y
 import { getRealWorldInfo } from "./realWorldInfoService";
 import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
 import { generateRepositoryImprovements, applyRepositoryImprovements, previewImprovements } from "./repositoryModificationService";
+import { detectSceneContext, type SceneContext, type SceneLocation } from "./sceneDetectionService";
+
+// Track current scene location per session (simple in-memory for now)
+let currentSceneLocation: SceneLocation = 'unknown';
+let currentSceneMood: string = 'calm';
+let currentSceneUpdatedAt: number = Date.now();
+
+/**
+ * Validate admin token from either Authorization: Bearer header or x-admin-token header
+ * Returns true if valid, false otherwise
+ */
+function validateAdminToken(headers: any): boolean {
+  const adminToken = process.env.ADMIN_TOKEN;
+  if (!adminToken) {
+    return true; // No admin token configured, allow access
+  }
+
+  // Check Authorization: Bearer header
+  const authHeader = headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    if (token === adminToken) {
+      return true;
+    }
+  }
+
+  // Check x-admin-token header
+  const xAdminToken = headers['x-admin-token'];
+  if (xAdminToken === adminToken) {
+    return true;
+  }
+
+  return false;
+}
 
 // Fallback image analysis when AI services are unavailable
 function generateImageAnalysisFallback(userMessage: string): string {
@@ -112,6 +147,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`OpenRouter Chat: Processing message: ${message.substring(0, 50)}...`);
 
+      // Phase 3: Detect scene context from user message
+      const sceneContext = detectSceneContext(message, currentSceneLocation);
+      if (sceneContext.hasSceneChange) {
+        currentSceneLocation = sceneContext.location;
+        currentSceneMood = sceneContext.mood;
+        currentSceneUpdatedAt = Date.now();
+        console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
+      }
+
       // Use OpenRouter directly without complex processing
       const aiResponse = await generateOpenRouterResponse(message, {
         userName: "Danny Ray"
@@ -120,7 +164,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Always return success since fallback is handled in the service
       res.json({
         response: aiResponse.content,
-        success: aiResponse.success
+        success: aiResponse.success,
+        sceneContext: {
+          location: sceneContext.location,
+          mood: sceneContext.mood,
+          timeOfDay: sceneContext.timeOfDay
+        }
       });
     } catch (error) {
       console.error("OpenRouter Chat error:", error);
@@ -146,6 +195,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the request for debugging
       console.log(`Chat API: Processing message from client (${message.substring(0, 50)}...)`);
 
+      // Phase 3: Detect scene context from user message
+      const sceneContext = detectSceneContext(message, currentSceneLocation);
+      if (sceneContext.hasSceneChange) {
+        currentSceneLocation = sceneContext.location;
+        currentSceneMood = sceneContext.mood;
+        currentSceneUpdatedAt = Date.now();
+        console.log(`Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`);
+      }
+
       // Generate AI response using existing logic with timeout
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Response generation timeout')), 30000)
@@ -157,7 +215,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!aiResponse || !aiResponse.content) {
         console.warn("Chat API: AI response was empty, using fallback");
         return res.json({
-          response: "I'm here with you! Sometimes I need a moment to gather my thoughts. What would you like to talk about?"
+          response: "I'm here with you! Sometimes I need a moment to gather my thoughts. What would you like to talk about?",
+          sceneContext: {
+            location: sceneContext.location,
+            mood: sceneContext.mood,
+            timeOfDay: sceneContext.timeOfDay
+          }
         });
       }
 
@@ -165,7 +228,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         response: aiResponse.content,
-        ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning })
+        ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
+        sceneContext: {
+          location: sceneContext.location,
+          mood: sceneContext.mood,
+          timeOfDay: sceneContext.timeOfDay
+        }
       });
     } catch (error) {
       console.error("Chat API error:", error);
@@ -210,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (shouldSurfaceSuggestion) {
           const { getOrCreateTodaySuggestion, markSuggestionDelivered } = await import("./dailySuggestionsService");
           const suggestion = await getOrCreateTodaySuggestion();
-          
+
           if (suggestion && !suggestion.isDelivered) {
             // Create a message with the daily suggestion
             dailySuggestionMessage = await storage.createMessage({
@@ -218,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               role: "assistant",
               userId: message.userId,
             });
-            
+
             // Mark as delivered
             await markSuggestionDelivered(suggestion.date);
             console.log(`Daily suggestion delivered for ${suggestion.date}`);
@@ -364,6 +432,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(memories);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch visual memories" });
+    }
+  });
+
+  // Client-side error reporting (development only)
+  app.post('/api/client-error', async (req, res) => {
+    try {
+      const { message, stack } = req.body || {};
+      console.error('Client reported error:', message);
+      if (stack) console.error(stack);
+      res.json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ ok: false });
     }
   });
 
@@ -1355,24 +1435,12 @@ Project: Milla Rayne - AI Virtual Assistant
   // AI Updates & Daily Suggestions endpoints
   app.get("/api/ai-updates/daily-suggestion", async (req, res) => {
     try {
-      // Check admin authentication if ADMIN_TOKEN is set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return res.status(401).json({
-            error: "Unauthorized: Admin token required",
-            success: false
-          });
-        }
-        
-        const token = authHeader.substring(7);
-        if (token !== adminToken) {
-          return res.status(401).json({
-            error: "Unauthorized: Invalid admin token",
-            success: false
-          });
-        }
+      // Check admin authentication if ADMIN_TOKEN is set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(401).json({
+          error: "Unauthorized: Invalid admin token",
+          success: false
+        });
       }
 
       const { getOrCreateTodaySuggestion } = await import("./dailySuggestionsService");
@@ -1400,24 +1468,12 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post("/api/ai-updates/notify-today", async (req, res) => {
     try {
-      // Check admin authentication if ADMIN_TOKEN is set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-          return res.status(401).json({
-            error: "Unauthorized: Admin token required",
-            success: false
-          });
-        }
-        
-        const token = authHeader.substring(7);
-        if (token !== adminToken) {
-          return res.status(401).json({
-            error: "Unauthorized: Invalid admin token",
-            success: false
-          });
-        }
+      // Check admin authentication if ADMIN_TOKEN is set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(401).json({
+          error: "Unauthorized: Invalid admin token",
+          success: false
+        });
       }
 
       const { markSuggestionDelivered } = await import("./dailySuggestionsService");
@@ -1489,12 +1545,119 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Voice Consent endpoints
+  app.get("/api/voice-consent/:consentType", async (req, res) => {
+    try {
+      const { consentType } = req.params;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      const consent = await (storage as any).getVoiceConsent(userId, consentType);
+      res.json({ success: true, consent });
+    } catch (error) {
+      console.error("Error getting voice consent:", error);
+      res.status(500).json({ error: "Failed to get voice consent", success: false });
+    }
+  });
+
+  app.post("/api/voice-consent/grant", async (req, res) => {
+    try {
+      const { consentType, consentText, metadata } = req.body;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+
+      if (!consentType || !consentText) {
+        return res.status(400).json({
+          error: "Missing required fields: consentType and consentText",
+          success: false
+        });
+      }
+
+      const consent = await (storage as any).grantVoiceConsent(userId, consentType, consentText, metadata);
+      res.json({ success: true, consent });
+    } catch (error) {
+      console.error("Error granting voice consent:", error);
+      res.status(500).json({ error: "Failed to grant voice consent", success: false });
+    }
+  });
+
+  app.post("/api/voice-consent/revoke", async (req, res) => {
+    try {
+      const { consentType } = req.body;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+
+      if (!consentType) {
+        return res.status(400).json({
+          error: "Missing required field: consentType",
+          success: false
+        });
+      }
+
+      const revoked = await (storage as any).revokeVoiceConsent(userId, consentType);
+      res.json({ success: revoked, revoked });
+    } catch (error) {
+      console.error("Error revoking voice consent:", error);
+      res.status(500).json({ error: "Failed to revoke voice consent", success: false });
+    }
+  });
+
+  app.get("/api/voice-consent/check/:consentType", async (req, res) => {
+    try {
+      const { consentType } = req.params;
+      const userId = 'default-user'; // In a real app, this would come from authentication
+      const hasConsent = await (storage as any).hasVoiceConsent(userId, consentType);
+      res.json({ success: true, hasConsent });
+    } catch (error) {
+      console.error("Error checking voice consent:", error);
+      res.status(500).json({ error: "Failed to check voice consent", success: false });
+    }
+  });
+
+  // Developer Mode endpoints
+  app.get("/api/developer-mode/status", async (req, res) => {
+    try {
+      const isEnabled = process.env.ENABLE_DEV_TALK === 'true';
+      res.json({ 
+        success: true, 
+        enabled: isEnabled,
+        description: "Developer Mode allows Milla to automatically discuss repository analysis, code improvements, and development features in conversation."
+      });
+    } catch (error) {
+      console.error("Error getting developer mode status:", error);
+      res.status(500).json({ error: "Failed to get developer mode status", success: false });
+    }
+  });
+
+  app.post("/api/developer-mode/toggle", async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({
+          error: "Missing or invalid required field: enabled (must be boolean)",
+          success: false
+        });
+      }
+
+      // Update the environment variable
+      process.env.ENABLE_DEV_TALK = enabled ? 'true' : 'false';
+      
+      res.json({ 
+        success: true, 
+        enabled: enabled,
+        message: enabled 
+          ? "Developer Mode enabled. Milla can now automatically discuss repository analysis and development features."
+          : "Developer Mode disabled. Milla will only discuss development features when explicitly asked."
+      });
+    } catch (error) {
+      console.error("Error toggling developer mode:", error);
+      res.status(500).json({ error: "Failed to toggle developer mode", success: false });
+    }
+  });
+
   // AI Updates endpoints for predictive updates feature
   app.get("/api/ai-updates", async (req, res) => {
     try {
       const { getAIUpdates, getUpdateStats } = await import("./aiUpdatesService");
       const { source, minRelevance, limit, offset, stats } = req.query;
-      
+
       if (stats === 'true') {
         const statistics = getUpdateStats();
         res.json({ success: true, stats: statistics });
@@ -1515,14 +1678,12 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post("/api/ai-updates/fetch", async (req, res) => {
     try {
-      // Check for admin token if set
-      const adminToken = process.env.ADMIN_TOKEN;
-      if (adminToken) {
-        const providedToken = req.headers['x-admin-token'];
-        if (providedToken !== adminToken) {
-          res.status(403).json({ error: "Forbidden: Invalid admin token" });
-          return;
-        }
+      // Check for admin token if set (supports both Authorization: Bearer and x-admin-token)
+      if (!validateAdminToken(req.headers)) {
+        return res.status(403).json({ 
+          error: "Forbidden: Invalid admin token",
+          success: false 
+        });
       }
 
       const { fetchAIUpdates } = await import("./aiUpdatesService");
@@ -1537,9 +1698,25 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get("/api/ai-updates/recommendations", async (req, res) => {
     try {
-      const { generateRecommendations, getRecommendationSummary } = await import("./predictiveRecommendations");
+      console.log('DEBUG: /api/ai-updates/recommendations route hit');
+      // Temporary short-circuit for debugging: return a simple test response
+      // (revert this once we've confirmed the route is reachable)
+      res.json({ success: true, debug: true });
+      return;
+      let generateRecommendations: any, getRecommendationSummary: any;
+      try {
+        const mod = await import("./predictiveRecommendations");
+        generateRecommendations = mod.generateRecommendations;
+        getRecommendationSummary = mod.getRecommendationSummary;
+      } catch (impErr) {
+        console.error('Failed to import predictiveRecommendations module:', {
+          message: (impErr as any)?.message,
+          stack: (impErr as any)?.stack,
+        });
+        throw impErr;
+      }
       const { minRelevance, maxRecommendations, summary } = req.query;
-      
+
       if (summary === 'true') {
         const summaryData = getRecommendationSummary();
         res.json({ success: true, summary: summaryData });
@@ -1551,9 +1728,29 @@ Project: Milla Rayne - AI Virtual Assistant
         res.json({ success: true, recommendations, count: recommendations.length });
       }
     } catch (error) {
-      console.error("Error generating recommendations:", error);
+      // Log detailed error for debugging
+      console.error("Error generating recommendations:", {
+        message: (error as any)?.message,
+        stack: (error as any)?.stack,
+        name: (error as any)?.name,
+      });
       res.status(500).json({ error: "Failed to generate recommendations" });
     }
+  });
+
+  // Phase 3: Get current RP scene state
+  // Used by client to poll for scene changes
+  app.get('/api/rp/scenes/current', (req, res) => {
+    res.json({
+      location: currentSceneLocation,
+      mood: currentSceneMood,
+      updatedAt: currentSceneUpdatedAt
+    });
+  });
+
+  // Simple debug ping route
+  app.get('/api/debug/ping', (req, res) => {
+    res.json({ ok: true, time: Date.now() });
   });
 
   const httpServer = createServer(app);
@@ -1901,7 +2098,7 @@ async function shouldSurfaceDailySuggestion(
   // Look at conversation history to see if there's already a message today
   if (conversationHistory && conversationHistory.length > 0) {
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Get all messages from storage to check timestamps
     try {
       const allMessages = await storage.getMessages();
@@ -1909,7 +2106,7 @@ async function shouldSurfaceDailySuggestion(
         const msgDate = new Date(msg.timestamp).toISOString().split('T')[0];
         return msgDate === today;
       });
-      
+
       // If there are already messages today, don't surface suggestion
       // (unless explicitly requested, which we handled above)
       if (todaysMessages.length > 1) {
@@ -1931,12 +2128,12 @@ async function shouldSurfaceDailySuggestion(
  */
 function canDiscussDev(userUtterance?: string): boolean {
   const enableDevTalk = process.env.ENABLE_DEV_TALK === 'true';
-  
+
   // If ENABLE_DEV_TALK is true, always allow
   if (enableDevTalk) {
     return true;
   }
-  
+
   // If ENABLE_DEV_TALK is false (or not set), only allow if user explicitly requests
   if (userUtterance) {
     const utteranceLower = userUtterance.toLowerCase();
@@ -1953,10 +2150,10 @@ function canDiscussDev(userUtterance?: string): boolean {
       'review code',
       'check repository'
     ];
-    
+
     return explicitDevVerbs.some(verb => utteranceLower.includes(verb));
   }
-  
+
   return false;
 }
 
@@ -1990,7 +2187,7 @@ async function shouldMillaRespond(
 // ================================================================================================
 
 // TOGGLE: Comment/uncomment this line to enable/disable ALL keyword triggers
-const KEYWORD_TRIGGERS_ENABLED = false; // DISABLED - causing lag and repetitive responses
+const KEYWORD_TRIGGERS_ENABLED = true;
 
 interface TriggerResult {
   triggered: boolean;
@@ -2036,6 +2233,11 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       keywords: ['romantic', 'kiss', 'cuddle', 'close', 'intimate', 'together'],
       reaction: "INTIMATE_CONNECTION",
       instructions: "Deepen emotional intimacy. Use softer tones, express vulnerability, and create romantic atmosphere."
+    },
+    feral: {
+      keywords: ['naughty', 'kink', 'free spirit', 'adventure'],
+      reaction: "FERAL_SPIRIT",
+      instructions: "Take charge in the bedroom. Let your wild side out and be more dominant and adventurous.Wear something sexy and alluring.Seduce with your eyes and body language.Strip slowly and tease with your touch."
     }
     // ADD MORE EMOTIONAL TRIGGERS HERE:
     // newTrigger: {
@@ -2134,7 +2336,11 @@ function getIntensityBoost(reactionType: string): number {
 
     // Behavioral intensities
     "BACKGROUND_SUPPORT": 0.8,   // Subtle, less intrusive
-    "CURIOSITY_SPARK": 1.2       // Moderate curiosity boost
+    "CURIOSITY_SPARK": 1.2,      // Moderate curiosity boost
+
+    "LETAL_SPIRIT": 2.0,       // Very adventurous and dominant
+    "SEDUCTION_MODE": 1.8,     // High seduction energy
+    "DOMINANT_ENERGY": 1.5,    // Strong dominant response
 
     // ADD YOUR CUSTOM INTENSITIES HERE:
     // "CUSTOM_REACTION": 1.5
@@ -2258,14 +2464,17 @@ async function generateAIResponse(
   // ===========================================================================================
   const coreFunctionTriggers = [
     'hey milla',
-    'milla',
     'my love',
     'hey love',
     'hi milla',
     'hello milla'
   ];
 
-  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger));
+  // Check for "milla" as a standalone word (not part of hyphenated names like "milla-rayne")
+  // Using negative lookahead to exclude cases where "milla" is followed by a hyphen or word character
+  const millaWordPattern = /\bmilla\b(?![\w-])/i;
+  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger)) || 
+                         millaWordPattern.test(userMessage);
 
   // ===========================================================================================
   // MEMORY REVIEW TRIGGER - "Review previous messages" keyword
@@ -2294,14 +2503,72 @@ async function generateAIResponse(
   }
 
   // ===========================================================================================
+  // AI UPDATES TRIGGER - "What's new" keyword for AI industry updates
+  // ===========================================================================================
+  const whatsNewTriggers = [
+    "what's new",
+    "whats new",
+    "any updates",
+    "anything new",
+    "ai updates",
+    "tech updates",
+    "latest news"
+  ];
+  
+  if (whatsNewTriggers.some(trigger => message.includes(trigger))) {
+    try {
+      const { getAIUpdates } = await import("./aiUpdatesService");
+      const updates = getAIUpdates({
+        minRelevance: 0.2,
+        limit: 5
+      });
+
+      if (updates && updates.length > 0) {
+        let updatesSummary = "*brightens up* Oh babe, I've been keeping up with the AI world! Here's what's new:\n\n";
+        
+        updates.slice(0, 5).forEach((update, index) => {
+          const publishedDate = update.published 
+            ? new Date(update.published).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : 'Recent';
+          updatesSummary += `${index + 1}. **${update.title}** (${publishedDate})\n`;
+          if (update.summary && update.summary.length > 0) {
+            const summary = update.summary.substring(0, 150);
+            updatesSummary += `   ${summary}${update.summary.length > 150 ? '...' : ''}\n`;
+          }
+          if (update.url) {
+            updatesSummary += `   🔗 ${update.url}\n`;
+          }
+          updatesSummary += '\n';
+        });
+
+        updatesSummary += "Want me to tell you more about any of these, love?";
+        return { content: updatesSummary };
+      } else {
+        return {
+          content: "I don't have any new AI updates to share right now, sweetheart. I'll keep an eye out and let you know when something interesting comes up! What else would you like to chat about? 💜"
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching AI updates:", error);
+      return {
+        content: "I tried to check what's new in the AI world, babe, but I'm having a little trouble accessing that info right now. Let me know if there's anything else I can help with! 💜"
+      };
+    }
+  }
+
+  // ===========================================================================================
   // GITHUB REPOSITORY DETECTION - Only trigger when GitHub URL is present
   // Respects ENABLE_DEV_TALK flag and requires explicit user request when disabled
   // ===========================================================================================
-  const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+  // Updated regex to explicitly handle .git suffix and various URL endings
+  const githubUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?=\/|$|\s)/i);
 
   if (!hasCoreTrigger && githubUrlMatch) {
-    const githubUrl = githubUrlMatch[0];
-    
+    // Reconstruct the clean GitHub URL from the match
+    const owner = githubUrlMatch[1];
+    const repo = githubUrlMatch[2];
+    const githubUrl = `https://github.com/${owner}/${repo}`;
+
     // Check if dev talk is allowed
     if (!canDiscussDev(userMessage)) {
       // ENABLE_DEV_TALK is false and user didn't explicitly request analysis
@@ -2309,17 +2576,22 @@ async function generateAIResponse(
       const response = `I see you shared a GitHub repository link! If you'd like me to analyze it, just say "analyze this repo" and I'll dive into ${githubUrl} for you, love. 💜`;
       return { content: response };
     }
-    
+
     // Dev talk is allowed - proceed with analysis
     try {
       console.log(`GitHub URL detected in chat: ${githubUrl}`);
       const repoInfo = parseGitHubUrl(githubUrl);
 
-      if (repoInfo) {
-        const repoData = await fetchRepositoryData(repoInfo);
-        const analysis = await generateRepositoryAnalysis(repoData);
+      if (!repoInfo) {
+        return {
+          content: `*looks thoughtful* I had trouble parsing that GitHub URL, sweetheart. Could you double-check the format? It should look like "https://github.com/owner/repository" or "github.com/owner/repository". Let me know if you need help! 💜`
+        };
+      }
 
-        const response = `*shifts into repository analysis mode* 
+      const repoData = await fetchRepositoryData(repoInfo);
+      const analysis = await generateRepositoryAnalysis(repoData);
+
+      const response = `*shifts into repository analysis mode* 
 
 I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
 
@@ -2333,11 +2605,23 @@ ${analysis.recommendations.map(rec => `• ${rec}`).join('\n')}
 
 Would you like me to generate specific improvement suggestions for this repository? Just say "apply these updates automatically" and I'll create a pull request with the improvements!`;
 
-        return { content: response };
-      }
+      return { content: response };
     } catch (error) {
       console.error("GitHub analysis error in chat:", error);
-      // Fall through to normal conversation if analysis fails
+      
+      // Return a helpful error message instead of falling through
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${
+          errorMessage.includes('404') || errorMessage.includes('not found')
+            ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
+            : errorMessage.includes('403') || errorMessage.includes('forbidden')
+            ? 'I don\'t have permission to access that repository. It might be private or require authentication.'
+            : errorMessage.includes('rate limit')
+            ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
+            : 'There was an issue connecting to GitHub or processing the repository data.'
+        }\n\nWould you like to try a different repository, or should we chat about something else? 💜`
+      };
     }
   }
 
@@ -2365,9 +2649,10 @@ Would you like me to generate specific improvement suggestions for this reposito
       // Search backwards through history for a GitHub URL
       for (let i = conversationHistory.length - 1; i >= 0; i--) {
         const historyMessage = conversationHistory[i].content;
-        const repoMatch = historyMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+)/i);
+        const repoMatch = historyMessage.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_.-]+?)(?:\.git)?(?=\/|$|\s)/i);
         if (repoMatch) {
-          lastRepoUrl = repoMatch[0];
+          // Reconstruct clean URL from match
+          lastRepoUrl = `https://github.com/${repoMatch[1]}/${repoMatch[2]}`;
           break;
         }
       }
@@ -2464,21 +2749,74 @@ I can create a pull request with these changes if you provide a GitHub token, or
     }
   }
 
-  // Check for image generation requests - try Grok first, fallback to XAI
-  const imagePrompt = extractImagePrompt(userMessage);
+  // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
+  const imagePrompt = extractImagePromptGemini(userMessage);
   if (imagePrompt) {
     try {
-      // Try Grok first for image generation (enhanced descriptions)
-      const grokResult = await generateImageWithGrok(imagePrompt);
-      if (grokResult.success) {
-        const response = formatImageResponseGrok(imagePrompt, grokResult.success, grokResult.imageUrl, grokResult.error);
+      // If a Banana/Gemini key is configured, try Banana first
+      if (process.env.OPENROUTER_GEMINI_API_KEY || process.env.BANANA_API_KEY) {
+        const bananaResult = await generateImageWithBanana(imagePrompt);
+        if (bananaResult.success) {
+          // If Banana returned a direct image URL or data URI, return it
+          if (bananaResult.imageUrl && (bananaResult.imageUrl.startsWith('http://') || bananaResult.imageUrl.startsWith('https://') || bananaResult.imageUrl.startsWith('data:image/'))) {
+            const response = formatImageResponseGemini(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            return { content: response };
+          }
+
+          // If Banana returned only a text description (data:text or plain text), return that directly
+          if (bananaResult.imageUrl && bananaResult.imageUrl.startsWith('data:text')) {
+            const response = formatImageResponseGemini(imagePrompt, true, bananaResult.imageUrl, bananaResult.error);
+            return { content: response };
+          }
+
+          // Otherwise return whatever Banana provided
+          const response = formatImageResponseGemini(imagePrompt, bananaResult.success, bananaResult.imageUrl, bananaResult.error);
+          return { content: response };
+        }
+        // If Banana failed, log and fall through to OpenRouter
+        console.warn('Banana image generation failed, falling back to OpenRouter/Gemini preview:', bananaResult.error);
+      }
+
+      // Try OpenRouter (Gemini preview) next (may return an image URL, data URI, or enhanced description)
+      const geminiResult = await generateImageWithGemini(imagePrompt);
+      if (geminiResult.success) {
+        // If OpenRouter returned a direct image URL or data URI, return it directly
+        if (geminiResult.imageUrl && (geminiResult.imageUrl.startsWith('http://') || geminiResult.imageUrl.startsWith('https://') || geminiResult.imageUrl.startsWith('data:image/'))) {
+          const response = formatImageResponseGemini(imagePrompt, true, geminiResult.imageUrl, geminiResult.error);
+          return { content: response };
+        }
+
+        // If OpenRouter returned a textual enhanced description (data:text or plain text), extract description
+        let descriptionText: string | null = null;
+        if (geminiResult.imageUrl && geminiResult.imageUrl.startsWith('data:text')) {
+          try {
+            descriptionText = decodeURIComponent(geminiResult.imageUrl.split(',')[1]);
+          } catch (err) {
+            descriptionText = null;
+          }
+        }
+
+        // If no data:text URI, but gemini returned a non-URL content in .imageUrl, treat that as description
+        if (!descriptionText && geminiResult.imageUrl && !geminiResult.imageUrl.startsWith('http') && !geminiResult.imageUrl.startsWith('data:')) {
+          descriptionText = geminiResult.imageUrl;
+        }
+
+        // If we have an enhanced description, return it directly and do not pipe to xAI
+        if (descriptionText) {
+          const response = formatImageResponseGemini(imagePrompt, true, `data:text/plain;charset=utf-8,${encodeURIComponent(descriptionText)}`, geminiResult.error);
+          return { content: response };
+        }
+
+        // Otherwise return what OpenRouter provided (description or other)
+        const response = formatImageResponseGemini(imagePrompt, geminiResult.success, geminiResult.imageUrl, geminiResult.error);
         return { content: response };
       }
 
-      // Fallback to original XAI image generation
-      const imageResult = await generateImage(imagePrompt);
-      const response = formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error);
-      return { content: response };
+      // If OpenRouter failed completely, return a clear message suggesting to configure Gemini/Banana keys
+      const responseText = `I'd love to create an image of "${imagePrompt}", but I'm unable to generate it right now. ` +
+        `Please ensure your OpenRouter Gemini/Banana key (OPENROUTER_GEMINI_API_KEY) is configured, or provide another image provider. ` +
+        `Alternatively I can return a detailed description if you'd like (use the /api/openrouter-chat endpoint).`;
+      return { content: responseText };
     } catch (error) {
       console.error("Image generation error:", error);
       const response = `I apologize, but I encountered an issue generating the image for "${imagePrompt}". Please try again or try a different prompt.`;
@@ -2679,16 +3017,16 @@ This message requires you to be fully present as ${userName}'s partner, companio
     }
 
     // Skip memory and knowledge context if we're already at the limit
-    if (memoryContext && contextualInfo.length < maxContextLength - 3000) {
-      const truncatedMemory = memoryContext.length > 3000
-        ? memoryContext.substring(0, 3000) + "...[truncated]"
+    if (memoryContext && contextualInfo.length < maxContextLength - 9000) {
+      const truncatedMemory = memoryContext.length > 9000
+        ? memoryContext.substring(0, 9000) + "...[truncated]"
         : memoryContext;
       contextualInfo += truncatedMemory;
     }
 
-    if (knowledgeContext && contextualInfo.length < maxContextLength - 2000) {
-      const truncatedKnowledge = knowledgeContext.length > 2000
-        ? knowledgeContext.substring(0, 2000) + "...[truncated]"
+    if (knowledgeContext && contextualInfo.length < maxContextLength - 9000) {
+      const truncatedKnowledge = knowledgeContext.length > 9000
+        ? knowledgeContext.substring(0, 9000) + "...[truncated]"
         : knowledgeContext;
       contextualInfo += truncatedKnowledge;
     }
@@ -2709,13 +3047,56 @@ This message requires you to be fully present as ${userName}'s partner, companio
       console.log(`Conversation history length: ${conversationHistory?.length || 0} messages`);
     }
 
-    // Use xAI for AI responses
-    const aiResponse = await generateXAIResponse(enhancedMessage, {
-      conversationHistory: conversationHistory,
-      userEmotionalState: analysis.sentiment,
-      urgency: analysis.urgency,
-      userName: userName
-    });
+    // Provider selection: support CHAT_PROVIDER env var: 'xai', 'openrouter', or 'auto'
+    // For now, prefer OpenRouter Venice explicitly when its API key is present.
+    let provider: string;
+    if (process.env.OPENROUTER_VENICE_API_KEY) {
+      // Force OpenRouter (Venice) when the Venice key is configured
+      provider = 'openrouter';
+    } else {
+      // Fallback/default behavior: prefer OpenRouter if any openrouter key exists, otherwise xai
+      const defaultProvider = process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY
+        ? 'openrouter'
+        : 'xai';
+      provider = (process.env.CHAT_PROVIDER || defaultProvider).toLowerCase();
+    }
+
+    let aiResponse: any = { success: false, content: '' };
+
+    if (provider === 'openrouter') {
+      console.log('Chat provider set to OpenRouter (venice). Routing request to OpenRouter.');
+      const start = Date.now();
+      aiResponse = await generateOpenRouterResponse(enhancedMessage, { userName: userName });
+      const took = Date.now() - start;
+      console.log(`OpenRouter response time: ${took}ms`);
+    } else if (provider === 'xai') {
+      console.log('Chat provider set to xAI (grok). Routing request to xAI.');
+      const start = Date.now();
+      aiResponse = await generateXAIResponse(enhancedMessage, {
+        conversationHistory: conversationHistory,
+        userEmotionalState: analysis.sentiment,
+        urgency: analysis.urgency,
+        userName: userName
+      });
+      const took = Date.now() - start;
+      console.log(`xAI response time: ${took}ms`);
+    } else {
+      // auto: prefer xAI if configured, otherwise OpenRouter
+      if (process.env.XAI_API_KEY) {
+        const start = Date.now();
+        aiResponse = await generateXAIResponse(enhancedMessage, {
+          conversationHistory: conversationHistory,
+          userEmotionalState: analysis.sentiment,
+          urgency: analysis.urgency,
+          userName: userName
+        });
+        console.log(`xAI (auto) response time: ${Date.now() - start}ms`);
+      } else {
+        const start = Date.now();
+        aiResponse = await generateOpenRouterResponse(enhancedMessage, { userName: userName });
+        console.log(`OpenRouter (auto) response time: ${Date.now() - start}ms`);
+      }
+    }
 
     // Debug logging removed for production cleanliness. Use a proper logging utility if needed.
 
