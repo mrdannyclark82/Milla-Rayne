@@ -36,9 +36,9 @@ function normalizeLocation(location?: string): SceneLocation {
   if (normalized.includes('kitchen')) return 'kitchen';
   if (normalized.includes('dining')) return 'dining_room';
   if (normalized.includes('bedroom') && !normalized.includes('guest')) return 'bedroom';
-  if (normalized.includes('guest') || normalized.includes('guestroom')) return 'bedroom'; // Use guest room overlay
+  if (normalized.includes('guest') || normalized.includes('guestroom')) return 'bedroom'; // Will be handled by context check
   if (normalized.includes('bathroom') || normalized.includes('bath')) return 'bathroom';
-  if (normalized.includes('office') || normalized.includes('workspace') || normalized.includes('study')) return 'bedroom'; // Use workspace overlay
+  if (normalized.includes('office') || normalized.includes('workspace') || normalized.includes('study')) return 'bedroom'; // Will be handled by context check
   if (normalized.includes('outdoor') || normalized.includes('outside') || normalized.includes('porch') || normalized.includes('garden')) return 'outdoor';
   if (normalized.includes('car') || normalized.includes('vehicle')) return 'car';
   if (normalized.includes('door') || normalized.includes('entrance')) return 'front_door';
@@ -81,7 +81,13 @@ export const RoomOverlay: React.FC<RoomOverlayProps> = ({
       case 'dining_room':
         return <DiningOverlay {...overlayProps} />;
       case 'bedroom':
-        // Check context for guest room hint
+        // Check context for workspace/office
+        if (rpContext.location?.toLowerCase().includes('office') || 
+            rpContext.location?.toLowerCase().includes('workspace') ||
+            rpContext.location?.toLowerCase().includes('study')) {
+          return <WorkspaceOverlay {...overlayProps} />;
+        }
+        // Check context for guest room
         if (rpContext.location?.toLowerCase().includes('guest')) {
           return <GuestRoomOverlay {...overlayProps} />;
         }
@@ -91,12 +97,6 @@ export const RoomOverlay: React.FC<RoomOverlayProps> = ({
       case 'outdoor':
         return <OutdoorsOverlay {...overlayProps} />;
       default:
-        // For workspace/office - check if context hints at it
-        if (rpContext.location?.toLowerCase().includes('office') || 
-            rpContext.location?.toLowerCase().includes('workspace') ||
-            rpContext.location?.toLowerCase().includes('study')) {
-          return <WorkspaceOverlay {...overlayProps} />;
-        }
         return null;
     }
   };
@@ -109,7 +109,7 @@ export const RoomOverlay: React.FC<RoomOverlayProps> = ({
         left: 0,
         width: '66.6667vw', // Left 2/3
         height: '100vh',
-        zIndex: -5, // Between background (-10) and stage (5)
+        zIndex: -7, // Between background (-10) and stage (-5)
         pointerEvents: 'none'
       }}
       aria-hidden="true"
