@@ -30,7 +30,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   timeOfDay: propTimeOfDay, // Phase 3: Optional time override
   region = 'full' // Visual V1: Default to full viewport
 }) => {
-  const [capabilities] = useState(() => detectDeviceCapabilities());
+  const [capabilities, setCapabilities] = useState(() => detectDeviceCapabilities());
   const [autoTimeOfDay, setAutoTimeOfDay] = useState(getCurrentTimeOfDay());
   const [settings, setSettings] = useState<SceneSettings>(() => 
     propSettings || loadSceneSettings()
@@ -38,6 +38,28 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
 
   // Use prop timeOfDay if provided, otherwise use auto-detected
   const timeOfDay = propTimeOfDay || autoTimeOfDay;
+
+  // Live listener for reduced-motion changes (DevTools emulation support)
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    
+    const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      setCapabilities(prev => ({
+        ...prev,
+        prefersReducedMotion: e.matches
+      }));
+    };
+
+    // Initial check
+    handleChange(mediaQuery);
+
+    // Listen for changes
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
 
   // Update time of day every minute
   useEffect(() => {
@@ -95,7 +117,8 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
           left: 0,
           width: '66.6667vw',
           height: '100vh',
-          zIndex: -10
+          zIndex: -10,
+          pointerEvents: 'none' as const
         }
       : {};
     
@@ -105,7 +128,8 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
           className="fixed inset-0 -z-10"
           style={{
             background: `linear-gradient(135deg, ${simpleScene.colors.join(', ')})`,
-            ...regionStyle
+            ...regionStyle,
+            pointerEvents: 'none'
           }}
           aria-hidden="true"
           role="presentation"

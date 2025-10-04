@@ -17,6 +17,7 @@ import { SceneLocation, SceneMood, TimeOfDay } from '@/types/scene';
 import { loadSceneSettings } from '@/utils/sceneSettingsStore';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
 import { getCurrentTimeOfDay } from '@/utils/scenePresets';
+import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 
 function App() {
   console.log('App render start');
@@ -51,6 +52,9 @@ function App() {
   // Visual V1: Track time of day and reduced motion for Milla visual
   const [currentTimeOfDay, setCurrentTimeOfDay] = useState<TimeOfDay>(() => getCurrentTimeOfDay());
   const [capabilities] = useState(() => detectDeviceCapabilities());
+
+  // Neutralize legacy background images on mount
+  useNeutralizeLegacyBackground();
 
   // Load scene settings on mount and listen for changes
   useEffect(() => {

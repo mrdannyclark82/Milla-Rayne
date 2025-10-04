@@ -58,7 +58,8 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
         width: '66.6667vw', // Left 2/3
         height: '100vh',
         zIndex: -10,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        pointerEvents: 'none' as const
       }
     : {};
 
@@ -66,7 +67,7 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
     <div
       ref={sceneRef}
       className="fixed inset-0 -z-10 overflow-hidden"
-      style={{ ...gradientStyle, ...regionStyle }}
+      style={{ ...gradientStyle, ...regionStyle, pointerEvents: 'none' }}
       aria-hidden="true"
       role="presentation"
     >
