@@ -43,30 +43,31 @@ export function extractActionMarkers(message: string): string[] {
 }
 
 /**
- * Detect scene location from action text
+ * Detect scene location from action text and full message context
  */
-export function detectLocation(action: string): SceneLocation {
+export function detectLocation(action: string, fullMessage?: string): SceneLocation {
   const actionLower = action.toLowerCase();
+  const fullLower = fullMessage ? fullMessage.toLowerCase() : actionLower;
   
   // Location keywords mapping
   const locationKeywords: Record<SceneLocation, string[]> = {
     living_room: ['living room', 'couch', 'sofa', 'tv', 'sits down', 'sits on the couch'],
-    bedroom: ['bedroom', 'bed', 'lies down', 'lays down', 'sleeping'],
+    bedroom: ['bedroom', 'bed', 'lies down', 'lays down', 'sleeping', 'go to the bedroom', 'to bed'],
     kitchen: ['kitchen', 'cooking', 'fridge', 'counter', 'stove'],
     bathroom: ['bathroom', 'shower', 'bath', 'mirror'],
     front_door: ['walks in', 'front door', 'enters', 'arrives', 'comes in', 'door'],
     dining_room: ['dining room', 'table', 'eating'],
-    outdoor: ['outside', 'garden', 'yard', 'patio', 'porch'],
+    outdoor: ['outside', 'garden', 'yard', 'patio', 'porch', 'runs outside'],
     car: ['car', 'driving', 'vehicle'],
     unknown: []
   };
   
-  // Check for each location's keywords
+  // Check for each location's keywords in action first, then full message
   for (const [location, keywords] of Object.entries(locationKeywords)) {
     if (location === 'unknown') continue;
     
     for (const keyword of keywords) {
-      if (actionLower.includes(keyword)) {
+      if (actionLower.includes(keyword) || fullLower.includes(keyword)) {
         return location as SceneLocation;
       }
     }
@@ -149,7 +150,7 @@ export function detectSceneContext(
   
   // Process the first action (most relevant)
   const primaryAction = actions[0];
-  const detectedLocation = detectLocation(primaryAction);
+  const detectedLocation = detectLocation(primaryAction, userMessage);
   const detectedMood = detectMood(primaryAction, userMessage);
   
   // Determine if there was a scene change
