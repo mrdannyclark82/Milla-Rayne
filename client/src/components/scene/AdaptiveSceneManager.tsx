@@ -101,7 +101,25 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   }, [timeOfDay, activeMood, onSceneChange]);
 
   // Disable scene if not enabled in settings
+  // Show diagnostic overlay if explicitly requested via devDebug
   if (!settings.enabled) {
+    if (settings.devDebug) {
+      return (
+        <div className="fixed inset-0 -z-10 bg-gray-900 flex items-center justify-center pointer-events-none">
+          <div className="text-center p-8 bg-black/80 border border-yellow-500/50 rounded-lg max-w-md">
+            <p className="text-yellow-400 text-sm font-mono">
+              Scene Context: Disabled
+            </p>
+            <p className="text-gray-400 text-xs mt-2">
+              Adaptive background is turned off in settings.
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Enable it in Scene Settings to see dynamic backgrounds.
+            </p>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
@@ -163,6 +181,9 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
                         settings.particleDensity !== 'off' && 
                         capabilities.gpuTier !== 'low';
 
+  // User-friendly info overlay (non-intrusive, bottom-left corner)
+  const [showInfo, setShowInfo] = useState(false);
+
   return (
     <>
       <CSSSceneRenderer
@@ -174,6 +195,35 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
         animationSpeed={settings.animationSpeed}
         region={region}
       />
+      
+      {/* Scene info indicator (optional, shows on hover) */}
+      {!settings.devDebug && (
+        <div 
+          className="fixed bottom-4 left-4 z-0 pointer-events-auto"
+          onMouseEnter={() => setShowInfo(true)}
+          onMouseLeave={() => setShowInfo(false)}
+        >
+          <div className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}>
+            <div className="bg-black/60 backdrop-blur-sm border border-white/20 rounded-lg p-2 text-xs text-white font-mono">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span>Adaptive Scene</span>
+              </div>
+              {showInfo && (
+                <div className="mt-2 pt-2 border-t border-white/20 space-y-1 text-[10px]">
+                  <div><span className="text-gray-400">Time:</span> <span className="text-yellow-300">{timeOfDay}</span></div>
+                  <div><span className="text-gray-400">Mood:</span> <span className="text-purple-300">{activeMood}</span></div>
+                  {location && location !== 'unknown' && (
+                    <div><span className="text-gray-400">Location:</span> <span className="text-blue-300">{location}</span></div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Developer debug overlay */}
       {settings.devDebug && (
         <SceneDebugOverlay
           capabilities={capabilities}
