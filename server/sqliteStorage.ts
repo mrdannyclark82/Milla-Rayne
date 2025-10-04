@@ -285,7 +285,7 @@ export class SqliteStorage implements IStorage {
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_ai_updates_source ON ai_updates(source, published DESC);
       CREATE INDEX IF NOT EXISTS idx_ai_updates_relevance ON ai_updates(relevance DESC);
-      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance DESC);
+      CREATE INDEX IF NOT EXISTS idx_suggestion_updates_priority ON suggestion_updates(priority DESC, relevance_score DESC);
       CREATE INDEX IF NOT EXISTS idx_suggestion_updates_applied ON suggestion_updates(applied_at);
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
