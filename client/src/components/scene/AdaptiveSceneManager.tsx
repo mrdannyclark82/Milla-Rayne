@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
 import { getSceneForContext, getCurrentTimeOfDay, getLocationMood } from '@/utils/scenePresets';
 import { CSSSceneRenderer } from './CSSSceneRenderer';
+import { RealisticSceneBackground } from './RealisticSceneBackground';
 import { SceneDebugOverlay } from './SceneDebugOverlay';
 import { SceneSettings, AvatarState, SceneMood, TimeOfDay, SceneLocation } from '@/types/scene';
 import { loadSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
@@ -35,6 +36,9 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   const [settings, setSettings] = useState<SceneSettings>(() => 
     propSettings || loadSceneSettings()
   );
+  
+  // User-friendly info overlay (non-intrusive, bottom-left corner)
+  const [showInfo, setShowInfo] = useState(false);
 
   // Use prop timeOfDay if provided, otherwise use auto-detected
   const timeOfDay = propTimeOfDay || autoTimeOfDay;
@@ -166,6 +170,65 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
     );
   }
 
+  // Determine which background renderer to use based on settings
+  const backgroundMode = settings.backgroundMode || 'auto';
+  const useStaticImage = backgroundMode === 'static-image' || 
+                         (backgroundMode === 'auto' && location && location !== 'unknown');
+
+  // If static image mode is requested, try to use it with CSS fallback
+  if (useStaticImage && location) {
+    return (
+      <>
+        <RealisticSceneBackground
+          location={location}
+          timeOfDay={timeOfDay}
+          region={region}
+        />
+        
+        {/* Scene info indicator (optional, shows on hover) */}
+        {!settings.devDebug && (
+          <div 
+            className="fixed bottom-4 left-4 z-0 pointer-events-auto"
+            onMouseEnter={() => setShowInfo(true)}
+            onMouseLeave={() => setShowInfo(false)}
+          >
+            <div className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}>
+              <div className="bg-black/60 backdrop-blur-sm border border-white/20 rounded-lg p-2 text-xs text-white font-mono">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                  <span>Static Background</span>
+                </div>
+                {showInfo && (
+                  <div className="mt-2 pt-2 border-t border-white/20 space-y-1 text-[10px]">
+                    <div><span className="text-gray-400">Time:</span> <span className="text-yellow-300">{timeOfDay}</span></div>
+                    <div><span className="text-gray-400">Mood:</span> <span className="text-purple-300">{activeMood}</span></div>
+                    {location && location !== 'unknown' && (
+                      <div><span className="text-gray-400">Location:</span> <span className="text-blue-300">{location}</span></div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Developer debug overlay */}
+        {settings.devDebug && (
+          <SceneDebugOverlay
+            capabilities={capabilities}
+            timeOfDay={timeOfDay}
+            mood={activeMood}
+            particlesEnabled={false}
+            parallaxEnabled={false}
+            animationSpeed={0}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Use CSS animated scene renderer (default)
+
   const sceneConfig = getSceneForContext(timeOfDay, activeMood);
 
   // Determine effective parallax intensity
@@ -180,9 +243,6 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   const showParticles = settings.enableParticles && 
                         settings.particleDensity !== 'off' && 
                         capabilities.gpuTier !== 'low';
-
-  // User-friendly info overlay (non-intrusive, bottom-left corner)
-  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <>

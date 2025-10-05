@@ -32,3 +32,13 @@ memory/*.db-wal
 # Storage audit and cleanup temporary files
 audit_report.txt
 .bfg-deletions.txt
+
+# Scene background images (keep README and .gitkeep, ignore actual images)
+# Users should add their own images - don't commit large image files to repo
+client/public/assets/scenes/*.jpg
+client/public/assets/scenes/*.jpeg
+client/public/assets/scenes/*.png
+client/public/assets/scenes/*.webp
+client/public/assets/scenes/*.gif
+!client/public/assets/scenes/README.md
+!client/public/assets/scenes/.gitkeep

@@ -43,6 +43,8 @@ export interface ParticleConfig {
   speed: number;
 }
 
+export type BackgroundMode = 'css-animated' | 'static-image' | 'auto';
+
 export interface SceneSettings {
   enabled: boolean;
   mood: SceneMood;
@@ -54,4 +56,5 @@ export interface SceneSettings {
   devDebug: boolean;
   sceneBackgroundFromRP?: boolean; // Phase 3: Mirror RP scene in background
   sceneRoomOverlaysEnabled?: boolean; // Room Overlays V1: Location silhouettes
+  backgroundMode?: BackgroundMode; // Background rendering mode: CSS animated, static image, or auto-detect
 }
