@@ -8,8 +8,7 @@ import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
 import { RoomOverlay } from '@/components/scene/RoomOverlay';
-import { RPStageAnchor } from '@/components/rp/RPStageAnchor';
-import { MillaSilhouette, VisualState } from '@/components/rp/placeholders/MillaSilhouette';
+
 import { SceneLocation, SceneMood, TimeOfDay } from '@/types/scene';
 import { loadSceneSettings } from '@/utils/sceneSettingsStore';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
@@ -291,13 +290,6 @@ function App() {
     return "sm";
   };
 
-  // Visual V1: Compute Milla visual state from voice controls
-  const getMillaVisualState = (): VisualState => {
-    if (isSpeaking) return 'speaking';
-    if (isListening) return 'listening';
-    return 'idle';
-  };
-
   return (
     <div className="min-h-screen">
       {/* Adaptive Scene Background - Phase 3: Now responds to RP scene location */}
@@ -370,14 +362,6 @@ function App() {
            
         See STATIC_BACKGROUNDS_QUICKSTART.md for full documentation.
       */}
-      <RPStageAnchor>
-        <MillaSilhouette
-          state={getMillaVisualState()}
-          timeOfDay={currentTimeOfDay}
-          framing="full"
-          reducedMotion={capabilities.prefersReducedMotion}
-        />
-      </RPStageAnchor>
 
       {/* Chat Interface - Fixed Right Side with Background */}
       <div 
@@ -473,9 +457,8 @@ function App() {
           </div>
 
           {/* Input Area - Fixed at bottom of chat */}
-          <div className="flex gap-2 items-center flex-shrink-0 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
-            <input
-              type="text"
+          <div className="flex gap-2 items-end flex-shrink-0 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+            <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={(e) => {
@@ -486,7 +469,8 @@ function App() {
               }}
               placeholder="Type your message..."
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+              className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px] max-h-[200px]"
             />
             {!isMobile && (
               <Button
