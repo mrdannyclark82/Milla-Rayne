@@ -380,7 +380,15 @@ function App() {
       </RPStageAnchor>
 
       {/* Chat Interface - Fixed Right Side with Background */}
-      <div className="fixed top-0 right-0 w-1/3 h-screen p-6 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm border-l border-white/10">
+      <div 
+        className="w-1/3 h-screen p-6 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm border-l border-white/10"
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          zIndex: 10
+        }}
+      >
         <div className="h-full flex flex-col space-y-4">
           {/* Header with Voice Toggle and Settings */}
           <div className="flex gap-2 justify-between items-center flex-shrink-0">
