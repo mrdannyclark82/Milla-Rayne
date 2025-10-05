@@ -32,6 +32,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 - **🔒 Data Encryption**: Optional field-level encryption for sensitive conversation data
 - **Modern UI**: Chat interface positioned to showcase full-screen background image
+- **🎨 Adaptive Scene Backgrounds**: Dynamic CSS animated gradients or static image backgrounds per room/location
 - **🎙️ Multi-Provider Voice**: Support for Google Cloud, Azure, ElevenLabs TTS with automatic fallback
 - **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
 - **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
@@ -161,6 +162,64 @@ Voice features work out of the box with supported browsers:
 - ⚠️ Firefox (limited support)
 
 Grant microphone permissions when prompted. See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) for troubleshooting.
+
+### Adaptive Scene Backgrounds
+
+The application supports dynamic backgrounds that adapt to the conversation context:
+
+#### Background Modes
+
+1. **CSS Animated (Default)**: Dynamic gradient animations that respond to mood, time of day, and location
+2. **Static Image**: Photo-realistic backgrounds for specific rooms/locations
+3. **Auto**: Intelligently switches between CSS and static images based on context
+
+#### Adding Custom Room Backgrounds
+
+1. **Prepare your images**:
+   - Recommended resolution: 1920x1080 or higher
+   - Format: JPG or PNG
+   - Optimize for web (target < 500KB per image)
+
+2. **Use the naming convention**:
+   ```
+   /client/public/assets/scenes/
+   ├── living_room.jpg              # Base living room image
+   ├── living_room-night.jpg        # Night time variant
+   ├── kitchen.jpg                  # Kitchen image
+   ├── bedroom-night.jpg            # Bedroom at night
+   └── ... (more rooms)
+   ```
+
+3. **Supported locations**: living_room, bedroom, kitchen, bathroom, dining_room, outdoor, car, front_door
+
+4. **Time-of-day variants** (optional):
+   - `{location}-morning.jpg` - Early morning (6am-10am)
+   - `{location}-day.jpg` - Daytime (10am-5pm)
+   - `{location}-dusk.jpg` - Evening (5pm-8pm)
+   - `{location}-night.jpg` - Nighttime (8pm-6am)
+
+5. **Toggle background mode** in Scene Settings:
+   - Open the Scene dialog (gear icon)
+   - Select "Background Mode"
+   - Choose between CSS Animated, Static Image, or Auto
+
+For complete documentation, see `/client/public/assets/scenes/README.md`
+
+**Example**: Adding a living room background:
+```bash
+# Copy your image to the scenes directory
+cp my-living-room.jpg /client/public/assets/scenes/living_room.jpg
+
+# Optional: Add time-specific variants
+cp my-living-room-night.jpg /client/public/assets/scenes/living_room-night.jpg
+```
+
+The system will automatically detect and use the images when:
+- Background mode is set to "Static Image" or "Auto"
+- User navigates to that location in roleplay (e.g., `*walks into the living room*`)
+- Time of day matches a variant (if available)
+
+If no image exists, the system gracefully falls back to CSS animated backgrounds.
 
 ## 🔒 Security & API Key Management
 

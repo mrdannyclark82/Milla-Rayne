@@ -3,7 +3,7 @@
  * Manages persistence and access to scene settings via localStorage
  */
 
-import { SceneSettings } from '@/types/scene';
+import { SceneSettings, BackgroundMode } from '@/types/scene';
 
 const STORAGE_KEY = 'milla.scene.settings.v1';
 const SETTINGS_VERSION = 1;
@@ -30,7 +30,8 @@ export function getDefaultSettings(): SceneSettings {
     animationSpeed: 1.0,
     devDebug: false,
     sceneBackgroundFromRP: true, // Phase 3: Enabled by default
-    sceneRoomOverlaysEnabled: true // Room Overlays V1: Enabled by default
+    sceneRoomOverlaysEnabled: true, // Room Overlays V1: Enabled by default
+    backgroundMode: 'auto' // Default to auto-detect (CSS animated with static image fallback)
   };
 }
 
@@ -73,7 +74,10 @@ export function loadSceneSettings(): SceneSettings {
       animationSpeed: clamp(settings.animationSpeed ?? 1.0, 0.5, 1.5),
       devDebug: typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
       sceneBackgroundFromRP: typeof settings.sceneBackgroundFromRP === 'boolean' ? settings.sceneBackgroundFromRP : true,
-      sceneRoomOverlaysEnabled: typeof settings.sceneRoomOverlaysEnabled === 'boolean' ? settings.sceneRoomOverlaysEnabled : true
+      sceneRoomOverlaysEnabled: typeof settings.sceneRoomOverlaysEnabled === 'boolean' ? settings.sceneRoomOverlaysEnabled : true,
+      backgroundMode: (['css-animated', 'static-image', 'auto'].includes(settings.backgroundMode as string))
+        ? settings.backgroundMode as BackgroundMode
+        : 'auto'
     };
   } catch (error) {
     console.error('Error loading scene settings:', error);

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SceneSettings, SceneMood } from '@/types/scene';
+import { SceneSettings, SceneMood, BackgroundMode } from '@/types/scene';
 import { loadSceneSettings, saveSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
 
 interface SceneSettingsPanelProps {
@@ -99,6 +99,30 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
               Mood is controlled by RP scene
             </p>
           )}
+        </div>
+
+        {/* Background Mode Selector */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Background Mode</label>
+          <Select
+            value={settings.backgroundMode || 'auto'}
+            onValueChange={(value) => updateSetting('backgroundMode', value as BackgroundMode)}
+            disabled={!settings.enabled}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="auto">Auto (Smart)</SelectItem>
+              <SelectItem value="css-animated">CSS Animated</SelectItem>
+              <SelectItem value="static-image">Static Image</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {settings.backgroundMode === 'static-image' && 'Uses static images from /assets/scenes/'}
+            {settings.backgroundMode === 'css-animated' && 'Uses animated gradient backgrounds'}
+            {(!settings.backgroundMode || settings.backgroundMode === 'auto') && 'Auto-selects based on location'}
+          </p>
         </div>
 
         {/* Background mirrors RP scene toggle */}
