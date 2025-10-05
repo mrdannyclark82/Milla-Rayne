@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/button';
 import { VoicePickerDialog } from '@/components/VoicePickerDialog';
 import { VoiceVisualizer } from '@/components/VoiceVisualizer';
 import { VoiceControls } from '@/components/VoiceControls';
-import { MobileVoiceControls } from '@/components/MobileVoiceControls';
-import { FloatingInput } from '@/components/FloatingInput';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
@@ -465,23 +463,47 @@ function App() {
               ))
             )}
           </div>
+
+          {/* Input Area - Fixed at bottom of chat */}
+          <div className="flex gap-2 items-center flex-shrink-0 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Type your message..."
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 bg-gray-900 text-white rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {!isMobile && (
+              <Button
+                onClick={toggleListening}
+                variant={isListening ? "default" : "outline"}
+                size="icon"
+                disabled={isLoading}
+                className={isListening ? 'animate-pulse' : ''}
+                title={isListening ? "Stop listening" : "Start listening"}
+              >
+                {isListening ? '🎤' : '🎙️'}
+              </Button>
+            )}
+            <Button
+              onClick={handleSendMessage}
+              disabled={isLoading || !message.trim()}
+              size="icon"
+              className="bg-blue-600 hover:bg-blue-700"
+              title="Send message"
+            >
+              {isLoading ? '⏳' : '📤'}
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Floating Input Component */}
-      <FloatingInput
-        message={message}
-        setMessage={setMessage}
-        onSendMessage={handleSendMessage}
-        isLoading={isLoading}
-        isListening={isListening}
-        toggleListening={toggleListening}
-        isMobile={isMobile}
-        getButtonSize={getButtonSize}
-        MobileVoiceControls={MobileVoiceControls}
-        cancelListening={cancelListening}
-      />
-
       {/* Voice Picker Dialog */}
       <VoicePickerDialog
         open={showVoicePicker}
