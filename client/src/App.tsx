@@ -5,13 +5,11 @@ import { VoicePickerDialog } from '@/components/VoicePickerDialog';
 import { VoiceVisualizer } from '@/components/VoiceVisualizer';
 import { VoiceControls } from '@/components/VoiceControls';
 import { MobileVoiceControls } from '@/components/MobileVoiceControls';
-import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import { FloatingInput } from '@/components/FloatingInput';
-import DeveloperModeToggle from '@/components/DeveloperModeToggle';
+import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 import { RPSceneBackgroundBridge } from '@/components/scene/RPSceneBackgroundBridge';
 import { RoomOverlay } from '@/components/scene/RoomOverlay';
-import { SceneSettingsDialog } from '@/components/SceneSettingsDialog';
 import { RPStageAnchor } from '@/components/rp/RPStageAnchor';
 import { MillaSilhouette, VisualState } from '@/components/rp/placeholders/MillaSilhouette';
 import { SceneLocation, SceneMood, TimeOfDay } from '@/types/scene';
@@ -38,10 +36,6 @@ function App() {
   const [showCaptions, setShowCaptions] = useState(false);
   const [lastMessage, setLastMessage] = useState('');
   const [hasVoiceConsent, setHasVoiceConsent] = useState(false);
-  const [highContrast, setHighContrast] = useState(false);
-  const [dyslexiaFont, setDyslexiaFont] = useState(false);
-  const [colorBlindMode, setColorBlindMode] = useState<"none" | "protanopia" | "deuteranopia" | "tritanopia">("none");
-  const [largeTouchTargets, setLargeTouchTargets] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = useRef<any>(null);
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -256,10 +250,6 @@ function App() {
   const resumeSpeech = () => {
     window.speechSynthesis.resume();
   };
-  {/* small React mount indicator */ }
-  <div style={{ position: 'fixed', left: 8, top: 36, zIndex: 100000, color: '#0f0' }}>
-    React mounted
-  </div>
 
   const stopSpeech = () => {
     window.speechSynthesis.cancel();
@@ -299,16 +289,8 @@ function App() {
     }
   };
 
-  // Apply accessibility settings
-  const getContainerClasses = () => {
-    let classes = "min-h-screen";
-    if (highContrast) classes += " contrast-150";
-    if (dyslexiaFont) classes += " font-opendyslexic";
-    return classes;
-  };
-
   const getButtonSize = () => {
-    return largeTouchTargets ? "default" : "sm";
+    return "sm";
   };
 
   // Visual V1: Compute Milla visual state from voice controls
@@ -318,9 +300,8 @@ function App() {
     return 'idle';
   };
 
-
   return (
-    <div className={getContainerClasses()}>
+    <div className="min-h-screen">
       {/* Adaptive Scene Background - Phase 3: Now responds to RP scene location */}
       {/* Visual V1: Constrained to left 2/3 with region prop */}
       <RPSceneBackgroundBridge enabled={sceneSettings.sceneBackgroundFromRP ?? false}>
@@ -346,6 +327,51 @@ function App() {
       </RPSceneBackgroundBridge>
 
       {/* Visual V1: Milla Stage - Left 2/3 of viewport */}
+      {/* 
+        STATIC IMAGE GUIDE - Multiple Images Per Scene:
+        
+        To add multiple images for different situations in a scene:
+        
+        1. Place images in: /client/public/assets/scenes/
+        
+        2. Naming convention for multiple scene variations:
+           - Base: {location}.jpg (e.g., living_room.jpg)
+           - Time-based: {location}-{time}.jpg (e.g., living_room-night.jpg)
+           
+        3. To add situation-based images (commented out - future enhancement):
+           // - Action-based: {location}-{action}.jpg
+           // Examples:
+           // - living_room-fireplace.jpg (Milla by fireplace)
+           // - living_room-couch.jpg (Milla on couch)
+           // - living_room-window.jpg (Milla looking out window)
+           // - kitchen-cooking.jpg (Milla cooking)
+           // - kitchen-dishes.jpg (Milla doing dishes)
+           // - kitchen-counter.jpg (Milla at counter)
+           
+        4. Current implementation uses time-of-day variants automatically.
+           To enable action-based switching in the future:
+           // - Modify RealisticSceneBackground.tsx to accept an 'action' prop
+           // - Update getImageUrls() to try: {location}-{action}-{time}.jpg
+           // - Pass action from conversation context (detected from AI response)
+           
+        5. Image requirements:
+           - Format: JPG or PNG
+           - Resolution: 1920x1080 recommended
+           - Size: Under 500KB per image (optimize for web)
+           
+        6. Example file structure:
+           /client/public/assets/scenes/
+           ├── living_room.jpg              # Default living room
+           ├── living_room-night.jpg        # Night variant
+           ├── living_room-fireplace.jpg    # (Future) By fireplace
+           ├── living_room-couch.jpg        # (Future) On couch
+           ├── kitchen.jpg                  # Default kitchen
+           ├── kitchen-morning.jpg          # Morning variant
+           ├── kitchen-cooking.jpg          # (Future) Cooking action
+           └── kitchen-dishes.jpg           # (Future) Doing dishes
+           
+        See STATIC_BACKGROUNDS_QUICKSTART.md for full documentation.
+      */}
       <RPStageAnchor>
         <MillaSilhouette
           state={getMillaVisualState()}
@@ -355,11 +381,11 @@ function App() {
         />
       </RPStageAnchor>
 
-      {/* Chat Interface - Fixed Right Side */}
-      <div className="fixed top-0 right-0 w-1/3 h-screen p-4 bg-black">
+      {/* Chat Interface - Fixed Right Side with Background */}
+      <div className="fixed top-0 right-0 w-1/3 h-screen p-6 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm border-l border-white/10">
         <div className="h-full flex flex-col space-y-4">
-          {/* Voice controls */}
-          <div className="flex gap-2 justify-end flex-wrap">
+          {/* Header with Voice Toggle and Settings */}
+          <div className="flex gap-2 justify-between items-center flex-shrink-0">
             <Button
               onClick={toggleVoice}
               variant={voiceEnabled ? "default" : "outline"}
@@ -367,41 +393,11 @@ function App() {
               title="Toggle voice output"
               aria-label="Toggle voice output"
               aria-pressed={voiceEnabled}
+              className="flex-1"
             >
               {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
             </Button>
-            <Button
-              onClick={() => setShowVoicePicker(true)}
-              variant="outline"
-              size={getButtonSize()}
-              title="Voice settings - Select voice, adjust pitch, rate, and volume"
-              aria-label="Open voice settings"
-            >
-              <i className="fas fa-cog mr-1"></i>
-              Voice Settings
-            </Button>
-            <SceneSettingsDialog>
-              <Button
-                variant="outline"
-                size={getButtonSize()}
-                title="Open scene settings"
-                aria-label="Open scene settings"
-              >
-                <i className="fas fa-window-restore mr-1"></i>
-                Scene
-              </Button>
-            </SceneSettingsDialog>
-            <DeveloperModeToggle>
-              <Button
-                variant="outline"
-                size={getButtonSize()}
-                title="Toggle developer mode"
-                aria-label="Open developer mode settings"
-              >
-                <i className="fas fa-wrench mr-1"></i>
-                Dev Mode
-              </Button>
-            </DeveloperModeToggle>
+            
             {!isMobile && (
               <Button
                 onClick={toggleListening}
@@ -409,20 +405,25 @@ function App() {
                 size={getButtonSize()}
                 disabled={isLoading}
                 title="Click to speak"
-                className={isListening ? 'animate-pulse' : ''}
+                className={`flex-1 ${isListening ? 'animate-pulse' : ''}`}
                 aria-label={isListening ? "Stop listening" : "Start listening"}
                 aria-pressed={isListening}
               >
                 {isListening ? '🎤' : '🎙️'} {isListening ? 'Listening...' : 'Speak'}
               </Button>
             )}
+            
+            <UnifiedSettingsMenu
+              getButtonSize={getButtonSize}
+              setShowVoicePicker={setShowVoicePicker}
+            />
           </div>
 
           {/* Voice Visualizer */}
           <VoiceVisualizer
             isListening={isListening}
             isSpeaking={isSpeaking}
-            className="h-16"
+            className="h-16 flex-shrink-0"
           />
 
           {/* Voice Controls */}
@@ -436,8 +437,8 @@ function App() {
             onToggleCaptions={setShowCaptions}
           />
 
-          {/* Messages - Fixed height with scrolling */}
-          <div className="h-[calc(100vh-400px)] overflow-y-auto space-y-3 p-4 bg-gray-900 rounded-lg border border-gray-700">
+          {/* Messages - Takes up most of the remaining space */}
+          <div className="flex-1 overflow-y-auto space-y-3 p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
             {messages.length === 0 ? (
               <p className="text-gray-400 text-center">
                 Start a conversation with Milla...
