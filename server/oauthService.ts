@@ -147,9 +147,12 @@ export async function storeOAuthToken(
   expiresIn: number,
   scope: string
 ): Promise<void> {
+  const { getMemoryKey } = await import('./crypto');
+  const memoryKey = getMemoryKey();
+  
   // Encrypt sensitive tokens
-  const encryptedAccessToken = encrypt(accessToken);
-  const encryptedRefreshToken = refreshToken ? encrypt(refreshToken) : undefined;
+  const encryptedAccessToken = encrypt(accessToken, memoryKey);
+  const encryptedRefreshToken = refreshToken ? encrypt(refreshToken, memoryKey) : undefined;
   
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
   
@@ -192,6 +195,9 @@ export async function getValidAccessToken(
   userId: string,
   provider: 'google'
 ): Promise<string | null> {
+  const { getMemoryKey } = await import('./crypto');
+  const memoryKey = getMemoryKey();
+  
   const token = await getOAuthToken(userId, provider);
   
   if (!token) {
@@ -205,7 +211,7 @@ export async function getValidAccessToken(
   
   if (expiresAt.getTime() - now.getTime() > bufferTime) {
     // Token is still valid, decrypt and return
-    return decrypt(token.accessToken);
+    return decrypt(token.accessToken, memoryKey);
   }
   
   // Token expired or about to expire, refresh it
@@ -215,7 +221,7 @@ export async function getValidAccessToken(
   }
   
   try {
-    const decryptedRefreshToken = decrypt(token.refreshToken);
+    const decryptedRefreshToken = decrypt(token.refreshToken, memoryKey);
     const refreshed = await refreshAccessToken(decryptedRefreshToken);
     
     // Update token in storage
