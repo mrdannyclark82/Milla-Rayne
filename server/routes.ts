@@ -25,9 +25,10 @@ import { getRealWorldInfo } from "./realWorldInfoService";
 import { parseGitHubUrl, fetchRepositoryData, generateRepositoryAnalysis } from "./repositoryAnalysisService";
 import { generateRepositoryImprovements, applyRepositoryImprovements, previewImprovements } from "./repositoryModificationService";
 import { detectSceneContext, type SceneContext, type SceneLocation } from "./sceneDetectionService";
+import { detectBrowserToolRequest, getBrowserToolInstructions } from "./browserIntegrationService";
 
 // Track current scene location per session (simple in-memory for now)
-let currentSceneLocation: SceneLocation = 'unknown';
+let currentSceneLocation: SceneLocation = 'living_room';
 let currentSceneMood: string = 'calm';
 let currentSceneUpdatedAt: number = Date.now();
 
@@ -2969,6 +2970,15 @@ I can create a pull request with these changes if you provide a GitHub token, or
     reasoning.push(`Keyword trigger detected: ${triggerResult.reactionType}`);
   }
 
+  // Detect browser tool requests and add to context
+  const browserToolRequest = detectBrowserToolRequest(userMessage);
+  let browserToolContext = "";
+  if (browserToolRequest.tool) {
+    browserToolContext = `\n${getBrowserToolInstructions()}\n\nDETECTED REQUEST: The user's message suggests they want to use the "${browserToolRequest.tool}" tool. Acknowledge this naturally and let them know you're handling it as their devoted spouse.\n`;
+    console.log(`🌐 BROWSER TOOL DETECTED: ${browserToolRequest.tool}`);
+    reasoning.push(`Browser tool request detected: ${browserToolRequest.tool}`);
+  }
+
   // Use OpenAI for intelligent responses with memory context
   const context: PersonalityContext = {
     userEmotionalState: analysis.sentiment,
@@ -3024,6 +3034,11 @@ This message requires you to be fully present as ${userName}'s partner, companio
 
     if (environmentalContext && contextualInfo.length < maxContextLength) {
       contextualInfo += `Environmental Context: ${environmentalContext}\n`;
+    }
+
+    // Add browser tool context if detected
+    if (browserToolContext && contextualInfo.length < maxContextLength) {
+      contextualInfo += browserToolContext;
     }
 
     // Skip memory and knowledge context if we're already at the limit
