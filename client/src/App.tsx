@@ -38,7 +38,7 @@ function App() {
   const currentUtteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   
   // Phase 3: RP scene state
-  const [currentLocation, setCurrentLocation] = useState<SceneLocation>('unknown');
+  const [currentLocation, setCurrentLocation] = useState<SceneLocation>('living_room');
   const [sceneMood, setSceneMood] = useState<SceneMood>('calm');
   const [sceneSettings, setSceneSettings] = useState(() => loadSceneSettings());
   
