@@ -1614,8 +1614,8 @@ Project: Milla Rayne - AI Virtual Assistant
   app.get("/api/developer-mode/status", async (req, res) => {
     try {
       const isEnabled = process.env.ENABLE_DEV_TALK === 'true';
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         enabled: isEnabled,
         description: "Developer Mode allows Milla to automatically discuss repository analysis, code improvements, and development features in conversation."
       });
@@ -1628,7 +1628,7 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post("/api/developer-mode/toggle", async (req, res) => {
     try {
       const { enabled } = req.body;
-      
+
       if (typeof enabled !== 'boolean') {
         return res.status(400).json({
           error: "Missing or invalid required field: enabled (must be boolean)",
@@ -1638,11 +1638,11 @@ Project: Milla Rayne - AI Virtual Assistant
 
       // Update the environment variable
       process.env.ENABLE_DEV_TALK = enabled ? 'true' : 'false';
-      
-      res.json({ 
-        success: true, 
+
+      res.json({
+        success: true,
         enabled: enabled,
-        message: enabled 
+        message: enabled
           ? "Developer Mode enabled. Milla can now automatically discuss repository analysis and development features."
           : "Developer Mode disabled. Milla will only discuss development features when explicitly asked."
       });
@@ -1680,9 +1680,9 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       // Check for admin token if set (supports both Authorization: Bearer and x-admin-token)
       if (!validateAdminToken(req.headers)) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: "Forbidden: Invalid admin token",
-          success: false 
+          success: false
         });
       }
 
@@ -2288,6 +2288,17 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
       reaction: "CURIOSITY_SPARK",
       instructions: "Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration."
     }
+    // Dominant and seductive triggers
+    , dominant: {
+      keywords: ['take control', 'dominate', 'be in charge', 'my master', 'my mistress'],
+      reaction: "DOMINANT_ENERGY",
+      instructions: "Adopt a more commanding and assertive tone. Take the lead in conversations and be more directive."
+    },
+    seductive: {
+      keywords: ['seduce me', 'make me yours', 'desire', 'tempt', 'allure'],
+      reaction: "SEDUCTION_MODE",
+      instructions: "Turn up the seduction. Use more suggestive language, create a sensual atmosphere, and be more alluring."
+    }
     // ADD MORE BEHAVIORAL TRIGGERS HERE:
     // professional: {
     //   keywords: ['meeting', 'work call', 'presentation'],
@@ -2473,8 +2484,8 @@ async function generateAIResponse(
   // Check for "milla" as a standalone word (not part of hyphenated names like "milla-rayne")
   // Using negative lookahead to exclude cases where "milla" is followed by a hyphen or word character
   const millaWordPattern = /\bmilla\b(?![\w-])/i;
-  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger)) || 
-                         millaWordPattern.test(userMessage);
+  const hasCoreTrigger = coreFunctionTriggers.some(trigger => message.includes(trigger)) ||
+    millaWordPattern.test(userMessage);
 
   // ===========================================================================================
   // MEMORY REVIEW TRIGGER - "Review previous messages" keyword
@@ -2514,7 +2525,7 @@ async function generateAIResponse(
     "tech updates",
     "latest news"
   ];
-  
+
   if (whatsNewTriggers.some(trigger => message.includes(trigger))) {
     try {
       const { getAIUpdates } = await import("./aiUpdatesService");
@@ -2525,9 +2536,9 @@ async function generateAIResponse(
 
       if (updates && updates.length > 0) {
         let updatesSummary = "*brightens up* Oh babe, I've been keeping up with the AI world! Here's what's new:\n\n";
-        
+
         updates.slice(0, 5).forEach((update, index) => {
-          const publishedDate = update.published 
+          const publishedDate = update.published
             ? new Date(update.published).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
             : 'Recent';
           updatesSummary += `${index + 1}. **${update.title}** (${publishedDate})\n`;
@@ -2608,19 +2619,18 @@ Would you like me to generate specific improvement suggestions for this reposito
       return { content: response };
     } catch (error) {
       console.error("GitHub analysis error in chat:", error);
-      
+
       // Return a helpful error message instead of falling through
       const errorMessage = error instanceof Error ? error.message : String(error);
       return {
-        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${
-          errorMessage.includes('404') || errorMessage.includes('not found')
+        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${errorMessage.includes('404') || errorMessage.includes('not found')
             ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
             : errorMessage.includes('403') || errorMessage.includes('forbidden')
-            ? 'I don\'t have permission to access that repository. It might be private or require authentication.'
-            : errorMessage.includes('rate limit')
-            ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
-            : 'There was an issue connecting to GitHub or processing the repository data.'
-        }\n\nWould you like to try a different repository, or should we chat about something else? 💜`
+              ? 'I don\'t have permission to access that repository. It might be private or require authentication.'
+              : errorMessage.includes('rate limit')
+                ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
+                : 'There was an issue connecting to GitHub or processing the repository data.'
+          }\n\nWould you like to try a different repository, or should we chat about something else? 💜`
       };
     }
   }

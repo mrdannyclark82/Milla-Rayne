@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
+
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -70,25 +70,25 @@ if (!globalThis.crypto) {
 (async () => {
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
-  
+
   // Initialize User Tasks system
   const { initializeUserTasks } = await import("./userTaskService");
   await initializeUserTasks();
-  
+
   // Initialize Personal Task system for self-improvement
   await initializePersonalTaskSystem();
-  
+
   // Initialize Server Self-Evolution system
   await initializeServerSelfEvolution();
-  
+
   // Initialize Visual Recognition system
   const { initializeFaceRecognition } = await import("./visualRecognitionService");
   await initializeFaceRecognition();
-  
+
   // Initialize Enhancement Task system
   const { initializeEnhancementTaskSystem } = await import("./enhancementService");
   await initializeEnhancementTaskSystem();
-  
+
 
   // Initialize Daily Suggestions Scheduler
   const { initializeDailySuggestionScheduler } = await import("./dailySuggestionsService");
@@ -98,7 +98,7 @@ if (!globalThis.crypto) {
   const { initializeAIUpdatesScheduler } = await import("./aiUpdatesScheduler");
   initializeAIUpdatesScheduler();
 
-  
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
