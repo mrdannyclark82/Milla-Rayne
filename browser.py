@@ -52,6 +52,10 @@ class BrowserAgentTool:
             A string indicating success or failure.
         """
         try:
+            if self.page is None:
+                error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+                print(error_msg)
+                return error_msg
             print(f"Navigating to {url}...")
             await self.page.goto(url)
             print(f"Successfully navigated to {url}.")
@@ -68,6 +72,10 @@ class BrowserAgentTool:
             The HTML content of the page as a string.
         """
         print("Getting page content...")
+        if self.page is None:
+            error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+            print(error_msg)
+            return error_msg
         return await self.page.content()
 
     async def get_page_text(self) -> str:
@@ -78,6 +86,10 @@ class BrowserAgentTool:
             The text content of the page as a string.
         """
         print("Getting page text content...")
+        if self.page is None:
+            error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+            print(error_msg)
+            return error_msg
         return await self.page.text_content('body')
 
     async def get_elements_by_selector(self, selector: str) -> str:
@@ -92,6 +104,10 @@ class BrowserAgentTool:
             A string with a formatted list of found elements and their details.
         """
         try:
+            if self.page is None:
+                error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+                print(error_msg)
+                return error_msg
             elements = await self.page.query_selector_all(selector)
             if not elements:
                 return f"No elements found with selector: '{selector}'"
@@ -126,6 +142,10 @@ class BrowserAgentTool:
             A string indicating the outcome of the action.
         """
         print(f"Attempting to click element with selector: '{selector}'...")
+        if self.page is None:
+            error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+            print(error_msg)
+            return error_msg
         try:
             # Waits for the element to be visible before clicking
             await self.page.locator(selector).click(timeout=5000)
@@ -145,6 +165,10 @@ class BrowserAgentTool:
             A string indicating the outcome of the action.
         """
         print(f"Attempting to fill element with selector '{selector}' with value '{value}'...")
+        if self.page is None:
+            error_msg = "Browser page is not initialized. Call 'initialize()' before using this method."
+            print(error_msg)
+            return error_msg
         try:
             # Waits for the element to be enabled before filling
             await self.page.locator(selector).fill(value, timeout=5000)
