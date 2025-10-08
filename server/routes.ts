@@ -1611,6 +1611,145 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // OAuth endpoints for Google integration
+  app.get("/oauth/google", async (req, res) => {
+    try {
+      const { getAuthorizationUrl } = await import("./oauthService");
+      const authUrl = getAuthorizationUrl();
+      res.redirect(authUrl);
+    } catch (error) {
+      console.error("Error initiating OAuth:", error);
+      res.status(500).json({ 
+        error: "Failed to initiate OAuth", 
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/oauth/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({
+          error: "Missing authorization code",
+          success: false
+        });
+      }
+
+      const { exchangeCodeForToken, storeOAuthToken } = await import("./oauthService");
+      
+      // Exchange code for tokens
+      const tokenData = await exchangeCodeForToken(code);
+      
+      // Store tokens securely
+      await storeOAuthToken(
+        'default-user',
+        'google',
+        tokenData.accessToken,
+        tokenData.refreshToken,
+        tokenData.expiresIn,
+        tokenData.scope
+      );
+
+      // Redirect to success page or return success response
+      res.send(`
+        <html>
+          <head><title>OAuth Success</title></head>
+          <body>
+            <h1>Successfully connected to Google!</h1>
+            <p>You can now close this window and return to Milla.</p>
+            <script>
+              setTimeout(() => window.close(), 3000);
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error) {
+      console.error("Error handling OAuth callback:", error);
+      res.status(500).send(`
+        <html>
+          <head><title>OAuth Error</title></head>
+          <body>
+            <h1>OAuth Error</h1>
+            <p>${error instanceof Error ? error.message : "Unknown error occurred"}</p>
+          </body>
+        </html>
+      `);
+    }
+  });
+
+  app.post("/api/oauth/refresh", async (req, res) => {
+    try {
+      const { getValidAccessToken } = await import("./oauthService");
+      const userId = 'default-user'; // In production, get from session
+      
+      const accessToken = await getValidAccessToken(userId, 'google');
+      
+      if (!accessToken) {
+        return res.status(401).json({
+          error: "No valid token available. Please re-authenticate.",
+          success: false,
+          needsAuth: true
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Token refreshed successfully"
+      });
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      res.status(500).json({
+        error: "Failed to refresh token",
+        success: false
+      });
+    }
+  });
+
+  app.get("/api/oauth/status", async (req, res) => {
+    try {
+      const { getOAuthToken } = await import("./oauthService");
+      const userId = 'default-user'; // In production, get from session
+      
+      const token = await getOAuthToken(userId, 'google');
+      
+      res.json({
+        success: true,
+        connected: !!token,
+        provider: token ? 'google' : null,
+        expiresAt: token ? token.expiresAt : null
+      });
+    } catch (error) {
+      console.error("Error checking OAuth status:", error);
+      res.status(500).json({
+        error: "Failed to check OAuth status",
+        success: false
+      });
+    }
+  });
+
+  app.delete("/api/oauth/disconnect", async (req, res) => {
+    try {
+      const { deleteOAuthToken } = await import("./oauthService");
+      const userId = 'default-user'; // In production, get from session
+      
+      await deleteOAuthToken(userId, 'google');
+      
+      res.json({
+        success: true,
+        message: "Disconnected from Google"
+      });
+    } catch (error) {
+      console.error("Error disconnecting OAuth:", error);
+      res.status(500).json({
+        error: "Failed to disconnect",
+        success: false
+      });
+    }
+  });
+
   // Developer Mode endpoints
   app.get("/api/developer-mode/status", async (req, res) => {
     try {

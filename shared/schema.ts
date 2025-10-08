@@ -44,6 +44,18 @@ export const dailySuggestions = pgTable("daily_suggestions", {
   isDelivered: boolean("is_delivered").notNull().default(false),
 });
 
+export const oauthTokens = pgTable("oauth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().default('default-user'),
+  provider: varchar("provider", { enum: ["google"] }).notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: timestamp("expires_at").notNull(),
+  scope: text("scope"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -71,6 +83,15 @@ export const insertDailySuggestionSchema = createInsertSchema(dailySuggestions).
   metadata: true,
 });
 
+export const insertOAuthTokenSchema = createInsertSchema(oauthTokens).pick({
+  userId: true,
+  provider: true,
+  accessToken: true,
+  refreshToken: true,
+  expiresAt: true,
+  scope: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
@@ -79,3 +100,5 @@ export type InsertAiUpdate = z.infer<typeof insertAiUpdateSchema>;
 export type AiUpdate = typeof aiUpdates.$inferSelect;
 export type InsertDailySuggestion = z.infer<typeof insertDailySuggestionSchema>;
 export type DailySuggestion = typeof dailySuggestions.$inferSelect;
+export type InsertOAuthToken = z.infer<typeof insertOAuthTokenSchema>;
+export type OAuthToken = typeof oauthTokens.$inferSelect;

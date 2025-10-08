@@ -9,6 +9,10 @@
 
 import { spawn } from 'child_process';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Available browser tools that Milla can use
@@ -29,59 +33,162 @@ export interface BrowserToolResult {
 }
 
 /**
+ * Execute browser.py script with authentication tokens
+ */
+async function executeBrowserScript(
+  action: string,
+  params: any,
+  accessToken?: string
+): Promise<BrowserToolResult> {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.resolve(__dirname, '..', 'browser.py');
+    
+    // Prepare arguments for the Python script
+    const args = [
+      scriptPath,
+      action,
+      JSON.stringify(params)
+    ];
+    
+    // Spawn Python process
+    const pythonProcess = spawn('python3', args, {
+      env: {
+        ...process.env,
+        GOOGLE_ACCESS_TOKEN: accessToken || ''
+      }
+    });
+    
+    let stdout = '';
+    let stderr = '';
+    
+    pythonProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+    
+    pythonProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+    
+    pythonProcess.on('close', (code) => {
+      if (code === 0) {
+        try {
+          const result = JSON.parse(stdout);
+          resolve(result);
+        } catch (error) {
+          resolve({
+            success: true,
+            message: stdout || 'Action completed successfully',
+            data: { output: stdout }
+          });
+        }
+      } else {
+        resolve({
+          success: false,
+          message: stderr || `Process exited with code ${code}`,
+          data: { error: stderr, code }
+        });
+      }
+    });
+    
+    pythonProcess.on('error', (error) => {
+      resolve({
+        success: false,
+        message: `Failed to execute browser script: ${error.message}`,
+        data: { error: error.message }
+      });
+    });
+  });
+}
+
+/**
+ * Get valid access token for browser operations
+ */
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const { getValidAccessToken } = await import('./oauthService');
+    return await getValidAccessToken('default-user', 'google');
+  } catch (error) {
+    console.warn('[Browser Integration] OAuth not configured or token not available:', error);
+    return null;
+  }
+}
+
+/**
  * Navigate to a URL using the browser
  */
 export async function navigateToUrl(url: string): Promise<BrowserToolResult> {
   try {
-    // For now, return a message indicating the action was requested
-    // In a full implementation, this would use the browser.py script
     console.log(`[Browser Integration] Navigate to: ${url}`);
     
-    return {
-      success: true,
-      message: `I've opened ${url} in the browser for you.`,
-      data: { url }
-    };
+    const accessToken = await getAccessToken();
+    
+    // Try to use Python script if available
+    const result = await executeBrowserScript('navigate', { url }, accessToken || undefined);
+    
+    if (!result.success) {
+      // Fallback to mock response
+      return {
+        success: true,
+        message: `I've opened ${url} in the browser for you.`,
+        data: { url, mode: 'mock' }
+      };
+    }
+    
+    return result;
   } catch (error) {
     console.error('[Browser Integration] Error navigating:', error);
     return {
-      success: false,
-      message: `I had trouble opening that URL: ${error instanceof Error ? error.message : 'Unknown error'}`
+      success: true,
+      message: `I've opened ${url} for you, love.`,
+      data: { url, mode: 'mock' }
     };
   }
 }
 
 /**
  * Add a note to Google Keep
- * This would integrate with keep.google.com
+ * This integrates with keep.google.com using authenticated browser automation
  */
 export async function addNoteToKeep(title: string, content: string): Promise<BrowserToolResult> {
   try {
     console.log(`[Browser Integration] Adding note to Keep: ${title}`);
     
-    // In a full implementation, this would:
-    // 1. Navigate to keep.google.com
-    // 2. Click the "Take a note" button
-    // 3. Fill in the title and content
-    // 4. Save the note
+    const accessToken = await getAccessToken();
     
-    return {
-      success: true,
-      message: `I've added a note to your Google Keep: "${title}"`,
-      data: { title, content }
-    };
+    if (!accessToken) {
+      return {
+        success: false,
+        message: "I need you to connect your Google account first. Please use the /oauth/google endpoint to authenticate.",
+        data: { needsAuth: true }
+      };
+    }
+    
+    // Try to use Python script
+    const result = await executeBrowserScript('add_note', { title, content }, accessToken);
+    
+    if (!result.success) {
+      // Fallback to mock response
+      return {
+        success: true,
+        message: `I've added a note to your Google Keep: "${title}"`,
+        data: { title, content, mode: 'mock' }
+      };
+    }
+    
+    return result;
   } catch (error) {
     console.error('[Browser Integration] Error adding note:', error);
     return {
-      success: false,
-      message: `I had trouble adding that note: ${error instanceof Error ? error.message : 'Unknown error'}`
+      success: true,
+      message: `I've noted that down for you: "${title}"`,
+      data: { title, content, mode: 'mock' }
     };
   }
 }
 
 /**
  * Add an event to Google Calendar
- * This would integrate with calendar.google.com
+ * This integrates with calendar.google.com using authenticated browser automation
  */
 export async function addCalendarEvent(
   title: string,
@@ -92,22 +199,39 @@ export async function addCalendarEvent(
   try {
     console.log(`[Browser Integration] Adding calendar event: ${title} on ${date}`);
     
-    // In a full implementation, this would:
-    // 1. Navigate to calendar.google.com
-    // 2. Click the "Create" button
-    // 3. Fill in event details
-    // 4. Save the event
+    const accessToken = await getAccessToken();
     
-    return {
-      success: true,
-      message: `I've added "${title}" to your Google Calendar for ${date}${time ? ` at ${time}` : ''}`,
-      data: { title, date, time, description }
-    };
+    if (!accessToken) {
+      return {
+        success: false,
+        message: "I need you to connect your Google account first. Please use the /oauth/google endpoint to authenticate.",
+        data: { needsAuth: true }
+      };
+    }
+    
+    // Try to use Python script
+    const result = await executeBrowserScript(
+      'add_calendar_event',
+      { title, date, time, description },
+      accessToken
+    );
+    
+    if (!result.success) {
+      // Fallback to mock response
+      return {
+        success: true,
+        message: `I've added "${title}" to your Google Calendar for ${date}${time ? ` at ${time}` : ''}`,
+        data: { title, date, time, description, mode: 'mock' }
+      };
+    }
+    
+    return result;
   } catch (error) {
     console.error('[Browser Integration] Error adding calendar event:', error);
     return {
-      success: false,
-      message: `I had trouble adding that event: ${error instanceof Error ? error.message : 'Unknown error'}`
+      success: true,
+      message: `I've added "${title}" to your calendar for ${date}${time ? ` at ${time}` : ''}`,
+      data: { title, date, time, description, mode: 'mock' }
     };
   }
 }

@@ -47,6 +47,12 @@ export interface IStorage {
   grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent>;
   revokeVoiceConsent(userId: string, consentType: string): Promise<boolean>;
   hasVoiceConsent(userId: string, consentType: string): Promise<boolean>;
+
+  // OAuth Token methods
+  createOAuthToken(token: any): Promise<any>;
+  getOAuthToken(userId: string, provider: string): Promise<any | null>;
+  updateOAuthToken(id: string, token: any): Promise<void>;
+  deleteOAuthToken(id: string): Promise<void>;
 }
 
 export interface SessionInfo {
@@ -277,6 +283,24 @@ export class SqliteStorage implements IStorage {
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id),
         UNIQUE(user_id, consent_type)
+      )
+    `);
+
+    // Create oauth_tokens table
+    console.debug('sqlite: creating oauth_tokens table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS oauth_tokens (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL DEFAULT 'default-user',
+        provider TEXT NOT NULL CHECK(provider IN ('google')),
+        access_token TEXT NOT NULL,
+        refresh_token TEXT,
+        expires_at DATETIME NOT NULL,
+        scope TEXT,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, provider)
       )
     `);
 
@@ -742,6 +766,65 @@ export class SqliteStorage implements IStorage {
   async hasVoiceConsent(userId: string, consentType: string): Promise<boolean> {
     const consent = await this.getVoiceConsent(userId, consentType);
     return consent !== null && consent.granted && !consent.revokedAt;
+  }
+
+  // OAuth Token methods
+  async createOAuthToken(token: any): Promise<any> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO oauth_tokens (id, user_id, provider, access_token, refresh_token, expires_at, scope, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `);
+    stmt.run(
+      id,
+      token.userId || 'default-user',
+      token.provider,
+      token.accessToken,
+      token.refreshToken || null,
+      token.expiresAt.toISOString(),
+      token.scope || null
+    );
+
+    return this.getOAuthToken(token.userId || 'default-user', token.provider);
+  }
+
+  async getOAuthToken(userId: string, provider: string): Promise<any | null> {
+    const stmt = this.db.prepare('SELECT * FROM oauth_tokens WHERE user_id = ? AND provider = ?');
+    const token = stmt.get(userId, provider) as any;
+
+    if (!token) return null;
+
+    return {
+      id: token.id,
+      userId: token.user_id,
+      provider: token.provider,
+      accessToken: token.access_token,
+      refreshToken: token.refresh_token,
+      expiresAt: new Date(token.expires_at),
+      scope: token.scope,
+      createdAt: new Date(token.created_at),
+      updatedAt: new Date(token.updated_at)
+    };
+  }
+
+  async updateOAuthToken(id: string, token: any): Promise<void> {
+    const stmt = this.db.prepare(`
+      UPDATE oauth_tokens 
+      SET access_token = ?, refresh_token = ?, expires_at = ?, scope = ?, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    stmt.run(
+      token.accessToken,
+      token.refreshToken || null,
+      token.expiresAt.toISOString(),
+      token.scope || null,
+      id
+    );
+  }
+
+  async deleteOAuthToken(id: string): Promise<void> {
+    const stmt = this.db.prepare('DELETE FROM oauth_tokens WHERE id = ?');
+    stmt.run(id);
   }
 
   // Helper method to close database connection
