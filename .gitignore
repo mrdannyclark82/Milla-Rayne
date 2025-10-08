@@ -6,6 +6,12 @@ vite.config.ts.*
 *.tar.gz
 .avatar-backup
 
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
 # Memory backups
 memory/*.backup-*
 memory/milla.db

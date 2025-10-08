@@ -237,19 +237,103 @@ curl -X DELETE http://localhost:5000/api/oauth/disconnect
 
 ## Python Integration
 
-The browser.py script receives the access token via environment variable:
-```python
-import os
-access_token = os.environ.get('GOOGLE_ACCESS_TOKEN')
+The `browser.py` script has been updated to support OAuth access tokens and provides a CLI interface for browser automation actions.
+
+### Command-Line Interface
+
+The script can be invoked from the command line with the following syntax:
+
+```bash
+python3 browser.py <action> <params_json>
 ```
 
-It can then use this token to authenticate API requests or browser sessions.
+Where:
+- `<action>`: The action to perform (`navigate`, `add_calendar_event`, `add_note`)
+- `<params_json>`: JSON string with action parameters
+- `GOOGLE_ACCESS_TOKEN`: Environment variable containing the OAuth access token
+
+### Supported Actions
+
+#### 1. Navigate to URL
+```bash
+export GOOGLE_ACCESS_TOKEN="your_access_token"
+python3 browser.py navigate '{"url":"https://example.com"}'
+```
+
+**Response:**
+```json
+{"success": true, "message": "Successfully navigated to https://example.com. The current page title is: 'Example Domain'"}
+```
+
+#### 2. Add Calendar Event
+```bash
+export GOOGLE_ACCESS_TOKEN="your_access_token"
+python3 browser.py add_calendar_event '{"title":"Meeting","date":"2025-10-15","time":"14:00","description":"Team sync"}'
+```
+
+**Parameters:**
+- `title` (required): Event title
+- `date` (required): Event date in YYYY-MM-DD format
+- `time` (optional): Event time in HH:MM format
+- `description` (optional): Event description
+
+**Response:**
+```json
+{"success": true, "message": "Successfully added calendar event: Meeting", "data": {"title": "Meeting", "date": "2025-10-15", "time": "14:00"}}
+```
+
+#### 3. Add Note to Google Keep
+```bash
+export GOOGLE_ACCESS_TOKEN="your_access_token"
+python3 browser.py add_note '{"title":"Shopping List","content":"Milk, Eggs, Bread"}'
+```
+
+**Parameters:**
+- `title` (required): Note title
+- `content` (required): Note content
+
+**Response:**
+```json
+{"success": true, "message": "Successfully added note to Keep: Shopping List", "data": {"title": "Shopping List", "content": "Milk, Eggs, Bread"}}
+```
+
+### Browser Automation Flow
+
+1. **Token Retrieval**: `browserIntegrationService.ts` gets a valid access token using `getValidAccessToken()`
+2. **Process Spawn**: Service spawns Python process with action and parameters
+3. **Environment Setup**: Access token passed via `GOOGLE_ACCESS_TOKEN` environment variable
+4. **Browser Launch**: Playwright launches Chromium with authentication context
+5. **Authentication**: Access token set as cookies for Google domains
+6. **Action Execution**: Requested action performed (navigate, calendar, keep)
+7. **Result Return**: JSON result returned via stdout to Node.js service
+
+### Implementation Details
+
+The `browser.py` script now includes:
+- `access_token` parameter in `BrowserAgentTool.__init__()`
+- Browser context creation with authentication support
+- `_set_google_auth()` method to configure Google OAuth cookies
+- `add_calendar_event()` method for Google Calendar integration
+- `add_note_to_keep()` method for Google Keep integration
+- `execute_action()` CLI handler for command-line invocation
 
 ## Troubleshooting
 
 ### "Google OAuth credentials not configured"
 - Check that `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set in `.env`
 - Verify `.env` file is being loaded (not `.env.example`)
+- Ensure environment variables are being loaded by the server (restart server after updating `.env`)
+
+### OAuth endpoint redirects to Google but shows error
+- Verify redirect URI matches exactly in Google Cloud Console and `.env`
+- Check that Google Calendar API is enabled in Google Cloud Console
+- Ensure OAuth consent screen is configured with correct scopes
+
+### `/api/oauth/status` shows "connected: false"
+This means no OAuth token is stored yet. User needs to:
+1. Navigate to `http://localhost:5000/oauth/google` 
+2. Complete Google OAuth consent flow
+3. After successful authorization, check status again
 
 ### "No valid token available"
 - User needs to connect their Google account via `/oauth/google`
@@ -259,6 +343,13 @@ It can then use this token to authenticate API requests or browser sessions.
 ### "Failed to refresh token"
 - Refresh token may be invalid or revoked
 - User needs to re-authenticate via `/oauth/google`
+
+### Browser automation not working (calendar/web navigation)
+- Ensure Playwright is installed: `pip install playwright`
+- Install Chromium browser: `playwright install chromium`
+- Verify `browser.py` can be executed: `python3 browser.py navigate '{"url":"https://google.com"}'`
+- Check that user has completed OAuth flow (access token must be available)
+- Review server logs for Python process errors
 
 ### Foreign key constraint errors
 - Ensure default user exists in database
@@ -271,10 +362,11 @@ It can then use this token to authenticate API requests or browser sessions.
    - Use HTTPS for all OAuth flows
    - Set up proper user authentication
 
-2. **Browser Automation**:
-   - Install Playwright: `pip install playwright && playwright install chromium`
-   - Update `browser.py` to use access token
-   - Implement Keep/Calendar automation logic
+2. **Browser Automation** ✅:
+   - ✅ Install Playwright: `pip install playwright && playwright install chromium`
+   - ✅ Updated `browser.py` to use access token via CLI interface
+   - ✅ Implemented Keep/Calendar automation logic with authenticated browsing
+   - Note: Requires user to complete OAuth flow via `/oauth/google` before using automation features
 
 3. **Multi-User Support**:
    - Add proper user authentication

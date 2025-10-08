@@ -48,9 +48,25 @@ import { addCalendarEvent } from './server/browserIntegrationService';
 await addCalendarEvent('Meeting', '2025-10-15', '14:00');
 ```
 
+### Browser.py CLI (Direct Python Usage)
+```bash
+# Navigate to a webpage
+export GOOGLE_ACCESS_TOKEN="your_token"
+python3 browser.py navigate '{"url":"https://youtube.com"}'
+
+# Add calendar event
+python3 browser.py add_calendar_event '{"title":"Doctor Appointment","date":"2025-10-20","time":"10:00"}'
+
+# Add note to Google Keep
+python3 browser.py add_note '{"title":"Ideas","content":"Project brainstorming notes"}'
+```
+
 ### Via Chat
 **User:** "Add a note to buy groceries"  
 **Milla:** "*smiles* I've added that to your Google Keep, love!"
+
+**User:** "Open YouTube for me"  
+**Milla:** "I've opened YouTube in the browser for you!"
 
 ## File Structure
 
@@ -63,6 +79,8 @@ server/
 
 shared/
 └── schema.ts               # oauth_tokens table
+
+browser.py                  # ✅ Updated with OAuth token support & CLI
 
 memory/
 └── pr_memories/            # PR memory storage
@@ -97,18 +115,22 @@ Expected: ✅ All OAuth service tests passed!
 
 | Issue | Solution |
 |-------|----------|
-| "OAuth credentials not configured" | Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET |
+| "OAuth credentials not configured" | Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env |
 | "No valid token available" | Visit /oauth/google to connect |
 | "Failed to refresh token" | Re-authenticate via /oauth/google |
+| Browser actions not working | Install: `pip install playwright && playwright install chromium` |
+| Status shows connected:false | Complete OAuth flow at /oauth/google first |
 
 ## Next Steps
 
-1. Set up Google Cloud Project
-2. Enable Calendar & Keep APIs
-3. Create OAuth credentials
-4. Install Python + Playwright
-5. Update browser.py to use tokens
+1. ✅ Set up Google Cloud Project
+2. ✅ Enable Calendar & Keep APIs
+3. ✅ Create OAuth credentials
+4. ✅ Install Python + Playwright: `pip install playwright && playwright install chromium`
+5. ✅ Updated browser.py to use tokens via CLI interface
+6. **TODO**: Complete OAuth flow by visiting `/oauth/google`
+7. **TODO**: Test browser automation features
 
 ---
 
-**Status:** ✅ Ready for production OAuth setup
+**Status:** ✅ Ready for OAuth connection and browser automation
