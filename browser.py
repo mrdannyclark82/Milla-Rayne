@@ -27,6 +27,7 @@ class BrowserAgentTool:
         self.access_token = access_token
         self.playwright = None
         self.browser = None
+        self.context = None
         self.page = None
 
     async def initialize(self):
