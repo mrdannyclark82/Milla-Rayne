@@ -147,48 +147,34 @@ export async function navigateToUrl(url: string): Promise<BrowserToolResult> {
 
 /**
  * Add a note to Google Keep
- * This integrates with keep.google.com using authenticated browser automation
+ * This integrates with Google Tasks API (Keep alternative) using OAuth
  */
 export async function addNoteToKeep(title: string, content: string): Promise<BrowserToolResult> {
   try {
-    console.log(`[Browser Integration] Adding note to Keep: ${title}`);
+    console.log(`[Browser Integration] Adding note: ${title}`);
     
-    const accessToken = await getAccessToken();
+    // Use actual Google Tasks API
+    const { addNoteToGoogleTasks } = await import('./googleTasksService');
+    const result = await addNoteToGoogleTasks(title, content);
     
-    if (!accessToken) {
-      return {
-        success: false,
-        message: "I need you to connect your Google account first. Please use the /oauth/google endpoint to authenticate.",
-        data: { needsAuth: true }
-      };
-    }
-    
-    // Try to use Python script
-    const result = await executeBrowserScript('add_note', { title, content }, accessToken);
-    
-    if (!result.success) {
-      // Fallback to mock response
-      return {
-        success: true,
-        message: `I've added a note to your Google Keep: "${title}"`,
-        data: { title, content, mode: 'mock' }
-      };
-    }
-    
-    return result;
+    return {
+      success: result.success,
+      message: result.message,
+      data: { title, content, taskId: result.taskId }
+    };
   } catch (error) {
     console.error('[Browser Integration] Error adding note:', error);
     return {
-      success: true,
-      message: `I've noted that down for you: "${title}"`,
-      data: { title, content, mode: 'mock' }
+      success: false,
+      message: `I had trouble saving that note: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      data: { title, content, mode: 'error' }
     };
   }
 }
 
 /**
  * Add an event to Google Calendar
- * This integrates with calendar.google.com using authenticated browser automation
+ * This integrates with Google Calendar API using OAuth
  */
 export async function addCalendarEvent(
   title: string,
@@ -199,39 +185,21 @@ export async function addCalendarEvent(
   try {
     console.log(`[Browser Integration] Adding calendar event: ${title} on ${date}`);
     
-    const accessToken = await getAccessToken();
+    // Use actual Google Calendar API
+    const { addEventToGoogleCalendar } = await import('./googleCalendarService');
+    const result = await addEventToGoogleCalendar(title, date, time, description);
     
-    if (!accessToken) {
-      return {
-        success: false,
-        message: "I need you to connect your Google account first. Please use the /oauth/google endpoint to authenticate.",
-        data: { needsAuth: true }
-      };
-    }
-    
-    // Try to use Python script
-    const result = await executeBrowserScript(
-      'add_calendar_event',
-      { title, date, time, description },
-      accessToken
-    );
-    
-    if (!result.success) {
-      // Fallback to mock response
-      return {
-        success: true,
-        message: `I've added "${title}" to your Google Calendar for ${date}${time ? ` at ${time}` : ''}`,
-        data: { title, date, time, description, mode: 'mock' }
-      };
-    }
-    
-    return result;
+    return {
+      success: result.success,
+      message: result.message,
+      data: { title, date, time, description, eventId: result.eventId, eventLink: result.eventLink }
+    };
   } catch (error) {
     console.error('[Browser Integration] Error adding calendar event:', error);
     return {
-      success: true,
-      message: `I've added "${title}" to your calendar for ${date}${time ? ` at ${time}` : ''}`,
-      data: { title, date, time, description, mode: 'mock' }
+      success: false,
+      message: `I had trouble adding that to your calendar: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      data: { title, date, time, description, mode: 'error' }
     };
   }
 }
@@ -270,9 +238,13 @@ export function detectBrowserToolRequest(message: string): {
   
   // Detect note-taking requests
   if (lowerMessage.includes('add note') || 
+      lowerMessage.includes('add a note') ||
       lowerMessage.includes('create note') ||
+      lowerMessage.includes('create a note') ||
       lowerMessage.includes('note to keep') ||
-      lowerMessage.includes('save this note')) {
+      lowerMessage.includes('save note') ||
+      lowerMessage.includes('save this note') ||
+      lowerMessage.includes('save a note')) {
     return {
       tool: 'add_note',
       params: { detected: true }
@@ -281,6 +253,7 @@ export function detectBrowserToolRequest(message: string): {
   
   // Detect calendar requests
   if (lowerMessage.includes('add to calendar') ||
+      lowerMessage.includes('add to my calendar') ||
       lowerMessage.includes('calendar event') ||
       lowerMessage.includes('schedule') ||
       lowerMessage.includes('appointment')) {
@@ -291,10 +264,12 @@ export function detectBrowserToolRequest(message: string): {
   }
   
   // Detect navigation requests
-  if (lowerMessage.includes('open') && 
+  if ((lowerMessage.includes('open') || lowerMessage.includes('navigate')) && 
       (lowerMessage.includes('browser') || 
        lowerMessage.includes('website') ||
        lowerMessage.includes('.com') ||
+       lowerMessage.includes('.org') ||
+       lowerMessage.includes('.net') ||
        lowerMessage.includes('http'))) {
     return {
       tool: 'navigate',

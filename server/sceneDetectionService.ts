@@ -53,25 +53,37 @@ export function detectLocation(action: string, fullMessage?: string): SceneLocat
   const actionLower = action.toLowerCase();
   const fullLower = fullMessage ? fullMessage.toLowerCase() : actionLower;
   
-  // Location keywords mapping
+  // More specific location keywords to avoid false triggers from common words
+  // Use longer phrases and more contextual terms
   const locationKeywords: Record<SceneLocation, string[]> = {
-    living_room: ['living room', 'couch', 'sofa', 'tv', 'sits down', 'sits on the couch'],
-    bedroom: ['bedroom', 'bed', 'lies down', 'lays down', 'sleeping', 'go to the bedroom', 'to bed'],
-    kitchen: ['kitchen', 'cooking', 'fridge', 'counter', 'stove'],
-    bathroom: ['bathroom', 'shower', 'bath', 'mirror'],
-    front_door: ['walks in', 'front door', 'enters', 'arrives', 'comes in', 'door'],
-    dining_room: ['dining room', 'table', 'eating'],
-    outdoor: ['outside', 'garden', 'yard', 'patio', 'porch', 'runs outside'],
-    car: ['car', 'driving', 'vehicle'],
+    living_room: ['living room', 'sits on the couch', 'on the sofa', 'in the tv room', 'watching tv'],
+    bedroom: ['in the bedroom', 'goes to bed', 'lies down in bed', 'go to the bedroom', 'sleeping in bed'],
+    kitchen: ['in the kitchen', 'cooking in the', 'opens the fridge', 'at the stove', 'preparing food'],
+    bathroom: ['in the bathroom', 'takes a shower', 'in the bath', 'washing up'],
+    front_door: ['walks in through', 'at the front door', 'opens the front door', 'arrives home', 'comes in the door'],
+    dining_room: ['in the dining room', 'sits at the dining table', 'eating at the table'],
+    outdoor: ['goes outside', 'in the garden', 'in the yard', 'steps outside', 'on the patio'],
+    car: ['gets in the car', 'in the car', 'driving the car', 'in the vehicle'],
     unknown: []
   };
   
-  // Check for each location's keywords in action first, then full message
+  // Check for each location's keywords in action first (higher priority)
   for (const [location, keywords] of Object.entries(locationKeywords)) {
     if (location === 'unknown') continue;
     
     for (const keyword of keywords) {
-      if (actionLower.includes(keyword) || fullLower.includes(keyword)) {
+      if (actionLower.includes(keyword)) {
+        return location as SceneLocation;
+      }
+    }
+  }
+  
+  // Then check in full message (lower priority, only if action didn't match)
+  for (const [location, keywords] of Object.entries(locationKeywords)) {
+    if (location === 'unknown') continue;
+    
+    for (const keyword of keywords) {
+      if (fullLower.includes(keyword)) {
         return location as SceneLocation;
       }
     }

@@ -118,13 +118,13 @@ export function extractImagePrompt(userMessage: string): string | null {
   const message = userMessage.toLowerCase();
 
   // Match patterns like "create an image of..." or "draw a picture of..."
+  // Note: Removed generic /create\s+(.+)/ pattern to avoid false triggers for calendar events, notes, etc.
   const patterns = [
     /create an image of\s+(.+)/i,
     /draw a picture of\s+(.+)/i,
     /generate an image of\s+(.+)/i,
     /make an image of\s+(.+)/i,
     /draw\s+(.+)/i,
-    /create\s+(.+)/i,
     /show me\s+(.+)/i,
     /picture of\s+(.+)/i
   ];

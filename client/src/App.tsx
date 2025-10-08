@@ -286,7 +286,7 @@ function App() {
     }
   };
 
-  const getButtonSize = () => {
+  const getButtonSize = (): "default" | "sm" => {
     return "sm";
   };
 
@@ -406,6 +406,15 @@ function App() {
             <UnifiedSettingsMenu
               getButtonSize={getButtonSize}
               setShowVoicePicker={setShowVoicePicker}
+              availableVoices={availableVoices}
+              selectedVoice={selectedVoice}
+              onVoiceSelect={setSelectedVoice}
+              speechRate={speechRate}
+              onSpeechRateChange={setSpeechRate}
+              voicePitch={voicePitch}
+              onVoicePitchChange={setVoicePitch}
+              voiceVolume={voiceVolume}
+              onVoiceVolumeChange={setVoiceVolume}
             />
           </div>
 
@@ -428,7 +437,7 @@ function App() {
           />
 
           {/* Messages - Takes up most of the remaining space */}
-          <div className="flex-1 overflow-y-auto space-y-3 p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+          <div className="flex-1 overflow-y-auto space-y-3 p-4 bg-gray-900/50 rounded-lg border border-gray-700/50 backdrop-blur-sm mb-[120px]">
             {messages.length === 0 ? (
               <p className="text-gray-400 text-center">
                 Start a conversation with Milla...
@@ -456,8 +465,13 @@ function App() {
             )}
           </div>
 
-          {/* Input Area - Fixed at bottom of chat */}
-          <div className="flex gap-2 items-end flex-shrink-0 p-3 bg-gray-800/50 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+          {/* Input Area - Fixed at bottom with floating style */}
+          <div 
+            className="fixed bottom-4 right-6 left-[67%] flex gap-2 items-end p-3 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md rounded-lg border border-white/30 shadow-2xl z-20"
+            style={{
+              maxWidth: 'calc(33.333% - 48px)'
+            }}
+          >
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}

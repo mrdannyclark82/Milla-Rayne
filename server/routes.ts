@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid message data", errors: error.errors });
+        res.status(400).json({ message: "Invalid message data", errors: error.issues });
       } else {
         res.status(500).json({ message: "Failed to create message" });
       }
@@ -1746,6 +1746,89 @@ Project: Milla Rayne - AI Virtual Assistant
       res.status(500).json({
         error: "Failed to disconnect",
         success: false
+      });
+    }
+  });
+
+  // Browser Integration Tool endpoints
+  app.post("/api/browser/navigate", async (req, res) => {
+    try {
+      const { url } = req.body;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({
+          error: "Missing or invalid URL",
+          success: false
+        });
+      }
+
+      const { navigateToUrl } = await import("./browserIntegrationService");
+      const result = await navigateToUrl(url);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error navigating to URL:", error);
+      res.status(500).json({
+        error: "Failed to navigate",
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/browser/add-note", async (req, res) => {
+    try {
+      const { title, content } = req.body;
+      
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({
+          error: "Missing or invalid title",
+          success: false
+        });
+      }
+
+      const { addNoteToKeep } = await import("./browserIntegrationService");
+      const result = await addNoteToKeep(title, content || '');
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error adding note:", error);
+      res.status(500).json({
+        error: "Failed to add note",
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/browser/add-calendar-event", async (req, res) => {
+    try {
+      const { title, date, time, description } = req.body;
+      
+      if (!title || typeof title !== 'string') {
+        return res.status(400).json({
+          error: "Missing or invalid title",
+          success: false
+        });
+      }
+
+      if (!date || typeof date !== 'string') {
+        return res.status(400).json({
+          error: "Missing or invalid date",
+          success: false
+        });
+      }
+
+      const { addCalendarEvent } = await import("./browserIntegrationService");
+      const result = await addCalendarEvent(title, date, time, description);
+
+      res.json(result);
+    } catch (error) {
+      console.error("Error adding calendar event:", error);
+      res.status(500).json({
+        error: "Failed to add calendar event",
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });

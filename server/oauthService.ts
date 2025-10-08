@@ -37,7 +37,7 @@ export function getGoogleOAuthConfig(): GoogleOAuthConfig {
     redirectUri,
     scope: [
       'https://www.googleapis.com/auth/calendar',
-      'https://www.googleapis.com/auth/keep',
+      'https://www.googleapis.com/auth/tasks',
       'profile',
       'email'
     ]

@@ -258,12 +258,12 @@ export default function SettingsPanel({
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto bg-black/80 backdrop-blur-md border border-white/20 text-white">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-w-[90vw] max-h-[85vh] overflow-y-auto bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md border border-white/20 text-white">
+        <DialogHeader className="sticky top-0 z-10 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 pb-2 border-b border-white/10">
           <DialogTitle className="text-2xl font-bold text-white">Settings</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 mt-4">
+        <div className="space-y-3 mt-4 overflow-y-auto pr-2">
           {/* Appearance Section */}
           <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
             <CardHeader>
