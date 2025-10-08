@@ -238,9 +238,13 @@ export function detectBrowserToolRequest(message: string): {
   
   // Detect note-taking requests
   if (lowerMessage.includes('add note') || 
+      lowerMessage.includes('add a note') ||
       lowerMessage.includes('create note') ||
+      lowerMessage.includes('create a note') ||
       lowerMessage.includes('note to keep') ||
-      lowerMessage.includes('save this note')) {
+      lowerMessage.includes('save note') ||
+      lowerMessage.includes('save this note') ||
+      lowerMessage.includes('save a note')) {
     return {
       tool: 'add_note',
       params: { detected: true }
@@ -249,6 +253,7 @@ export function detectBrowserToolRequest(message: string): {
   
   // Detect calendar requests
   if (lowerMessage.includes('add to calendar') ||
+      lowerMessage.includes('add to my calendar') ||
       lowerMessage.includes('calendar event') ||
       lowerMessage.includes('schedule') ||
       lowerMessage.includes('appointment')) {
@@ -259,10 +264,12 @@ export function detectBrowserToolRequest(message: string): {
   }
   
   // Detect navigation requests
-  if (lowerMessage.includes('open') && 
+  if ((lowerMessage.includes('open') || lowerMessage.includes('navigate')) && 
       (lowerMessage.includes('browser') || 
        lowerMessage.includes('website') ||
        lowerMessage.includes('.com') ||
+       lowerMessage.includes('.org') ||
+       lowerMessage.includes('.net') ||
        lowerMessage.includes('http'))) {
     return {
       tool: 'navigate',
