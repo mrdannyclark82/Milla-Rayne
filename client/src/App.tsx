@@ -20,8 +20,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+import { ElevenLabsVoice } from '@/types/elevenLabs';
+  const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(null);
+  const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [voicePitch, setVoicePitch] = useState(1.0);
   const [voiceVolume, setVoiceVolume] = useState(0.8);
@@ -67,21 +68,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices();
+    const loadVoices = async () => {
+      const voices = await voiceService.getAvailableVoices();
       setAvailableVoices(voices);
-      const femaleVoice = voices.find(v =>
-        v.name.toLowerCase().includes('female') ||
-        v.name.toLowerCase().includes('samantha') ||
-        v.name.toLowerCase().includes('karen') ||
-        v.name.toLowerCase().includes('victoria')
-      );
-      setSelectedVoice(femaleVoice || voices[0] || null);
+      if (voices.length > 0) {
+        setSelectedVoice(voices[0]);
+      }
     };
 
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-  }, []);
+    if (voiceEnabled) {
+      loadVoices();
+    }
+  }, [voiceEnabled]);
 
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -149,17 +147,16 @@ function App() {
   };
 
   const speakMessage = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (selectedVoice) utterance.voice = selectedVoice;
-    utterance.rate = speechRate;
-    utterance.pitch = voicePitch;
-    utterance.volume = voiceVolume;
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    voiceService.speak(text, {
+      voiceName: selectedVoice?.voice_id,
+      rate: speechRate,
+      pitch: voicePitch,
+      volume: voiceVolume,
+      onStart: () => setIsSpeaking(true),
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
     setLastMessage(text);
-    window.speechSynthesis.speak(utterance);
   };
   
   const toggleListening = () => {
@@ -220,7 +217,6 @@ function App() {
               <UnifiedSettingsMenu
                 getButtonSize={getButtonSize}
                 setShowVoicePicker={setShowVoicePicker}
-                availableVoices={availableVoices}
                 selectedVoice={selectedVoice}
                 onVoiceSelect={setSelectedVoice}
                 speechRate={speechRate}
@@ -274,7 +270,6 @@ function App() {
         <VoicePickerDialog
           open={showVoicePicker}
           onOpenChange={setShowVoicePicker}
-          availableVoices={availableVoices}
           selectedVoice={selectedVoice}
           onVoiceSelect={setSelectedVoice}
           speechRate={speechRate}

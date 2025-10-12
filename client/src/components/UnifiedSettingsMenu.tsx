@@ -21,11 +21,12 @@ import { SceneSettingsDialog } from './SceneSettingsDialog';
 import { VoicePickerDialog } from './VoicePickerDialog';
 import DeveloperModeToggle from './DeveloperModeToggle';
 
+import { ElevenLabsVoice } from '@/types/elevenLabs';
+
 interface UnifiedSettingsMenuProps {
   // Voice settings props
-  availableVoices: SpeechSynthesisVoice[];
-  selectedVoice: SpeechSynthesisVoice | null;
-  onVoiceSelect: (voice: SpeechSynthesisVoice) => void;
+  selectedVoice: ElevenLabsVoice | null;
+  onVoiceSelect: (voice: ElevenLabsVoice) => void;
   speechRate: number;
   onSpeechRateChange: (rate: number) => void;
   voicePitch: number;

@@ -124,6 +124,102 @@ if (!globalThis.crypto) {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+
+  app.get('/api/env', (req, res) => {
+    res.json({
+      // Nothing to see here
+    });
+  });
+
+  app.post('/api/elevenlabs/tts', async (req, res) => {
+    const { text, voiceName, voice_settings } = req.body;
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+    }
+
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceName}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return res.status(response.status).json(errorData);
+      }
+
+      const audioBlob = await response.blob();
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.send(Buffer.from(await audioBlob.arrayBuffer()));
+    } catch (error) {
+      res.status(500).json({ error: 'Error proxying ElevenLabs TTS request' });
+    }
+  });
+
+  app.get('/api/elevenlabs/voices', async (req, res) => {
+    console.log('Fetching ElevenLabs voices...');
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+
+    if (!apiKey) {
+      console.error('ElevenLabs API key not configured');
+      return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+    }
+
+    try {
+      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+        headers: {
+          'xi-api-key': apiKey,
+        },
+      });
+
+      console.log('ElevenLabs API response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('ElevenLabs API error:', errorData);
+        return res.status(response.status).json(errorData);
+      }
+
+      const data = await response.json();
+      console.log('ElevenLabs voices fetched successfully');
+      res.json(data);
+    } catch (error) {
+      console.error('Error proxying ElevenLabs voices request:', error);
+      res.status(500).json({ error: 'Error proxying ElevenLabs voices request' });
+    }
+  });
+
+  app.get('/api/gmail/recent', async (req, res) => {
+    const { getRecentEmails } = await import('./googleGmailService');
+    const result = await getRecentEmails('default-user', Number(req.query.maxResults));
+    res.json(result);
+  });
+
+  app.get('/api/gmail/content', async (req, res) => {
+    const { getEmailContent } = await import('./googleGmailService');
+    const result = await getEmailContent('default-user', String(req.query.messageId));
+    res.json(result);
+  });
+
+  app.post('/api/gmail/send', async (req, res) => {
+    const { to, subject, body } = req.body;
+    const { sendEmail } = await import('./googleGmailService');
+    const result = await sendEmail('default-user', to, subject, body);
+    res.json(result);
+  });
+
+
   server.listen({
     port,
     host: "0.0.0.0",

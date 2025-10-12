@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { AvatarCustomizer } from "./AvatarCustomizer";
 import { AccessibilitySettings } from "./AccessibilitySettings";
 import { SceneSettingsPanel } from "./scene/SceneSettingsPanel";
+import { GmailClient } from "./GmailClient";
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -739,6 +740,9 @@ export default function SettingsPanel({
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
             <SceneSettingsPanel />
           </div>
+
+          {/* Gmail Client Section */}
+          <GmailClient />
         </div>
 
         <Separator className="bg-white/20" />
