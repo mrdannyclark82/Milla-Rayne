@@ -262,3 +262,13 @@ export async function deleteOAuthToken(
     await (storage as any).deleteOAuthToken(token.id);
   }
 }
+
+/**
+ * Check if user is authenticated with Google
+ */
+export async function isGoogleAuthenticated(
+  userId: string
+): Promise<boolean> {
+  const token = await getOAuthToken(userId, 'google');
+  return !!token;
+}

@@ -100,10 +100,10 @@ export default function SettingsPanel({
   useEffect(() => {
     const fetchOauthStatus = async () => {
       try {
-        const response = await fetch('/api/oauth/status');
+        const response = await fetch('/api/oauth/authenticated');
         const data = await response.json();
         if (data.success) {
-          setOauthStatus(data);
+          setOauthStatus({ connected: data.isAuthenticated });
         }
       } catch (error) {
         console.error('Error fetching OAuth status:', error);
@@ -877,7 +877,7 @@ export default function SettingsPanel({
                   </div>
                   {oauthStatus.connected ? (
                     <div className="flex items-center space-x-2">
-                       <span className="text-xs text-green-400">Connected</span>
+                      <span className="text-xs text-green-400">Connected</span>
                       <Button
                         variant="outline"
                         size="sm"
@@ -891,10 +891,10 @@ export default function SettingsPanel({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.location.href = '/oauth/google'}
+                      onClick={() => (window.location.href = '/api/oauth/google')}
                       className="border-white/30 text-white/70 hover:text-white"
                     >
-                      Connect
+                      Connect to Google
                     </Button>
                   )}
                 </div>
