@@ -626,12 +626,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // REMOVED - Personal Task Management endpoints (user rarely used them)
-  // app.get("/api/personal-tasks", async (req, res) => { ... });
-  // app.get("/api/task-summary", async (req, res) => { ... });
-  // app.post("/api/personal-tasks/:taskId/start", async (req, res) => { ... });
-  // app.post("/api/personal-tasks/:taskId/complete", async (req, res) => { ... });
-  // app.post("/api/generate-tasks", async (req, res) => { ... });
 
   // User Tasks API endpoints
   app.get('/api/user-tasks', async (req, res) => {
@@ -2314,23 +2308,10 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get('/api/ai-updates/recommendations', async (req, res) => {
     try {
-      console.log('DEBUG: /api/ai-updates/recommendations route hit');
-      // Temporary short-circuit for debugging: return a simple test response
-      // (revert this once we've confirmed the route is reachable)
-      res.json({ success: true, debug: true });
-      return;
-      let generateRecommendations: any, getRecommendationSummary: any;
-      try {
-        const mod = await import('./predictiveRecommendations');
-        generateRecommendations = mod.generateRecommendations;
-        getRecommendationSummary = mod.getRecommendationSummary;
-      } catch (impErr) {
-        console.error('Failed to import predictiveRecommendations module:', {
-          message: (impErr as any)?.message,
-          stack: (impErr as any)?.stack,
-        });
-        throw impErr;
-      }
+      const {
+        generateRecommendations,
+        getRecommendationSummary,
+      } = await import('./predictiveRecommendations');
       const { minRelevance, maxRecommendations, summary } = req.query;
 
       if (summary === 'true') {
@@ -2350,7 +2331,6 @@ Project: Milla Rayne - AI Virtual Assistant
         });
       }
     } catch (error) {
-      // Log detailed error for debugging
       console.error('Error generating recommendations:', {
         message: (error as any)?.message,
         stack: (error as any)?.stack,
