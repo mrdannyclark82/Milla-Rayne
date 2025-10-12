@@ -257,6 +257,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/oauth/authenticated', async (req, res) => {
+    try {
+      const { isGoogleAuthenticated } = await import('./oauthService');
+      const userId = 'default-user'; // In production, get from session
+      const isAuthenticated = await isGoogleAuthenticated(userId);
+      res.json({ success: true, isAuthenticated });
+    } catch (error) {
+      console.error('Error checking authentication status:', error);
+      res.status(500).json({
+        error: 'Failed to check authentication status',
+        success: false,
+      });
+    }
+  });
+
   app.post('/api/chat', async (req, res) => {
     try {
       const { message } = req.body;
@@ -1866,6 +1881,35 @@ Project: Milla Rayne - AI Virtual Assistant
   });
 
   // OAuth endpoints for Google integration
+
+  app.post('/api/oauth/refresh', async (req, res) => {
+    try {
+      const { getValidAccessToken } = await import('./oauthService');
+      const userId = 'default-user'; // In production, get from session
+
+      const accessToken = await getValidAccessToken(userId, 'google');
+
+      if (!accessToken) {
+        return res.status(401).json({
+          error: 'No valid token available. Please re-authenticate.',
+          success: false,
+          needsAuth: true,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Token refreshed successfully',
+      });
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      res.status(500).json({
+        error: 'Failed to refresh token',
+        success: false,
+      });
+    }
+  });
+
   app.get('/oauth/google', async (req, res) => {
     try {
       const { getAuthorizationUrl } = await import('./oauthService');
@@ -1936,55 +1980,6 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
-  app.post('/api/oauth/refresh', async (req, res) => {
-    try {
-      const { getValidAccessToken } = await import('./oauthService');
-      const userId = 'default-user'; // In production, get from session
-
-      const accessToken = await getValidAccessToken(userId, 'google');
-
-      if (!accessToken) {
-        return res.status(401).json({
-          error: 'No valid token available. Please re-authenticate.',
-          success: false,
-          needsAuth: true,
-        });
-      }
-
-      res.json({
-        success: true,
-        message: 'Token refreshed successfully',
-      });
-    } catch (error) {
-      console.error('Error refreshing token:', error);
-      res.status(500).json({
-        error: 'Failed to refresh token',
-        success: false,
-      });
-    }
-  });
-
-  app.get('/api/oauth/status', async (req, res) => {
-    try {
-      const { getOAuthToken } = await import('./oauthService');
-      const userId = 'default-user'; // In production, get from session
-
-      const token = await getOAuthToken(userId, 'google');
-
-      res.json({
-        success: true,
-        connected: !!token,
-        provider: token ? 'google' : null,
-        expiresAt: token ? token.expiresAt : null,
-      });
-    } catch (error) {
-      console.error('Error checking OAuth status:', error);
-      res.status(500).json({
-        error: 'Failed to check OAuth status',
-        success: false,
-      });
-    }
-  });
 
   // Google Calendar API routes
   app.get('/api/calendar/events', async (req, res) => {
