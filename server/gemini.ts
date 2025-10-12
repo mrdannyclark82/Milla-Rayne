@@ -127,3 +127,50 @@ export async function generateVideoInsights(videoAnalysis: {
     return "I watched your video, sweetheart, but I'm having some technical difficulties sharing my thoughts about it right now.";
   }
 }
+
+export async function parseCalendarCommand(
+  command: string
+): Promise<{ title: string; date: string; time: string } | null> {
+  try {
+    const contents = [
+      {
+        role: 'user',
+        parts: [
+          {
+            text: `From the following command, extract the event title, date, and time. Today is ${new Date().toDateString()}. The current time is ${new Date().toLocaleTimeString()}. The output should be a JSON object with the keys "title", "date", and "time".
+
+            Command: "${command}"`,
+          },
+        ],
+      },
+    ];
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-pro',
+      contents: contents,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            date: { type: 'string' },
+            time: { type: 'string' },
+          },
+          required: ['title', 'date', 'time'],
+        },
+      },
+    });
+
+    const rawJson = response.text;
+
+    if (rawJson) {
+      return JSON.parse(rawJson);
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error('Calendar command parsing error:', error);
+    return null;
+  }
+}

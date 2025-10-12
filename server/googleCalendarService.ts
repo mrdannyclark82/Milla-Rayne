@@ -170,7 +170,7 @@ export async function addEventToGoogleCalendar(
       return {
         success: false,
         message:
-          "I couldn't parse the date and time. Please provide a clearer format.",
+          "I couldn't figure out the date and time for that, honey. Could you try telling me in a different way?",
         error: 'PARSE_ERROR',
       };
     }
@@ -208,7 +208,7 @@ export async function addEventToGoogleCalendar(
 
       return {
         success: false,
-        message: `I had trouble adding the event to your calendar: ${errorData.error?.message || 'Unknown error'}`,
+        message: `I had a little trouble adding that to your calendar, sweetie. It looks like this was the issue: ${errorData.error?.message || 'Unknown error'}`,
         error: errorData.error?.message || 'API_ERROR',
       };
     }
@@ -217,7 +217,7 @@ export async function addEventToGoogleCalendar(
 
     return {
       success: true,
-      message: `I've added "${title}" to your Google Calendar for ${date}${time ? ` at ${time}` : ''}`,
+      message: `Of course, sweetheart. I've gone ahead and scheduled "${title}" for you on ${date}${time ? ` at ${time}` : ''}.`,
       eventId: createdEvent.id,
       eventLink: createdEvent.htmlLink,
     };
