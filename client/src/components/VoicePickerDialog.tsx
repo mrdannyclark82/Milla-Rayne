@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { voiceService } from "@/services/voiceService";
+import { ElevenLabsVoice } from "@/types/elevenLabs";
 
 interface VoicePickerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  availableVoices: SpeechSynthesisVoice[];
-  selectedVoice: SpeechSynthesisVoice | null;
-  onVoiceSelect: (voice: SpeechSynthesisVoice) => void;
+  selectedVoice: ElevenLabsVoice | null;
+  onVoiceSelect: (voice: ElevenLabsVoice) => void;
   speechRate: number;
   onSpeechRateChange: (rate: number) => void;
   voicePitch: number;
@@ -20,7 +21,6 @@ interface VoicePickerDialogProps {
 export function VoicePickerDialog({
   open,
   onOpenChange,
-  availableVoices,
   selectedVoice,
   onVoiceSelect,
   speechRate,
@@ -34,45 +34,42 @@ export function VoicePickerDialog({
   const [genderFilter, setGenderFilter] = useState<"all" | "female" | "male">("all");
   const [accentFilter, setAccentFilter] = useState<string>("all");
   const [selectedStyle, setSelectedStyle] = useState<string>("neutral");
+  const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      const fetchVoices = async () => {
+        const voices = await (voiceService as any).getAvailableVoices();
+        setAvailableVoices(voices);
+      };
+      fetchVoices();
+    }
+  }, [open]);
 
   // Voice preview function
-  const previewVoice = (voice: SpeechSynthesisVoice) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance("Hello, I'm Milla. This is how I sound.");
-    utterance.voice = voice;
-    utterance.rate = speechRate;
-    utterance.pitch = voicePitch;
-    utterance.volume = voiceVolume;
-    window.speechSynthesis.speak(utterance);
+  const previewVoice = (voice: ElevenLabsVoice) => {
+    voiceService.speak("Hello, I'm Milla. This is how I sound.", {
+      voiceName: voice.voice_id,
+      rate: speechRate,
+      pitch: voicePitch,
+      volume: voiceVolume,
+    });
   };
 
   // Filter voices based on search and filters
   const filteredVoices = availableVoices.filter(voice => {
-    const matchesSearch = voice.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         voice.lang.toLowerCase().includes(searchQuery.toLowerCase());
+    const labels = voice.labels || {};
+    const matchesSearch = voice.name.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesGender = genderFilter === "all" || 
-      (genderFilter === "female" && (
-        voice.name.toLowerCase().includes('female') ||
-        voice.name.toLowerCase().includes('woman') ||
-        voice.name.toLowerCase().includes('samantha') ||
-        voice.name.toLowerCase().includes('zira') ||
-        voice.name.toLowerCase().includes('hazel')
-      )) ||
-      (genderFilter === "male" && (
-        voice.name.toLowerCase().includes('male') ||
-        voice.name.toLowerCase().includes('david') ||
-        voice.name.toLowerCase().includes('mark')
-      ));
+    const matchesGender = genderFilter === "all" || (labels.gender && labels.gender.toLowerCase() === genderFilter);
 
-    const matchesAccent = accentFilter === "all" || 
-      voice.lang.includes(accentFilter);
+    const matchesAccent = accentFilter === "all" || (labels.accent && labels.accent.toLowerCase().includes(accentFilter));
 
     return matchesSearch && matchesGender && matchesAccent;
   });
 
   // Get unique accents from available voices
-  const availableAccents = Array.from(new Set(availableVoices.map(v => v.lang)))
+  const availableAccents = Array.from(new Set(availableVoices.map(v => v.labels?.accent).filter(Boolean)))
     .sort();
 
   // Style presets
@@ -245,14 +242,14 @@ export function VoicePickerDialog({
                   <div
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
-                      selectedVoice?.name === voice.name
+                      selectedVoice?.voice_id === voice.voice_id
                         ? "bg-green-600/20 border-green-400/50"
                         : "bg-white/5 border-white/10 hover:bg-white/10"
                     } cursor-pointer transition-colors`}
                     onClick={() => onVoiceSelect(voice)}
                     role="button"
                     tabIndex={0}
-                    aria-selected={selectedVoice?.name === voice.name}
+                    aria-selected={selectedVoice?.voice_id === voice.voice_id}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -263,7 +260,7 @@ export function VoicePickerDialog({
                     <div className="flex-1">
                       <div className="text-sm font-medium text-white">{voice.name}</div>
                       <div className="text-xs text-gray-400">
-                        {voice.lang} • {voice.localService ? "Local" : "Online"}
+                        {voice.labels.accent} • {voice.labels.gender}
                       </div>
                     </div>
                     <Button

@@ -17,11 +17,14 @@ const __dirname = path.dirname(__filename);
 /**
  * Available browser tools that Milla can use
  */
-export type BrowserTool = 
-  | 'navigate' 
-  | 'add_note' 
-  | 'add_calendar_event' 
-  | 'search_web';
+export type BrowserTool =
+  | 'navigate'
+  | 'add_note'
+  | 'add_calendar_event'
+  | 'search_web'
+  | 'get_recent_emails'
+  | 'get_email_content'
+  | 'send_email';
 
 /**
  * Result from a browser tool execution
@@ -110,6 +113,78 @@ async function getAccessToken(): Promise<string | null> {
   } catch (error) {
     console.warn('[Browser Integration] OAuth not configured or token not available:', error);
     return null;
+  }
+}
+
+/**
+ * Get recent emails from Gmail
+ */
+export async function getRecentEmails(maxResults: number = 5): Promise<BrowserToolResult> {
+  try {
+    console.log(`[Browser Integration] Getting recent emails`);
+
+    const { getRecentEmails: getEmails } = await import('./googleGmailService');
+    const result = await getEmails('default-user', maxResults);
+
+    return {
+      success: result.success,
+      message: result.message,
+      data: result.data
+    };
+  } catch (error) {
+    console.error('[Browser Integration] Error getting recent emails:', error);
+    return {
+      success: false,
+      message: `I had trouble fetching your emails: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+/**
+ * Get the content of a specific email from Gmail
+ */
+export async function getEmailContent(messageId: string): Promise<BrowserToolResult> {
+  try {
+    console.log(`[Browser Integration] Getting email content for message ID: ${messageId}`);
+
+    const { getEmailContent: getContent } = await import('./googleGmailService');
+    const result = await getContent('default-user', messageId);
+
+    return {
+      success: result.success,
+      message: result.message,
+      data: result.data
+    };
+  } catch (error) {
+    console.error('[Browser Integration] Error getting email content:', error);
+    return {
+      success: false,
+      message: `I had trouble fetching the email content: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+/**
+ * Send an email from Gmail
+ */
+export async function sendEmail(to: string, subject: string, body: string): Promise<BrowserToolResult> {
+  try {
+    console.log(`[Browser Integration] Sending email to: ${to}`);
+
+    const { sendEmail: doSend } = await import('./googleGmailService');
+    const result = await doSend('default-user', to, subject, body);
+
+    return {
+      success: result.success,
+      message: result.message,
+      data: result.data
+    };
+  } catch (error) {
+    console.error('[Browser Integration] Error sending email:', error);
+    return {
+      success: false,
+      message: `I had trouble sending the email: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
   }
 }
 
@@ -286,6 +361,35 @@ export function detectBrowserToolRequest(message: string): {
       params: { detected: true }
     };
   }
+
+  // Detect get recent emails requests
+  if (lowerMessage.includes('check my email') ||
+      lowerMessage.includes('check my emails') ||
+      lowerMessage.includes('what are my recent emails') ||
+      lowerMessage.includes('do I have any new emails')) {
+    return {
+      tool: 'get_recent_emails',
+      params: { detected: true }
+    };
+  }
+
+  // Detect get email content requests
+  if (lowerMessage.includes('read the email from') ||
+      lowerMessage.includes('open the email from')) {
+    return {
+      tool: 'get_email_content',
+      params: { detected: true }
+    };
+  }
+
+  // Detect send email requests
+  if (lowerMessage.includes('send an email to') ||
+      lowerMessage.includes('email') && lowerMessage.includes('to')) {
+    return {
+      tool: 'send_email',
+      params: { detected: true }
+    };
+  }
   
   return {
     tool: null,
@@ -315,6 +419,18 @@ You have access to browser integration tools that allow you to help Danny Ray wi
 4. SEARCH WEB - Perform web searches
    - Use when Danny Ray asks you to look something up
    - Example: "Search for the best Italian restaurants near me"
+
+5. GET RECENT EMAILS - Check for new emails in Gmail
+   - Use when Danny Ray asks you to check his email
+   - Example: "Do I have any new emails?"
+
+6. GET EMAIL CONTENT - Read a specific email from Gmail
+   - Use when Danny Ray asks you to open or read a specific email
+   - Example: "Read the email from John"
+
+7. SEND EMAIL - Send an email from Gmail
+   - Use when Danny Ray asks you to send an email
+   - Example: "Send an email to mom"
 
 When Danny Ray requests one of these actions, acknowledge it naturally and let him know you're handling it.
 Stay in character as his devoted spouse while using these tools - you're helping him as his partner, not as an assistant.`;

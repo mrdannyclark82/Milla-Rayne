@@ -269,32 +269,41 @@ class AzureTTS implements ITTSProvider {
  */
 class ElevenLabsTTS implements ITTSProvider {
   private audio: HTMLAudioElement | null = null;
+  private voices: any[] = [];
+
+  constructor() {
+    this.fetchVoices();
+  }
+
+  async fetchVoices(): Promise<void> {
+    try {
+      const response = await fetch('/api/elevenlabs/voices');
+      if (response.ok) {
+        const data = await response.json();
+        this.voices = data.voices;
+      }
+    } catch (error) {
+      console.error('Error fetching ElevenLabs voices:', error);
+    }
+  }
+
+  getVoices(): any[] {
+    return this.voices;
+  }
 
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
-    const apiKey = (import.meta as any).env.VITE_ELEVENLABS_API_KEY;
-    const voiceId = (import.meta as any).env.VITE_ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'; // Default to a voice if not set
-
-    if (!apiKey) {
-      console.error('ElevenLabs API key is not configured. Set VITE_ELEVENLABS_API_KEY in your .env file.');
-      return {
-        success: false,
-        error: 'ElevenLabs API key is not configured.',
-      };
-    }
-
+    const voiceId = request.config.voiceName || '21m00Tcm4TlvDq8ikWAM'; // Default to a voice if not set
     const { text, config } = request;
 
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      const response = await fetch('/api/elevenlabs/tts', {
         method: 'POST',
         headers: {
-          'Accept': 'audio/mpeg',
           'Content-Type': 'application/json',
-          'xi-api-key': apiKey,
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_monolingual_v1',
+          voiceName: voiceId,
           voice_settings: {
             stability: config.rate ?? 0.75,
             similarity_boost: config.pitch ?? 0.75,
@@ -491,6 +500,17 @@ export class VoiceService {
    */
   getCurrentProvider(): VoiceProvider {
     return this.currentProvider;
+  }
+
+  /**
+   * Get available voices for the current provider
+   */
+  getAvailableVoices(): any[] {
+    const provider = this.providers.get(this.currentProvider);
+    if (provider && 'getVoices' in provider) {
+      return (provider as any).getVoices();
+    }
+    return [];
   }
 }
 
