@@ -1986,6 +1986,97 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Google Calendar API routes
+  app.get('/api/calendar/events', async (req, res) => {
+    try {
+      const { listEvents } = await import('./googleCalendarService');
+      const { timeMin, timeMax, maxResults } = req.query;
+      const result = await listEvents(
+        'default-user',
+        timeMin as string,
+        timeMax as string,
+        maxResults ? parseInt(maxResults as string) : 10
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch calendar events' });
+    }
+  });
+
+  app.post('/api/calendar/events', async (req, res) => {
+    try {
+      const { addEventToGoogleCalendar } = await import('./googleCalendarService');
+      const { title, date, time, description } = req.body;
+      const result = await addEventToGoogleCalendar(title, date, time, description);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to create calendar event' });
+    }
+  });
+
+  app.delete('/api/calendar/events/:eventId', async (req, res) => {
+    try {
+      const { deleteEvent } = await import('./googleCalendarService');
+      const { eventId } = req.params;
+      const result = await deleteEvent('default-user', eventId);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to delete calendar event' });
+    }
+  });
+
+  // Google Gmail API routes
+  app.get('/api/gmail/emails', async (req, res) => {
+    try {
+      const { getRecentEmails } = await import('./googleGmailService');
+      const { maxResults } = req.query;
+      const result = await getRecentEmails(
+        'default-user',
+        maxResults ? parseInt(maxResults as string) : 5
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch emails' });
+    }
+  });
+
+  app.get('/api/gmail/emails/:messageId', async (req, res) => {
+    try {
+      const { getEmailContent } = await import('./googleGmailService');
+      const { messageId } = req.params;
+      const result = await getEmailContent('default-user', messageId);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch email content' });
+    }
+  });
+
+  app.post('/api/gmail/send', async (req, res) => {
+    try {
+      const { sendEmail } = await import('./googleGmailService');
+      const { to, subject, body } = req.body;
+      const result = await sendEmail('default-user', to, subject, body);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to send email' });
+    }
+  });
+
+  // Google YouTube API routes
+  app.get('/api/youtube/subscriptions', async (req, res) => {
+    try {
+      const { getMySubscriptions } = await import('./googleYoutubeService');
+      const { maxResults } = req.query;
+      const result = await getMySubscriptions(
+        'default-user',
+        maxResults ? parseInt(maxResults as string) : 10
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch subscriptions' });
+    }
+  });
+
   app.delete('/api/oauth/disconnect', async (req, res) => {
     try {
       const { deleteOAuthToken } = await import('./oauthService');
@@ -3440,6 +3531,88 @@ I can create a pull request with these changes if you provide a GitHub token, or
   const youtubeUrlMatch = userMessage.match(
     /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
+  const { parseCommand } = await import('./commandParser');
+  const command = parseCommand(userMessage);
+
+  if (command.service === 'calendar') {
+    try {
+      if (command.action === 'list') {
+        const { listEvents } = await import('./googleCalendarService');
+        const now = new Date();
+        const timeMin = now.toISOString();
+        const timeMax = new Date(now.setDate(now.getDate() + 7)).toISOString(); // Next 7 days
+        const result = await listEvents('default-user', timeMin, timeMax);
+        if (result.success && result.events && result.events.length > 0) {
+          let response = "Here are your upcoming events:\n";
+          result.events.forEach(event => {
+            const start = event.start.dateTime || event.start.date;
+            response += `- ${event.summary} at ${new Date(start).toLocaleString()}\n`;
+          });
+          return { content: response };
+        } else {
+          return { content: "You have no upcoming events." };
+        }
+      } else if (command.action === 'add') {
+        const { addEventToGoogleCalendar } = await import('./googleCalendarService');
+        const { title, date, time } = command.entities;
+        const result = await addEventToGoogleCalendar(title, date, time);
+        return { content: result.message };
+      }
+      return { content: "I can help with your calendar. You can ask me to 'list events', or 'add event [title] on [date] at [time]'." };
+    } catch (error) {
+      return { content: "I had trouble accessing your calendar. Please make sure you've connected your Google account." };
+    }
+  }
+
+  if (command.service === 'gmail') {
+    try {
+      if (command.action === 'list') {
+        const { getRecentEmails } = await import('./googleGmailService');
+        const result = await getRecentEmails();
+        if (result.success && result.data && result.data.length > 0) {
+          let response = "Here are your recent emails:\n";
+          result.data.forEach(email => {
+            const subject = email.payload.headers.find(h => h.name === 'Subject')?.value;
+            const from = email.payload.headers.find(h => h.name === 'From')?.value;
+            response += `- From: ${from}, Subject: ${subject}\n`;
+          });
+          return { content: response };
+        } else {
+          return { content: "Your inbox is empty." };
+        }
+      } else if (command.action === 'send') {
+        const { sendEmail } = await import('./googleGmailService');
+        const { to, subject, body } = command.entities;
+        const result = await sendEmail('default-user', to, subject, body);
+        return { content: result.message };
+      }
+      return { content: "I can help with your email. You can ask me to 'check my email', or 'send email to [recipient] with subject [subject] and body [body]'." };
+    } catch (error) {
+      return { content: "I had trouble accessing your email. Please make sure you've connected your Google account." };
+    }
+  }
+
+  if (command.service === 'youtube') {
+    try {
+      if (command.action === 'list') {
+        const { getMySubscriptions } = await import('./googleYoutubeService');
+        const result = await getMySubscriptions();
+        if (result.success && result.data && result.data.length > 0) {
+          let response = "Here are your YouTube subscriptions:\n";
+          result.data.forEach(sub => {
+            response += `- ${sub.snippet.title}\n`;
+          });
+          return { content: response };
+        } else {
+          return { content: "You are not subscribed to any channels." };
+        }
+      }
+      return { content: "I can help with your YouTube account. You can ask me to 'list my subscriptions'." };
+    } catch (error) {
+      return { content: "I had trouble accessing your YouTube account. Please make sure you've connected your Google account." };
+    }
+  }
+
   if (youtubeUrlMatch) {
     const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
       ? youtubeUrlMatch[0]

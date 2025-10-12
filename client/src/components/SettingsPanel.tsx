@@ -95,6 +95,34 @@ export default function SettingsPanel({
   });
   const [developerMode, setDeveloperMode] = useState(false);
   const [isDeveloperModeLoading, setIsDeveloperModeLoading] = useState(false);
+  const [oauthStatus, setOauthStatus] = useState({ connected: false });
+
+  useEffect(() => {
+    const fetchOauthStatus = async () => {
+      try {
+        const response = await fetch('/api/oauth/status');
+        const data = await response.json();
+        if (data.success) {
+          setOauthStatus(data);
+        }
+      } catch (error) {
+        console.error('Error fetching OAuth status:', error);
+      }
+    };
+
+    if (isOpen) {
+      fetchOauthStatus();
+    }
+  }, [isOpen]);
+
+  const handleDisconnect = async () => {
+    try {
+      await fetch('/api/oauth/disconnect', { method: 'DELETE' });
+      setOauthStatus({ connected: false });
+    } catch (error) {
+      console.error('Error disconnecting from Google:', error);
+    }
+  };
 
   const defaultAvatarSettings: AvatarSettings = {
     style: 'realistic',
@@ -828,6 +856,51 @@ export default function SettingsPanel({
           </div>
           {/* Gmail Client Section */}
           <GmailClient />
+
+          {/* Connected Services Section */}
+          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-white flex items-center">
+                <i className="fas fa-link mr-2 text-yellow-400"></i>
+                Connected Services
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <img src="/google-logo.svg" alt="Google" className="w-6 h-6 mr-3" />
+                    <div>
+                      <h4 className="text-sm font-semibold text-white">Google</h4>
+                      <p className="text-xs text-white/60">Calendar, Gmail, YouTube</p>
+                    </div>
+                  </div>
+                  {oauthStatus.connected ? (
+                    <div className="flex items-center space-x-2">
+                       <span className="text-xs text-green-400">Connected</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleDisconnect}
+                        className="border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
+                      >
+                        Disconnect
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = '/oauth/google'}
+                      className="border-white/30 text-white/70 hover:text-white"
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Separator className="bg-white/20" />

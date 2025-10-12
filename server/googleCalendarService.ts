@@ -33,6 +33,114 @@ export interface CalendarAPIResult {
 /**
  * Add an event to Google Calendar using the Calendar API
  */
+export async function listEvents(
+  userId: string = 'default-user',
+  timeMin?: string,
+  timeMax?: string,
+  maxResults: number = 10
+): Promise<CalendarAPIResult & { events?: any[] }> {
+  try {
+    const accessToken = await getValidAccessToken(userId, 'google');
+
+    if (!accessToken) {
+      return {
+        success: false,
+        message: 'You need to connect your Google account first.',
+        error: 'NO_TOKEN',
+      };
+    }
+
+    const params = new URLSearchParams({
+      maxResults: maxResults.toString(),
+      singleEvents: 'true',
+      orderBy: 'startTime',
+    });
+
+    if (timeMin) params.append('timeMin', timeMin);
+    if (timeMax) params.append('timeMax', timeMax);
+
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params.toString()}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        message: `Failed to fetch calendar events: ${errorData.error?.message || 'Unknown error'}`,
+        error: errorData.error?.message || 'API_ERROR',
+      };
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      message: `Successfully fetched ${data.items.length} events.`,
+      events: data.items,
+    };
+  } catch (error) {
+    console.error('[Google Calendar API] Error listing events:', error);
+    return {
+      success: false,
+      message: `An error occurred while fetching events: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+    };
+  }
+}
+
+export async function deleteEvent(
+  userId: string = 'default-user',
+  eventId: string
+): Promise<CalendarAPIResult> {
+  try {
+    const accessToken = await getValidAccessToken(userId, 'google');
+
+    if (!accessToken) {
+      return {
+        success: false,
+        message: 'You need to connect your Google account first.',
+        error: 'NO_TOKEN',
+      };
+    }
+
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.status === 204) {
+      return {
+        success: true,
+        message: 'Event deleted successfully.',
+      };
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        message: `Failed to delete event: ${errorData.error?.message || 'Unknown error'}`,
+        error: errorData.error?.message || 'API_ERROR',
+      };
+    }
+  } catch (error) {
+    console.error('[Google Calendar API] Error deleting event:', error);
+    return {
+      success: false,
+      message: `An error occurred while deleting the event: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+    };
+  }
+}
+
 export async function addEventToGoogleCalendar(
   title: string,
   date: string,
