@@ -22,9 +22,11 @@ This directory contains static image backgrounds for different room/scene contex
 ## Naming Convention
 
 ### Basic Format
+
 `{location}.jpg` or `{location}.png`
 
 Examples:
+
 - `living_room.jpg`
 - `kitchen.jpg`
 - `bedroom.jpg`
@@ -33,15 +35,18 @@ Examples:
 - `outdoor.jpg`
 
 ### Time-of-Day Variants
+
 `{location}-{time}.jpg` or `{location}-{time}.png`
 
 Time values:
+
 - `morning` - Early morning (6am-10am)
 - `day` - Daytime (10am-5pm)
 - `dusk` - Evening/dusk (5pm-8pm)
 - `night` - Nighttime (8pm-6am)
 
 Examples:
+
 - `living_room-morning.jpg`
 - `living_room-day.jpg`
 - `living_room-dusk.jpg`
@@ -50,9 +55,11 @@ Examples:
 - `kitchen-morning.jpg`
 
 ### Mood Variants (Future Enhancement)
+
 `{location}-{mood}.jpg` or `{location}-{time}-{mood}.jpg`
 
 Mood values:
+
 - `calm`
 - `energetic`
 - `romantic`
@@ -60,6 +67,7 @@ Mood values:
 - `playful`
 
 Examples:
+
 - `living_room-romantic.jpg`
 - `bedroom-night-romantic.jpg`
 
@@ -89,6 +97,7 @@ Based on `SceneLocation` type in `/client/src/types/scene.ts`:
    - Optional time variant: `{location}-{time}.jpg`
 
 3. **Place in this directory:**
+
    ```bash
    cp my-living-room-photo.jpg /client/public/assets/scenes/living_room.jpg
    ```
@@ -146,13 +155,11 @@ Currently, no images are included in this directory. The system will fall back t
 The `RealisticSceneBackground` component automatically handles image loading:
 
 ```tsx
-<RealisticSceneBackground 
-  location="living_room"
-  timeOfDay="night"
-/>
+<RealisticSceneBackground location="living_room" timeOfDay="night" />
 ```
 
 This will attempt to load in order:
+
 1. `/assets/scenes/living_room-night.jpg`
 2. `/assets/scenes/living_room.jpg`
 3. Falls back to CSS animated gradient if neither exists

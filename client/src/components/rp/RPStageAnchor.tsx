@@ -7,7 +7,7 @@ interface RPStageAnchorProps {
 
 /**
  * RPStageAnchor - Fixed stage layer for Milla's visual
- * 
+ *
  * Layout:
  * - Left 2/3 of viewport (66.6667vw)
  * - Full height
@@ -16,9 +16,9 @@ interface RPStageAnchorProps {
  * - No pointer events
  * - Aria-hidden for accessibility
  */
-export const RPStageAnchor: React.FC<RPStageAnchorProps> = ({ 
-  children, 
-  className = '' 
+export const RPStageAnchor: React.FC<RPStageAnchorProps> = ({
+  children,
+  className = '',
 }) => {
   return (
     <div
@@ -31,7 +31,7 @@ export const RPStageAnchor: React.FC<RPStageAnchorProps> = ({
         height: '100vh',
         zIndex: -5, // Above background (-10), below chat (0+)
         pointerEvents: 'none',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
       aria-hidden="true"
       role="presentation"

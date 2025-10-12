@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 
 /**
  * useNeutralizeLegacyBackground - One-time hook to neutralize legacy background images
- * 
+ *
  * Scans the DOM on mount for elements with background-image or <img> tags that:
  * 1. Are positioned in the left 2/3 of the viewport
  * 2. Have URLs matching legacy background names (e.g., "milla_new")
- * 
+ *
  * Neutralizes them by setting background to none/transparent or hiding the element.
  * Safe to no-op if no legacy backgrounds are found.
  */
@@ -18,11 +18,11 @@ export function useNeutralizeLegacyBackground(): void {
       'milla-new',
       'background',
       'bg-image',
-      'avatar-bg'
+      'avatar-bg',
     ];
 
     // Get the left 2/3 width threshold
-    const leftTwoThirdsWidth = window.innerWidth * (2/3);
+    const leftTwoThirdsWidth = window.innerWidth * (2 / 3);
 
     // Function to check if element is in left 2/3
     const isInLeftTwoThirds = (element: Element): boolean => {
@@ -33,7 +33,7 @@ export function useNeutralizeLegacyBackground(): void {
 
     // Function to check if URL matches legacy patterns
     const isLegacyUrl = (url: string): boolean => {
-      return legacyPatterns.some(pattern => 
+      return legacyPatterns.some((pattern) =>
         url.toLowerCase().includes(pattern)
       );
     };
@@ -42,7 +42,7 @@ export function useNeutralizeLegacyBackground(): void {
     const allElements = document.querySelectorAll('*');
     let neutralizedCount = 0;
 
-    allElements.forEach(element => {
+    allElements.forEach((element) => {
       if (!isInLeftTwoThirds(element)) return;
 
       const htmlElement = element as HTMLElement;
@@ -55,14 +55,17 @@ export function useNeutralizeLegacyBackground(): void {
           htmlElement.style.backgroundImage = 'none';
           htmlElement.style.background = 'transparent';
           neutralizedCount++;
-          console.log('[useNeutralizeLegacyBackground] Neutralized background on:', element);
+          console.log(
+            '[useNeutralizeLegacyBackground] Neutralized background on:',
+            element
+          );
         }
       }
     });
 
     // Scan for <img> elements
     const images = document.querySelectorAll('img');
-    images.forEach(img => {
+    images.forEach((img) => {
       if (!isInLeftTwoThirds(img)) return;
 
       const src = img.src || '';
@@ -77,9 +80,13 @@ export function useNeutralizeLegacyBackground(): void {
     });
 
     if (neutralizedCount > 0) {
-      console.log(`[useNeutralizeLegacyBackground] Neutralized ${neutralizedCount} legacy background elements`);
+      console.log(
+        `[useNeutralizeLegacyBackground] Neutralized ${neutralizedCount} legacy background elements`
+      );
     } else {
-      console.log('[useNeutralizeLegacyBackground] No legacy backgrounds found');
+      console.log(
+        '[useNeutralizeLegacyBackground] No legacy backgrounds found'
+      );
     }
 
     // Only run once on mount

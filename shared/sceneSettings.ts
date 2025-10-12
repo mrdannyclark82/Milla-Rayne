@@ -67,7 +67,7 @@ export function getSceneDetails(location: SceneLocationKey): SceneLocation {
  */
 export function getAllSceneSettings(): string {
   return Object.values(SCENE_LOCATION_MAP)
-    .map(location => location.description)
+    .map((location) => location.description)
     .join('\n');
 }
 
@@ -75,7 +75,9 @@ export function getAllSceneSettings(): string {
  * Get scene settings for current context
  * This can be used with the scene detection service to provide contextual details
  */
-export function getContextualSceneSettings(currentLocation?: SceneLocationKey): string {
+export function getContextualSceneSettings(
+  currentLocation?: SceneLocationKey
+): string {
   if (currentLocation && currentLocation in SCENE_LOCATION_MAP) {
     return getSceneDetails(currentLocation).description;
   }

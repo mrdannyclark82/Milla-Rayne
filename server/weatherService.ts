@@ -8,11 +8,13 @@ export interface WeatherData {
   icon: string;
 }
 
-export async function getCurrentWeather(city: string): Promise<WeatherData | null> {
+export async function getCurrentWeather(
+  city: string
+): Promise<WeatherData | null> {
   const API_KEY = process.env.OPENWEATHER_API_KEY;
-  
+
   if (!API_KEY) {
-    throw new Error("OpenWeatherMap API key not found");
+    throw new Error('OpenWeatherMap API key not found');
   }
 
   try {
@@ -39,14 +41,14 @@ export async function getCurrentWeather(city: string): Promise<WeatherData | nul
       icon: data.weather[0].icon,
     };
   } catch (error) {
-    console.error("Error fetching weather data:", error);
+    console.error('Error fetching weather data:', error);
     throw error;
   }
 }
 
 export function formatWeatherResponse(weather: WeatherData): string {
   const emoji = getWeatherEmoji(weather.icon);
-  
+
   return `${emoji} **Weather in ${weather.city}, ${weather.country}**
 
 🌡️ **Temperature:** ${weather.temperature}°C
@@ -59,39 +61,48 @@ The weather looks ${getWeatherDescription(weather.temperature, weather.descripti
 
 function getWeatherEmoji(icon: string): string {
   const iconMap: { [key: string]: string } = {
-    '01d': '☀️', '01n': '🌙',
-    '02d': '⛅', '02n': '☁️',
-    '03d': '☁️', '03n': '☁️',
-    '04d': '☁️', '04n': '☁️',
-    '09d': '🌧️', '09n': '🌧️',
-    '10d': '🌦️', '10n': '🌧️',
-    '11d': '⛈️', '11n': '⛈️',
-    '13d': '❄️', '13n': '❄️',
-    '50d': '🌫️', '50n': '🌫️',
+    '01d': '☀️',
+    '01n': '🌙',
+    '02d': '⛅',
+    '02n': '☁️',
+    '03d': '☁️',
+    '03n': '☁️',
+    '04d': '☁️',
+    '04n': '☁️',
+    '09d': '🌧️',
+    '09n': '🌧️',
+    '10d': '🌦️',
+    '10n': '🌧️',
+    '11d': '⛈️',
+    '11n': '⛈️',
+    '13d': '❄️',
+    '13n': '❄️',
+    '50d': '🌫️',
+    '50n': '🌫️',
   };
   return iconMap[icon] || '🌤️';
 }
 
 function getWeatherDescription(temp: number, description: string): string {
-  if (temp >= 30) return "quite hot";
-  if (temp >= 20) return "pleasant";
-  if (temp >= 10) return "cool";
-  if (temp >= 0) return "cold";
-  return "very cold";
+  if (temp >= 30) return 'quite hot';
+  if (temp >= 20) return 'pleasant';
+  if (temp >= 10) return 'cool';
+  if (temp >= 0) return 'cold';
+  return 'very cold';
 }
 
 function getWeatherAdvice(temp: number, description: string): string {
-  if (description.includes("rain")) {
+  if (description.includes('rain')) {
     return "Don't forget your umbrella!";
   }
-  if (description.includes("snow")) {
-    return "Bundle up and stay warm!";
+  if (description.includes('snow')) {
+    return 'Bundle up and stay warm!';
   }
   if (temp >= 30) {
-    return "Stay hydrated and find some shade!";
+    return 'Stay hydrated and find some shade!';
   }
   if (temp <= 0) {
-    return "Dress warmly and be careful of icy conditions!";
+    return 'Dress warmly and be careful of icy conditions!';
   }
-  return "Have a wonderful day!";
+  return 'Have a wonderful day!';
 }

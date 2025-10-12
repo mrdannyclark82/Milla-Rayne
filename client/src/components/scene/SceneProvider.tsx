@@ -1,7 +1,12 @@
 import React from 'react';
 import { SceneContextProvider } from '@/contexts/SceneContext';
 import { SceneManager } from '@/components/scene/SceneManager';
-import type { AppState, PerformanceMode, WeatherEffect, SceneLocationKey } from '@shared/sceneTypes';
+import type {
+  AppState,
+  PerformanceMode,
+  WeatherEffect,
+  SceneLocationKey,
+} from '@shared/sceneTypes';
 
 interface SceneProviderProps {
   children: React.ReactNode;
@@ -11,12 +16,12 @@ interface SceneProviderProps {
   location?: SceneLocationKey;
 }
 
-export function SceneProvider({ 
-  children, 
-  appState, 
-  performanceMode, 
-  weatherEffect, 
-  location 
+export function SceneProvider({
+  children,
+  appState,
+  performanceMode,
+  weatherEffect,
+  location,
 }: SceneProviderProps) {
   return (
     <SceneContextProvider

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
 
 interface VoiceVisualizerProps {
   isListening: boolean;
@@ -6,7 +6,11 @@ interface VoiceVisualizerProps {
   className?: string;
 }
 
-export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: VoiceVisualizerProps) {
+export function VoiceVisualizer({
+  isListening,
+  isSpeaking,
+  className = '',
+}: VoiceVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -33,10 +37,10 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
       const source = audioContextRef.current.createMediaStreamSource(stream);
       source.connect(analyserRef.current);
       analyserRef.current.fftSize = 256;
-      
+
       drawVisualization();
     } catch (error) {
-      console.error("Error initializing audio context:", error);
+      console.error('Error initializing audio context:', error);
     }
   };
 
@@ -44,7 +48,7 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
     if (!analyserRef.current || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const canvasContext = canvas.getContext("2d");
+    const canvasContext = canvas.getContext('2d');
     if (!canvasContext) return;
 
     const bufferLength = analyserRef.current.frequencyBinCount;
@@ -55,7 +59,7 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
 
       analyserRef.current.getByteFrequencyData(dataArray);
 
-      canvasContext.fillStyle = "rgba(0, 0, 0, 0.1)";
+      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.1)';
       canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 
       const barWidth = (canvas.width / bufferLength) * 2.5;
@@ -65,13 +69,23 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
       for (let i = 0; i < bufferLength; i++) {
         barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
 
-        const gradient = canvasContext.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
-        gradient.addColorStop(0, "#22c55e");
-        gradient.addColorStop(0.5, "#4ade80");
-        gradient.addColorStop(1, "#86efac");
+        const gradient = canvasContext.createLinearGradient(
+          0,
+          canvas.height,
+          0,
+          canvas.height - barHeight
+        );
+        gradient.addColorStop(0, '#22c55e');
+        gradient.addColorStop(0.5, '#4ade80');
+        gradient.addColorStop(1, '#86efac');
 
         canvasContext.fillStyle = gradient;
-        canvasContext.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        canvasContext.fillRect(
+          x,
+          canvas.height - barHeight,
+          barWidth,
+          barHeight
+        );
 
         x += barWidth + 1;
       }
@@ -90,20 +104,20 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
   const renderVUMeter = () => {
     const bars = 20;
     const filledBars = Math.floor(volumeLevel * bars);
-    
+
     return (
       <div className="flex items-center gap-1 h-full">
         {Array.from({ length: bars }).map((_, i) => {
           const isActive = i < filledBars;
-          let color = "bg-green-500";
-          if (i > bars * 0.8) color = "bg-red-500";
-          else if (i > bars * 0.6) color = "bg-yellow-500";
+          let color = 'bg-green-500';
+          if (i > bars * 0.8) color = 'bg-red-500';
+          else if (i > bars * 0.6) color = 'bg-yellow-500';
 
           return (
             <div
               key={i}
               className={`flex-1 rounded-sm transition-all ${
-                isActive ? color : "bg-white/10"
+                isActive ? color : 'bg-white/10'
               }`}
               style={{ height: `${20 + (i / bars) * 80}%` }}
             />
@@ -117,11 +131,26 @@ export function VoiceVisualizer({ isListening, isSpeaking, className = "" }: Voi
   const renderSpeakingAnimation = () => {
     return (
       <div className="flex items-center justify-center gap-2 h-full">
-        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "0ms" }} />
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: "150ms" }} />
-        <div className="w-4 h-4 bg-green-600 rounded-full animate-pulse" style={{ animationDelay: "300ms" }} />
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" style={{ animationDelay: "450ms" }} />
-        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{ animationDelay: "600ms" }} />
+        <div
+          className="w-2 h-2 bg-green-400 rounded-full animate-pulse"
+          style={{ animationDelay: '0ms' }}
+        />
+        <div
+          className="w-3 h-3 bg-green-500 rounded-full animate-pulse"
+          style={{ animationDelay: '150ms' }}
+        />
+        <div
+          className="w-4 h-4 bg-green-600 rounded-full animate-pulse"
+          style={{ animationDelay: '300ms' }}
+        />
+        <div
+          className="w-3 h-3 bg-green-500 rounded-full animate-pulse"
+          style={{ animationDelay: '450ms' }}
+        />
+        <div
+          className="w-2 h-2 bg-green-400 rounded-full animate-pulse"
+          style={{ animationDelay: '600ms' }}
+        />
       </div>
     );
   };

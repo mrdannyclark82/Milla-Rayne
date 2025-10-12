@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface AvatarSettings {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -21,14 +27,14 @@ interface AvatarCustomizerProps {
   currentSettings: AvatarSettings;
 }
 
-export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({ 
-  onSettingsChange, 
-  currentSettings 
+export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
+  onSettingsChange,
+  currentSettings,
 }) => {
   const [settings, setSettings] = useState<AvatarSettings>(currentSettings);
 
   const updateSetting = <K extends keyof AvatarSettings>(
-    key: K, 
+    key: K,
     value: AvatarSettings[K]
   ) => {
     const newSettings = { ...settings, [key]: value };
@@ -46,7 +52,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
       expression: 'loving' as const,
       background: 'gradient' as const,
       lighting: 75,
-      glow: 60
+      glow: 60,
     },
     ethereal: {
       style: 'artistic' as const,
@@ -57,7 +63,7 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
       expression: 'mysterious' as const,
       background: 'abstract' as const,
       lighting: 90,
-      glow: 80
+      glow: 80,
     },
     natural: {
       style: 'realistic' as const,
@@ -68,8 +74,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
       expression: 'gentle' as const,
       background: 'nature' as const,
       lighting: 65,
-      glow: 40
-    }
+      glow: 40,
+    },
   };
 
   const applyPreset = (preset: keyof typeof presets) => {
@@ -89,7 +95,9 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
       <CardContent className="space-y-4">
         {/* Quick Presets */}
         <div>
-          <label className="text-sm font-medium mb-2 block">Quick Presets</label>
+          <label className="text-sm font-medium mb-2 block">
+            Quick Presets
+          </label>
           <div className="flex gap-2">
             {Object.keys(presets).map((preset) => (
               <Button
@@ -109,9 +117,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Art Style */}
         <div>
           <label className="text-sm font-medium mb-2 block">Art Style</label>
-          <Select 
-            value={settings.style} 
-            onValueChange={(value) => updateSetting('style', value as AvatarSettings['style'])}
+          <Select
+            value={settings.style}
+            onValueChange={(value) =>
+              updateSetting('style', value as AvatarSettings['style'])
+            }
           >
             <SelectTrigger data-testid="select-art-style">
               <SelectValue />
@@ -128,8 +138,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Hair Color */}
         <div>
           <label className="text-sm font-medium mb-2 block">Hair Color</label>
-          <Select 
-            value={settings.hairColor} 
+          <Select
+            value={settings.hairColor}
             onValueChange={(value) => updateSetting('hairColor', value)}
           >
             <SelectTrigger data-testid="select-hair-color">
@@ -149,8 +159,8 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Eye Color */}
         <div>
           <label className="text-sm font-medium mb-2 block">Eye Color</label>
-          <Select 
-            value={settings.eyeColor} 
+          <Select
+            value={settings.eyeColor}
             onValueChange={(value) => updateSetting('eyeColor', value)}
           >
             <SelectTrigger data-testid="select-eye-color">
@@ -170,9 +180,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Outfit */}
         <div>
           <label className="text-sm font-medium mb-2 block">Outfit Style</label>
-          <Select 
-            value={settings.outfit} 
-            onValueChange={(value) => updateSetting('outfit', value as AvatarSettings['outfit'])}
+          <Select
+            value={settings.outfit}
+            onValueChange={(value) =>
+              updateSetting('outfit', value as AvatarSettings['outfit'])
+            }
           >
             <SelectTrigger data-testid="select-outfit">
               <SelectValue />
@@ -189,9 +201,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Expression */}
         <div>
           <label className="text-sm font-medium mb-2 block">Expression</label>
-          <Select 
-            value={settings.expression} 
-            onValueChange={(value) => updateSetting('expression', value as AvatarSettings['expression'])}
+          <Select
+            value={settings.expression}
+            onValueChange={(value) =>
+              updateSetting('expression', value as AvatarSettings['expression'])
+            }
           >
             <SelectTrigger data-testid="select-expression">
               <SelectValue />
@@ -238,9 +252,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Background */}
         <div>
           <label className="text-sm font-medium mb-2 block">Background</label>
-          <Select 
-            value={settings.background} 
-            onValueChange={(value) => updateSetting('background', value as AvatarSettings['background'])}
+          <Select
+            value={settings.background}
+            onValueChange={(value) =>
+              updateSetting('background', value as AvatarSettings['background'])
+            }
           >
             <SelectTrigger data-testid="select-background">
               <SelectValue />
@@ -257,9 +273,11 @@ export const AvatarCustomizer: React.FC<AvatarCustomizerProps> = ({
         {/* Preview Text */}
         <div className="mt-4 p-3 bg-muted rounded-lg">
           <p className="text-sm text-muted-foreground">
-            Milla will appear as a {settings.style} {settings.hairColor}-haired woman with 
-            {settings.eyeColor} eyes, wearing {settings.outfit} attire with a {settings.expression} expression
-            against a {settings.background} background.
+            Milla will appear as a {settings.style} {settings.hairColor}-haired
+            woman with
+            {settings.eyeColor} eyes, wearing {settings.outfit} attire with a{' '}
+            {settings.expression} expression against a {settings.background}{' '}
+            background.
           </p>
         </div>
       </CardContent>

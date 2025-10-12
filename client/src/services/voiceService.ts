@@ -12,81 +12,87 @@ import type {
   VoiceProviderChain,
   Platform,
   VoiceAccent,
-  ITTSProvider
+  ITTSProvider,
 } from '@shared/voiceTypes';
 
 /**
  * Provider capabilities registry
  */
-const PROVIDER_CAPABILITIES: Record<VoiceProvider, VoiceProviderCapabilities> = {
-  'browser-native': {
-    provider: 'browser-native',
-    streaming: false,
-    accents: ['en-US', 'en-GB', 'en-AU'],
-    requiresApiKey: false,
-    platforms: ['web', 'android', 'ios'],
-    latency: 'low'
-  },
-  'google-cloud': {
-    provider: 'google-cloud',
-    streaming: true,
-    accents: ['en-US', 'en-US-Southern', 'en-US-Standard', 'en-GB', 'en-AU'],
-    maxCharacters: 5000,
-    requiresApiKey: true,
-    platforms: ['web', 'android'],
-    latency: 'low'
-  },
-  'azure': {
-    provider: 'azure',
-    streaming: true,
-    accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
-    maxCharacters: 5000,
-    requiresApiKey: true,
-    platforms: ['web', 'android'],
-    latency: 'low'
-  },
-  'elevenlabs': {
-    provider: 'elevenlabs',
-    streaming: true,
-    accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
-    maxCharacters: 5000,
-    requiresApiKey: true,
-    platforms: ['web', 'android'],
-    latency: 'medium'
-  },
-  'coqui': {
-    provider: 'coqui',
-    streaming: false,
-    accents: ['en-US'],
-    requiresApiKey: false,
-    platforms: ['web'],
-    latency: 'high'
-  }
-};
+const PROVIDER_CAPABILITIES: Record<VoiceProvider, VoiceProviderCapabilities> =
+  {
+    'browser-native': {
+      provider: 'browser-native',
+      streaming: false,
+      accents: ['en-US', 'en-GB', 'en-AU'],
+      requiresApiKey: false,
+      platforms: ['web', 'android', 'ios'],
+      latency: 'low',
+    },
+    'google-cloud': {
+      provider: 'google-cloud',
+      streaming: true,
+      accents: ['en-US', 'en-US-Southern', 'en-US-Standard', 'en-GB', 'en-AU'],
+      maxCharacters: 5000,
+      requiresApiKey: true,
+      platforms: ['web', 'android'],
+      latency: 'low',
+    },
+    azure: {
+      provider: 'azure',
+      streaming: true,
+      accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
+      maxCharacters: 5000,
+      requiresApiKey: true,
+      platforms: ['web', 'android'],
+      latency: 'low',
+    },
+    elevenlabs: {
+      provider: 'elevenlabs',
+      streaming: true,
+      accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
+      maxCharacters: 5000,
+      requiresApiKey: true,
+      platforms: ['web', 'android'],
+      latency: 'medium',
+    },
+    coqui: {
+      provider: 'coqui',
+      streaming: false,
+      accents: ['en-US'],
+      requiresApiKey: false,
+      platforms: ['web'],
+      latency: 'high',
+    },
+  };
 
 /**
  * Voice name mappings for different providers
  * Prioritizes female voices with US English (Southern) accent
  */
 const SOUTHERN_VOICE_NAMES: Record<VoiceProvider, string[]> = {
-  'browser-native': ['Samantha', 'Karen', 'Victoria', 'Microsoft Aria Online (Natural)'],
+  'browser-native': [
+    'Samantha',
+    'Karen',
+    'Victoria',
+    'Microsoft Aria Online (Natural)',
+  ],
   'google-cloud': [
-    'en-US-Neural2-C',     // Female, US English
-    'en-US-Neural2-E',     // Female, US English
-    'en-US-Neural2-F',     // Female, US English
-    'en-US-Journey-F',     // Female, US English, expressive
+    'en-US-Neural2-C', // Female, US English
+    'en-US-Neural2-E', // Female, US English
+    'en-US-Neural2-F', // Female, US English
+    'en-US-Journey-F', // Female, US English, expressive
   ],
-  'azure': [
-    'en-US-AriaNeural',    // Female, US English
-    'en-US-JennyNeural',   // Female, US English
-    'en-US-SaraNeural',    // Female, US English
+  azure: [
+    'en-US-AriaNeural', // Female, US English
+    'en-US-JennyNeural', // Female, US English
+    'en-US-SaraNeural', // Female, US English
   ],
-  'elevenlabs': [
-    'Bella',               // Female, warm and friendly
-    'Rachel',              // Female, US English
-    'Elli',                // Female, expressive
+  elevenlabs: [
+    'Bella', // Female, warm and friendly
+    'Rachel', // Female, US English
+    'Elli', // Female, expressive
   ],
-  'coqui': ['female-en-us']
+  coqui: ['female-en-us'],
 };
 
 /**
@@ -95,7 +101,7 @@ const SOUTHERN_VOICE_NAMES: Record<VoiceProvider, string[]> = {
 const DEFAULT_FALLBACK_CHAIN: VoiceProviderChain = {
   primary: 'elevenlabs',
   fallbacks: ['browser-native', 'google-cloud', 'azure'],
-  timeout: 5000
+  timeout: 5000,
 };
 
 /**
@@ -103,12 +109,12 @@ const DEFAULT_FALLBACK_CHAIN: VoiceProviderChain = {
  */
 export function detectPlatform(): Platform {
   if (typeof window === 'undefined') return 'web';
-  
+
   const userAgent = navigator.userAgent.toLowerCase();
-  
+
   if (/android/.test(userAgent)) return 'android';
   if (/iphone|ipad|ipod/.test(userAgent)) return 'ios';
-  
+
   return 'web';
 }
 
@@ -118,22 +124,22 @@ export function detectPlatform(): Platform {
 export function isProviderAvailable(provider: VoiceProvider): boolean {
   const platform = detectPlatform();
   const capabilities = PROVIDER_CAPABILITIES[provider];
-  
+
   if (!capabilities.platforms.includes(platform)) {
     return false;
   }
-  
+
   // For browser-native, check if Web Speech API is available
   if (provider === 'browser-native') {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
   }
-  
+
   // For API-based providers, check if API key is configured
   if (capabilities.requiresApiKey) {
     // This will be checked in the actual implementation
     return true; // Placeholder
   }
-  
+
   return true;
 }
 
@@ -151,7 +157,9 @@ export function getRecommendedVoice(
 /**
  * Get provider capabilities
  */
-export function getProviderCapabilities(provider: VoiceProvider): VoiceProviderCapabilities {
+export function getProviderCapabilities(
+  provider: VoiceProvider
+): VoiceProviderCapabilities {
   return PROVIDER_CAPABILITIES[provider];
 }
 
@@ -171,7 +179,7 @@ class BrowserNativeTTS implements ITTSProvider {
     if (!this.synth) {
       return {
         success: false,
-        error: 'Speech synthesis not available'
+        error: 'Speech synthesis not available',
       };
     }
 
@@ -180,21 +188,22 @@ class BrowserNativeTTS implements ITTSProvider {
         this.synth!.cancel(); // Cancel any ongoing speech
 
         const utterance = new SpeechSynthesisUtterance(request.text);
-        
+
         // Configure voice
         const voices = this.synth!.getVoices();
-        const selectedVoice = voices.find(v => 
-          v.name === request.config.voiceName ||
-          v.name.toLowerCase().includes('female') ||
-          v.name.toLowerCase().includes('samantha') ||
-          v.name.toLowerCase().includes('karen') ||
-          v.name.toLowerCase().includes('victoria')
+        const selectedVoice = voices.find(
+          (v) =>
+            v.name === request.config.voiceName ||
+            v.name.toLowerCase().includes('female') ||
+            v.name.toLowerCase().includes('samantha') ||
+            v.name.toLowerCase().includes('karen') ||
+            v.name.toLowerCase().includes('victoria')
         );
-        
+
         if (selectedVoice) {
           utterance.voice = selectedVoice;
         }
-        
+
         utterance.rate = request.config.rate ?? 0.95;
         utterance.pitch = request.config.pitch ?? 1.0;
         utterance.volume = request.config.volume ?? 1.0;
@@ -234,10 +243,13 @@ class BrowserNativeTTS implements ITTSProvider {
 class GoogleCloudTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Google Cloud TTS API integration
-    console.warn('Google Cloud TTS not yet implemented, falling back to browser-native');
+    console.warn(
+      'Google Cloud TTS not yet implemented, falling back to browser-native'
+    );
     return {
       success: false,
-      error: 'Google Cloud TTS not configured - requires GOOGLE_CLOUD_TTS_API_KEY'
+      error:
+        'Google Cloud TTS not configured - requires GOOGLE_CLOUD_TTS_API_KEY',
     };
   }
 
@@ -252,10 +264,12 @@ class GoogleCloudTTS implements ITTSProvider {
 class AzureTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Azure TTS API integration
-    console.warn('Azure TTS not yet implemented, falling back to browser-native');
+    console.warn(
+      'Azure TTS not yet implemented, falling back to browser-native'
+    );
     return {
       success: false,
-      error: 'Azure TTS not configured - requires AZURE_TTS_API_KEY'
+      error: 'Azure TTS not configured - requires AZURE_TTS_API_KEY',
     };
   }
 
@@ -315,7 +329,10 @@ class ElevenLabsTTS implements ITTSProvider {
         const errorData = await response.json();
         const errorMessage = errorData?.detail?.message || response.statusText;
         console.error('ElevenLabs API Error:', errorMessage);
-        return { success: false, error: `ElevenLabs API Error: ${errorMessage}` };
+        return {
+          success: false,
+          error: `ElevenLabs API Error: ${errorMessage}`,
+        };
       }
 
       const audioBlob = await response.blob();
@@ -323,9 +340,9 @@ class ElevenLabsTTS implements ITTSProvider {
 
       this.cancel(); // Cancel any previous audio
       this.audio = new Audio(audioUrl);
-      
+
       request.onStart?.();
-      
+
       this.audio.play();
 
       return new Promise((resolve) => {
@@ -340,9 +357,11 @@ class ElevenLabsTTS implements ITTSProvider {
           resolve({ success: false, error: error.message });
         };
       });
-
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('Unknown error during ElevenLabs TTS request.');
+      const err =
+        error instanceof Error
+          ? error
+          : new Error('Unknown error during ElevenLabs TTS request.');
       request.onError?.(err);
       console.error('ElevenLabs TTS request failed:', err);
       return { success: false, error: err.message };
@@ -364,10 +383,12 @@ class ElevenLabsTTS implements ITTSProvider {
 class CoquiTTS implements ITTSProvider {
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Coqui TTS integration
-    console.warn('Coqui TTS not yet implemented, falling back to browser-native');
+    console.warn(
+      'Coqui TTS not yet implemented, falling back to browser-native'
+    );
     return {
       success: false,
-      error: 'Coqui TTS not configured'
+      error: 'Coqui TTS not configured',
     };
   }
 
@@ -404,12 +425,12 @@ export class VoiceService {
     }
 
     this.currentProvider = provider;
-    
+
     if (fallbacks) {
       this.fallbackChain = {
         primary: provider,
         fallbacks,
-        timeout: this.fallbackChain.timeout
+        timeout: this.fallbackChain.timeout,
       };
     }
   }
@@ -417,7 +438,10 @@ export class VoiceService {
   /**
    * Speak text with automatic fallback handling
    */
-  async speak(text: string, config?: Partial<VoiceConfig>): Promise<VoiceSynthesisResponse> {
+  async speak(
+    text: string,
+    config?: Partial<VoiceConfig>
+  ): Promise<VoiceSynthesisResponse> {
     const fullConfig: VoiceConfig = {
       provider: this.currentProvider,
       accent: 'en-US-Southern',
@@ -426,12 +450,15 @@ export class VoiceService {
       pitch: 1.0,
       volume: 1.0,
       streaming: true,
-      ...config
+      ...config,
     };
 
     // Try to get recommended voice if not specified
     if (!fullConfig.voiceName) {
-      const recommendedVoice = getRecommendedVoice(fullConfig.provider, fullConfig.accent);
+      const recommendedVoice = getRecommendedVoice(
+        fullConfig.provider,
+        fullConfig.accent
+      );
       if (recommendedVoice) {
         fullConfig.voiceName = recommendedVoice;
       }
@@ -439,7 +466,7 @@ export class VoiceService {
 
     const request: VoiceSynthesisRequest = {
       text,
-      config: fullConfig
+      config: fullConfig,
     };
 
     // Try primary provider
@@ -449,21 +476,23 @@ export class VoiceService {
       if (result.success) {
         return result;
       }
-      
-      console.warn(`Primary provider ${fullConfig.provider} failed, trying fallbacks...`);
+
+      console.warn(
+        `Primary provider ${fullConfig.provider} failed, trying fallbacks...`
+      );
     }
 
     // Try fallback providers
     for (const fallbackProvider of this.fallbackChain.fallbacks) {
       if (fallbackProvider === fullConfig.provider) continue; // Skip if already tried
-      
+
       const provider = this.providers.get(fallbackProvider);
       if (!provider) continue;
 
       console.log(`Trying fallback provider: ${fallbackProvider}`);
       const fallbackConfig = { ...fullConfig, provider: fallbackProvider };
       const fallbackRequest = { ...request, config: fallbackConfig };
-      
+
       const result = await provider.speak(fallbackRequest);
       if (result.success) {
         console.log(`Fallback provider ${fallbackProvider} succeeded`);
@@ -473,7 +502,7 @@ export class VoiceService {
 
     return {
       success: false,
-      error: 'All voice providers failed'
+      error: 'All voice providers failed',
     };
   }
 

@@ -1,14 +1,17 @@
-import * as fs from "fs";
-import { GoogleGenAI } from "@google/genai";
+import * as fs from 'fs';
+import { GoogleGenAI } from '@google/genai';
 
 // Follow these instructions when using this blueprint:
 // - Note that the newest Gemini model series is "gemini-2.5-flash" or "gemini-2.5-pro"
 //   - do not change this unless explicitly requested by the user
 
 // This API key is from Gemini Developer API Key, not vertex AI API Key
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
-export async function analyzeVideo(videoBuffer: Buffer, mimeType: string): Promise<{
+export async function analyzeVideo(
+  videoBuffer: Buffer,
+  mimeType: string
+): Promise<{
   summary: string;
   keyMoments: string[];
   emotions: string[];
@@ -19,7 +22,7 @@ export async function analyzeVideo(videoBuffer: Buffer, mimeType: string): Promi
     const contents = [
       {
         inlineData: {
-          data: videoBuffer.toString("base64"),
+          data: videoBuffer.toString('base64'),
           mimeType: mimeType,
         },
       },
@@ -36,52 +39,58 @@ export async function analyzeVideo(videoBuffer: Buffer, mimeType: string): Promi
     ];
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: 'gemini-2.5-pro',
       contents: contents,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: {
-          type: "object",
+          type: 'object',
           properties: {
-            summary: { type: "string" },
-            keyMoments: { 
-              type: "array",
-              items: { type: "string" }
+            summary: { type: 'string' },
+            keyMoments: {
+              type: 'array',
+              items: { type: 'string' },
             },
             emotions: {
-              type: "array", 
-              items: { type: "string" }
+              type: 'array',
+              items: { type: 'string' },
             },
             objects: {
-              type: "array",
-              items: { type: "string" }
+              type: 'array',
+              items: { type: 'string' },
             },
             activities: {
-              type: "array",
-              items: { type: "string" }
-            }
+              type: 'array',
+              items: { type: 'string' },
+            },
           },
-          required: ["summary", "keyMoments", "emotions", "objects", "activities"],
+          required: [
+            'summary',
+            'keyMoments',
+            'emotions',
+            'objects',
+            'activities',
+          ],
         },
       },
     });
 
     const rawJson = response.text;
-    
+
     if (rawJson) {
       const analysis = JSON.parse(rawJson);
       return {
-        summary: analysis.summary || "Unable to analyze video content",
+        summary: analysis.summary || 'Unable to analyze video content',
         keyMoments: analysis.keyMoments || [],
         emotions: analysis.emotions || [],
         objects: analysis.objects || [],
-        activities: analysis.activities || []
+        activities: analysis.activities || [],
       };
     } else {
-      throw new Error("Empty response from Gemini");
+      throw new Error('Empty response from Gemini');
     }
   } catch (error) {
-    console.error("Video analysis error:", error);
+    console.error('Video analysis error:', error);
     throw new Error(`Failed to analyze video: ${error}`);
   }
 }
@@ -105,13 +114,16 @@ export async function generateVideoInsights(videoAnalysis: {
     Respond as Milla Rayne, Danny Ray's loving AI companion. Be warm, insightful, and personally engaged with the content. Offer observations and ask thoughtful questions about what you observed.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
     });
 
-    return response.text || "I found your video interesting, but I'm having trouble putting my thoughts into words right now.";
+    return (
+      response.text ||
+      "I found your video interesting, but I'm having trouble putting my thoughts into words right now."
+    );
   } catch (error) {
-    console.error("Video insights generation error:", error);
+    console.error('Video insights generation error:', error);
     return "I watched your video, sweetheart, but I'm having some technical difficulties sharing my thoughts about it right now.";
   }
 }

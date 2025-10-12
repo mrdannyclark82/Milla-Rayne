@@ -44,11 +44,11 @@ export default {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         chart: {
-          '1': 'hsl(var(--chart-1))',
-          '2': 'hsl(var(--chart-2))',
-          '3': 'hsl(var(--chart-3))',
-          '4': 'hsl(var(--chart-4))',
-          '5': 'hsl(var(--chart-5))',
+          1: 'hsl(var(--chart-1))',
+          2: 'hsl(var(--chart-2))',
+          3: 'hsl(var(--chart-3))',
+          4: 'hsl(var(--chart-4))',
+          5: 'hsl(var(--chart-5))',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
@@ -69,5 +69,4 @@ export default {
     },
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
-}
-
+};

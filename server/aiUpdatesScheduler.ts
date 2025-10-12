@@ -12,11 +12,14 @@ let scheduledTask: ScheduledTask | null = null;
  * Initialize AI updates scheduler based on environment configuration
  */
 export function initializeAIUpdatesScheduler(): void {
-  const enablePredictiveUpdates = process.env.ENABLE_PREDICTIVE_UPDATES === 'true';
+  const enablePredictiveUpdates =
+    process.env.ENABLE_PREDICTIVE_UPDATES === 'true';
   const cronExpression = process.env.AI_UPDATES_CRON;
 
   if (!enablePredictiveUpdates) {
-    console.log('Predictive updates disabled (ENABLE_PREDICTIVE_UPDATES not set to true)');
+    console.log(
+      'Predictive updates disabled (ENABLE_PREDICTIVE_UPDATES not set to true)'
+    );
     return;
   }
 

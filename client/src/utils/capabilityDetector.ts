@@ -4,8 +4,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
   // Check WebGL support
   const canvas = document.createElement('canvas');
   const webGL = !!(
-    canvas.getContext('webgl') || 
-    canvas.getContext('experimental-webgl')
+    canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
   );
 
   // Detect reduced motion preference
@@ -16,7 +15,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
   // Get screen size
   const screenSize = {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
   };
 
   // Simple GPU tier detection (can be enhanced)
@@ -31,6 +30,6 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
     webGL,
     gpuTier,
     prefersReducedMotion,
-    screenSize
+    screenSize,
   };
 }

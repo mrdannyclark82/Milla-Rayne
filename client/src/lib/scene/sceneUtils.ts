@@ -3,14 +3,19 @@
  * Provides asset-free, procedural scene generation based on context
  */
 
-import type { TimeOfDay, AppState, SceneTheme, ScenePalette } from '@shared/sceneTypes';
+import type {
+  TimeOfDay,
+  AppState,
+  SceneTheme,
+  ScenePalette,
+} from '@shared/sceneTypes';
 
 /**
  * Get time of day bucket based on current hour
  */
 export function getCurrentTimeOfDay(): TimeOfDay {
   const hour = new Date().getHours();
-  
+
   if (hour >= 5 && hour < 8) return 'dawn';
   if (hour >= 8 && hour < 17) return 'day';
   if (hour >= 17 && hour < 20) return 'dusk';
@@ -26,28 +31,28 @@ export function getPaletteForTimeOfDay(timeOfDay: TimeOfDay): ScenePalette {
       primary: '#ff9a8b',
       secondary: '#ffc3a0',
       accent: '#ffafbd',
-      background: '#1a1a2e'
+      background: '#1a1a2e',
     },
     day: {
       primary: '#667eea',
       secondary: '#764ba2',
       accent: '#f093fb',
-      background: '#0f0f1e'
+      background: '#0f0f1e',
     },
     dusk: {
       primary: '#fa709a',
       secondary: '#fee140',
       accent: '#ff8c00',
-      background: '#1e1e2e'
+      background: '#1e1e2e',
     },
     night: {
       primary: '#4c669f',
       secondary: '#3b5998',
       accent: '#192f6a',
-      background: '#0a0a15'
-    }
+      background: '#0a0a15',
+    },
   };
-  
+
   return palettes[timeOfDay];
 }
 
@@ -59,9 +64,9 @@ export function getAccentForAppState(appState: AppState): string {
     idle: '#667eea',
     listening: '#10b981', // Green for listening
     thinking: '#f59e0b', // Amber for thinking
-    speaking: '#3b82f6'  // Blue for speaking
+    speaking: '#3b82f6', // Blue for speaking
   };
-  
+
   return accents[appState];
 }
 
@@ -75,10 +80,10 @@ export function generateSceneTheme(
   performanceMode: 'high-quality' | 'balanced' | 'performance'
 ): SceneTheme {
   const palette = getPaletteForTimeOfDay(timeOfDay);
-  
+
   // Override accent based on app state
   palette.accent = getAccentForAppState(appState);
-  
+
   // Animation speed based on reduced motion and performance mode
   let animationSpeed = 1;
   if (reducedMotion) {
@@ -90,7 +95,7 @@ export function generateSceneTheme(
   } else {
     animationSpeed = 0.75; // balanced
   }
-  
+
   // Parallax intensity based on performance mode
   let parallaxIntensity = 0;
   if (!reducedMotion) {
@@ -101,12 +106,12 @@ export function generateSceneTheme(
     }
     // performance mode has 0 parallax
   }
-  
+
   return {
     palette,
     gradientAngle: 135, // Fixed diagonal gradient
     animationSpeed,
-    parallaxIntensity
+    parallaxIntensity,
   };
 }
 
@@ -115,7 +120,7 @@ export function generateSceneTheme(
  */
 export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return true;
-  
+
   const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   return mediaQuery.matches;
 }

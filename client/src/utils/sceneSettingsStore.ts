@@ -31,7 +31,7 @@ export function getDefaultSettings(): SceneSettings {
     devDebug: false,
     sceneBackgroundFromRP: true, // Phase 3: Enabled by default
     sceneRoomOverlaysEnabled: true, // Room Overlays V1: Enabled by default
-    backgroundMode: 'auto' // Default to auto-detect (CSS animated with static image fallback)
+    backgroundMode: 'auto', // Default to auto-detect (CSS animated with static image fallback)
   };
 }
 
@@ -51,7 +51,7 @@ export function loadSceneSettings(): SceneSettings {
     }
 
     const parsed: StoredSettings = JSON.parse(stored);
-    
+
     // Validate version for future migrations
     if (parsed.version !== SETTINGS_VERSION) {
       console.warn('Scene settings version mismatch, using defaults');
@@ -62,22 +62,41 @@ export function loadSceneSettings(): SceneSettings {
     const settings = parsed.settings;
     return {
       enabled: typeof settings.enabled === 'boolean' ? settings.enabled : true,
-      mood: ['calm', 'energetic', 'romantic', 'mysterious', 'playful'].includes(settings.mood) 
-        ? settings.mood 
+      mood: ['calm', 'energetic', 'romantic', 'mysterious', 'playful'].includes(
+        settings.mood
+      )
+        ? settings.mood
         : 'calm',
-      enableParticles: typeof settings.enableParticles === 'boolean' ? settings.enableParticles : true,
-      enableParallax: typeof settings.enableParallax === 'boolean' ? settings.enableParallax : true,
+      enableParticles:
+        typeof settings.enableParticles === 'boolean'
+          ? settings.enableParticles
+          : true,
+      enableParallax:
+        typeof settings.enableParallax === 'boolean'
+          ? settings.enableParallax
+          : true,
       parallaxIntensity: clamp(settings.parallaxIntensity ?? 50, 0, 75),
-      particleDensity: ['off', 'low', 'medium', 'high'].includes(settings.particleDensity) 
-        ? settings.particleDensity 
+      particleDensity: ['off', 'low', 'medium', 'high'].includes(
+        settings.particleDensity
+      )
+        ? settings.particleDensity
         : 'medium',
       animationSpeed: clamp(settings.animationSpeed ?? 1.0, 0.5, 1.5),
-      devDebug: typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
-      sceneBackgroundFromRP: typeof settings.sceneBackgroundFromRP === 'boolean' ? settings.sceneBackgroundFromRP : true,
-      sceneRoomOverlaysEnabled: typeof settings.sceneRoomOverlaysEnabled === 'boolean' ? settings.sceneRoomOverlaysEnabled : true,
-      backgroundMode: (['css-animated', 'static-image', 'auto'].includes(settings.backgroundMode as string))
-        ? settings.backgroundMode as BackgroundMode
-        : 'auto'
+      devDebug:
+        typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
+      sceneBackgroundFromRP:
+        typeof settings.sceneBackgroundFromRP === 'boolean'
+          ? settings.sceneBackgroundFromRP
+          : true,
+      sceneRoomOverlaysEnabled:
+        typeof settings.sceneRoomOverlaysEnabled === 'boolean'
+          ? settings.sceneRoomOverlaysEnabled
+          : true,
+      backgroundMode: ['css-animated', 'static-image', 'auto'].includes(
+        settings.backgroundMode as string
+      )
+        ? (settings.backgroundMode as BackgroundMode)
+        : 'auto',
     };
   } catch (error) {
     console.error('Error loading scene settings:', error);
@@ -96,10 +115,10 @@ export function saveSceneSettings(settings: SceneSettings): void {
   try {
     const stored: StoredSettings = {
       version: SETTINGS_VERSION,
-      settings
+      settings,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-    
+
     // Trigger storage event for cross-tab sync
     window.dispatchEvent(new Event('storage'));
   } catch (error) {
@@ -110,7 +129,9 @@ export function saveSceneSettings(settings: SceneSettings): void {
 /**
  * Update partial settings and persist
  */
-export function updateSceneSettings(partial: Partial<SceneSettings>): SceneSettings {
+export function updateSceneSettings(
+  partial: Partial<SceneSettings>
+): SceneSettings {
   const current = loadSceneSettings();
   const updated = { ...current, ...partial };
   saveSceneSettings(updated);
@@ -120,7 +141,9 @@ export function updateSceneSettings(partial: Partial<SceneSettings>): SceneSetti
 /**
  * Listen for settings changes (cross-tab sync)
  */
-export function onSettingsChange(callback: (settings: SceneSettings) => void): () => void {
+export function onSettingsChange(
+  callback: (settings: SceneSettings) => void
+): () => void {
   if (typeof window === 'undefined') {
     return () => {};
   }

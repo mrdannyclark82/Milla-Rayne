@@ -41,7 +41,7 @@ export function encrypt(plaintext: string, memoryKey: string): string {
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
   const encrypted = Buffer.concat([
     cipher.update(plaintext, 'utf8'),
-    cipher.final()
+    cipher.final(),
   ]);
 
   // Get authentication tag
@@ -85,7 +85,10 @@ export function decrypt(ciphertext: string, memoryKey: string): string {
   // Extract components
   const salt = combined.subarray(0, SALT_LENGTH);
   const iv = combined.subarray(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
-  const tag = combined.subarray(SALT_LENGTH + IV_LENGTH, SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
+  const tag = combined.subarray(
+    SALT_LENGTH + IV_LENGTH,
+    SALT_LENGTH + IV_LENGTH + TAG_LENGTH
+  );
   const encrypted = combined.subarray(SALT_LENGTH + IV_LENGTH + TAG_LENGTH);
 
   // Derive key
@@ -97,7 +100,7 @@ export function decrypt(ciphertext: string, memoryKey: string): string {
 
   const decrypted = Buffer.concat([
     decipher.update(encrypted),
-    decipher.final()
+    decipher.final(),
   ]);
 
   return decrypted.toString('utf8');

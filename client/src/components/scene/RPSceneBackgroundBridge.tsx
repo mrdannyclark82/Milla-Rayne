@@ -43,10 +43,9 @@ function isOutdoorLocation(location: string): boolean {
   return location === 'outdoor';
 }
 
-export const RPSceneBackgroundBridge: React.FC<RPSceneBackgroundBridgeProps> = ({
-  enabled,
-  children
-}) => {
+export const RPSceneBackgroundBridge: React.FC<
+  RPSceneBackgroundBridgeProps
+> = ({ enabled, children }) => {
   const { sceneData, isLoading } = useRPScene({ enabled });
 
   // Derive scene properties from RP state
@@ -57,12 +56,18 @@ export const RPSceneBackgroundBridge: React.FC<RPSceneBackgroundBridgeProps> = (
     }
 
     const { location, mood } = sceneData;
-    
+
     // Map location to mood (prefer detected mood, fall back to location-based mood)
     let derivedMood: SceneMood = 'calm';
-    
+
     // If mood from server is valid, use it
-    const validMoods: SceneMood[] = ['calm', 'energetic', 'romantic', 'mysterious', 'playful'];
+    const validMoods: SceneMood[] = [
+      'calm',
+      'energetic',
+      'romantic',
+      'mysterious',
+      'playful',
+    ];
     if (validMoods.includes(mood as SceneMood)) {
       derivedMood = mood as SceneMood;
     } else {
@@ -73,7 +78,7 @@ export const RPSceneBackgroundBridge: React.FC<RPSceneBackgroundBridgeProps> = (
     // For outdoor scenes at night, prefer mysterious mood for starry effect
     const timeOfDay = getCurrentTimeOfDay();
     const isOutdoor = isOutdoorLocation(location);
-    
+
     if (isOutdoor && (timeOfDay === 'night' || timeOfDay === 'dusk')) {
       // Night outdoor scenes get mysterious mood (darker with stars)
       derivedMood = 'mysterious';
@@ -85,7 +90,7 @@ export const RPSceneBackgroundBridge: React.FC<RPSceneBackgroundBridgeProps> = (
     return {
       mood: derivedMood,
       timeOfDay,
-      location
+      location,
     };
   }, [enabled, sceneData, isLoading]);
 

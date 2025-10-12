@@ -1,6 +1,6 @@
 /**
  * GOOGLE CALENDAR API SERVICE
- * 
+ *
  * Provides actual Google Calendar API integration using OAuth tokens.
  * This service uses the Google Calendar REST API to create events.
  */
@@ -49,8 +49,9 @@ export async function addEventToGoogleCalendar(
     if (!accessToken) {
       return {
         success: false,
-        message: "You need to connect your Google account first. Please authenticate via the OAuth settings.",
-        error: 'NO_TOKEN'
+        message:
+          'You need to connect your Google account first. Please authenticate via the OAuth settings.',
+        error: 'NO_TOKEN',
       };
     }
 
@@ -60,8 +61,9 @@ export async function addEventToGoogleCalendar(
     if (!eventDateTime.start || !eventDateTime.end) {
       return {
         success: false,
-        message: "I couldn't parse the date and time. Please provide a clearer format.",
-        error: 'PARSE_ERROR'
+        message:
+          "I couldn't parse the date and time. Please provide a clearer format.",
+        error: 'PARSE_ERROR',
       };
     }
 
@@ -71,12 +73,12 @@ export async function addEventToGoogleCalendar(
       description: description || '',
       start: {
         dateTime: eventDateTime.start,
-        timeZone: 'America/New_York' // Default timezone, should be configurable
+        timeZone: 'America/New_York', // Default timezone, should be configurable
       },
       end: {
         dateTime: eventDateTime.end,
-        timeZone: 'America/New_York'
-      }
+        timeZone: 'America/New_York',
+      },
     };
 
     // Call Google Calendar API
@@ -85,21 +87,21 @@ export async function addEventToGoogleCalendar(
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(event)
+        body: JSON.stringify(event),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('[Google Calendar API] Error:', errorData);
-      
+
       return {
         success: false,
         message: `I had trouble adding the event to your calendar: ${errorData.error?.message || 'Unknown error'}`,
-        error: errorData.error?.message || 'API_ERROR'
+        error: errorData.error?.message || 'API_ERROR',
       };
     }
 
@@ -109,15 +111,14 @@ export async function addEventToGoogleCalendar(
       success: true,
       message: `I've added "${title}" to your Google Calendar for ${date}${time ? ` at ${time}` : ''}`,
       eventId: createdEvent.id,
-      eventLink: createdEvent.htmlLink
+      eventLink: createdEvent.htmlLink,
     };
-
   } catch (error) {
     console.error('[Google Calendar API] Error adding event:', error);
     return {
       success: false,
       message: `I encountered an error while adding the event: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR'
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
     };
   }
 }
@@ -128,7 +129,10 @@ export async function addEventToGoogleCalendar(
  * - "tomorrow", "next Tuesday", "December 25"
  * - "10am", "2:30pm", "14:00"
  */
-function parseDateTime(dateStr: string, timeStr?: string): {
+function parseDateTime(
+  dateStr: string,
+  timeStr?: string
+): {
   start: string | null;
   end: string | null;
 } {
@@ -138,7 +142,7 @@ function parseDateTime(dateStr: string, timeStr?: string): {
 
     // Parse relative dates
     const dateLower = dateStr.toLowerCase().trim();
-    
+
     if (dateLower === 'today') {
       targetDate = new Date(now);
     } else if (dateLower === 'tomorrow') {
@@ -178,9 +182,8 @@ function parseDateTime(dateStr: string, timeStr?: string): {
 
     return {
       start: targetDate.toISOString(),
-      end: endDate.toISOString()
+      end: endDate.toISOString(),
     };
-
   } catch (error) {
     console.error('[Google Calendar API] Error parsing date/time:', error);
     return { start: null, end: null };
@@ -190,7 +193,9 @@ function parseDateTime(dateStr: string, timeStr?: string): {
 /**
  * Parse time string like "10am", "2:30pm", "14:00"
  */
-function parseTimeString(timeStr: string): { hours: number; minutes: number } | null {
+function parseTimeString(
+  timeStr: string
+): { hours: number; minutes: number } | null {
   const timeLower = timeStr.toLowerCase().trim();
 
   // Handle formats like "10am", "2pm"
@@ -224,7 +229,15 @@ function parseTimeString(timeStr: string): { hours: number; minutes: number } | 
  * Get next occurrence of a weekday
  */
 function getNextWeekday(dayName: string): Date {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const days = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
   const targetDay = days.indexOf(dayName.toLowerCase());
 
   if (targetDay === -1) {

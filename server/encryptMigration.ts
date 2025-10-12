@@ -1,10 +1,10 @@
 /**
  * One-time encryption migration script
  * Encrypts existing persisted data in SQLite database and visual_memories.json
- * 
- * Usage: 
+ *
+ * Usage:
  *   npx tsx server/encryptMigration.ts [--force]
- * 
+ *
  * Environment:
  *   MEMORY_KEY - Required encryption key (min 32 characters)
  */
@@ -20,7 +20,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_PATH = path.resolve(__dirname, '..', 'memory', 'milla.db');
-const VISUAL_MEMORY_PATH = path.resolve(__dirname, '..', 'memory', 'visual_memories.json');
+const VISUAL_MEMORY_PATH = path.resolve(
+  __dirname,
+  '..',
+  'memory',
+  'visual_memories.json'
+);
 
 interface MigrationStats {
   messagesTotal: number;
@@ -33,19 +38,30 @@ interface MigrationStats {
   errors: string[];
 }
 
-async function encryptMessages(db: Database.Database, memoryKey: string, dryRun: boolean): Promise<{ total: number; encrypted: number; skipped: number; errors: string[] }> {
+async function encryptMessages(
+  db: Database.Database,
+  memoryKey: string,
+  dryRun: boolean
+): Promise<{
+  total: number;
+  encrypted: number;
+  skipped: number;
+  errors: string[];
+}> {
   const stats = { total: 0, encrypted: 0, skipped: 0, errors: [] as string[] };
 
   try {
     // Get all messages
-    const messages = db.prepare('SELECT id, content FROM messages').all() as Array<{ id: string; content: string }>;
+    const messages = db
+      .prepare('SELECT id, content FROM messages')
+      .all() as Array<{ id: string; content: string }>;
     stats.total = messages.length;
 
     console.log(`Found ${stats.total} messages in database`);
 
     if (dryRun) {
       console.log('[DRY RUN] Would encrypt messages...');
-      messages.forEach(msg => {
+      messages.forEach((msg) => {
         if (!isEncrypted(msg.content)) {
           stats.encrypted++;
         } else {
@@ -54,7 +70,9 @@ async function encryptMessages(db: Database.Database, memoryKey: string, dryRun:
       });
     } else {
       // Prepare update statement
-      const updateStmt = db.prepare('UPDATE messages SET content = ? WHERE id = ?');
+      const updateStmt = db.prepare(
+        'UPDATE messages SET content = ? WHERE id = ?'
+      );
 
       // Process each message
       for (const message of messages) {
@@ -69,7 +87,9 @@ async function encryptMessages(db: Database.Database, memoryKey: string, dryRun:
           stats.encrypted++;
 
           if (stats.encrypted % 100 === 0) {
-            console.log(`  Encrypted ${stats.encrypted}/${stats.total} messages...`);
+            console.log(
+              `  Encrypted ${stats.encrypted}/${stats.total} messages...`
+            );
           }
         } catch (error) {
           const errorMsg = `Failed to encrypt message ${message.id}: ${error instanceof Error ? error.message : String(error)}`;
@@ -79,7 +99,9 @@ async function encryptMessages(db: Database.Database, memoryKey: string, dryRun:
       }
     }
 
-    console.log(`Messages: ${stats.encrypted} encrypted, ${stats.skipped} skipped, ${stats.errors.length} errors`);
+    console.log(
+      `Messages: ${stats.encrypted} encrypted, ${stats.skipped} skipped, ${stats.errors.length} errors`
+    );
   } catch (error) {
     const errorMsg = `Failed to process messages: ${error instanceof Error ? error.message : String(error)}`;
     stats.errors.push(errorMsg);
@@ -89,19 +111,32 @@ async function encryptMessages(db: Database.Database, memoryKey: string, dryRun:
   return stats;
 }
 
-async function encryptSessions(db: Database.Database, memoryKey: string, dryRun: boolean): Promise<{ total: number; encrypted: number; skipped: number; errors: string[] }> {
+async function encryptSessions(
+  db: Database.Database,
+  memoryKey: string,
+  dryRun: boolean
+): Promise<{
+  total: number;
+  encrypted: number;
+  skipped: number;
+  errors: string[];
+}> {
   const stats = { total: 0, encrypted: 0, skipped: 0, errors: [] as string[] };
 
   try {
     // Get all sessions with last_two_messages
-    const sessions = db.prepare("SELECT id, last_two_messages FROM sessions WHERE last_two_messages IS NOT NULL AND last_two_messages != ''").all() as Array<{ id: string; last_two_messages: string }>;
+    const sessions = db
+      .prepare(
+        "SELECT id, last_two_messages FROM sessions WHERE last_two_messages IS NOT NULL AND last_two_messages != ''"
+      )
+      .all() as Array<{ id: string; last_two_messages: string }>;
     stats.total = sessions.length;
 
     console.log(`Found ${stats.total} sessions with last_two_messages`);
 
     if (dryRun) {
       console.log('[DRY RUN] Would encrypt session messages...');
-      sessions.forEach(session => {
+      sessions.forEach((session) => {
         if (!isEncrypted(session.last_two_messages)) {
           stats.encrypted++;
         } else {
@@ -110,7 +145,9 @@ async function encryptSessions(db: Database.Database, memoryKey: string, dryRun:
       });
     } else {
       // Prepare update statement
-      const updateStmt = db.prepare('UPDATE sessions SET last_two_messages = ? WHERE id = ?');
+      const updateStmt = db.prepare(
+        'UPDATE sessions SET last_two_messages = ? WHERE id = ?'
+      );
 
       // Process each session
       for (const session of sessions) {
@@ -131,7 +168,9 @@ async function encryptSessions(db: Database.Database, memoryKey: string, dryRun:
       }
     }
 
-    console.log(`Sessions: ${stats.encrypted} encrypted, ${stats.skipped} skipped, ${stats.errors.length} errors`);
+    console.log(
+      `Sessions: ${stats.encrypted} encrypted, ${stats.skipped} skipped, ${stats.errors.length} errors`
+    );
   } catch (error) {
     const errorMsg = `Failed to process sessions: ${error instanceof Error ? error.message : String(error)}`;
     stats.errors.push(errorMsg);
@@ -141,7 +180,10 @@ async function encryptSessions(db: Database.Database, memoryKey: string, dryRun:
   return stats;
 }
 
-async function encryptVisualMemories(memoryKey: string, dryRun: boolean): Promise<{ encrypted: boolean; error?: string }> {
+async function encryptVisualMemories(
+  memoryKey: string,
+  dryRun: boolean
+): Promise<{ encrypted: boolean; error?: string }> {
   try {
     if (!fs.existsSync(VISUAL_MEMORY_PATH)) {
       console.log('No visual_memories.json file found, skipping');
@@ -207,7 +249,9 @@ async function runMigration() {
     memoryKey = getMemoryKey();
     console.log('✓ MEMORY_KEY found and validated\n');
   } catch (error) {
-    console.error(`❌ ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `❌ ${error instanceof Error ? error.message : String(error)}`
+    );
     console.error('\nPlease set MEMORY_KEY in your .env file:');
     console.error('  MEMORY_KEY=your-secure-key-here (min 32 characters)\n');
 
@@ -227,7 +271,7 @@ async function runMigration() {
     sessionsEncrypted: 0,
     sessionsSkipped: 0,
     visualMemoryEncrypted: false,
-    errors: []
+    errors: [],
   };
 
   // Check if database exists
@@ -287,14 +331,20 @@ async function runMigration() {
 
   // Print summary
   console.log('=== Migration Summary ===');
-  console.log(`Messages: ${stats.messagesEncrypted} encrypted, ${stats.messagesSkipped} already encrypted (${stats.messagesTotal} total)`);
-  console.log(`Sessions: ${stats.sessionsEncrypted} encrypted, ${stats.sessionsSkipped} already encrypted (${stats.sessionsTotal} total)`);
-  console.log(`Visual memories: ${stats.visualMemoryEncrypted ? 'encrypted' : 'not encrypted or already encrypted'}`);
+  console.log(
+    `Messages: ${stats.messagesEncrypted} encrypted, ${stats.messagesSkipped} already encrypted (${stats.messagesTotal} total)`
+  );
+  console.log(
+    `Sessions: ${stats.sessionsEncrypted} encrypted, ${stats.sessionsSkipped} already encrypted (${stats.sessionsTotal} total)`
+  );
+  console.log(
+    `Visual memories: ${stats.visualMemoryEncrypted ? 'encrypted' : 'not encrypted or already encrypted'}`
+  );
   console.log(`Errors: ${stats.errors.length}`);
 
   if (stats.errors.length > 0) {
     console.log('\n⚠️  Migration completed with errors:');
-    stats.errors.forEach(error => console.log(`  - ${error}`));
+    stats.errors.forEach((error) => console.log(`  - ${error}`));
     process.exit(1);
   } else if (dryRun) {
     console.log('\n✓ Dry run completed successfully');

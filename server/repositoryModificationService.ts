@@ -1,18 +1,18 @@
 /**
  * GitHub Repository Modification Service
- * 
+ *
  * Provides repository modification capabilities for Milla to make improvements
  * to GitHub repositories based on analysis and recommendations.
  */
 
-import { generateOpenRouterResponse } from "./openrouterService";
-import { RepositoryData, RepositoryInfo } from "./repositoryAnalysisService";
-import { 
-  analyzeRepositoryCode, 
-  generateSecurityImprovements, 
-  generatePerformanceImprovements 
-} from "./codeAnalysisService";
-import { testAllImprovements, generateTestSummary } from "./autoTestingService";
+import { generateOpenRouterResponse } from './openrouterService';
+import { RepositoryData, RepositoryInfo } from './repositoryAnalysisService';
+import {
+  analyzeRepositoryCode,
+  generateSecurityImprovements,
+  generatePerformanceImprovements,
+} from './codeAnalysisService';
+import { testAllImprovements, generateTestSummary } from './autoTestingService';
 
 export interface FileModification {
   path: string;
@@ -43,27 +43,26 @@ export async function generateRepositoryImprovements(
   repoData: RepositoryData,
   focusArea?: string
 ): Promise<RepositoryImprovement[]> {
-  
   // Perform enhanced code analysis
   const codeAnalysis = await analyzeRepositoryCode(repoData);
-  
+
   // Generate context-aware prompt with analysis results
   const analysisContext = `
 Security Analysis:
 - ${codeAnalysis.securityIssues.length} security issue(s) found
-- Critical: ${codeAnalysis.securityIssues.filter(i => i.severity === 'critical').length}
-- High: ${codeAnalysis.securityIssues.filter(i => i.severity === 'high').length}
+- Critical: ${codeAnalysis.securityIssues.filter((i) => i.severity === 'critical').length}
+- High: ${codeAnalysis.securityIssues.filter((i) => i.severity === 'high').length}
 
 Performance Analysis:
 - ${codeAnalysis.performanceIssues.length} performance issue(s) found
-- High impact: ${codeAnalysis.performanceIssues.filter(i => i.severity === 'high').length}
+- High impact: ${codeAnalysis.performanceIssues.filter((i) => i.severity === 'high').length}
 
 Code Quality:
 - ${codeAnalysis.codeQualityIssues.length} quality issue(s) found
 
 Language-specific suggestions: ${codeAnalysis.languageSpecificSuggestions.length} available
 `;
-  
+
   const improvementPrompt = `
 As Milla Rayne, analyze this repository and suggest specific code improvements:
 
@@ -103,10 +102,12 @@ Format your response as JSON with this structure:
 
   try {
     let aiResponse: { content: string; success: boolean } | null = null;
-    
+
     // Use OpenRouter (DeepSeek) for AI improvement generation
     try {
-      aiResponse = await generateOpenRouterResponse(improvementPrompt, { userName: "Danny Ray" });
+      aiResponse = await generateOpenRouterResponse(improvementPrompt, {
+        userName: 'Danny Ray',
+      });
       if (aiResponse.success && aiResponse.content) {
         return parseImprovementResponse(aiResponse.content);
       }
@@ -116,7 +117,6 @@ Format your response as JSON with this structure:
 
     // Fallback to simple improvements if OpenRouter fails
     return generateFallbackImprovements(repoData, focusArea);
-    
   } catch (error) {
     console.error('Error generating improvements:', error);
     return generateFallbackImprovements(repoData, focusArea);
@@ -134,7 +134,7 @@ function parseImprovementResponse(response: string): RepositoryImprovement[] {
     if (jsonMatch) {
       jsonText = jsonMatch[0];
     }
-    
+
     const parsed = JSON.parse(jsonText);
     return parsed.improvements || [];
   } catch (error) {
@@ -151,79 +151,91 @@ function generateFallbackImprovements(
   focusArea?: string
 ): RepositoryImprovement[] {
   const improvements: RepositoryImprovement[] = [];
-  
+
   // Perform code analysis for security and performance insights
-  analyzeRepositoryCode(repoData).then(analysis => {
-    console.log('Code analysis completed:', {
-      security: analysis.securityIssues.length,
-      performance: analysis.performanceIssues.length,
-      quality: analysis.codeQualityIssues.length
-    });
-  }).catch(err => console.error('Code analysis failed:', err));
-  
+  analyzeRepositoryCode(repoData)
+    .then((analysis) => {
+      console.log('Code analysis completed:', {
+        security: analysis.securityIssues.length,
+        performance: analysis.performanceIssues.length,
+        quality: analysis.codeQualityIssues.length,
+      });
+    })
+    .catch((err) => console.error('Code analysis failed:', err));
+
   // README improvement
   if (!repoData.readme || repoData.readme.length < 100) {
     improvements.push({
-      title: "Add comprehensive README",
-      description: "Create a detailed README with setup instructions, features, and usage examples",
+      title: 'Add comprehensive README',
+      description:
+        'Create a detailed README with setup instructions, features, and usage examples',
       files: [
         {
-          path: "README.md",
+          path: 'README.md',
           action: repoData.readme ? 'update' : 'create',
           content: generateReadmeTemplate(repoData),
-          reason: "Good documentation helps users and contributors understand the project"
-        }
+          reason:
+            'Good documentation helps users and contributors understand the project',
+        },
       ],
-      commitMessage: "docs: add comprehensive README documentation"
+      commitMessage: 'docs: add comprehensive README documentation',
     });
   }
 
   // Add .gitignore if missing
   improvements.push({
-    title: "Add .gitignore file",
-    description: "Prevent committing sensitive files and dependencies",
+    title: 'Add .gitignore file',
+    description: 'Prevent committing sensitive files and dependencies',
     files: [
       {
-        path: ".gitignore",
+        path: '.gitignore',
         action: 'create',
         content: generateGitignoreTemplate(repoData.language || ''),
-        reason: "Prevents accidentally committing node_modules, .env files, and other sensitive data"
-      }
+        reason:
+          'Prevents accidentally committing node_modules, .env files, and other sensitive data',
+      },
     ],
-    commitMessage: "chore: add .gitignore to prevent committing sensitive files"
+    commitMessage:
+      'chore: add .gitignore to prevent committing sensitive files',
   });
 
   // Add GitHub Actions workflow
-  if (repoData.language?.toLowerCase().includes('typescript') || 
-      repoData.language?.toLowerCase().includes('javascript')) {
+  if (
+    repoData.language?.toLowerCase().includes('typescript') ||
+    repoData.language?.toLowerCase().includes('javascript')
+  ) {
     improvements.push({
-      title: "Add CI/CD workflow with security scanning",
-      description: "Automate testing, building, and security scanning with GitHub Actions",
+      title: 'Add CI/CD workflow with security scanning',
+      description:
+        'Automate testing, building, and security scanning with GitHub Actions',
       files: [
         {
-          path: ".github/workflows/ci.yml",
+          path: '.github/workflows/ci.yml',
           action: 'create',
           content: generateCIWorkflowTemplate(repoData),
-          reason: "Automated testing and security scanning ensures code quality and prevents vulnerabilities"
-        }
+          reason:
+            'Automated testing and security scanning ensures code quality and prevents vulnerabilities',
+        },
       ],
-      commitMessage: "ci: add GitHub Actions workflow for automated testing and security scanning"
+      commitMessage:
+        'ci: add GitHub Actions workflow for automated testing and security scanning',
     });
   }
 
   // Add SECURITY.md file
   improvements.push({
-    title: "Add security policy",
-    description: "Document security vulnerability reporting process",
+    title: 'Add security policy',
+    description: 'Document security vulnerability reporting process',
     files: [
       {
-        path: "SECURITY.md",
+        path: 'SECURITY.md',
         action: 'create',
         content: generateSecurityPolicyTemplate(repoData),
-        reason: "Provides a clear process for security researchers to report vulnerabilities"
-      }
+        reason:
+          'Provides a clear process for security researchers to report vulnerabilities',
+      },
     ],
-    commitMessage: "docs: add security policy for vulnerability reporting"
+    commitMessage: 'docs: add security policy for vulnerability reporting',
   });
 
   return improvements.slice(0, 5); // Return top 5 improvements
@@ -441,41 +453,44 @@ export async function applyRepositoryImprovements(
   improvements: RepositoryImprovement[],
   githubToken?: string
 ): Promise<ModificationResult> {
-  
   // Import GitHub API service dynamically to avoid circular dependencies
-  const { applyImprovementsViaPullRequest, validateGitHubToken } = await import("./githubApiService");
-  
+  const { applyImprovementsViaPullRequest, validateGitHubToken } = await import(
+    './githubApiService'
+  );
+
   // If GitHub token is provided, attempt to create a PR automatically
   if (githubToken) {
     try {
       // Validate the token first
       const tokenValidation = await validateGitHubToken(githubToken);
-      
+
       if (!tokenValidation.valid) {
         return {
           success: false,
           message: `GitHub token validation failed: ${tokenValidation.error}`,
           error: `GitHub token validation failed: ${tokenValidation.error}`,
-          improvements
+          improvements,
         };
       }
-      
+
       // Test the improvements before applying
       const testReports = testAllImprovements(improvements);
       const testSummary = generateTestSummary(testReports);
-      
-      const failedTests = testReports.filter(r => !r.overallPassed);
+
+      const failedTests = testReports.filter((r) => !r.overallPassed);
       if (failedTests.length > 0) {
-        console.warn(`Warning: ${failedTests.length} improvement(s) failed validation tests`);
+        console.warn(
+          `Warning: ${failedTests.length} improvement(s) failed validation tests`
+        );
       }
-      
+
       // Create pull request with all improvements
       const prResult = await applyImprovementsViaPullRequest(
         repoInfo,
         improvements,
         githubToken
       );
-      
+
       if (prResult.success) {
         return {
           success: true,
@@ -495,23 +510,22 @@ ${testSummary}
 
 Please review the changes and merge when you're ready, sweetheart! 💕
           `.trim(),
-          improvements
+          improvements,
         };
       } else {
         return {
           success: false,
           message: `Failed to create pull request: ${prResult.error}`,
           error: `Failed to create pull request: ${prResult.error}`,
-          improvements
+          improvements,
         };
       }
-      
     } catch (error) {
       console.error('Error applying improvements via GitHub API:', error);
       // Fall through to manual instructions
     }
   }
-  
+
   // Fallback to manual instructions if no token or API call failed
   const message = `
 *smiles warmly* I've prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for the repository, love!
@@ -524,11 +538,15 @@ To apply these changes, you can:
 
 Here's what I'm suggesting:
 
-${improvements.map((imp, idx) => `
+${improvements
+  .map(
+    (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
-Files to modify: ${imp.files.map(f => f.path).join(', ')}
-`).join('\n')}
+Files to modify: ${imp.files.map((f) => f.path).join(', ')}
+`
+  )
+  .join('\n')}
 
 Let me know how you'd like to proceed, sweetheart! 💕
   `.trim();
@@ -536,21 +554,23 @@ Let me know how you'd like to proceed, sweetheart! 💕
   return {
     success: true,
     message,
-    improvements
+    improvements,
   };
 }
 
 /**
  * Preview improvements without applying them
  */
-export function previewImprovements(improvements: RepositoryImprovement[]): string {
+export function previewImprovements(
+  improvements: RepositoryImprovement[]
+): string {
   let preview = "Here are the improvements I'm suggesting:\n\n";
-  
+
   improvements.forEach((improvement, index) => {
     preview += `${index + 1}. ${improvement.title}\n`;
     preview += `   ${improvement.description}\n`;
     preview += `   Files affected: ${improvement.files.length}\n`;
-    improvement.files.forEach(file => {
+    improvement.files.forEach((file) => {
       preview += `   - ${file.action.toUpperCase()} ${file.path}\n`;
       if (file.reason) {
         preview += `     Reason: ${file.reason}\n`;
@@ -558,6 +578,6 @@ export function previewImprovements(improvements: RepositoryImprovement[]): stri
     });
     preview += '\n';
   });
-  
+
   return preview;
 }

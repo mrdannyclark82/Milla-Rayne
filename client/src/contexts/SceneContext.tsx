@@ -3,9 +3,25 @@
  * Provides scene state and configuration to all scene components
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { SceneContext as SceneContextType, AppState, PerformanceMode, WeatherEffect, SceneLocationKey } from '@shared/sceneTypes';
-import { getCurrentTimeOfDay, prefersReducedMotion, isPageBackgrounded } from '@/lib/scene/sceneUtils';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
+import type {
+  SceneContext as SceneContextType,
+  AppState,
+  PerformanceMode,
+  WeatherEffect,
+  SceneLocationKey,
+} from '@shared/sceneTypes';
+import {
+  getCurrentTimeOfDay,
+  prefersReducedMotion,
+  isPageBackgrounded,
+} from '@/lib/scene/sceneUtils';
 
 interface SceneContextProviderProps {
   children: ReactNode;
@@ -25,7 +41,7 @@ export function SceneContextProvider({
   appState = 'idle',
   performanceMode = 'balanced',
   weatherEffect = 'none',
-  location = 'living_room'
+  location = 'living_room',
 }: SceneContextProviderProps) {
   const [context, setContext] = useState<SceneContextType>(() => ({
     timeOfDay: getCurrentTimeOfDay(),
@@ -34,15 +50,15 @@ export function SceneContextProvider({
     performanceMode,
     isBackgrounded: isPageBackgrounded(),
     weatherEffect,
-    location
+    location,
   }));
 
   // Update time of day every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setContext(prev => ({
+      setContext((prev) => ({
         ...prev,
-        timeOfDay: getCurrentTimeOfDay()
+        timeOfDay: getCurrentTimeOfDay(),
       }));
     }, 60000); // Check every minute
 
@@ -52,11 +68,11 @@ export function SceneContextProvider({
   // Listen for reduced motion preference changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
-      setContext(prev => ({
+      setContext((prev) => ({
         ...prev,
-        reducedMotion: e.matches
+        reducedMotion: e.matches,
       }));
     };
 
@@ -67,52 +83,51 @@ export function SceneContextProvider({
   // Listen for page visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setContext(prev => ({
+      setContext((prev) => ({
         ...prev,
-        isBackgrounded: document.hidden
+        isBackgrounded: document.hidden,
       }));
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // Update app state when prop changes
   useEffect(() => {
-    setContext(prev => ({
+    setContext((prev) => ({
       ...prev,
-      appState
+      appState,
     }));
   }, [appState]);
 
   // Update performance mode when prop changes
   useEffect(() => {
-    setContext(prev => ({
+    setContext((prev) => ({
       ...prev,
-      performanceMode
+      performanceMode,
     }));
   }, [performanceMode]);
 
   // Update weather effect when prop changes
   useEffect(() => {
-    setContext(prev => ({
+    setContext((prev) => ({
       ...prev,
-      weatherEffect
+      weatherEffect,
     }));
   }, [weatherEffect]);
 
   // Update location when prop changes
   useEffect(() => {
-    setContext(prev => ({
+    setContext((prev) => ({
       ...prev,
-      location
+      location,
     }));
   }, [location]);
 
   return (
-    <SceneContext.Provider value={context}>
-      {children}
-    </SceneContext.Provider>
+    <SceneContext.Provider value={context}>{children}</SceneContext.Provider>
   );
 }
 

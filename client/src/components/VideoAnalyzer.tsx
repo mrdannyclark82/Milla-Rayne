@@ -3,7 +3,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Upload, Play, Pause, Volume2, VolumeX, FileVideo, Loader2, Eye, Heart, Activity, Package } from 'lucide-react';
+import {
+  Upload,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  FileVideo,
+  Loader2,
+  Eye,
+  Heart,
+  Activity,
+  Package,
+} from 'lucide-react';
 
 interface VideoAnalysisResult {
   summary: string;
@@ -19,15 +31,19 @@ interface VideoAnalyzerProps {
   className?: string;
 }
 
-export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: VideoAnalyzerProps) {
+export default function VideoAnalyzer({
+  onAnalysisComplete,
+  className = '',
+}: VideoAnalyzerProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [videoUrl, setVideoUrl] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<VideoAnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] =
+    useState<VideoAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,17 +68,20 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    const videoFile = files.find(file => file.type.startsWith('video/'));
-    
-    if (videoFile) {
-      handleFileSelect(videoFile);
-    }
-  }, [handleFileSelect]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      const videoFile = files.find((file) => file.type.startsWith('video/'));
+
+      if (videoFile) {
+        handleFileSelect(videoFile);
+      }
+    },
+    [handleFileSelect]
+  );
 
   // Handle file input change
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +115,7 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
     if (!selectedFile) return;
 
     setIsAnalyzing(true);
-    
+
     try {
       // Send video as binary data
       const response = await fetch('/api/analyze-video', {
@@ -108,8 +127,12 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: response.statusText }));
-        throw new Error(errorData.error || `Analysis failed: ${response.statusText}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: response.statusText }));
+        throw new Error(
+          errorData.error || `Analysis failed: ${response.statusText}`
+        );
       }
 
       const result: VideoAnalysisResult = await response.json();
@@ -117,15 +140,18 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
       onAnalysisComplete?.(result);
     } catch (error) {
       console.error('Video analysis error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+
       // Show error in a user-friendly way
       setAnalysisResult({
-        summary: errorMessage.includes('sweetheart') ? errorMessage : "I had trouble analyzing your video. Please try again with a different format or smaller file.",
+        summary: errorMessage.includes('sweetheart')
+          ? errorMessage
+          : 'I had trouble analyzing your video. Please try again with a different format or smaller file.',
         keyMoments: [],
         emotions: [],
         objects: [],
-        activities: []
+        activities: [],
       });
     } finally {
       setIsAnalyzing(false);
@@ -146,7 +172,9 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
           {!selectedFile ? (
             <div
               className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer hover:border-purple-400 ${
-                isDragOver ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20' : 'border-gray-300 dark:border-gray-600'
+                isDragOver
+                  ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+                  : 'border-gray-300 dark:border-gray-600'
               }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -183,7 +211,7 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
                   controls={false}
                   data-testid="video-preview"
                 />
-                
+
                 {/* Custom Video Controls */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                   <div className="flex items-center justify-between text-white">
@@ -195,7 +223,11 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
                         className="text-white hover:bg-white/20"
                         data-testid="video-play-pause"
                       >
-                        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        {isPlaying ? (
+                          <Pause className="w-4 h-4" />
+                        ) : (
+                          <Play className="w-4 h-4" />
+                        )}
                       </Button>
                       <Button
                         variant="ghost"
@@ -204,7 +236,11 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
                         className="text-white hover:bg-white/20"
                         data-testid="video-mute-toggle"
                       >
-                        {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                        {isMuted ? (
+                          <VolumeX className="w-4 h-4" />
+                        ) : (
+                          <Volume2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </div>
                     <p className="text-sm opacity-80">{selectedFile.name}</p>
@@ -214,7 +250,7 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
 
               {/* Action Buttons */}
               <div className="flex gap-3">
-                <Button 
+                <Button
                   onClick={analyzeVideo}
                   disabled={isAnalyzing}
                   className="flex-1"
@@ -232,11 +268,11 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
                     </>
                   )}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setSelectedFile(null);
-                    setVideoUrl("");
+                    setVideoUrl('');
                     setAnalysisResult(null);
                     URL.revokeObjectURL(videoUrl);
                   }}
@@ -262,7 +298,9 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
           <CardContent className="space-y-6">
             {/* Summary */}
             <div>
-              <h4 className="font-semibold mb-2 text-purple-600 dark:text-purple-400">Summary</h4>
+              <h4 className="font-semibold mb-2 text-purple-600 dark:text-purple-400">
+                Summary
+              </h4>
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {analysisResult.summary}
               </p>
@@ -301,7 +339,11 @@ export default function VideoAnalyzer({ onAnalysisComplete, className = "" }: Vi
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {analysisResult.emotions.map((emotion, index) => (
-                    <Badge key={index} variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300"
+                    >
                       {emotion}
                     </Badge>
                   ))}

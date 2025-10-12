@@ -1,7 +1,7 @@
 /**
  * Example App Integration with Adaptive Scene System
  * This is a demo showing how to integrate the scene system into App.tsx
- * 
+ *
  * DO NOT USE THIS FILE DIRECTLY - it's a reference/example only
  */
 
@@ -12,8 +12,10 @@ import type { AppState } from '@shared/sceneTypes';
 
 function AppWithScenes() {
   // Get scene configuration from feature flags
-  const [sceneConfig, setSceneConfig] = useState(() => getAdaptiveSceneConfig());
-  
+  const [sceneConfig, setSceneConfig] = useState(() =>
+    getAdaptiveSceneConfig()
+  );
+
   // Track app state for adaptive visuals
   const [appState, setAppState] = useState<AppState>('idle');
   const [isListening, setIsListening] = useState(false);
@@ -53,7 +55,7 @@ function AppWithScenes() {
       <div className="min-h-screen bg-black">
         {/* Existing content unchanged */}
         <h1>Your App Content</h1>
-        
+
         {/* Example: Update app state when user interacts */}
         <button onClick={() => setIsListening(!isListening)}>
           {isListening ? 'Stop Listening' : 'Start Listening'}
@@ -65,9 +67,9 @@ function AppWithScenes() {
 
 export default AppWithScenes;
 
-/* 
+/*
  * INTEGRATION NOTES:
- * 
+ *
  * 1. Wrap your entire App component with <SceneContainer>
  * 2. Pass enabled={sceneConfig.enabled} to gate the feature
  * 3. Update appState based on your app's current state:
@@ -75,15 +77,15 @@ export default AppWithScenes;
  *    - 'listening': When user is speaking/recording
  *    - 'thinking': When AI is processing
  *    - 'speaking': When AI is responding with voice
- * 
- * 4. When sceneConfig.enabled is false, SceneContainer renders 
+ *
+ * 4. When sceneConfig.enabled is false, SceneContainer renders
  *    children only (zero overhead)
- * 
+ *
  * 5. To enable in development:
  *    Open browser console and run:
  *    localStorage.setItem('adaptiveScenes.enabled', 'true')
  *    Then refresh the page
- * 
+ *
  * 6. The scene system will automatically:
  *    - Adapt to time of day
  *    - Respect reduced motion preferences

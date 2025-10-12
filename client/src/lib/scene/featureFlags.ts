@@ -11,7 +11,7 @@ import type { AdaptiveSceneConfig, PerformanceMode } from '@shared/sceneTypes';
 export function getAdaptiveSceneConfig(): AdaptiveSceneConfig {
   // In production, this would read from a config API or environment
   // For demo purposes, we check localStorage and fall back to disabled
-  
+
   let enabled = false;
   let performanceMode: PerformanceMode = 'balanced';
 
@@ -23,19 +23,28 @@ export function getAdaptiveSceneConfig(): AdaptiveSceneConfig {
         enabled = storedEnabled === 'true';
       }
 
-      const storedPerformanceMode = localStorage.getItem('adaptiveScenes.performanceMode');
-      if (storedPerformanceMode && 
-          ['high-quality', 'balanced', 'performance'].includes(storedPerformanceMode)) {
+      const storedPerformanceMode = localStorage.getItem(
+        'adaptiveScenes.performanceMode'
+      );
+      if (
+        storedPerformanceMode &&
+        ['high-quality', 'balanced', 'performance'].includes(
+          storedPerformanceMode
+        )
+      ) {
         performanceMode = storedPerformanceMode as PerformanceMode;
       }
     } catch (error) {
-      console.warn('Error reading adaptive scene config from localStorage:', error);
+      console.warn(
+        'Error reading adaptive scene config from localStorage:',
+        error
+      );
     }
   }
 
   return {
     enabled,
-    performanceMode
+    performanceMode,
   };
 }
 
@@ -49,7 +58,10 @@ export function setAdaptiveScenesEnabled(enabled: boolean): void {
       // Trigger storage event for other tabs/components
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
-      console.warn('Error saving adaptive scene config to localStorage:', error);
+      console.warn(
+        'Error saving adaptive scene config to localStorage:',
+        error
+      );
     }
   }
 }
@@ -64,7 +76,10 @@ export function setAdaptiveScenesPerformanceMode(mode: PerformanceMode): void {
       // Trigger storage event for other tabs/components
       window.dispatchEvent(new Event('storage'));
     } catch (error) {
-      console.warn('Error saving adaptive scene config to localStorage:', error);
+      console.warn(
+        'Error saving adaptive scene config to localStorage:',
+        error
+      );
     }
   }
 }

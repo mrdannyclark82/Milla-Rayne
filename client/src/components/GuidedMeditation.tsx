@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 
 export function GuidedMeditation() {
@@ -26,7 +25,7 @@ export function GuidedMeditation() {
       if (!response.body) {
         throw new Error('Response body is null');
       }
-      
+
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`Meditation request failed: ${errText}`);
@@ -47,10 +46,11 @@ export function GuidedMeditation() {
       };
 
       read();
-
     } catch (err) {
       console.error('Failed to start guided meditation:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+      setError(
+        err instanceof Error ? err.message : 'An unknown error occurred.'
+      );
       setIsMeditating(false);
     }
   }, []);
@@ -63,7 +63,9 @@ export function GuidedMeditation() {
         disabled={isMeditating}
         className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
       >
-        {isMeditating ? 'Meditation in Progress...' : 'Start 5-Minute Meditation on Stress Relief'}
+        {isMeditating
+          ? 'Meditation in Progress...'
+          : 'Start 5-Minute Meditation on Stress Relief'}
       </button>
 
       {error && (

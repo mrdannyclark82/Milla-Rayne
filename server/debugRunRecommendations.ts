@@ -1,9 +1,15 @@
-import { generateRecommendations, getRecommendationSummary } from './predictiveRecommendations';
+import {
+  generateRecommendations,
+  getRecommendationSummary,
+} from './predictiveRecommendations';
 
 async function run() {
   try {
     console.log('Running generateRecommendations...');
-    const recs = generateRecommendations({ minRelevance: 0.2, maxRecommendations: 10 });
+    const recs = generateRecommendations({
+      minRelevance: 0.2,
+      maxRecommendations: 10,
+    });
     console.log('Result:', JSON.stringify(recs, null, 2));
 
     console.log('Running getRecommendationSummary...');

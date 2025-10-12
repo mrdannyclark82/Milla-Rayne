@@ -1,4 +1,3 @@
-
 import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
@@ -12,31 +11,38 @@ const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Default voice, can be changed
  * @param text The text to convert to speech.
  * @returns The public URL of the generated audio file.
  */
-export async function generateElevenLabsSpeech(text: string): Promise<string | null> {
+export async function generateElevenLabsSpeech(
+  text: string
+): Promise<string | null> {
   if (!ELEVENLABS_API_KEY) {
     console.error('ElevenLabs API key is not configured.');
     return null;
   }
 
-  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
-    method: 'POST',
-    headers: {
-      'Accept': 'audio/mpeg',
-      'Content-Type': 'application/json',
-      'xi-api-key': ELEVENLABS_API_KEY,
-    },
-    body: JSON.stringify({
-      text: text,
-      model_id: 'eleven_monolingual_v1',
-      voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.5,
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'audio/mpeg',
+        'Content-Type': 'application/json',
+        'xi-api-key': ELEVENLABS_API_KEY,
       },
-    }),
-  });
+      body: JSON.stringify({
+        text: text,
+        model_id: 'eleven_monolingual_v1',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.5,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
-    console.error(`ElevenLabs API request failed with status: ${response.status}`);
+    console.error(
+      `ElevenLabs API request failed with status: ${response.status}`
+    );
     return null;
   }
 

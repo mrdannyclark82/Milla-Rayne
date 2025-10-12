@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface VoiceControlsProps {
   isSpeaking: boolean;
@@ -20,7 +20,7 @@ export function VoiceControls({
   onReplay,
   showCaptions,
   onToggleCaptions,
-  className = ""
+  className = '',
 }: VoiceControlsProps) {
   const [isPaused, setIsPaused] = useState(false);
 
@@ -55,8 +55,8 @@ export function VoiceControls({
             variant="outline"
             className="border-white/30 text-white/70 hover:text-white"
             onClick={handlePauseResume}
-            title={isPaused ? "Resume" : "Pause"}
-            aria-label={isPaused ? "Resume speech" : "Pause speech"}
+            title={isPaused ? 'Resume' : 'Pause'}
+            aria-label={isPaused ? 'Resume speech' : 'Pause speech'}
           >
             <i className={`fas fa-${isPaused ? 'play' : 'pause'} mr-1`}></i>
             {isPaused ? 'Resume' : 'Pause'}
@@ -97,8 +97,8 @@ export function VoiceControls({
           showCaptions ? 'bg-blue-600/20 border-blue-400/50' : ''
         }`}
         onClick={() => onToggleCaptions(!showCaptions)}
-        title={showCaptions ? "Hide captions" : "Show captions"}
-        aria-label={showCaptions ? "Hide captions" : "Show captions"}
+        title={showCaptions ? 'Hide captions' : 'Show captions'}
+        aria-label={showCaptions ? 'Hide captions' : 'Show captions'}
       >
         <i className="fas fa-closed-captioning mr-1"></i>
         {showCaptions ? 'Hide' : 'Show'} Captions

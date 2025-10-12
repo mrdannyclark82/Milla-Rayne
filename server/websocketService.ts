@@ -38,26 +38,31 @@ const connections = new Map<string, WebSocket>();
 const gameStates = new Map<string, any>();
 const gardenPositions = new Map<string, GardenPosition>();
 
-export async function setupWebSocketServer(httpServer: Server): Promise<WebSocketServer> {
+export async function setupWebSocketServer(
+  httpServer: Server
+): Promise<WebSocketServer> {
   console.log('Setting up WebSocket server for real-time features...');
-  
-  const wss = new WebSocketServer({ 
+
+  const wss = new WebSocketServer({
     server: httpServer,
-    path: '/ws'
+    path: '/ws',
   });
 
   wss.on('connection', (ws: WebSocket, req) => {
     const playerId = generatePlayerId();
     connections.set(playerId, ws);
-    
+
     console.log(`WebSocket client connected: ${playerId}`);
-    
+
     // Send welcome message
-    ws.send(JSON.stringify({
-      type: 'connected',
-      playerId,
-      message: 'Connected to Milla\'s digital world! Ready for gaming, exploration, and storytelling.'
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'connected',
+        playerId,
+        message:
+          "Connected to Milla's digital world! Ready for gaming, exploration, and storytelling.",
+      })
+    );
 
     ws.on('message', (data: Buffer) => {
       try {
@@ -65,10 +70,12 @@ export async function setupWebSocketServer(httpServer: Server): Promise<WebSocke
         handleWebSocketMessage(ws, playerId, message);
       } catch (error) {
         console.error('WebSocket message parsing error:', error);
-        ws.send(JSON.stringify({
-          type: 'error',
-          message: 'Invalid message format'
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            message: 'Invalid message format',
+          })
+        );
       }
     });
 
@@ -87,7 +94,11 @@ export async function setupWebSocketServer(httpServer: Server): Promise<WebSocke
   return wss;
 }
 
-function handleWebSocketMessage(ws: WebSocket, playerId: string, message: WSMessage) {
+function handleWebSocketMessage(
+  ws: WebSocket,
+  playerId: string,
+  message: WSMessage
+) {
   switch (message.type) {
     case 'move':
       handleGameMove(ws, playerId, message);
@@ -99,10 +110,12 @@ function handleWebSocketMessage(ws: WebSocket, playerId: string, message: WSMess
       handleStoryChoice(ws, playerId, message);
       break;
     default:
-      ws.send(JSON.stringify({
-        type: 'error',
-        message: 'Unknown message type'
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'error',
+          message: 'Unknown message type',
+        })
+      );
   }
 }
 
@@ -113,7 +126,7 @@ function handleGameMove(ws: WebSocket, playerId: string, move: GameMove) {
       players: [playerId],
       moves: [],
       currentPlayer: playerId,
-      created: Date.now()
+      created: Date.now(),
     });
   }
 
@@ -121,7 +134,7 @@ function handleGameMove(ws: WebSocket, playerId: string, move: GameMove) {
   gameState.moves.push({
     playerId,
     move: move.move,
-    timestamp: move.timestamp
+    timestamp: move.timestamp,
   });
 
   // Broadcast move to all clients
@@ -132,19 +145,23 @@ function handleGameMove(ws: WebSocket, playerId: string, move: GameMove) {
     playerId,
     gameState: {
       moves: gameState.moves,
-      currentPlayer: gameState.currentPlayer
-    }
+      currentPlayer: gameState.currentPlayer,
+    },
   };
 
   broadcastToAll(moveUpdate);
-  
+
   console.log(`Game move processed: ${move.gameId} by ${playerId}`);
 }
 
-function handleGardenMove(ws: WebSocket, playerId: string, update: GardenUpdate) {
+function handleGardenMove(
+  ws: WebSocket,
+  playerId: string,
+  update: GardenUpdate
+) {
   // Update player position
   gardenPositions.set(playerId, update.position);
-  
+
   // Broadcast position update to all clients
   const positionUpdate = {
     type: 'garden_update',
@@ -152,28 +169,36 @@ function handleGardenMove(ws: WebSocket, playerId: string, update: GardenUpdate)
     position: update.position,
     action: update.action,
     timestamp: update.timestamp,
-    allPositions: Object.fromEntries(gardenPositions)
+    allPositions: Object.fromEntries(gardenPositions),
   };
 
   broadcastToAll(positionUpdate);
-  
-  console.log(`Garden move: ${playerId} moved to (${update.position.x}, ${update.position.y})`);
+
+  console.log(
+    `Garden move: ${playerId} moved to (${update.position.x}, ${update.position.y})`
+  );
 }
 
-function handleStoryChoice(ws: WebSocket, playerId: string, choice: StoryChoice) {
-  // Simple story choice handling - in a real implementation, 
+function handleStoryChoice(
+  ws: WebSocket,
+  playerId: string,
+  choice: StoryChoice
+) {
+  // Simple story choice handling - in a real implementation,
   // this would involve more complex story state management
   const storyUpdate = {
     type: 'story_update',
     storyId: choice.storyId,
     playerId,
     choice: choice.choice,
-    timestamp: choice.timestamp
+    timestamp: choice.timestamp,
   };
 
   broadcastToAll(storyUpdate);
-  
-  console.log(`Story choice: ${playerId} chose "${choice.choice}" in story ${choice.storyId}`);
+
+  console.log(
+    `Story choice: ${playerId} chose "${choice.choice}" in story ${choice.storyId}`
+  );
 }
 
 function broadcastToAll(message: any) {

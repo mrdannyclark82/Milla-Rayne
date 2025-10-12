@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
-import { getSceneForContext, getCurrentTimeOfDay, getLocationMood } from '@/utils/scenePresets';
+import {
+  getSceneForContext,
+  getCurrentTimeOfDay,
+  getLocationMood,
+} from '@/utils/scenePresets';
 import { CSSSceneRenderer } from './CSSSceneRenderer';
 import { RealisticSceneBackground } from './RealisticSceneBackground';
 import { SceneDebugOverlay } from './SceneDebugOverlay';
-import { SceneSettings, AvatarState, SceneMood, TimeOfDay, SceneLocation } from '@/types/scene';
-import { loadSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
+import {
+  SceneSettings,
+  AvatarState,
+  SceneMood,
+  TimeOfDay,
+  SceneLocation,
+} from '@/types/scene';
+import {
+  loadSceneSettings,
+  onSettingsChange as subscribeToSettingsChange,
+} from '@/utils/sceneSettingsStore';
 
 interface AdaptiveSceneManagerProps {
   avatarState?: AvatarState;
@@ -29,14 +42,16 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   onSceneChange,
   location, // Phase 3: RP scene location
   timeOfDay: propTimeOfDay, // Phase 3: Optional time override
-  region = 'full' // Visual V1: Default to full viewport
+  region = 'full', // Visual V1: Default to full viewport
 }) => {
-  const [capabilities, setCapabilities] = useState(() => detectDeviceCapabilities());
-  const [autoTimeOfDay, setAutoTimeOfDay] = useState(getCurrentTimeOfDay());
-  const [settings, setSettings] = useState<SceneSettings>(() => 
-    propSettings || loadSceneSettings()
+  const [capabilities, setCapabilities] = useState(() =>
+    detectDeviceCapabilities()
   );
-  
+  const [autoTimeOfDay, setAutoTimeOfDay] = useState(getCurrentTimeOfDay());
+  const [settings, setSettings] = useState<SceneSettings>(
+    () => propSettings || loadSceneSettings()
+  );
+
   // User-friendly info overlay (non-intrusive, bottom-left corner)
   const [showInfo, setShowInfo] = useState(false);
 
@@ -46,11 +61,11 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   // Live listener for reduced-motion changes (DevTools emulation support)
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    
+
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      setCapabilities(prev => ({
+      setCapabilities((prev) => ({
         ...prev,
-        prefersReducedMotion: e.matches
+        prefersReducedMotion: e.matches,
       }));
     };
 
@@ -59,7 +74,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
 
     // Listen for changes
     mediaQuery.addEventListener('change', handleChange);
-    
+
     return () => {
       mediaQuery.removeEventListener('change', handleChange);
     };
@@ -130,20 +145,21 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   // Respect reduced motion preference - always show static gradient
   if (capabilities.prefersReducedMotion || !enableAnimations) {
     const simpleScene = getSceneForContext(timeOfDay, activeMood);
-    
+
     // Determine positioning based on region
-    const regionStyle = region === 'left-2-3' 
-      ? { 
-          position: 'fixed' as const,
-          top: 0,
-          left: 0,
-          width: '66.6667vw',
-          height: '100vh',
-          zIndex: -10,
-          pointerEvents: 'none' as const
-        }
-      : {};
-    
+    const regionStyle =
+      region === 'left-2-3'
+        ? {
+            position: 'fixed' as const,
+            top: 0,
+            left: 0,
+            width: '66.6667vw',
+            height: '100vh',
+            zIndex: -10,
+            pointerEvents: 'none' as const,
+          }
+        : {};
+
     return (
       <>
         <div
@@ -151,7 +167,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
           style={{
             background: `linear-gradient(135deg, ${simpleScene.colors.join(', ')})`,
             ...regionStyle,
-            pointerEvents: 'none'
+            pointerEvents: 'none',
           }}
           aria-hidden="true"
           role="presentation"
@@ -172,8 +188,9 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
 
   // Determine which background renderer to use based on settings
   const backgroundMode = settings.backgroundMode || 'auto';
-  const useStaticImage = backgroundMode === 'static-image' || 
-                         (backgroundMode === 'auto' && location && location !== 'unknown');
+  const useStaticImage =
+    backgroundMode === 'static-image' ||
+    (backgroundMode === 'auto' && location && location !== 'unknown');
 
   // If static image mode is requested, try to use it with CSS fallback
   if (useStaticImage && location) {
@@ -184,15 +201,17 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
           timeOfDay={timeOfDay}
           region={region}
         />
-        
+
         {/* Scene info indicator (optional, shows on hover) */}
         {!settings.devDebug && (
-          <div 
+          <div
             className="fixed bottom-4 left-4 z-0 pointer-events-auto"
             onMouseEnter={() => setShowInfo(true)}
             onMouseLeave={() => setShowInfo(false)}
           >
-            <div className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}>
+            <div
+              className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}
+            >
               <div className="bg-black/60 backdrop-blur-sm border border-white/20 rounded-lg p-2 text-xs text-white font-mono">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -200,10 +219,19 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
                 </div>
                 {showInfo && (
                   <div className="mt-2 pt-2 border-t border-white/20 space-y-1 text-[10px]">
-                    <div><span className="text-gray-400">Time:</span> <span className="text-yellow-300">{timeOfDay}</span></div>
-                    <div><span className="text-gray-400">Mood:</span> <span className="text-purple-300">{activeMood}</span></div>
+                    <div>
+                      <span className="text-gray-400">Time:</span>{' '}
+                      <span className="text-yellow-300">{timeOfDay}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400">Mood:</span>{' '}
+                      <span className="text-purple-300">{activeMood}</span>
+                    </div>
                     {location && location !== 'unknown' && (
-                      <div><span className="text-gray-400">Location:</span> <span className="text-blue-300">{location}</span></div>
+                      <div>
+                        <span className="text-gray-400">Location:</span>{' '}
+                        <span className="text-blue-300">{location}</span>
+                      </div>
                     )}
                   </div>
                 )}
@@ -211,7 +239,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
             </div>
           </div>
         )}
-        
+
         {/* Developer debug overlay */}
         {settings.devDebug && (
           <SceneDebugOverlay
@@ -232,17 +260,20 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   const sceneConfig = getSceneForContext(timeOfDay, activeMood);
 
   // Determine effective parallax intensity
-  let parallaxIntensity = settings.enableParallax ? settings.parallaxIntensity : 0;
-  
+  let parallaxIntensity = settings.enableParallax
+    ? settings.parallaxIntensity
+    : 0;
+
   // Disable parallax on low-tier devices
   if (capabilities.gpuTier === 'low') {
     parallaxIntensity = 0;
   }
 
   // Determine if particles should be shown
-  const showParticles = settings.enableParticles && 
-                        settings.particleDensity !== 'off' && 
-                        capabilities.gpuTier !== 'low';
+  const showParticles =
+    settings.enableParticles &&
+    settings.particleDensity !== 'off' &&
+    capabilities.gpuTier !== 'low';
 
   return (
     <>
@@ -251,19 +282,23 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
         interactive={capabilities.gpuTier !== 'low'}
         parallaxIntensity={parallaxIntensity}
         enableParticles={showParticles}
-        particleDensity={settings.particleDensity === 'off' ? 'low' : settings.particleDensity}
+        particleDensity={
+          settings.particleDensity === 'off' ? 'low' : settings.particleDensity
+        }
         animationSpeed={settings.animationSpeed}
         region={region}
       />
-      
+
       {/* Scene info indicator (optional, shows on hover) */}
       {!settings.devDebug && (
-        <div 
+        <div
           className="fixed bottom-4 left-4 z-0 pointer-events-auto"
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
         >
-          <div className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}>
+          <div
+            className={`transition-all duration-300 ${showInfo ? 'opacity-100' : 'opacity-30 hover:opacity-60'}`}
+          >
             <div className="bg-black/60 backdrop-blur-sm border border-white/20 rounded-lg p-2 text-xs text-white font-mono">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -271,10 +306,19 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
               </div>
               {showInfo && (
                 <div className="mt-2 pt-2 border-t border-white/20 space-y-1 text-[10px]">
-                  <div><span className="text-gray-400">Time:</span> <span className="text-yellow-300">{timeOfDay}</span></div>
-                  <div><span className="text-gray-400">Mood:</span> <span className="text-purple-300">{activeMood}</span></div>
+                  <div>
+                    <span className="text-gray-400">Time:</span>{' '}
+                    <span className="text-yellow-300">{timeOfDay}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Mood:</span>{' '}
+                    <span className="text-purple-300">{activeMood}</span>
+                  </div>
                   {location && location !== 'unknown' && (
-                    <div><span className="text-gray-400">Location:</span> <span className="text-blue-300">{location}</span></div>
+                    <div>
+                      <span className="text-gray-400">Location:</span>{' '}
+                      <span className="text-blue-300">{location}</span>
+                    </div>
                   )}
                 </div>
               )}
@@ -282,7 +326,7 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Developer debug overlay */}
       {settings.devDebug && (
         <SceneDebugOverlay

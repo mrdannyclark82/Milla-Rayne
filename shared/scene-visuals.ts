@@ -5,16 +5,36 @@
  * weather effects, and other visual elements.
  */
 
-import type { SceneLocation, SceneBackground, WeatherEffect } from '@shared/sceneTypes';
+import type {
+  SceneLocation,
+  SceneBackground,
+  WeatherEffect,
+} from '@shared/sceneTypes';
 
 const LIVING_ROOM_BACKGROUNDS: SceneBackground[] = [
-  { src: 'attached_assets/Logcabin.mp4', format: 'jpeg', alt: 'A cozy living room with a fireplace' },
-  { src: 'backgrounds/living-room-night.jpg', format: 'jpeg', alt: 'A cozy living room at night' },
+  {
+    src: 'attached_assets/Logcabin.mp4',
+    format: 'jpeg',
+    alt: 'A cozy living room with a fireplace',
+  },
+  {
+    src: 'backgrounds/living-room-night.jpg',
+    format: 'jpeg',
+    alt: 'A cozy living room at night',
+  },
 ];
 
 const KITCHEN_BACKGROUNDS: SceneBackground[] = [
-  { src: 'backgrounds/kitchen-day.jpg', format: 'jpeg', alt: 'A bright and modern kitchen' },
-  { src: 'backgrounds/kitchen-night.jpg', format: 'jpeg', alt: 'A modern kitchen at night' },
+  {
+    src: 'backgrounds/kitchen-day.jpg',
+    format: 'jpeg',
+    alt: 'A bright and modern kitchen',
+  },
+  {
+    src: 'backgrounds/kitchen-night.jpg',
+    format: 'jpeg',
+    alt: 'A modern kitchen at night',
+  },
 ];
 
 // ... Add other location backgrounds ...
