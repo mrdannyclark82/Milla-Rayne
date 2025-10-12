@@ -2003,6 +2003,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const { addEventToGoogleCalendar } = await import('./googleCalendarService');
       const { title, date, time, description } = req.body;
       const result = await addEventToGoogleCalendar(title, date, time, description);
+      if (result.success) {
+        await updateMemories(`User scheduled an event: "${title}" on ${date} at ${time}.`);
+      }
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to create calendar event' });
@@ -2069,6 +2072,43 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to fetch subscriptions' });
+    }
+  });
+
+  app.get('/api/youtube/search', async (req, res) => {
+    try {
+      const { searchVideos } = await import('./googleYoutubeService');
+      const { q, maxResults } = req.query;
+      const result = await searchVideos(
+        q as string,
+        'default-user',
+        maxResults ? parseInt(maxResults as string) : 10
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to search videos' });
+    }
+  });
+
+  app.get('/api/youtube/videos/:id', async (req, res) => {
+    try {
+      const { getVideoDetails } = await import('./googleYoutubeService');
+      const { id } = req.params;
+      const result = await getVideoDetails(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch video details' });
+    }
+  });
+
+  app.get('/api/youtube/channels/:id', async (req, res) => {
+    try {
+      const { getChannelDetails } = await import('./googleYoutubeService');
+      const { id } = req.params;
+      const result = await getChannelDetails(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch channel details' });
     }
   });
 
@@ -2163,7 +2203,9 @@ Project: Milla Rayne - AI Virtual Assistant
 
       const { addCalendarEvent } = await import('./browserIntegrationService');
       const result = await addCalendarEvent(title, date, time, description);
-
+      if (result.success) {
+        await updateMemories(`User scheduled an event using the browser extension: "${title}" on ${date} at ${time}.`);
+      }
       res.json(result);
     } catch (error) {
       console.error('Error adding calendar event:', error);
