@@ -131,4 +131,10 @@ export interface ITTSProvider {
    * Cancel any ongoing speech synthesis
    */
   cancel(): void;
+
+  /**
+   * Get available voices for the provider
+   * @returns Promise resolving to an array of voices
+   */
+  getVoices?(): Promise<any[]>;
 }

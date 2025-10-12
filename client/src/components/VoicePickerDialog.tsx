@@ -46,7 +46,7 @@ export function VoicePickerDialog({
   useEffect(() => {
     if (open) {
       const fetchVoices = async () => {
-        const voices = await (voiceService as any).getAvailableVoices();
+        const voices = await voiceService.getAvailableVoices();
         setAvailableVoices(voices);
       };
       fetchVoices();
