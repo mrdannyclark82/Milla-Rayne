@@ -8,6 +8,8 @@ import { useSceneContext } from '@/contexts/SceneContext';
 import { generateSceneTheme } from '@/lib/scene/sceneUtils';
 import { AmbientGradientLayer } from './AmbientGradientLayer';
 import { ParallaxLayer } from './ParallaxLayer';
+import { BackgroundLayer } from './BackgroundLayer';
+import { WeatherLayer } from './WeatherLayer';
 
 interface SceneManagerProps {
   className?: string;
@@ -44,6 +46,9 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
       aria-hidden="true"
       role="presentation"
     >
+      {/* Background image layer */}
+      <BackgroundLayer />
+
       {/* Base gradient layer */}
       <AmbientGradientLayer
         theme={{
@@ -57,6 +62,9 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
         intensity={effectiveParallaxIntensity}
         color={theme.palette.accent}
       />
+
+      {/* Weather effects layer */}
+      <WeatherLayer />
     </div>
   );
 }

@@ -14,7 +14,7 @@ export interface OpenRouterImageGenerationResult {
 
 /**
  * Generate image (or an image preview/URL) using OpenRouter.
- * Preferred model: google/gemini-2.5-flash-image-preview
+ * Preferred model: google/gemini-pro-vision
  * Falls back to generating an enhanced description if the model doesn't return an image URL.
  */
 export async function generateImageWithGemini(prompt: string): Promise<OpenRouterImageGenerationResult> {
@@ -38,7 +38,7 @@ export async function generateImageWithGemini(prompt: string): Promise<OpenRoute
       },
       body: JSON.stringify({
         // Attempt to use the Gemini image-preview model via OpenRouter which may return an image preview or image URL.
-        model: "google/gemini-2.5-flash-image-preview",
+        model: "google/gemini-pro-vision",
         messages: [
           {
             role: "system",
@@ -147,16 +147,11 @@ export function formatImageResponse(prompt: string, success: boolean, imageUrl?:
     // Check if it's an enhanced description (data URL) or actual image URL
     if (imageUrl.indexOf('data:text/plain') === 0) {
       const description = decodeURIComponent(imageUrl.split(',')[1]);
-      return `🎨 I've created an enhanced visual description based on your prompt "${prompt}" using Gemini:
-
-**Enhanced Image Description:**
-${description}
-
-While I can't generate actual images with Gemini (it's a language model), this detailed description could be used with other image generation tools. I can help you refine this description or discuss visual elements you'd like to emphasize!`;
+      return `🎨 I\'ve created an enhanced visual description based on your prompt \"${prompt}\" using Gemini:\n\n**Enhanced Image Description:**\n${description}\n\nWhile I can\'t generate actual images with Gemini (it\'s a language model), this detailed description could be used with other image generation tools. I can help you refine this description or discuss visual elements you\'d like to emphasize!`;
     } else {
-      return `🎨 I've created an image based on your prompt: "${prompt}"\n\n![Generated Image](${imageUrl})\n\nThe image has been generated using Gemini through OpenRouter. If you'd like me to create a variation or adjust anything, just let me know!`;
+      return `🎨 I\'ve created an image based on your prompt: \"${prompt}\"\n\n![Generated Image](${imageUrl})\n\nThe image has been generated using Gemini through OpenRouter. If you\'d like me to create a variation or adjust anything, just let me know!`;
     }
   } else {
-    return `I'd love to create an image of "${prompt}" for you, babe, but I'm having some trouble with image generation right now. ${error ? `Error: ${error}` : "However, I can help you brainstorm ideas, describe what the image might look like, or suggest other creative approaches! What would you like to explore instead?"}`;
+    return `I\'d love to create an image of \"${prompt}\" for you, babe, but I\'m having some trouble with image generation right now. ${error ? `Error: ${error}` : "However, I can help you brainstorm ideas, describe what the image might look like, or suggest other creative approaches! What would you like to explore instead?"}`;
   }
 }

@@ -3,8 +3,7 @@
  * Tests time-of-day mapping and scene theme generation
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import {
+import { 
   getCurrentTimeOfDay,
   getPaletteForTimeOfDay,
   getAccentForAppState,

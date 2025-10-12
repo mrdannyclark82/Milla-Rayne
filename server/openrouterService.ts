@@ -1,5 +1,5 @@
 /**
- * OpenRouter AI Service - DeepSeek Chat Integration
+ * OpenRouter AI Service - Venice and DeepSeek Chat Integration
  */
 
 import { ScreenShare } from "lucide-react";
@@ -20,7 +20,7 @@ export interface OpenRouterContext {
 }
 
 /**
- * Generate AI response using DeepSeek Chat through OpenRouter
+ * Generate AI response using Venice and DeepSeek Chat through OpenRouter
  */
 export async function generateOpenRouterResponse(
   userMessage: string,
@@ -226,8 +226,11 @@ function createDeepSeekSystemPrompt(context: OpenRouterContext): string {
   const basePersonality = getMillaPersona();
   const sceneSettings = getAllSceneSettings();
 
-  // Combine persona with scene settings
+  // Combine persona with scene settings and add the new response style instruction
   let contextualPrompt = `${basePersonality}\n\n${sceneSettings}`;
+
+  // Add response style instruction
+  contextualPrompt += `\n\n**Response Style:** Keep your responses concise and natural, typically 2-4 sentences, unless the user asks for detailed information. Focus on being a conversational partner.`;
 
   // Add user-specific context
   if (context.userName) {

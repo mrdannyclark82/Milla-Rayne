@@ -3,7 +3,6 @@
  * Tests room overlay settings and context integration
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
 import { 
   getDefaultSettings, 
   loadSceneSettings, 

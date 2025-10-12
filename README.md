@@ -64,7 +64,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Fallback**: Curated project enhancement suggestions
 
 ### Image Generation Service: OpenRouter (Gemini)
-- **Model**: `google/gemini-2.5-flash-image-preview` (Gemini 2.5 Flash Image Preview)
+- **Model**: `google/gemini-pro-vision` (Gemini Pro Vision)
 - **Endpoint**: `/api/chat` (automatically detects image generation requests)
 - **Setup**: Add `OPENROUTER_GEMINI_API_KEY=your_key_here` to `.env`
 - **Fallback**: Enhanced descriptions using Gemini language model
@@ -462,7 +462,7 @@ Milla: *generates improvement suggestions*
           - Prevent committing sensitive files
           - Files: .gitignore
           - Reason: Protects API keys and prevents node_modules in git
-       
+          
        3. Add CI/CD workflow with security scanning
           - Automate testing and security analysis
           - Files: .github/workflows/ci.yml

@@ -7,7 +7,7 @@
  * Integrates with centralized scene settings from shared/sceneSettings.ts
  */
 
-import { getSceneDetails, getContextualSceneSettings } from "../shared/sceneSettings";
+import { getSceneDetails, getContextualSceneSettings } from "@shared/sceneSettings";
 
 export type SceneLocation = 
   | 'living_room' 
@@ -247,4 +247,3 @@ export function getSceneContextSettings(sceneContext: SceneContext): string {
   
   return getSceneDescription(sceneContext.location) || getContextualSceneSettings();
 }
-

@@ -3,8 +3,7 @@
  * Tests feature flag gating logic
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import {
+import { 
   getAdaptiveSceneConfig,
   setAdaptiveScenesEnabled,
   setAdaptiveScenesPerformanceMode

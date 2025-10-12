@@ -19,7 +19,7 @@ export async function generateImageWithBanana(prompt: string): Promise<BananaIma
     }
 
     const apiUrl = process.env.BANANA_API_URL || process.env.BANANA_ENDPOINT || 'https://api.banana.dev/run';
-    const modelKey = process.env.BANANA_MODEL_KEY || process.env.BANANA_MODEL || 'google/gemini-2.5-flash-image-preview';
+    const modelKey = process.env.BANANA_MODEL_KEY || process.env.BANANA_MODEL || 'google/gemini-pro-vision';
 
     try {
         const body: any = { modelKey, input: { prompt } };

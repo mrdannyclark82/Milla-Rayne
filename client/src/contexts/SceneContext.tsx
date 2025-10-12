@@ -4,13 +4,15 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import type { SceneContext as SceneContextType, AppState, PerformanceMode } from '@shared/sceneTypes';
+import type { SceneContext as SceneContextType, AppState, PerformanceMode, WeatherEffect, SceneLocationKey } from '@shared/sceneTypes';
 import { getCurrentTimeOfDay, prefersReducedMotion, isPageBackgrounded } from '@/lib/scene/sceneUtils';
 
 interface SceneContextProviderProps {
   children: ReactNode;
   appState?: AppState;
   performanceMode?: PerformanceMode;
+  weatherEffect?: WeatherEffect;
+  location?: SceneLocationKey;
 }
 
 const SceneContext = createContext<SceneContextType | null>(null);
@@ -21,14 +23,18 @@ const SceneContext = createContext<SceneContextType | null>(null);
 export function SceneContextProvider({
   children,
   appState = 'idle',
-  performanceMode = 'balanced'
+  performanceMode = 'balanced',
+  weatherEffect = 'none',
+  location = 'living_room'
 }: SceneContextProviderProps) {
   const [context, setContext] = useState<SceneContextType>(() => ({
     timeOfDay: getCurrentTimeOfDay(),
     appState,
     reducedMotion: prefersReducedMotion(),
     performanceMode,
-    isBackgrounded: isPageBackgrounded()
+    isBackgrounded: isPageBackgrounded(),
+    weatherEffect,
+    location
   }));
 
   // Update time of day every minute
@@ -86,6 +92,22 @@ export function SceneContextProvider({
       performanceMode
     }));
   }, [performanceMode]);
+
+  // Update weather effect when prop changes
+  useEffect(() => {
+    setContext(prev => ({
+      ...prev,
+      weatherEffect
+    }));
+  }, [weatherEffect]);
+
+  // Update location when prop changes
+  useEffect(() => {
+    setContext(prev => ({
+      ...prev,
+      location
+    }));
+  }, [location]);
 
   return (
     <SceneContext.Provider value={context}>

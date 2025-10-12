@@ -1,5 +1,5 @@
 /**
- * Gemini Image Generation Service using google/gemini-2.5-flash-image-preview via OpenRouter
+ * Gemini Image Generation Service using google/gemini-pro-vision via OpenRouter
  */
 
 import nodeFetch from 'node-fetch';
@@ -12,7 +12,7 @@ export interface GeminiImageGenerationResult {
 }
 
 /**
- * Generate image using google/gemini-2.5-flash-image-preview via OpenRouter
+ * Generate image using google/gemini-pro-vision via OpenRouter
  */
 export async function generateImageWithGemini(prompt: string): Promise<GeminiImageGenerationResult> {
   if (!process.env.OPENROUTER_GEMINI_API_KEY && !process.env.OPENROUTER_API_KEY) {
@@ -23,7 +23,7 @@ export async function generateImageWithGemini(prompt: string): Promise<GeminiIma
   }
 
   try {
-    // Use Gemini 2.5 Flash Image Preview for image generation via OpenRouter
+    // Use Gemini Pro Vision for image generation via OpenRouter
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -32,7 +32,7 @@ export async function generateImageWithGemini(prompt: string): Promise<GeminiIma
         "X-Title": "Milla Rayne AI Assistant - Gemini Image Generation",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image-preview", // Gemini 2.5 Flash Image Preview model
+        model: "google/gemini-pro-vision", // Gemini Pro Vision model
         messages: [
           {
             role: "user",
@@ -148,12 +148,8 @@ export function extractImagePrompt(userMessage: string): string | null {
  */
 export function formatImageResponse(prompt: string, success: boolean, imageUrl?: string, error?: string): string {
   if (success && imageUrl) {
-    return `🎨 I've created an image based on your prompt: "${prompt}"
-
-![Generated Image](${imageUrl})
-
-The image has been generated using Google Gemini 2.5 Flash Image Preview through OpenRouter. If you'd like me to create a variation or adjust anything, just let me know!`;
+    return `🎨 I\'ve created an image based on your prompt: \"${prompt}\"\n\n![Generated Image](${imageUrl})\n\nThe image has been generated using Google Gemini Pro Vision through OpenRouter. If you\'d like me to create a variation or adjust anything, just let me know!`;
   } else {
-    return `I'd love to create an image of "${prompt}" for you, babe, but I'm having some trouble with Gemini image generation right now. ${error ? `Error: ${error}` : "However, I can help you brainstorm ideas, describe what the image might look like, or suggest other creative approaches! What would you like to explore instead?"}`;
+    return `I\'d love to create an image of \"${prompt}\" for you, babe, but I\'m having some trouble with Gemini image generation right now. ${error ? `Error: ${error}` : "However, I can help you brainstorm ideas, describe what the image might look like, or suggest other creative approaches! What would you like to explore instead?"}`;
   }
 }

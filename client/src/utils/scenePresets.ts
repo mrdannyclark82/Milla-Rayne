@@ -60,10 +60,30 @@ export function getSceneForContext(
   const timeScene = TIME_BASED_SCENES[timeOfDay];
   const moodScene = MOOD_BASED_SCENES[mood];
 
-  // Merge configurations, prioritizing mood-specific settings
+  // Combine and unique colors, taking from both mood and time
+  const moodColors = moodScene.colors || [];
+  const timeColors = timeScene.colors || [];
+  
+  let finalColors: string[];
+
+  if (moodColors.length > 0) {
+    // Mix of mood and time colors
+    const combined = [...moodColors.slice(0, 2), ...timeColors.slice(0, 2)];
+    finalColors = [...new Set(combined)];
+  } else {
+    finalColors = timeColors;
+  }
+  
+  // Make sure we always have 4 colors if possible, for consistency
+  if (finalColors.length < 4) {
+    const backupColors = [...timeColors, ...moodColors];
+    finalColors = [...new Set([...finalColors, ...backupColors])].slice(0, 4);
+  }
+
+  // Merge configurations
   return {
-    colors: moodScene.colors || timeScene.colors,
-    animations: [...(timeScene.animations || []), ...(moodScene.animations || [])],
+    colors: finalColors,
+    animations: [...new Set([...(timeScene.animations || []), ...(moodScene.animations || [])])],
     particles: moodScene.particles || timeScene.particles,
     interactive: timeScene.interactive
   };

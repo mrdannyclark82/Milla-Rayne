@@ -3,7 +3,6 @@
  * Tests for milestone acceptance criteria from issue #107
  */
 
-import { describe, it, expect } from '@jest/globals';
 import { 
   getCurrentTimeOfDay,
   getSceneForContext,

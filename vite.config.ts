@@ -1,4 +1,4 @@
-
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
@@ -47,5 +47,11 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
+    include: ['src/__tests__/**/*.test.ts', '../server/__tests__/**/*.test.ts', 'src/__tests__/**/*.test.tsx'],
   },
 });

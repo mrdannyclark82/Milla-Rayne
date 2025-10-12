@@ -93,8 +93,8 @@ const SOUTHERN_VOICE_NAMES: Record<VoiceProvider, string[]> = {
  * Default fallback chain
  */
 const DEFAULT_FALLBACK_CHAIN: VoiceProviderChain = {
-  primary: 'browser-native',
-  fallbacks: ['google-cloud', 'azure', 'browser-native'],
+  primary: 'elevenlabs',
+  fallbacks: ['browser-native', 'google-cloud', 'azure'],
   timeout: 5000
 };
 
@@ -265,20 +265,87 @@ class AzureTTS implements ITTSProvider {
 }
 
 /**
- * ElevenLabs TTS implementation (placeholder)
+ * ElevenLabs TTS implementation
  */
 class ElevenLabsTTS implements ITTSProvider {
+  private audio: HTMLAudioElement | null = null;
+
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
-    // TODO: Implement ElevenLabs API integration
-    console.warn('ElevenLabs TTS not yet implemented, falling back to browser-native');
-    return {
-      success: false,
-      error: 'ElevenLabs TTS not configured - requires ELEVENLABS_API_KEY'
-    };
+    const apiKey = (import.meta as any).env.VITE_ELEVENLABS_API_KEY;
+    const voiceId = (import.meta as any).env.VITE_ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM'; // Default to a voice if not set
+
+    if (!apiKey) {
+      console.error('ElevenLabs API key is not configured. Set VITE_ELEVENLABS_API_KEY in your .env file.');
+      return {
+        success: false,
+        error: 'ElevenLabs API key is not configured.',
+      };
+    }
+
+    const { text, config } = request;
+
+    try {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: {
+            stability: config.rate ?? 0.75,
+            similarity_boost: config.pitch ?? 0.75,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage = errorData?.detail?.message || response.statusText;
+        console.error('ElevenLabs API Error:', errorMessage);
+        return { success: false, error: `ElevenLabs API Error: ${errorMessage}` };
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      this.cancel(); // Cancel any previous audio
+      this.audio = new Audio(audioUrl);
+      
+      request.onStart?.();
+      
+      this.audio.play();
+
+      return new Promise((resolve) => {
+        this.audio!.onended = () => {
+          request.onEnd?.();
+          resolve({ success: true, audioUrl });
+        };
+        this.audio!.onerror = (err) => {
+          const error = new Error('Error playing ElevenLabs audio.');
+          request.onError?.(error);
+          console.error('Error playing ElevenLabs audio:', err);
+          resolve({ success: false, error: error.message });
+        };
+      });
+
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error('Unknown error during ElevenLabs TTS request.');
+      request.onError?.(err);
+      console.error('ElevenLabs TTS request failed:', err);
+      return { success: false, error: err.message };
+    }
   }
 
   cancel(): void {
-    // TODO: Implement cancellation
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = '';
+      this.audio = null;
+    }
   }
 }
 
@@ -305,7 +372,7 @@ class CoquiTTS implements ITTSProvider {
  */
 export class VoiceService {
   private providers: Map<VoiceProvider, ITTSProvider> = new Map();
-  private currentProvider: VoiceProvider = 'browser-native';
+  private currentProvider: VoiceProvider = 'elevenlabs';
   private fallbackChain: VoiceProviderChain = DEFAULT_FALLBACK_CHAIN;
 
   constructor() {
