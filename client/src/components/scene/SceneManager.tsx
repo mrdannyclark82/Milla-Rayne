@@ -20,18 +20,28 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
 
   // Generate theme from context
   const theme = useMemo(
-    () => generateSceneTheme(
+    () =>
+      generateSceneTheme(
+        context.timeOfDay,
+        context.appState,
+        context.reducedMotion,
+        context.performanceMode
+      ),
+    [
       context.timeOfDay,
       context.appState,
       context.reducedMotion,
-      context.performanceMode
-    ),
-    [context.timeOfDay, context.appState, context.reducedMotion, context.performanceMode]
+      context.performanceMode,
+    ]
   );
 
   // Reduce animation when page is backgrounded
-  const effectiveAnimationSpeed = context.isBackgrounded ? 0 : theme.animationSpeed;
-  const effectiveParallaxIntensity = context.isBackgrounded ? 0 : theme.parallaxIntensity;
+  const effectiveAnimationSpeed = context.isBackgrounded
+    ? 0
+    : theme.animationSpeed;
+  const effectiveParallaxIntensity = context.isBackgrounded
+    ? 0
+    : theme.parallaxIntensity;
 
   return (
     <div
@@ -41,7 +51,7 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
         inset: 0,
         overflow: 'hidden',
         pointerEvents: 'none',
-        zIndex: -10
+        zIndex: -10,
       }}
       aria-hidden="true"
       role="presentation"
@@ -53,7 +63,7 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
       <AmbientGradientLayer
         theme={{
           ...theme,
-          animationSpeed: effectiveAnimationSpeed
+          animationSpeed: effectiveAnimationSpeed,
         }}
       />
 

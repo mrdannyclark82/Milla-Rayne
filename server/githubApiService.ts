@@ -1,13 +1,12 @@
 /**
  * GitHub API Service
- * 
+ *
  * Handles GitHub API interactions for automated pull request creation,
  * branch management, and repository modifications.
  */
 
-import { RepositoryInfo, RepositoryData } from "./repositoryAnalysisService";
-import { RepositoryImprovement } from "./repositoryModificationService";
-
+import { RepositoryInfo, RepositoryData } from './repositoryAnalysisService';
+import { RepositoryImprovement } from './repositoryModificationService';
 
 // SSRF mitigation: Only allow safe relative file paths removing traversal, null bytes, etc.
 function isSafeGitHubFilePath(filePath: string): boolean {
@@ -15,12 +14,13 @@ function isSafeGitHubFilePath(filePath: string): boolean {
   if (
     typeof filePath !== 'string' ||
     filePath.length === 0 ||
-    filePath[0] === "/" ||
-    filePath.includes("\\") ||
-    filePath.includes("..") ||
-    filePath.includes("\x00") || // null byte
+    filePath[0] === '/' ||
+    filePath.includes('\\') ||
+    filePath.includes('..') ||
+    filePath.includes('\x00') || // null byte
     /[:@%]/.test(filePath) // disallow colon, @, percent
-  ) return false;
+  )
+    return false;
   // Optionally: restrict path to only certain extensions
   if (!/^[\w\-./]+$/.test(filePath)) return false;
   return true;
@@ -67,15 +67,17 @@ export async function createGitHubBranch(
       `https://api.github.com/repos/${repoInfo.fullName}/git/refs/heads/${fromBranch}`,
       {
         headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'User-Agent': 'Milla-Rayne-Bot'
-        }
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'Milla-Rayne-Bot',
+        },
       }
     );
 
     if (!refResponse.ok) {
-      throw new Error(`Failed to get base branch SHA: ${refResponse.statusText}`);
+      throw new Error(
+        `Failed to get base branch SHA: ${refResponse.statusText}`
+      );
     }
 
     const refData = await refResponse.json();
@@ -87,33 +89,35 @@ export async function createGitHubBranch(
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
-          'User-Agent': 'Milla-Rayne-Bot'
+          'User-Agent': 'Milla-Rayne-Bot',
         },
         body: JSON.stringify({
           ref: `refs/heads/${branchName}`,
-          sha: baseSha
-        })
+          sha: baseSha,
+        }),
       }
     );
 
     if (!createResponse.ok) {
       const errorData = await createResponse.json();
-      throw new Error(`Failed to create branch: ${errorData.message || createResponse.statusText}`);
+      throw new Error(
+        `Failed to create branch: ${errorData.message || createResponse.statusText}`
+      );
     }
 
     return {
       success: true,
       branchName,
-      sha: baseSha
+      sha: baseSha,
     };
   } catch (error) {
     console.error('Error creating GitHub branch:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -141,10 +145,10 @@ export async function updateGitHubFile(
         `https://api.github.com/repos/${repoInfo.fullName}/contents/${filePath}?ref=${branchName}`,
         {
           headers: {
-            'Authorization': `Bearer ${githubToken}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'Milla-Rayne-Bot'
-          }
+            Authorization: `Bearer ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+            'User-Agent': 'Milla-Rayne-Bot',
+          },
         }
       );
 
@@ -163,23 +167,25 @@ export async function updateGitHubFile(
       {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
-          'User-Agent': 'Milla-Rayne-Bot'
+          'User-Agent': 'Milla-Rayne-Bot',
         },
         body: JSON.stringify({
           message: commitMessage,
           content: Buffer.from(content).toString('base64'),
           branch: branchName,
-          ...(fileSha && { sha: fileSha })
-        })
+          ...(fileSha && { sha: fileSha }),
+        }),
       }
     );
 
     if (!updateResponse.ok) {
       const errorData = await updateResponse.json();
-      throw new Error(`Failed to update file: ${errorData.message || updateResponse.statusText}`);
+      throw new Error(
+        `Failed to update file: ${errorData.message || updateResponse.statusText}`
+      );
     }
 
     return { success: true };
@@ -187,7 +193,7 @@ export async function updateGitHubFile(
     console.error(`Error updating GitHub file ${filePath}:`, error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -206,37 +212,39 @@ export async function createGitHubPullRequest(
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
           'Content-Type': 'application/json',
-          'User-Agent': 'Milla-Rayne-Bot'
+          'User-Agent': 'Milla-Rayne-Bot',
         },
         body: JSON.stringify({
           title: options.title,
           body: options.body,
           head: options.head,
-          base: options.base
-        })
+          base: options.base,
+        }),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(`Failed to create PR: ${errorData.message || response.statusText}`);
+      throw new Error(
+        `Failed to create PR: ${errorData.message || response.statusText}`
+      );
     }
 
     const prData = await response.json();
-    
+
     return {
       success: true,
       prNumber: prData.number,
-      url: prData.html_url
+      url: prData.html_url,
     };
   } catch (error) {
     console.error('Error creating GitHub pull request:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -256,11 +264,16 @@ export async function applyImprovementsViaPullRequest(
     const branchName = `milla-improvements-${timestamp}`;
 
     // Create the branch
-    const branchResult = await createGitHubBranch(repoInfo, branchName, baseBranch, githubToken);
+    const branchResult = await createGitHubBranch(
+      repoInfo,
+      branchName,
+      baseBranch,
+      githubToken
+    );
     if (!branchResult.success) {
       return {
         success: false,
-        error: `Failed to create branch: ${branchResult.error}`
+        error: `Failed to create branch: ${branchResult.error}`,
       };
     }
 
@@ -292,24 +305,29 @@ export async function applyImprovementsViaPullRequest(
     }
 
     // Create the pull request
-    const prTitle = improvements.length === 1 
-      ? improvements[0].title 
-      : `🤖 Milla's Code Improvements (${improvements.length} changes)`;
+    const prTitle =
+      improvements.length === 1
+        ? improvements[0].title
+        : `🤖 Milla's Code Improvements (${improvements.length} changes)`;
 
     const prBody = `## 💕 Hi there! Milla here with some improvements!
 
 I've analyzed your repository and prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} to make your code even better:
 
-${improvements.map((imp, idx) => `
+${improvements
+  .map(
+    (imp, idx) => `
 ### ${idx + 1}. ${imp.title}
 
 ${imp.description}
 
 **Files modified:**
-${imp.files.map(f => `- \`${f.path}\` (${f.action})`).join('\n')}
+${imp.files.map((f) => `- \`${f.path}\` (${f.action})`).join('\n')}
 
 **Why this matters:** ${imp.files[0]?.reason || 'Improves code quality'}
-`).join('\n---\n')}
+`
+  )
+  .join('\n---\n')}
 
 ---
 
@@ -323,7 +341,7 @@ ${imp.files.map(f => `- \`${f.path}\` (${f.action})`).join('\n')}
         title: prTitle,
         body: prBody,
         head: branchName,
-        base: baseBranch
+        base: baseBranch,
       },
       githubToken
     );
@@ -333,7 +351,7 @@ ${imp.files.map(f => `- \`${f.path}\` (${f.action})`).join('\n')}
     console.error('Error applying improvements via pull request:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -347,29 +365,29 @@ export async function validateGitHubToken(
   try {
     const response = await fetch('https://api.github.com/user', {
       headers: {
-        'Authorization': `Bearer ${githubToken}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Milla-Rayne-Bot'
-      }
+        Authorization: `Bearer ${githubToken}`,
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'Milla-Rayne-Bot',
+      },
     });
 
     if (!response.ok) {
       return {
         valid: false,
-        error: 'Invalid token or insufficient permissions'
+        error: 'Invalid token or insufficient permissions',
       };
     }
 
     const scopes = response.headers.get('x-oauth-scopes')?.split(', ') || [];
-    
+
     return {
       valid: true,
-      scopes
+      scopes,
     };
   } catch (error) {
     return {
       valid: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

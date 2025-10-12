@@ -1,4 +1,3 @@
-
 import { generateOpenRouterResponse } from './openrouterService';
 
 interface GuidedMeditationParams {
@@ -36,15 +35,18 @@ export async function generateGuidedMeditation({
 
     // Use a streaming-capable model from OpenRouter
     await generateOpenRouterResponse(prompt, {
-        userName: "Danny Ray",
-        stream: true,
-        onStreamChunk: onChunk,
-        onStreamEnd: onEnd,
-        onStreamError: onError,
+      userName: 'Danny Ray',
+      stream: true,
+      onStreamChunk: onChunk,
+      onStreamEnd: onEnd,
+      onStreamError: onError,
     });
-
   } catch (error) {
     console.error('Error in generateGuidedMeditation:', error);
-    onError(error instanceof Error ? error : new Error('Unknown meditation generation error'));
+    onError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown meditation generation error')
+    );
   }
 }

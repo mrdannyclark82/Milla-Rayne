@@ -5,7 +5,8 @@ import type { SceneBackground } from '@/../../shared/sceneTypes';
 
 export function BackgroundLayer() {
   const { location } = useSceneContext();
-  const [currentBackground, setCurrentBackground] = useState<SceneBackground | null>(null);
+  const [currentBackground, setCurrentBackground] =
+    useState<SceneBackground | null>(null);
 
   useEffect(() => {
     const scene = SCENE_LOCATION_MAP[location];

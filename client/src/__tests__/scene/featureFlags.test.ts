@@ -3,10 +3,10 @@
  * Tests feature flag gating logic
  */
 
-import { 
+import {
   getAdaptiveSceneConfig,
   setAdaptiveScenesEnabled,
-  setAdaptiveScenesPerformanceMode
+  setAdaptiveScenesPerformanceMode,
 } from '@/lib/scene/featureFlags';
 
 // Note: These are test stubs for the scene system
@@ -32,7 +32,7 @@ describe('featureFlags', () => {
       if (typeof window !== 'undefined') {
         localStorage.setItem('adaptiveScenes.enabled', 'true');
         localStorage.setItem('adaptiveScenes.performanceMode', 'high-quality');
-        
+
         const config = getAdaptiveSceneConfig();
         expect(config.enabled).toBe(true);
         expect(config.performanceMode).toBe('high-quality');

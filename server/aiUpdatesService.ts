@@ -50,10 +50,26 @@ const OPTIONAL_SOURCES = [
 
 // Keywords for relevance scoring (based on project stack/features)
 const RELEVANCE_KEYWORDS = [
-  'openrouter', 'xai', 'qwen', 'deepseek', 'sqlite',
-  'voice', 'tts', 'stt', 'github actions', 'security',
-  'api', 'typescript', 'react', 'express', 'websocket',
-  'llm', 'gpt', 'claude', 'mistral', 'grok'
+  'openrouter',
+  'xai',
+  'qwen',
+  'deepseek',
+  'sqlite',
+  'voice',
+  'tts',
+  'stt',
+  'github actions',
+  'security',
+  'api',
+  'typescript',
+  'react',
+  'express',
+  'websocket',
+  'llm',
+  'gpt',
+  'claude',
+  'mistral',
+  'grok',
 ];
 
 const MAX_ITEMS_PER_SOURCE = 200;
@@ -64,7 +80,10 @@ const MAX_ITEMS_PER_SOURCE = 200;
 function getConfiguredSources(): string[] {
   const envSources = process.env.AI_UPDATES_SOURCES;
   if (envSources) {
-    return envSources.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    return envSources
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
   }
   return DEFAULT_SOURCES;
 }
@@ -91,7 +110,7 @@ function computeRelevance(title: string, summary: string): number {
  */
 function extractTags(title: string, summary: string): string {
   const text = `${title} ${summary}`.toLowerCase();
-  const foundTags = RELEVANCE_KEYWORDS.filter(keyword =>
+  const foundTags = RELEVANCE_KEYWORDS.filter((keyword) =>
     text.includes(keyword.toLowerCase())
   );
   return foundTags.join(', ');
@@ -111,12 +130,15 @@ async function fetchRSSFeed(url: string, retries = 3): Promise<RSSItem[]> {
       const feed = await parser.parseURL(url);
       return feed.items as RSSItem[];
     } catch (error) {
-      console.error(`Error fetching RSS from ${url} (attempt ${attempt}):`, error);
+      console.error(
+        `Error fetching RSS from ${url} (attempt ${attempt}):`,
+        error
+      );
       if (attempt === retries) {
         return [];
       }
       // Wait before retry (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
     }
   }
   return [];
@@ -132,7 +154,10 @@ function getDB(): Database.Database {
 /**
  * Store update in database (dedupe by URL)
  */
-function storeUpdate(db: Database.Database, update: Omit<AIUpdate, 'id' | 'createdAt'>): boolean {
+function storeUpdate(
+  db: Database.Database,
+  update: Omit<AIUpdate, 'id' | 'createdAt'>
+): boolean {
   try {
     const stmt = db.prepare(`
       INSERT OR IGNORE INTO ai_updates (id, title, url, source, published, summary, tags, relevance)
@@ -160,7 +185,11 @@ function storeUpdate(db: Database.Database, update: Omit<AIUpdate, 'id' | 'creat
 /**
  * Cleanup old updates per source (keep last N items)
  */
-function cleanupOldUpdates(db: Database.Database, source: string, keepLast: number = MAX_ITEMS_PER_SOURCE): void {
+function cleanupOldUpdates(
+  db: Database.Database,
+  source: string,
+  keepLast: number = MAX_ITEMS_PER_SOURCE
+): void {
   try {
     const stmt = db.prepare(`
       DELETE FROM ai_updates 
@@ -221,7 +250,6 @@ export async function fetchAIUpdates(): Promise<{
 
       // Cleanup old updates for this source
       cleanupOldUpdates(db, sourceUrl);
-
     } catch (error) {
       const errorMsg = `Failed to fetch from ${sourceUrl}: ${error}`;
       console.error(errorMsg);
@@ -252,8 +280,10 @@ export function getAIUpdates(options: {
 
   try {
     // Inspect table columns so we can support alternate schemas (legacy vs current)
-    const cols = db.prepare("PRAGMA table_info('ai_updates')").all() as { name: string }[];
-    const colSet = new Set(cols.map(c => c.name));
+    const cols = db.prepare("PRAGMA table_info('ai_updates')").all() as {
+      name: string;
+    }[];
+    const colSet = new Set(cols.map((c) => c.name));
 
     // Build SELECT list with aliases to the expected field names used elsewhere in the code
     const selectParts: string[] = [];
@@ -275,7 +305,7 @@ export function getAIUpdates(options: {
     if (colSet.has('published')) {
       selectParts.push('published');
     } else {
-      selectParts.push("NULL AS published");
+      selectParts.push('NULL AS published');
     }
 
     if (colSet.has('summary')) {
@@ -307,7 +337,7 @@ export function getAIUpdates(options: {
     } else if (colSet.has('createdAt')) {
       selectParts.push('createdAt AS created_at');
     } else {
-      selectParts.push("CURRENT_TIMESTAMP AS created_at");
+      selectParts.push('CURRENT_TIMESTAMP AS created_at');
     }
 
     // Start building query
@@ -353,7 +383,7 @@ export function getAIUpdates(options: {
     const stmt = db.prepare(query);
     const rows = stmt.all(...params) as any[];
 
-    return rows.map(row => ({
+    return rows.map((row) => ({
       id: row.id,
       title: row.title,
       url: row.url || '',
@@ -372,7 +402,11 @@ export function getAIUpdates(options: {
 /**
  * Get update count by source
  */
-export function getUpdateStats(): { source: string; count: number; avgRelevance: number }[] {
+export function getUpdateStats(): {
+  source: string;
+  count: number;
+  avgRelevance: number;
+}[] {
   const db = getDB();
 
   const stmt = db.prepare(`
@@ -385,7 +419,7 @@ export function getUpdateStats(): { source: string; count: number; avgRelevance:
   const rows = stmt.all() as any[];
   db.close();
 
-  return rows.map(row => ({
+  return rows.map((row) => ({
     source: row.source,
     count: row.count,
     avgRelevance: row.avgRelevance || 0,

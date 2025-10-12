@@ -1,13 +1,15 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AccessibilitySettingsProps {
   highContrast: boolean;
   onHighContrastChange: (enabled: boolean) => void;
   dyslexiaFont: boolean;
   onDyslexiaFontChange: (enabled: boolean) => void;
-  colorBlindMode: "none" | "protanopia" | "deuteranopia" | "tritanopia";
-  onColorBlindModeChange: (mode: "none" | "protanopia" | "deuteranopia" | "tritanopia") => void;
+  colorBlindMode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
+  onColorBlindModeChange: (
+    mode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia'
+  ) => void;
   largeTouchTargets: boolean;
   onLargeTouchTargetsChange: (enabled: boolean) => void;
 }
@@ -20,13 +22,21 @@ export function AccessibilitySettings({
   colorBlindMode,
   onColorBlindModeChange,
   largeTouchTargets,
-  onLargeTouchTargetsChange
+  onLargeTouchTargetsChange,
 }: AccessibilitySettingsProps) {
   const colorBlindModes = [
-    { value: "none", label: "None", icon: "eye" },
-    { value: "protanopia", label: "Protanopia (Red-blind)", icon: "eye-slash" },
-    { value: "deuteranopia", label: "Deuteranopia (Green-blind)", icon: "eye-slash" },
-    { value: "tritanopia", label: "Tritanopia (Blue-blind)", icon: "eye-slash" }
+    { value: 'none', label: 'None', icon: 'eye' },
+    { value: 'protanopia', label: 'Protanopia (Red-blind)', icon: 'eye-slash' },
+    {
+      value: 'deuteranopia',
+      label: 'Deuteranopia (Green-blind)',
+      icon: 'eye-slash',
+    },
+    {
+      value: 'tritanopia',
+      label: 'Tritanopia (Blue-blind)',
+      icon: 'eye-slash',
+    },
   ];
 
   return (
@@ -44,13 +54,17 @@ export function AccessibilitySettings({
             variant="outline"
             size="sm"
             className={`border-white/30 text-white/70 hover:text-white ${
-              highContrast ? 'bg-blue-600/20 border-blue-400/50 text-blue-300' : ''
+              highContrast
+                ? 'bg-blue-600/20 border-blue-400/50 text-blue-300'
+                : ''
             }`}
             onClick={() => onHighContrastChange(!highContrast)}
             aria-label="Toggle high contrast mode"
             aria-pressed={highContrast}
           >
-            <i className={`fas ${highContrast ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+            <i
+              className={`fas ${highContrast ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
+            ></i>
             {highContrast ? 'On' : 'Off'}
           </Button>
         </div>
@@ -61,13 +75,17 @@ export function AccessibilitySettings({
             variant="outline"
             size="sm"
             className={`border-white/30 text-white/70 hover:text-white ${
-              dyslexiaFont ? 'bg-blue-600/20 border-blue-400/50 text-blue-300' : ''
+              dyslexiaFont
+                ? 'bg-blue-600/20 border-blue-400/50 text-blue-300'
+                : ''
             }`}
             onClick={() => onDyslexiaFontChange(!dyslexiaFont)}
             aria-label="Toggle dyslexia-friendly font"
             aria-pressed={dyslexiaFont}
           >
-            <i className={`fas ${dyslexiaFont ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+            <i
+              className={`fas ${dyslexiaFont ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
+            ></i>
             {dyslexiaFont ? 'On' : 'Off'}
           </Button>
         </div>
@@ -78,13 +96,17 @@ export function AccessibilitySettings({
             variant="outline"
             size="sm"
             className={`border-white/30 text-white/70 hover:text-white ${
-              largeTouchTargets ? 'bg-blue-600/20 border-blue-400/50 text-blue-300' : ''
+              largeTouchTargets
+                ? 'bg-blue-600/20 border-blue-400/50 text-blue-300'
+                : ''
             }`}
             onClick={() => onLargeTouchTargetsChange(!largeTouchTargets)}
             aria-label="Toggle large touch targets"
             aria-pressed={largeTouchTargets}
           >
-            <i className={`fas ${largeTouchTargets ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}></i>
+            <i
+              className={`fas ${largeTouchTargets ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
+            ></i>
             {largeTouchTargets ? 'On' : 'Off'}
           </Button>
         </div>
@@ -98,7 +120,9 @@ export function AccessibilitySettings({
                 variant="outline"
                 size="sm"
                 className={`border-white/30 text-white/70 hover:text-white text-xs ${
-                  colorBlindMode === mode.value ? 'bg-blue-600/20 border-blue-400/50' : ''
+                  colorBlindMode === mode.value
+                    ? 'bg-blue-600/20 border-blue-400/50'
+                    : ''
                 }`}
                 onClick={() => onColorBlindModeChange(mode.value as any)}
                 aria-label={`Set color blind mode to ${mode.label}`}

@@ -18,7 +18,7 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
   enableParticles = true,
   particleDensity = 'medium',
   animationSpeed = 1.0,
-  region = 'full'
+  region = 'full',
 }) => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
     animation: `gradient-shift ${15 / animationSpeed}s ease infinite`,
     transition: 'all 1s ease-in-out',
     // CSS variable for animation speed multiplier
-    ['--scene-anim-speed' as string]: animationSpeed.toString()
+    ['--scene-anim-speed' as string]: animationSpeed.toString(),
   };
 
   const parallaxTransform = interactive
@@ -50,18 +50,19 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
     : 'none';
 
   // Determine positioning based on region
-  const regionStyle = region === 'left-2-3' 
-    ? { 
-        position: 'fixed' as const,
-        top: 0,
-        left: 0,
-        width: '66.6667vw', // Left 2/3
-        height: '100vh',
-        zIndex: -10,
-        overflow: 'hidden',
-        pointerEvents: 'none' as const
-      }
-    : {};
+  const regionStyle =
+    region === 'left-2-3'
+      ? {
+          position: 'fixed' as const,
+          top: 0,
+          left: 0,
+          width: '66.6667vw', // Left 2/3
+          height: '100vh',
+          zIndex: -10,
+          overflow: 'hidden',
+          pointerEvents: 'none' as const,
+        }
+      : {};
 
   return (
     <div
@@ -77,7 +78,7 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
         style={{
           transform: `${parallaxTransform} scale(1.1)`,
           transition: 'transform 0.3s ease-out',
-          background: `radial-gradient(circle at 50% 50%, ${config.colors[0]}, transparent)`
+          background: `radial-gradient(circle at 50% 50%, ${config.colors[0]}, transparent)`,
         }}
         aria-hidden="true"
       />
@@ -88,15 +89,15 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
         style={{
           transform: `translate(${mousePos.x * parallaxIntensity * 1.5}px, ${mousePos.y * parallaxIntensity * 1.5}px) scale(1.2)`,
           transition: 'transform 0.2s ease-out',
-          background: `radial-gradient(circle at 30% 70%, ${config.colors[1]}, transparent)`
+          background: `radial-gradient(circle at 30% 70%, ${config.colors[1]}, transparent)`,
         }}
         aria-hidden="true"
       />
 
       {/* Particle layer */}
       {enableParticles && config.particles && (
-        <ParticleLayer 
-          config={{ ...config.particles, density: particleDensity }} 
+        <ParticleLayer
+          config={{ ...config.particles, density: particleDensity }}
           animationSpeed={animationSpeed}
         />
       )}
@@ -106,7 +107,7 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
         className="absolute inset-0 opacity-10 pointer-events-none"
         style={{
           background: `radial-gradient(circle at center, ${config.colors[config.colors.length - 1]}, transparent)`,
-          animation: `pulse ${4 / animationSpeed}s ease-in-out infinite`
+          animation: `pulse ${4 / animationSpeed}s ease-in-out infinite`,
         }}
         aria-hidden="true"
       />
@@ -115,22 +116,26 @@ export const CSSSceneRenderer: React.FC<CSSSceneRendererProps> = ({
 };
 
 // Particle layer component
-const ParticleLayer: React.FC<{ config: ParticleConfig; animationSpeed: number }> = ({ 
-  config, 
-  animationSpeed = 1.0 
-}) => {
-  const particleCount = config.density === 'low' ? 20 : config.density === 'medium' ? 40 : 60;
+const ParticleLayer: React.FC<{
+  config: ParticleConfig;
+  animationSpeed: number;
+}> = ({ config, animationSpeed = 1.0 }) => {
+  const particleCount =
+    config.density === 'low' ? 20 : config.density === 'medium' ? 40 : 60;
   const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     top: Math.random() * 100,
     delay: Math.random() * 10,
-    duration: 10 + Math.random() * 20
+    duration: 10 + Math.random() * 20,
   }));
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-      {particles.map(p => (
+    <div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      aria-hidden="true"
+    >
+      {particles.map((p) => (
         <div
           key={p.id}
           className="absolute w-1 h-1 bg-white rounded-full opacity-60"
@@ -138,7 +143,7 @@ const ParticleLayer: React.FC<{ config: ParticleConfig; animationSpeed: number }
             left: `${p.left}%`,
             top: `${p.top}%`,
             animation: `float ${p.duration / animationSpeed}s linear ${p.delay}s infinite, twinkle ${3 / animationSpeed}s ease-in-out infinite`,
-            filter: 'blur(1px)'
+            filter: 'blur(1px)',
           }}
           aria-hidden="true"
         />

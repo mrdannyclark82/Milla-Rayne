@@ -11,7 +11,10 @@ interface AmbientGradientLayerProps {
   className?: string;
 }
 
-export function AmbientGradientLayer({ theme, className = '' }: AmbientGradientLayerProps) {
+export function AmbientGradientLayer({
+  theme,
+  className = '',
+}: AmbientGradientLayerProps) {
   const layerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,7 +29,10 @@ export function AmbientGradientLayer({ theme, className = '' }: AmbientGradientL
     style.setProperty('--scene-accent', palette.accent);
     style.setProperty('--scene-background', palette.background);
     style.setProperty('--scene-angle', `${gradientAngle}deg`);
-    style.setProperty('--scene-animation-speed', animationSpeed > 0 ? '20s' : '0s');
+    style.setProperty(
+      '--scene-animation-speed',
+      animationSpeed > 0 ? '20s' : '0s'
+    );
   }, [theme]);
 
   return (
@@ -41,7 +47,7 @@ export function AmbientGradientLayer({ theme, className = '' }: AmbientGradientL
           var(--scene-secondary, #764ba2) 50%, 
           var(--scene-accent, #f093fb) 100%)`,
         transition: 'background 2s ease-in-out',
-        zIndex: -10
+        zIndex: -10,
       }}
       aria-hidden="true"
     />

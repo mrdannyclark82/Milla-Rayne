@@ -4,10 +4,18 @@ import { SceneProvider } from '@/components/scene/SceneProvider';
 import { useSceneContext } from '@/contexts/SceneContext';
 
 // Mock the layers to avoid complex rendering logic
-vi.mock('@/components/scene/BackgroundLayer', () => ({ BackgroundLayer: () => <div data-testid="background-layer" /> }));
-vi.mock('@/components/scene/AmbientGradientLayer', () => ({ AmbientGradientLayer: () => <div data-testid="gradient-layer" /> }));
-vi.mock('@/components/scene/ParallaxLayer', () => ({ ParallaxLayer: () => <div data-testid="parallax-layer" /> }));
-vi.mock('@/components/scene/WeatherLayer', () => ({ WeatherLayer: () => <div data-testid="weather-layer" /> }));
+vi.mock('@/components/scene/BackgroundLayer', () => ({
+  BackgroundLayer: () => <div data-testid="background-layer" />,
+}));
+vi.mock('@/components/scene/AmbientGradientLayer', () => ({
+  AmbientGradientLayer: () => <div data-testid="gradient-layer" />,
+}));
+vi.mock('@/components/scene/ParallaxLayer', () => ({
+  ParallaxLayer: () => <div data-testid="parallax-layer" />,
+}));
+vi.mock('@/components/scene/WeatherLayer', () => ({
+  WeatherLayer: () => <div data-testid="weather-layer" />,
+}));
 
 const TestComponent = () => {
   const context = useSceneContext();
@@ -30,7 +38,12 @@ describe('Visual Enhancements Integration', () => {
 
   it('SceneProvider should provide the correct context', () => {
     render(
-      <SceneProvider location="kitchen" weatherEffect="snow" appState="speaking" performanceMode="performance">
+      <SceneProvider
+        location="kitchen"
+        weatherEffect="snow"
+        appState="speaking"
+        performanceMode="performance"
+      >
         <TestComponent />
       </SceneProvider>
     );

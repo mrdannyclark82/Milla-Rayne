@@ -21,7 +21,7 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
   mood,
   particlesEnabled,
   parallaxEnabled,
-  animationSpeed
+  animationSpeed,
 }) => {
   const [fps, setFps] = useState<number>(0);
   const [showFps, setShowFps] = useState(false);
@@ -37,13 +37,13 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
     const countFrames = () => {
       frameCount++;
       const currentTime = performance.now();
-      
+
       if (currentTime >= lastTime + 1000) {
         setFps(Math.round((frameCount * 1000) / (currentTime - lastTime)));
         frameCount = 0;
         lastTime = currentTime;
       }
-      
+
       animationFrameId = requestAnimationFrame(countFrames);
     };
 
@@ -52,7 +52,7 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
   }, [showFps]);
 
   return (
-    <div 
+    <div
       className="fixed top-4 left-4 z-50 bg-black/80 text-white text-xs font-mono p-3 rounded-lg border border-green-500/50 pointer-events-auto"
       style={{ maxWidth: '280px' }}
     >
@@ -66,7 +66,7 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
           {showFps ? 'Hide FPS' : 'Show FPS'}
         </button>
       </div>
-      
+
       <div className="space-y-1">
         <div className="grid grid-cols-2 gap-2">
           <div>
@@ -75,7 +75,9 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
           </div>
           <div>
             <span className="text-gray-400">WebGL:</span>
-            <span className="ml-1 text-green-300">{capabilities.webGL ? 'Yes' : 'No'}</span>
+            <span className="ml-1 text-green-300">
+              {capabilities.webGL ? 'Yes' : 'No'}
+            </span>
           </div>
         </div>
 
@@ -102,17 +104,23 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
         <div className="grid grid-cols-2 gap-2">
           <div>
             <span className="text-gray-400">Particles:</span>
-            <span className="ml-1 text-blue-300">{particlesEnabled ? 'ON' : 'OFF'}</span>
+            <span className="ml-1 text-blue-300">
+              {particlesEnabled ? 'ON' : 'OFF'}
+            </span>
           </div>
           <div>
             <span className="text-gray-400">Parallax:</span>
-            <span className="ml-1 text-blue-300">{parallaxEnabled ? 'ON' : 'OFF'}</span>
+            <span className="ml-1 text-blue-300">
+              {parallaxEnabled ? 'ON' : 'OFF'}
+            </span>
           </div>
         </div>
 
         <div>
           <span className="text-gray-400">Animation Speed:</span>
-          <span className="ml-1 text-cyan-300">{(animationSpeed * 100).toFixed(0)}%</span>
+          <span className="ml-1 text-cyan-300">
+            {(animationSpeed * 100).toFixed(0)}%
+          </span>
         </div>
 
         {showFps && (
@@ -120,7 +128,9 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
             <div className="border-t border-gray-700 my-2"></div>
             <div>
               <span className="text-gray-400">FPS:</span>
-              <span className={`ml-1 font-bold ${fps > 50 ? 'text-green-400' : fps > 30 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <span
+                className={`ml-1 font-bold ${fps > 50 ? 'text-green-400' : fps > 30 ? 'text-yellow-400' : 'text-red-400'}`}
+              >
                 {fps}
               </span>
             </div>
@@ -129,7 +139,8 @@ export const SceneDebugOverlay: React.FC<SceneDebugOverlayProps> = ({
 
         <div className="border-t border-gray-700 my-2"></div>
         <div className="text-gray-500 text-[10px]">
-          Screen: {capabilities.screenSize.width}x{capabilities.screenSize.height}
+          Screen: {capabilities.screenSize.width}x
+          {capabilities.screenSize.height}
         </div>
       </div>
     </div>

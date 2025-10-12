@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
-import { voiceService } from "@/services/voiceService";
-import { ElevenLabsVoice } from "@/types/elevenLabs";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { voiceService } from '@/services/voiceService';
+import { ElevenLabsVoice } from '@/types/elevenLabs';
 
 interface VoicePickerDialogProps {
   open: boolean;
@@ -28,12 +33,14 @@ export function VoicePickerDialog({
   voicePitch,
   onVoicePitchChange,
   voiceVolume,
-  onVoiceVolumeChange
+  onVoiceVolumeChange,
 }: VoicePickerDialogProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [genderFilter, setGenderFilter] = useState<"all" | "female" | "male">("all");
-  const [accentFilter, setAccentFilter] = useState<string>("all");
-  const [selectedStyle, setSelectedStyle] = useState<string>("neutral");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [genderFilter, setGenderFilter] = useState<'all' | 'female' | 'male'>(
+    'all'
+  );
+  const [accentFilter, setAccentFilter] = useState<string>('all');
+  const [selectedStyle, setSelectedStyle] = useState<string>('neutral');
   const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
 
   useEffect(() => {
@@ -57,20 +64,27 @@ export function VoicePickerDialog({
   };
 
   // Filter voices based on search and filters
-  const filteredVoices = availableVoices.filter(voice => {
+  const filteredVoices = availableVoices.filter((voice) => {
     const labels = voice.labels || {};
-    const matchesSearch = voice.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesGender = genderFilter === "all" || (labels.gender && labels.gender.toLowerCase() === genderFilter);
+    const matchesSearch = voice.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
 
-    const matchesAccent = accentFilter === "all" || (labels.accent && labels.accent.toLowerCase().includes(accentFilter));
+    const matchesGender =
+      genderFilter === 'all' ||
+      (labels.gender && labels.gender.toLowerCase() === genderFilter);
+
+    const matchesAccent =
+      accentFilter === 'all' ||
+      (labels.accent && labels.accent.toLowerCase().includes(accentFilter));
 
     return matchesSearch && matchesGender && matchesAccent;
   });
 
   // Get unique accents from available voices
-  const availableAccents = Array.from(new Set(availableVoices.map(v => v.labels?.accent).filter(Boolean)))
-    .sort();
+  const availableAccents = Array.from(
+    new Set(availableVoices.map((v) => v.labels?.accent).filter(Boolean))
+  ).sort();
 
   // Style presets
   const stylePresets = {
@@ -79,7 +93,7 @@ export function VoicePickerDialog({
     professional: { rate: 1.1, pitch: 0.95, volume: 0.85 },
     excited: { rate: 1.2, pitch: 1.2, volume: 1.0 },
     calm: { rate: 0.85, pitch: 0.9, volume: 0.7 },
-    newsreader: { rate: 1.05, pitch: 1.0, volume: 0.9 }
+    newsreader: { rate: 1.05, pitch: 1.0, volume: 0.9 },
   };
 
   const applyStylePreset = (style: keyof typeof stylePresets) => {
@@ -118,16 +132,16 @@ export function VoicePickerDialog({
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`border-white/30 ${genderFilter === "all" ? "bg-green-600/30 border-green-400/50" : ""}`}
-                  onClick={() => setGenderFilter("all")}
+                  className={`border-white/30 ${genderFilter === 'all' ? 'bg-green-600/30 border-green-400/50' : ''}`}
+                  onClick={() => setGenderFilter('all')}
                 >
                   All
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`border-white/30 ${genderFilter === "female" ? "bg-green-600/30 border-green-400/50" : ""}`}
-                  onClick={() => setGenderFilter("female")}
+                  className={`border-white/30 ${genderFilter === 'female' ? 'bg-green-600/30 border-green-400/50' : ''}`}
+                  onClick={() => setGenderFilter('female')}
                 >
                   <i className="fas fa-female mr-1"></i>
                   Female
@@ -135,8 +149,8 @@ export function VoicePickerDialog({
                 <Button
                   size="sm"
                   variant="outline"
-                  className={`border-white/30 ${genderFilter === "male" ? "bg-green-600/30 border-green-400/50" : ""}`}
-                  onClick={() => setGenderFilter("male")}
+                  className={`border-white/30 ${genderFilter === 'male' ? 'bg-green-600/30 border-green-400/50' : ''}`}
+                  onClick={() => setGenderFilter('male')}
                 >
                   <i className="fas fa-male mr-1"></i>
                   Male
@@ -151,8 +165,10 @@ export function VoicePickerDialog({
                 aria-label="Filter by accent"
               >
                 <option value="all">All Accents</option>
-                {availableAccents.map(accent => (
-                  <option key={accent} value={accent}>{accent}</option>
+                {availableAccents.map((accent) => (
+                  <option key={accent} value={accent}>
+                    {accent}
+                  </option>
                 ))}
               </select>
             </div>
@@ -160,15 +176,19 @@ export function VoicePickerDialog({
 
           {/* Style Presets */}
           <div className="space-y-2">
-            <label className="text-sm text-white/80 font-medium">Voice Style Presets</label>
+            <label className="text-sm text-white/80 font-medium">
+              Voice Style Presets
+            </label>
             <div className="flex gap-2 flex-wrap">
               {Object.keys(stylePresets).map((style) => (
                 <Button
                   key={style}
                   size="sm"
                   variant="outline"
-                  className={`border-white/30 ${selectedStyle === style ? "bg-purple-600/30 border-purple-400/50" : ""}`}
-                  onClick={() => applyStylePreset(style as keyof typeof stylePresets)}
+                  className={`border-white/30 ${selectedStyle === style ? 'bg-purple-600/30 border-purple-400/50' : ''}`}
+                  onClick={() =>
+                    applyStylePreset(style as keyof typeof stylePresets)
+                  }
                 >
                   {style.charAt(0).toUpperCase() + style.slice(1)}
                 </Button>
@@ -180,8 +200,12 @@ export function VoicePickerDialog({
           <div className="space-y-3 bg-white/5 p-4 rounded-lg border border-white/10">
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-sm text-white/80 font-medium">Speech Rate</label>
-                <span className="text-xs text-white/60">{speechRate.toFixed(2)}x</span>
+                <label className="text-sm text-white/80 font-medium">
+                  Speech Rate
+                </label>
+                <span className="text-xs text-white/60">
+                  {speechRate.toFixed(2)}x
+                </span>
               </div>
               <Slider
                 value={[speechRate]}
@@ -196,8 +220,12 @@ export function VoicePickerDialog({
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-sm text-white/80 font-medium">Pitch</label>
-                <span className="text-xs text-white/60">{voicePitch.toFixed(2)}</span>
+                <label className="text-sm text-white/80 font-medium">
+                  Pitch
+                </label>
+                <span className="text-xs text-white/60">
+                  {voicePitch.toFixed(2)}
+                </span>
               </div>
               <Slider
                 value={[voicePitch]}
@@ -212,8 +240,12 @@ export function VoicePickerDialog({
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-sm text-white/80 font-medium">Volume</label>
-                <span className="text-xs text-white/60">{Math.round(voiceVolume * 100)}%</span>
+                <label className="text-sm text-white/80 font-medium">
+                  Volume
+                </label>
+                <span className="text-xs text-white/60">
+                  {Math.round(voiceVolume * 100)}%
+                </span>
               </div>
               <Slider
                 value={[voiceVolume]}
@@ -243,8 +275,8 @@ export function VoicePickerDialog({
                     key={index}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
                       selectedVoice?.voice_id === voice.voice_id
-                        ? "bg-green-600/20 border-green-400/50"
-                        : "bg-white/5 border-white/10 hover:bg-white/10"
+                        ? 'bg-green-600/20 border-green-400/50'
+                        : 'bg-white/5 border-white/10 hover:bg-white/10'
                     } cursor-pointer transition-colors`}
                     onClick={() => onVoiceSelect(voice)}
                     role="button"
@@ -258,7 +290,9 @@ export function VoicePickerDialog({
                     }}
                   >
                     <div className="flex-1">
-                      <div className="text-sm font-medium text-white">{voice.name}</div>
+                      <div className="text-sm font-medium text-white">
+                        {voice.name}
+                      </div>
                       <div className="text-xs text-gray-400">
                         {voice.labels.accent} • {voice.labels.gender}
                       </div>

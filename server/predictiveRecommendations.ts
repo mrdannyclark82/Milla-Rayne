@@ -25,8 +25,18 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   const recommendations: Recommendation[] = [];
 
   // Check for new model/API opportunities
-  if (text.includes('model') || text.includes('api') || text.includes('gpt') || text.includes('claude')) {
-    if (text.includes('openrouter') || text.includes('deepseek') || text.includes('qwen') || text.includes('grok')) {
+  if (
+    text.includes('model') ||
+    text.includes('api') ||
+    text.includes('gpt') ||
+    text.includes('claude')
+  ) {
+    if (
+      text.includes('openrouter') ||
+      text.includes('deepseek') ||
+      text.includes('qwen') ||
+      text.includes('grok')
+    ) {
       recommendations.push({
         title: `Consider integrating new AI model: ${update.title}`,
         rationale: `A new or updated AI model has been announced that may improve response quality or reduce costs. ${update.summary?.substring(0, 200) || ''}`,
@@ -42,7 +52,11 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   }
 
   // Check for security updates
-  if (text.includes('security') || text.includes('vulnerability') || text.includes('cve')) {
+  if (
+    text.includes('security') ||
+    text.includes('vulnerability') ||
+    text.includes('cve')
+  ) {
     recommendations.push({
       title: `Security Update: ${update.title}`,
       rationale: `A security update or vulnerability has been disclosed that may affect the project dependencies or practices. Review: ${update.summary?.substring(0, 200) || ''}`,
@@ -57,7 +71,12 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   }
 
   // Check for voice/TTS/STT updates
-  if (text.includes('voice') || text.includes('tts') || text.includes('stt') || text.includes('speech')) {
+  if (
+    text.includes('voice') ||
+    text.includes('tts') ||
+    text.includes('stt') ||
+    text.includes('speech')
+  ) {
     recommendations.push({
       title: `Voice Feature Enhancement: ${update.title}`,
       rationale: `New voice/speech technology has been announced. Consider enhancing voice features. ${update.summary?.substring(0, 200) || ''}`,
@@ -72,7 +91,11 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   }
 
   // Check for database/storage updates
-  if (text.includes('sqlite') || text.includes('database') || text.includes('storage')) {
+  if (
+    text.includes('sqlite') ||
+    text.includes('database') ||
+    text.includes('storage')
+  ) {
     recommendations.push({
       title: `Database Enhancement: ${update.title}`,
       rationale: `Database or storage improvements have been announced. ${update.summary?.substring(0, 200) || ''}`,
@@ -86,7 +109,11 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   }
 
   // Check for GitHub Actions/CI updates
-  if (text.includes('github actions') || text.includes('ci/cd') || text.includes('workflow')) {
+  if (
+    text.includes('github actions') ||
+    text.includes('ci/cd') ||
+    text.includes('workflow')
+  ) {
     recommendations.push({
       title: `CI/CD Enhancement: ${update.title}`,
       rationale: `GitHub Actions or CI/CD improvements are available. ${update.summary?.substring(0, 200) || ''}`,
@@ -100,7 +127,12 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
   }
 
   // Check for API/TypeScript/React updates
-  if (text.includes('typescript') || text.includes('react') || text.includes('express') || text.includes('api')) {
+  if (
+    text.includes('typescript') ||
+    text.includes('react') ||
+    text.includes('express') ||
+    text.includes('api')
+  ) {
     recommendations.push({
       title: `Framework Update: ${update.title}`,
       rationale: `Updates to core frameworks or libraries. ${update.summary?.substring(0, 200) || ''}`,
@@ -120,7 +152,9 @@ function analyzeUpdate(update: AIUpdate): Recommendation | null {
 /**
  * Merge similar recommendations
  */
-function mergeRecommendations(recommendations: Recommendation[]): Recommendation[] {
+function mergeRecommendations(
+  recommendations: Recommendation[]
+): Recommendation[] {
   const merged: Map<string, Recommendation> = new Map();
 
   for (const rec of recommendations) {
@@ -129,11 +163,15 @@ function mergeRecommendations(recommendations: Recommendation[]): Recommendation
     if (merged.has(key)) {
       const existing = merged.get(key)!;
       // Merge source updates
-      existing.sourceUpdates = [...new Set([...existing.sourceUpdates, ...rec.sourceUpdates])];
+      existing.sourceUpdates = [
+        ...new Set([...existing.sourceUpdates, ...rec.sourceUpdates]),
+      ];
       // Average confidence
       existing.confidence = (existing.confidence + rec.confidence) / 2;
       // Merge suggested changes
-      existing.suggestedChanges = [...new Set([...existing.suggestedChanges, ...rec.suggestedChanges])];
+      existing.suggestedChanges = [
+        ...new Set([...existing.suggestedChanges, ...rec.suggestedChanges]),
+      ];
     } else {
       merged.set(key, rec);
     }
@@ -149,7 +187,10 @@ export function generateRecommendations(options: {
   minRelevance?: number;
   maxRecommendations?: number;
 }): Recommendation[] {
-  console.log('predictiveRecommendations.generateRecommendations called with', options);
+  console.log(
+    'predictiveRecommendations.generateRecommendations called with',
+    options
+  );
   const minRelevance = options.minRelevance ?? 0.2;
   const maxRecommendations = options.maxRecommendations ?? 10;
 
@@ -165,7 +206,9 @@ export function generateRecommendations(options: {
 
     console.log('Analyzing updates for recommendations...');
 
-    console.log(`Generating recommendations from ${updates.length} relevant updates...`);
+    console.log(
+      `Generating recommendations from ${updates.length} relevant updates...`
+    );
 
     const recommendations: Recommendation[] = [];
 

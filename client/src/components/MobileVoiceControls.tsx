@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface MobileVoiceControlsProps {
   onStartListening: () => void;
@@ -14,7 +14,7 @@ export function MobileVoiceControls({
   onStopListening,
   isListening,
   onCancel,
-  className = ""
+  className = '',
 }: MobileVoiceControlsProps) {
   const [isPressHold, setIsPressHold] = useState(false);
   const [swipeDistance, setSwipeDistance] = useState(0);
@@ -24,12 +24,12 @@ export function MobileVoiceControls({
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     startPosRef.current = { x: touch.clientX, y: touch.clientY };
-    
+
     // Start hold-to-talk after 200ms
     holdTimerRef.current = setTimeout(() => {
       setIsPressHold(true);
       onStartListening();
-      
+
       // Haptic feedback (if available)
       if ('vibrate' in navigator) {
         navigator.vibrate(50);
@@ -47,7 +47,7 @@ export function MobileVoiceControls({
     // Detect swipe to cancel (swipe left or up)
     if (deltaX > 50 || deltaY < -50) {
       setSwipeDistance(Math.max(deltaX, -deltaY));
-      
+
       if (deltaX > 100 || deltaY < -100) {
         handleCancel();
       }
@@ -62,7 +62,7 @@ export function MobileVoiceControls({
     if (isPressHold) {
       onStopListening();
       setIsPressHold(false);
-      
+
       // Haptic feedback (if available)
       if ('vibrate' in navigator) {
         navigator.vibrate(30);
@@ -80,7 +80,7 @@ export function MobileVoiceControls({
     setIsPressHold(false);
     setSwipeDistance(0);
     onCancel();
-    
+
     // Haptic feedback (if available)
     if ('vibrate' in navigator) {
       navigator.vibrate([30, 50, 30]);
@@ -108,11 +108,13 @@ export function MobileVoiceControls({
               : 'bg-green-600 hover:bg-green-700'
           }`}
           style={{
-            transform: `scale(${isPressHold ? 1.1 : 1}) translateX(-${swipeDistance}px)`
+            transform: `scale(${isPressHold ? 1.1 : 1}) translateX(-${swipeDistance}px)`,
           }}
           aria-label="Press and hold to speak"
         >
-          <i className={`fas fa-microphone text-2xl ${isPressHold ? 'animate-pulse' : ''}`}></i>
+          <i
+            className={`fas fa-microphone text-2xl ${isPressHold ? 'animate-pulse' : ''}`}
+          ></i>
         </Button>
 
         <div className="text-center">
@@ -121,7 +123,9 @@ export function MobileVoiceControls({
           )}
           {isPressHold && (
             <>
-              <p className="text-xs text-white/80 animate-pulse">Listening...</p>
+              <p className="text-xs text-white/80 animate-pulse">
+                Listening...
+              </p>
               <p className="text-xs text-white/40 mt-1">
                 <i className="fas fa-arrow-left mr-1"></i>
                 Swipe to cancel

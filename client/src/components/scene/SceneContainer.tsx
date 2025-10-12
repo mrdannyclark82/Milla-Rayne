@@ -23,7 +23,7 @@ export function SceneContainer({
   children,
   enabled = false,
   appState = 'idle',
-  performanceMode = 'balanced'
+  performanceMode = 'balanced',
 }: SceneContainerProps) {
   // Feature flag gate: if not enabled, render children only
   if (!enabled) {

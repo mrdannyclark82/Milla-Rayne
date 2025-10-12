@@ -3,7 +3,7 @@
  */
 
 import nodeFetch from 'node-fetch';
-globalThis.fetch = (nodeFetch as unknown) as typeof fetch;
+globalThis.fetch = nodeFetch as unknown as typeof fetch;
 
 export interface OpenRouterCodeGenerationResult {
   success: boolean;
@@ -24,18 +24,19 @@ export async function generateCodeWithQwen(
   if (!process.env.OPENROUTER_QWEN_API_KEY && !process.env.OPENROUTER_API_KEY) {
     return {
       success: false,
-      error: "OpenRouter API key is not configured. Please set OPENROUTER_QWEN_API_KEY or OPENROUTER_API_KEY in your environment."
+      error:
+        'OpenRouter API key is not configured. Please set OPENROUTER_QWEN_API_KEY or OPENROUTER_API_KEY in your environment.',
     };
   }
 
   try {
     // Create a comprehensive prompt for code generation
     let systemPrompt = `You are an expert programmer and code assistant. Generate clean, well-documented, and functional code based on the user's request.`;
-    
+
     if (language) {
       systemPrompt += ` Focus on ${language} programming language.`;
     }
-    
+
     systemPrompt += ` Provide:
 1. The complete, working code
 2. Brief explanation of how it works
@@ -53,65 +54,74 @@ Explanation: [your explanation here]`;
       userPrompt = `Context: ${context}\n\nRequest: ${prompt}`;
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_QWEN_API_KEY || process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "X-Title": "Milla Rayne AI Assistant - Code Generation",
-      },
-      body: JSON.stringify({
-        model: "qwen/qwen-2.5-coder-32b-instruct", // Using working model (qwen3-coder:free may not be available)
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
-          },
-          {
-            role: "user",
-            content: userPrompt
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.3, // Lower temperature for more consistent code generation
-        top_p: 0.9,
-      }),
-    });
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_QWEN_API_KEY || process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'X-Title': 'Milla Rayne AI Assistant - Code Generation',
+        },
+        body: JSON.stringify({
+          model: 'qwen/qwen-2.5-coder-32b-instruct', // Using working model (qwen3-coder:free may not be available)
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: userPrompt,
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.3, // Lower temperature for more consistent code generation
+          top_p: 0.9,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error("OpenRouter Qwen code API error:", response.status, errorData);
-      
+      console.error(
+        'OpenRouter Qwen code API error:',
+        response.status,
+        errorData
+      );
+
       return {
         success: false,
-        error: `OpenRouter Qwen API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`
+        error: `OpenRouter Qwen API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`,
       };
     }
 
     const data = await response.json();
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Unexpected OpenRouter Qwen response format:", data);
+      console.error('Unexpected OpenRouter Qwen response format:', data);
       return {
         success: false,
-        error: "Invalid response format from OpenRouter Qwen"
+        error: 'Invalid response format from OpenRouter Qwen',
       };
     }
 
     const content = data.choices[0].message.content;
-    
+
     // Parse the response to extract code and explanation
     const codeMatch = content.match(/```(\w+)?\n([\s\S]*?)```/);
-    let extractedCode = "";
-    let detectedLanguage = language || "javascript";
-    let explanation = "";
-    
+    let extractedCode = '';
+    let detectedLanguage = language || 'javascript';
+    let explanation = '';
+
     if (codeMatch) {
       detectedLanguage = codeMatch[1] || detectedLanguage;
       extractedCode = codeMatch[2].trim();
-      
+
       // Extract explanation (text after the code block)
-      const afterCode = content.substring(content.indexOf("```", content.indexOf("```") + 3) + 3);
+      const afterCode = content.substring(
+        content.indexOf('```', content.indexOf('```') + 3) + 3
+      );
       const explanationMatch = afterCode.match(/Explanation:\s*([\s\S]*)/i);
       if (explanationMatch) {
         explanation = explanationMatch[1].trim();
@@ -122,21 +132,23 @@ Explanation: [your explanation here]`;
     } else {
       // If no code block found, treat entire response as code or explanation
       extractedCode = content;
-      explanation = "Code generated by Qwen coder model";
+      explanation = 'Code generated by Qwen coder model';
     }
-    
+
     return {
       success: true,
       code: extractedCode,
       language: detectedLanguage,
-      explanation: explanation || "Code generated successfully",
+      explanation: explanation || 'Code generated successfully',
     };
-
   } catch (error) {
-    console.error("OpenRouter Qwen code service error:", error);
+    console.error('OpenRouter Qwen code service error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error during OpenRouter Qwen code generation"
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during OpenRouter Qwen code generation',
     };
   }
 }
@@ -144,9 +156,11 @@ Explanation: [your explanation here]`;
 /**
  * Extract code generation request from user message
  */
-export function extractCodeRequest(userMessage: string): { prompt: string; language?: string } | null {
+export function extractCodeRequest(
+  userMessage: string
+): { prompt: string; language?: string } | null {
   const message = userMessage.toLowerCase();
-  
+
   // Patterns that indicate code generation requests
   const codePatterns = [
     /write\s+(?:a\s+)?(?:javascript|python|java|typescript|php|ruby|go|rust|swift|kotlin|scala|html|css|sql|bash|js|py|ts|cpp|c#|csharp)?\s*(?:function|script|program|code)?\s+(?:to\s+|for\s+)?(.+)/i,
@@ -163,30 +177,30 @@ export function extractCodeRequest(userMessage: string): { prompt: string; langu
 
   // Language detection patterns
   const languagePatterns = [
-    { pattern: /javascript|js|node/i, language: "javascript" },
-    { pattern: /python|py/i, language: "python" },
-    { pattern: /typescript|ts/i, language: "typescript" },
-    { pattern: /java(?!script)/i, language: "java" },
-    { pattern: /c\+\+|cpp/i, language: "cpp" },
-    { pattern: /c#|csharp/i, language: "csharp" },
-    { pattern: /php/i, language: "php" },
-    { pattern: /ruby|rb/i, language: "ruby" },
-    { pattern: /go|golang/i, language: "go" },
-    { pattern: /rust|rs/i, language: "rust" },
-    { pattern: /swift/i, language: "swift" },
-    { pattern: /kotlin/i, language: "kotlin" },
-    { pattern: /scala/i, language: "scala" },
-    { pattern: /html/i, language: "html" },
-    { pattern: /css/i, language: "css" },
-    { pattern: /sql/i, language: "sql" },
-    { pattern: /bash|shell/i, language: "bash" },
+    { pattern: /javascript|js|node/i, language: 'javascript' },
+    { pattern: /python|py/i, language: 'python' },
+    { pattern: /typescript|ts/i, language: 'typescript' },
+    { pattern: /java(?!script)/i, language: 'java' },
+    { pattern: /c\+\+|cpp/i, language: 'cpp' },
+    { pattern: /c#|csharp/i, language: 'csharp' },
+    { pattern: /php/i, language: 'php' },
+    { pattern: /ruby|rb/i, language: 'ruby' },
+    { pattern: /go|golang/i, language: 'go' },
+    { pattern: /rust|rs/i, language: 'rust' },
+    { pattern: /swift/i, language: 'swift' },
+    { pattern: /kotlin/i, language: 'kotlin' },
+    { pattern: /scala/i, language: 'scala' },
+    { pattern: /html/i, language: 'html' },
+    { pattern: /css/i, language: 'css' },
+    { pattern: /sql/i, language: 'sql' },
+    { pattern: /bash|shell/i, language: 'bash' },
   ];
 
   for (const pattern of codePatterns) {
     const match = userMessage.match(pattern);
     if (match && match[1]) {
       const prompt = match[1].trim();
-      
+
       // Detect language
       let detectedLanguage: string | undefined;
       for (const langPattern of languagePatterns) {
@@ -195,10 +209,10 @@ export function extractCodeRequest(userMessage: string): { prompt: string; langu
           break;
         }
       }
-      
+
       return {
         prompt: prompt,
-        language: detectedLanguage
+        language: detectedLanguage,
       };
     }
   }
@@ -214,7 +228,7 @@ export function formatCodeResponse(
   originalPrompt: string
 ): string {
   if (!result.success) {
-    return `I'd love to help you with that code, babe, but I'm having some trouble with code generation right now. ${result.error ? `Error: ${result.error}` : "However, I can still discuss the logic and approach you might want to take! What specific programming challenge are you working on?"}`;
+    return `I'd love to help you with that code, babe, but I'm having some trouble with code generation right now. ${result.error ? `Error: ${result.error}` : 'However, I can still discuss the logic and approach you might want to take! What specific programming challenge are you working on?'}`;
   }
 
   let response = `💻 Here's the ${result.language || 'code'} I generated for "${originalPrompt}":

@@ -16,7 +16,7 @@ export function ParallaxLayer({
   intensity,
   className = '',
   color = 'rgba(255, 255, 255, 0.05)',
-  opacity = 0.5
+  opacity = 0.5,
 }: ParallaxLayerProps) {
   const layerRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -29,13 +29,13 @@ export function ParallaxLayer({
       const { innerWidth, innerHeight } = window;
 
       // Calculate offset based on mouse position (-1 to 1 range)
-      const x = ((clientX / innerWidth) - 0.5) * 2;
-      const y = ((clientY / innerHeight) - 0.5) * 2;
+      const x = (clientX / innerWidth - 0.5) * 2;
+      const y = (clientY / innerHeight - 0.5) * 2;
 
       // Apply intensity multiplier
       setOffset({
         x: x * intensity * 20, // Max 20px movement
-        y: y * intensity * 20
+        y: y * intensity * 20,
       });
     };
 
@@ -55,7 +55,7 @@ export function ParallaxLayer({
         transform: `translate(${offset.x}px, ${offset.y}px)`,
         transition: 'transform 0.1s ease-out',
         pointerEvents: 'none',
-        zIndex: -9
+        zIndex: -9,
       }}
       aria-hidden="true"
     >
@@ -70,7 +70,7 @@ export function ParallaxLayer({
           borderRadius: '50%',
           background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
           opacity,
-          filter: 'blur(40px)'
+          filter: 'blur(40px)',
         }}
       />
       <div
@@ -83,7 +83,7 @@ export function ParallaxLayer({
           borderRadius: '50%',
           background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
           opacity: opacity * 0.7,
-          filter: 'blur(60px)'
+          filter: 'blur(60px)',
         }}
       />
       <div
@@ -97,7 +97,7 @@ export function ParallaxLayer({
           borderRadius: '50%',
           background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
           opacity: opacity * 0.5,
-          filter: 'blur(30px)'
+          filter: 'blur(30px)',
         }}
       />
     </div>

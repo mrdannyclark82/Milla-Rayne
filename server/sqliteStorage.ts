@@ -4,12 +4,21 @@
  */
 
 import Database from 'better-sqlite3';
-import { type User, type InsertUser, type Message, type InsertMessage, type AiUpdate, type InsertAiUpdate, type DailySuggestion, type InsertDailySuggestion } from "@shared/schema";
-import { randomUUID } from "crypto";
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs";
-import { encrypt, decrypt, isEncryptionEnabled, getMemoryKey } from "./crypto";
+import {
+  type User,
+  type InsertUser,
+  type Message,
+  type InsertMessage,
+  type AiUpdate,
+  type InsertAiUpdate,
+  type DailySuggestion,
+  type InsertDailySuggestion,
+} from '@shared/schema';
+import { randomUUID } from 'crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import { encrypt, decrypt, isEncryptionEnabled, getMemoryKey } from './crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,13 +47,23 @@ export interface IStorage {
   markAiUpdateApplied(id: string): Promise<void>;
 
   // Daily Suggestions methods
-  createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion>;
+  createDailySuggestion(
+    suggestion: InsertDailySuggestion
+  ): Promise<DailySuggestion>;
   getDailySuggestionByDate(date: string): Promise<DailySuggestion | null>;
   markDailySuggestionDelivered(date: string): Promise<boolean>;
 
   // Voice Consent methods
-  getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null>;
-  grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent>;
+  getVoiceConsent(
+    userId: string,
+    consentType: string
+  ): Promise<VoiceConsent | null>;
+  grantVoiceConsent(
+    userId: string,
+    consentType: string,
+    consentText: string,
+    metadata?: any
+  ): Promise<VoiceConsent>;
   revokeVoiceConsent(userId: string, consentType: string): Promise<boolean>;
   hasVoiceConsent(userId: string, consentType: string): Promise<boolean>;
 
@@ -177,16 +196,24 @@ export class SqliteStorage implements IStorage {
     console.debug('sqlite: creating ai_updates table');
 
     // Check if ai_updates table exists and has the correct schema
-    const tableInfo = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='ai_updates'").get() as { name: string } | undefined;
+    const tableInfo = this.db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='ai_updates'"
+      )
+      .get() as { name: string } | undefined;
 
     if (tableInfo) {
       // Table exists, check if it has the 'source' column (new schema)
-      const columns = this.db.prepare("PRAGMA table_info('ai_updates')").all() as { name: string }[];
-      const hasSourceColumn = columns.some(col => col.name === 'source');
+      const columns = this.db
+        .prepare("PRAGMA table_info('ai_updates')")
+        .all() as { name: string }[];
+      const hasSourceColumn = columns.some((col) => col.name === 'source');
 
       if (!hasSourceColumn) {
         // Old schema detected, migrate to new RSS feed structure
-        console.log('sqlite: migrating ai_updates table to new schema (RSS feed structure)');
+        console.log(
+          'sqlite: migrating ai_updates table to new schema (RSS feed structure)'
+        );
 
         // Drop old indexes first to prevent "no such column" errors
         // The old schema had indexes on 'priority', 'applied_at', 'category' columns
@@ -238,16 +265,24 @@ export class SqliteStorage implements IStorage {
 
     // If an older column 'relevance' exists, migrate values into 'relevance_score' and drop the old column
     try {
-      const cols = this.db.prepare("PRAGMA table_info('suggestion_updates')").all() as { name: string }[];
-      const hasRelevance = cols.some(c => c.name === 'relevance');
-      const hasRelevanceScore = cols.some(c => c.name === 'relevance_score');
+      const cols = this.db
+        .prepare("PRAGMA table_info('suggestion_updates')")
+        .all() as { name: string }[];
+      const hasRelevance = cols.some((c) => c.name === 'relevance');
+      const hasRelevanceScore = cols.some((c) => c.name === 'relevance_score');
 
       if (hasRelevance && !hasRelevanceScore) {
-        console.log('sqlite: migrating suggestion_updates.relevance -> relevance_score');
+        console.log(
+          'sqlite: migrating suggestion_updates.relevance -> relevance_score'
+        );
         // Add the new column
-        this.db.exec(`ALTER TABLE suggestion_updates ADD COLUMN relevance_score REAL DEFAULT 0`);
+        this.db.exec(
+          `ALTER TABLE suggestion_updates ADD COLUMN relevance_score REAL DEFAULT 0`
+        );
         // Copy data
-        this.db.exec(`UPDATE suggestion_updates SET relevance_score = relevance`);
+        this.db.exec(
+          `UPDATE suggestion_updates SET relevance_score = relevance`
+        );
         // Note: SQLite doesn't support DROP COLUMN prior to 3.35.0 in many environments, so we leave 'relevance' present.
       }
     } catch (err) {
@@ -320,7 +355,9 @@ export class SqliteStorage implements IStorage {
     `);
 
     const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
-    console.log(`SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`);
+    console.log(
+      `SQLite database initialized at: ${DB_PATH} (encryption: ${encryptionStatus})`
+    );
 
     // Ensure default user exists for consent storage
     this.ensureDefaultUser();
@@ -368,7 +405,7 @@ export class SqliteStorage implements IStorage {
     return {
       id,
       username: user.username,
-      password: user.password
+      password: user.password,
     };
   }
 
@@ -378,7 +415,9 @@ export class SqliteStorage implements IStorage {
     const timestamp = new Date();
 
     // Encrypt message content before storing (when encryption enabled)
-    const encryptedContent = isEncryptionEnabled() ? encrypt(message.content, getMemoryKey()) : message.content;
+    const encryptedContent = isEncryptionEnabled()
+      ? encrypt(message.content, getMemoryKey())
+      : message.content;
 
     const stmt = this.db.prepare(`
       INSERT INTO messages (id, content, role, personality_mode, timestamp, user_id, session_id) 
@@ -411,7 +450,7 @@ export class SqliteStorage implements IStorage {
       role: message.role,
       personalityMode: message.personalityMode || null,
       timestamp,
-      userId: message.userId || null
+      userId: message.userId || null,
     };
   }
 
@@ -419,19 +458,23 @@ export class SqliteStorage implements IStorage {
     let stmt;
     let messages;
     if (userId) {
-      stmt = this.db.prepare('SELECT * FROM messages WHERE user_id = ? ORDER BY timestamp ASC');
+      stmt = this.db.prepare(
+        'SELECT * FROM messages WHERE user_id = ? ORDER BY timestamp ASC'
+      );
       messages = stmt.all(userId) as any[];
     } else {
       stmt = this.db.prepare('SELECT * FROM messages ORDER BY timestamp ASC');
       messages = stmt.all() as any[];
     }
 
-    return messages.map(msg => ({
+    return messages.map((msg) => ({
       ...msg,
-      content: isEncryptionEnabled() ? decrypt(msg.content, getMemoryKey()) : msg.content, // Decrypt content on read
+      content: isEncryptionEnabled()
+        ? decrypt(msg.content, getMemoryKey())
+        : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
-      userId: msg.user_id
+      userId: msg.user_id,
     }));
   }
 
@@ -443,10 +486,12 @@ export class SqliteStorage implements IStorage {
 
     return {
       ...msg,
-      content: isEncryptionEnabled() ? decrypt(msg.content, getMemoryKey()) : msg.content, // Decrypt content on read
+      content: isEncryptionEnabled()
+        ? decrypt(msg.content, getMemoryKey())
+        : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
-      userId: msg.user_id
+      userId: msg.user_id,
     };
   }
 
@@ -462,7 +507,9 @@ export class SqliteStorage implements IStorage {
     stmt.run(sessionId, userId, startTime.toISOString());
 
     // Update usage patterns
-    const dayOfWeek = startTime.toLocaleDateString('en-US', { weekday: 'long' });
+    const dayOfWeek = startTime.toLocaleDateString('en-US', {
+      weekday: 'long',
+    });
     const hourOfDay = startTime.getHours();
 
     const patternStmt = this.db.prepare(`
@@ -479,21 +526,27 @@ export class SqliteStorage implements IStorage {
       sessionId,
       userId,
       startTime,
-      messageCount: 0
+      messageCount: 0,
     };
   }
 
-  async endSession(sessionId: string, lastMessages: string[] = []): Promise<void> {
+  async endSession(
+    sessionId: string,
+    lastMessages: string[] = []
+  ): Promise<void> {
     const endTime = new Date();
 
     // Get session start time to calculate duration
-    const sessionStmt = this.db.prepare('SELECT start_time FROM sessions WHERE id = ?');
+    const sessionStmt = this.db.prepare(
+      'SELECT start_time FROM sessions WHERE id = ?'
+    );
     const session = sessionStmt.get(sessionId) as any;
 
     if (!session) return;
 
     const startTime = new Date(session.start_time);
-    const durationMinutes = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+    const durationMinutes =
+      (endTime.getTime() - startTime.getTime()) / (1000 * 60);
 
     const lastTwoMessages = lastMessages.slice(-2).join(' ||| ');
 
@@ -504,7 +557,12 @@ export class SqliteStorage implements IStorage {
           last_two_messages = ?
       WHERE id = ?
     `);
-    stmt.run(endTime.toISOString(), durationMinutes, lastTwoMessages, sessionId);
+    stmt.run(
+      endTime.toISOString(),
+      durationMinutes,
+      lastTwoMessages,
+      sessionId
+    );
   }
 
   async getSessionStats(userId?: string): Promise<SessionStats> {
@@ -551,7 +609,10 @@ export class SqliteStorage implements IStorage {
     if (sessions.length > 1) {
       const timeDiffs: number[] = [];
       for (let i = 1; i < sessions.length; i++) {
-        const diff = (new Date(sessions[i].start_time).getTime() - new Date(sessions[i - 1].start_time).getTime()) / (1000 * 60);
+        const diff =
+          (new Date(sessions[i].start_time).getTime() -
+            new Date(sessions[i - 1].start_time).getTime()) /
+          (1000 * 60);
         timeDiffs.push(diff);
       }
       avgTimeBetween = timeDiffs.reduce((a, b) => a + b, 0) / timeDiffs.length;
@@ -562,7 +623,10 @@ export class SqliteStorage implements IStorage {
       averageSessionLength: stats.avg_session_length || 0,
       averageTimeBetweenSessions: avgTimeBetween,
       totalMessages: stats.total_messages || 0,
-      averageMessagesPerSession: stats.total_sessions > 0 ? stats.total_messages / stats.total_sessions : 0
+      averageMessagesPerSession:
+        stats.total_sessions > 0
+          ? stats.total_messages / stats.total_sessions
+          : 0,
     };
   }
 
@@ -585,11 +649,11 @@ export class SqliteStorage implements IStorage {
     }
 
     const patterns = stmt.all(userId) as any[];
-    return patterns.map(p => ({
+    return patterns.map((p) => ({
       dayOfWeek: p.day_of_week,
       hourOfDay: p.hour_of_day,
       sessionCount: p.session_count,
-      messageCount: p.message_count
+      messageCount: p.message_count,
     }));
   }
 
@@ -601,12 +665,22 @@ export class SqliteStorage implements IStorage {
       VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `);
 
-    const metadataStr = update.metadata ? JSON.stringify(update.metadata) : null;
-    stmt.run(id, update.title, update.description, update.category, update.priority, update.relevanceScore, metadataStr);
+    const metadataStr = update.metadata
+      ? JSON.stringify(update.metadata)
+      : null;
+    stmt.run(
+      id,
+      update.title,
+      update.description,
+      update.category,
+      update.priority,
+      update.relevanceScore,
+      metadataStr
+    );
 
     const created = await this.getAiUpdateById(id);
     if (!created) {
-      throw new Error("Failed to create AI update");
+      throw new Error('Failed to create AI update');
     }
     return created;
   }
@@ -620,7 +694,7 @@ export class SqliteStorage implements IStorage {
     `);
 
     const updates = stmt.all(limit) as any[];
-    return updates.map(u => ({
+    return updates.map((u) => ({
       id: u.id,
       title: u.title,
       description: u.description,
@@ -629,12 +703,14 @@ export class SqliteStorage implements IStorage {
       relevanceScore: u.relevance,
       metadata: u.metadata ? JSON.parse(u.metadata) : null,
       createdAt: new Date(u.created_at),
-      appliedAt: u.applied_at ? new Date(u.applied_at) : null
+      appliedAt: u.applied_at ? new Date(u.applied_at) : null,
     }));
   }
 
   async getAiUpdateById(id: string): Promise<AiUpdate | undefined> {
-    const stmt = this.db.prepare('SELECT * FROM suggestion_updates WHERE id = ?');
+    const stmt = this.db.prepare(
+      'SELECT * FROM suggestion_updates WHERE id = ?'
+    );
     const update = stmt.get(id) as any;
 
     if (!update) return undefined;
@@ -648,35 +724,45 @@ export class SqliteStorage implements IStorage {
       relevanceScore: update.relevance,
       metadata: update.metadata ? JSON.parse(update.metadata) : null,
       createdAt: new Date(update.created_at),
-      appliedAt: update.applied_at ? new Date(update.applied_at) : null
+      appliedAt: update.applied_at ? new Date(update.applied_at) : null,
     };
   }
 
   async markAiUpdateApplied(id: string): Promise<void> {
-    const stmt = this.db.prepare('UPDATE suggestion_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?');
+    const stmt = this.db.prepare(
+      'UPDATE suggestion_updates SET applied_at = CURRENT_TIMESTAMP WHERE id = ?'
+    );
     stmt.run(id);
   }
 
   // Daily Suggestions methods
-  async createDailySuggestion(suggestion: InsertDailySuggestion): Promise<DailySuggestion> {
+  async createDailySuggestion(
+    suggestion: InsertDailySuggestion
+  ): Promise<DailySuggestion> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
       INSERT INTO daily_suggestions (id, date, suggestion_text, metadata, created_at, is_delivered)
       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 0)
     `);
 
-    const metadataStr = suggestion.metadata ? JSON.stringify(suggestion.metadata) : null;
+    const metadataStr = suggestion.metadata
+      ? JSON.stringify(suggestion.metadata)
+      : null;
     stmt.run(id, suggestion.date, suggestion.suggestionText, metadataStr);
 
     const created = await this.getDailySuggestionByDate(suggestion.date);
     if (!created) {
-      throw new Error("Failed to create daily suggestion");
+      throw new Error('Failed to create daily suggestion');
     }
     return created;
   }
 
-  async getDailySuggestionByDate(date: string): Promise<DailySuggestion | null> {
-    const stmt = this.db.prepare('SELECT * FROM daily_suggestions WHERE date = ?');
+  async getDailySuggestionByDate(
+    date: string
+  ): Promise<DailySuggestion | null> {
+    const stmt = this.db.prepare(
+      'SELECT * FROM daily_suggestions WHERE date = ?'
+    );
     const suggestion = stmt.get(date) as any;
 
     if (!suggestion) return null;
@@ -687,8 +773,10 @@ export class SqliteStorage implements IStorage {
       suggestionText: suggestion.suggestion_text,
       metadata: suggestion.metadata ? JSON.parse(suggestion.metadata) : null,
       createdAt: new Date(suggestion.created_at),
-      deliveredAt: suggestion.delivered_at ? new Date(suggestion.delivered_at) : null,
-      isDelivered: suggestion.is_delivered === 1
+      deliveredAt: suggestion.delivered_at
+        ? new Date(suggestion.delivered_at)
+        : null,
+      isDelivered: suggestion.is_delivered === 1,
     };
   }
 
@@ -703,8 +791,13 @@ export class SqliteStorage implements IStorage {
   }
 
   // Voice Consent methods
-  async getVoiceConsent(userId: string, consentType: string): Promise<VoiceConsent | null> {
-    const stmt = this.db.prepare('SELECT * FROM voice_consent WHERE user_id = ? AND consent_type = ?');
+  async getVoiceConsent(
+    userId: string,
+    consentType: string
+  ): Promise<VoiceConsent | null> {
+    const stmt = this.db.prepare(
+      'SELECT * FROM voice_consent WHERE user_id = ? AND consent_type = ?'
+    );
     const consent = stmt.get(userId, consentType) as any;
 
     if (!consent) return null;
@@ -712,17 +805,25 @@ export class SqliteStorage implements IStorage {
     return {
       id: consent.id,
       userId: consent.user_id,
-      consentType: consent.consent_type as 'voice_cloning' | 'voice_persona' | 'voice_synthesis',
+      consentType: consent.consent_type as
+        | 'voice_cloning'
+        | 'voice_persona'
+        | 'voice_synthesis',
       granted: consent.granted === 1,
       grantedAt: consent.granted_at ? new Date(consent.granted_at) : undefined,
       revokedAt: consent.revoked_at ? new Date(consent.revoked_at) : undefined,
       consentText: consent.consent_text,
       metadata: consent.metadata ? JSON.parse(consent.metadata) : null,
-      createdAt: new Date(consent.created_at)
+      createdAt: new Date(consent.created_at),
     };
   }
 
-  async grantVoiceConsent(userId: string, consentType: string, consentText: string, metadata?: any): Promise<VoiceConsent> {
+  async grantVoiceConsent(
+    userId: string,
+    consentType: string,
+    consentText: string,
+    metadata?: any
+  ): Promise<VoiceConsent> {
     const id = randomUUID();
     const metadataStr = metadata ? JSON.stringify(metadata) : null;
 
@@ -748,12 +849,15 @@ export class SqliteStorage implements IStorage {
 
     const updated = await this.getVoiceConsent(userId, consentType);
     if (!updated) {
-      throw new Error("Failed to grant voice consent");
+      throw new Error('Failed to grant voice consent');
     }
     return updated;
   }
 
-  async revokeVoiceConsent(userId: string, consentType: string): Promise<boolean> {
+  async revokeVoiceConsent(
+    userId: string,
+    consentType: string
+  ): Promise<boolean> {
     const stmt = this.db.prepare(`
       UPDATE voice_consent 
       SET granted = 0, revoked_at = CURRENT_TIMESTAMP 
@@ -789,7 +893,9 @@ export class SqliteStorage implements IStorage {
   }
 
   async getOAuthToken(userId: string, provider: string): Promise<any | null> {
-    const stmt = this.db.prepare('SELECT * FROM oauth_tokens WHERE user_id = ? AND provider = ?');
+    const stmt = this.db.prepare(
+      'SELECT * FROM oauth_tokens WHERE user_id = ? AND provider = ?'
+    );
     const token = stmt.get(userId, provider) as any;
 
     if (!token) return null;
@@ -803,7 +909,7 @@ export class SqliteStorage implements IStorage {
       expiresAt: new Date(token.expires_at),
       scope: token.scope,
       createdAt: new Date(token.created_at),
-      updatedAt: new Date(token.updated_at)
+      updatedAt: new Date(token.updated_at),
     };
   }
 

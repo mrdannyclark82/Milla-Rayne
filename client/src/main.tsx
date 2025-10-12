@@ -10,9 +10,12 @@ if (import.meta.env.DEV) {
       fetch('/api/client-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: evt.error?.message || evt.message, stack: evt.error?.stack || null })
+        body: JSON.stringify({
+          message: evt.error?.message || evt.message,
+          stack: evt.error?.stack || null,
+        }),
       });
-    } catch (_) { }
+    } catch (_) {}
   });
 
   window.addEventListener('unhandledrejection', (evt) => {
@@ -20,14 +23,17 @@ if (import.meta.env.DEV) {
       fetch('/api/client-error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: evt.reason?.message || String(evt.reason), stack: evt.reason?.stack || null })
+        body: JSON.stringify({
+          message: evt.reason?.message || String(evt.reason),
+          stack: evt.reason?.stack || null,
+        }),
       });
-    } catch (_) { }
+    } catch (_) {}
   });
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );

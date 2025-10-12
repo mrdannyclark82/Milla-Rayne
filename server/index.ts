@@ -1,17 +1,17 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
-import { initializeMemoryCore } from "./memoryService";
-import { initializePersonalTaskSystem } from "./personalTaskService";
-import { initializeServerSelfEvolution } from "./selfEvolutionService";
+import express, { type Request, Response, NextFunction } from 'express';
+import { registerRoutes } from './routes';
+import { setupVite, serveStatic, log } from './vite';
+import { initializeMemoryCore } from './memoryService';
+import { initializePersonalTaskSystem } from './personalTaskService';
+import { initializeServerSelfEvolution } from './selfEvolutionService';
 import crypto from 'crypto';
 
 // Polyfill crypto.getRandomValues for Node.js
 if (!globalThis.crypto) {
   globalThis.crypto = {
-    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer)
+    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer),
   } as Crypto;
 }
 
@@ -23,7 +23,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
 
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
@@ -43,16 +46,16 @@ app.use((req, res, next) => {
     return originalResJson.apply(res, [bodyJson, ...args]);
   };
 
-  res.on("finish", () => {
+  res.on('finish', () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (path.startsWith('/api')) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
       if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+        logLine = logLine.slice(0, 79) + '…';
       }
 
       log(logLine);
@@ -64,7 +67,7 @@ app.use((req, res, next) => {
 
 if (!globalThis.crypto) {
   globalThis.crypto = {
-    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer)
+    getRandomValues: (buffer: any) => crypto.randomFillSync(buffer),
   } as Crypto;
 }
 
@@ -73,7 +76,7 @@ if (!globalThis.crypto) {
   await initializeMemoryCore();
 
   // Initialize User Tasks system
-  const { initializeUserTasks } = await import("./userTaskService");
+  const { initializeUserTasks } = await import('./userTaskService');
   await initializeUserTasks();
 
   // Initialize Personal Task system for self-improvement
@@ -83,28 +86,32 @@ if (!globalThis.crypto) {
   await initializeServerSelfEvolution();
 
   // Initialize Visual Recognition system
-  const { initializeFaceRecognition } = await import("./visualRecognitionService");
+  const { initializeFaceRecognition } = await import(
+    './visualRecognitionService'
+  );
   await initializeFaceRecognition();
 
   // Initialize Enhancement Task system
-  const { initializeEnhancementTaskSystem } = await import("./enhancementService");
+  const { initializeEnhancementTaskSystem } = await import(
+    './enhancementService'
+  );
   await initializeEnhancementTaskSystem();
 
-
   // Initialize Daily Suggestions Scheduler
-  const { initializeDailySuggestionScheduler } = await import("./dailySuggestionsService");
+  const { initializeDailySuggestionScheduler } = await import(
+    './dailySuggestionsService'
+  );
   initializeDailySuggestionScheduler();
 
   // Initialize AI Updates Scheduler
-  const { initializeAIUpdatesScheduler } = await import("./aiUpdatesScheduler");
+  const { initializeAIUpdatesScheduler } = await import('./aiUpdatesScheduler');
   initializeAIUpdatesScheduler();
-
 
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+    const message = err.message || 'Internal Server Error';
 
     res.status(status).json({ message });
     throw err;
@@ -113,7 +120,7 @@ if (!globalThis.crypto) {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  if (app.get('env') === 'development') {
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -136,23 +143,28 @@ if (!globalThis.crypto) {
     const apiKey = process.env.ELEVENLABS_API_KEY;
 
     if (!apiKey) {
-      return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+      return res
+        .status(500)
+        .json({ error: 'ElevenLabs API key not configured' });
     }
 
     try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceName}`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          text,
-          model_id: 'eleven_monolingual_v1',
-          voice_settings,
-        }),
-      });
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceName}`,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': apiKey,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: 'eleven_monolingual_v1',
+            voice_settings,
+          }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -173,7 +185,9 @@ if (!globalThis.crypto) {
 
     if (!apiKey) {
       console.error('ElevenLabs API key not configured');
-      return res.status(500).json({ error: 'ElevenLabs API key not configured' });
+      return res
+        .status(500)
+        .json({ error: 'ElevenLabs API key not configured' });
     }
 
     try {
@@ -196,19 +210,27 @@ if (!globalThis.crypto) {
       res.json(data);
     } catch (error) {
       console.error('Error proxying ElevenLabs voices request:', error);
-      res.status(500).json({ error: 'Error proxying ElevenLabs voices request' });
+      res
+        .status(500)
+        .json({ error: 'Error proxying ElevenLabs voices request' });
     }
   });
 
   app.get('/api/gmail/recent', async (req, res) => {
     const { getRecentEmails } = await import('./googleGmailService');
-    const result = await getRecentEmails('default-user', Number(req.query.maxResults));
+    const result = await getRecentEmails(
+      'default-user',
+      Number(req.query.maxResults)
+    );
     res.json(result);
   });
 
   app.get('/api/gmail/content', async (req, res) => {
     const { getEmailContent } = await import('./googleGmailService');
-    const result = await getEmailContent('default-user', String(req.query.messageId));
+    const result = await getEmailContent(
+      'default-user',
+      String(req.query.messageId)
+    );
     res.json(result);
   });
 
@@ -219,12 +241,14 @@ if (!globalThis.crypto) {
     res.json(result);
   });
 
-
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+      host: '0.0.0.0',
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();

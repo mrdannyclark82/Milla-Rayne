@@ -6,12 +6,12 @@
 /**
  * Supported voice providers
  */
-export type VoiceProvider = 
-  | 'browser-native'     // Web Speech API (default fallback)
-  | 'google-cloud'       // Google Cloud Text-to-Speech
-  | 'azure'              // Azure Cognitive Services TTS
-  | 'elevenlabs'         // ElevenLabs TTS
-  | 'coqui';             // Coqui TTS (local/self-hosted)
+export type VoiceProvider =
+  | 'browser-native' // Web Speech API (default fallback)
+  | 'google-cloud' // Google Cloud Text-to-Speech
+  | 'azure' // Azure Cognitive Services TTS
+  | 'elevenlabs' // ElevenLabs TTS
+  | 'coqui'; // Coqui TTS (local/self-hosted)
 
 /**
  * Platform detection
@@ -21,19 +21,19 @@ export type Platform = 'web' | 'android' | 'ios';
 /**
  * Voice quality modes
  */
-export type VoiceQuality = 
-  | 'low-latency'        // Optimized for speed
-  | 'high-fidelity';     // Optimized for quality
+export type VoiceQuality =
+  | 'low-latency' // Optimized for speed
+  | 'high-fidelity'; // Optimized for quality
 
 /**
  * Voice accent support
  */
-export type VoiceAccent = 
-  | 'en-US'              // General US English
-  | 'en-US-Southern'     // US English (Southern)
-  | 'en-US-Standard'     // US English (Standard)
-  | 'en-GB'              // British English
-  | 'en-AU';             // Australian English
+export type VoiceAccent =
+  | 'en-US' // General US English
+  | 'en-US-Southern' // US English (Southern)
+  | 'en-US-Standard' // US English (Standard)
+  | 'en-GB' // British English
+  | 'en-AU'; // Australian English
 
 /**
  * Voice configuration
@@ -42,11 +42,11 @@ export interface VoiceConfig {
   provider: VoiceProvider;
   accent?: VoiceAccent;
   quality?: VoiceQuality;
-  rate?: number;         // Speech rate (0.25 to 4.0)
-  pitch?: number;        // Voice pitch (0.0 to 2.0)
-  volume?: number;       // Volume (0.0 to 1.0)
-  voiceName?: string;    // Specific voice name for provider
-  streaming?: boolean;   // Enable streaming for low latency
+  rate?: number; // Speech rate (0.25 to 4.0)
+  pitch?: number; // Voice pitch (0.0 to 2.0)
+  volume?: number; // Volume (0.0 to 1.0)
+  voiceName?: string; // Specific voice name for provider
+  streaming?: boolean; // Enable streaming for low latency
 }
 
 /**
@@ -78,7 +78,7 @@ export interface VoiceSynthesisRequest {
  */
 export interface VoiceSynthesisResponse {
   success: boolean;
-  audioUrl?: string;      // For providers that return audio URLs
+  audioUrl?: string; // For providers that return audio URLs
   audioData?: ArrayBuffer; // For providers that return raw audio
   error?: string;
 }
@@ -88,7 +88,7 @@ export interface VoiceSynthesisResponse {
  * NOTE: Voice cloning is disabled until proper consent workflow is implemented
  */
 export interface VoiceCloneConfig {
-  enabled: false;         // Always false until consent workflow added
+  enabled: false; // Always false until consent workflow added
   consentObtained: false; // Placeholder for consent tracking
   sampleAudioUrl?: string;
   targetVoiceName?: string;

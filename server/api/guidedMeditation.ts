@@ -1,6 +1,5 @@
-
-import type { Request, Response } from "express";
-import { generateElevenLabsSpeech } from "./elevenLabsService";
+import type { Request, Response } from 'express';
+import { generateElevenLabsSpeech } from './elevenLabsService';
 
 const meditationScript = `
 (Sound of gentle, calming music starts and fades into the background)
@@ -65,10 +64,17 @@ export async function handleGuidedMeditation(req: Request, res: Response) {
     if (audioUrl) {
       res.json({ success: true, audioUrl });
     } else {
-      res.status(500).json({ success: false, message: "Failed to generate meditation audio." });
+      res
+        .status(500)
+        .json({
+          success: false,
+          message: 'Failed to generate meditation audio.',
+        });
     }
   } catch (error) {
-    console.error("Error handling guided meditation request:", error);
-    res.status(500).json({ success: false, message: "An internal server error occurred." });
+    console.error('Error handling guided meditation request:', error);
+    res
+      .status(500)
+      .json({ success: false, message: 'An internal server error occurred.' });
   }
 }

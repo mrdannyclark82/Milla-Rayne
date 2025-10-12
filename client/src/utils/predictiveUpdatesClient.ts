@@ -74,7 +74,7 @@ export async function fetchDailySuggestion(): Promise<{
     console.error('Error fetching daily suggestion:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -90,25 +90,25 @@ export async function manualFetchAIUpdates(adminToken?: string): Promise<{
 }> {
   try {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     };
-    
+
     if (adminToken) {
       headers['Authorization'] = `Bearer ${adminToken}`;
     }
 
     const response = await fetch('/api/ai-updates/fetch', {
       method: 'POST',
-      headers
+      headers,
     });
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error manually fetching AI updates:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }

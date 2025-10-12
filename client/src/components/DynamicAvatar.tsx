@@ -19,11 +19,11 @@ interface DynamicAvatarProps {
   fallbackImage?: string;
 }
 
-export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({ 
-  avatarState, 
-  settings, 
+export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
+  avatarState,
+  settings,
   useVideo = false,
-  fallbackImage 
+  fallbackImage,
 }) => {
   // Generate CSS-based avatar representation
   const getAvatarStyles = () => {
@@ -31,9 +31,9 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
       background: getBackgroundStyle(),
       filter: getFilterStyle(),
       transform: getTransformStyle(),
-      animation: getAnimationStyle()
+      animation: getAnimationStyle(),
     };
-    
+
     return baseStyles;
   };
 
@@ -53,9 +53,9 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
   const getFilterStyle = () => {
     const brightness = (settings.lighting / 100) * 1.5 + 0.5; // 0.5 to 2.0
     const glow = settings.glow / 100;
-    
+
     let filter = `brightness(${brightness}) saturate(1.2)`;
-    
+
     // Add state-based filters
     switch (avatarState) {
       case 'thinking':
@@ -68,11 +68,11 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
         filter += ' hue-rotate(60deg) contrast(1.1)';
         break;
     }
-    
+
     if (glow > 0.3) {
       filter += ` drop-shadow(0 0 ${glow * 20}px rgba(255, 255, 255, ${glow * 0.3}))`;
     }
-    
+
     return filter;
   };
 
@@ -91,7 +91,7 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
 
   const getAnimationStyle = () => {
     const baseAnimation = 'gentle-breathing 4s ease-in-out infinite';
-    
+
     switch (settings.expression) {
       case 'playful':
         return `${baseAnimation}, playful-bounce 6s ease-in-out infinite`;
@@ -108,60 +108,79 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
   const renderGeneratedAvatar = () => (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       {/* Background */}
-      <div 
+      <div
         className="absolute inset-0"
         style={{ background: getBackgroundStyle() }}
       />
-      
+
       {/* Avatar representation */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center p-8">
         {/* Face area */}
-        <div 
+        <div
           className="w-32 h-32 rounded-full mb-6 border-4 border-white/20 flex items-center justify-center"
           style={{
-            background: `radial-gradient(circle, ${settings.skinTone === 'fair' ? '#f4c2a1' : settings.skinTone === 'medium' ? '#deb887' : '#8d5524'} 0%, rgba(255,255,255,0.1) 100%)`
+            background: `radial-gradient(circle, ${settings.skinTone === 'fair' ? '#f4c2a1' : settings.skinTone === 'medium' ? '#deb887' : '#8d5524'} 0%, rgba(255,255,255,0.1) 100%)`,
           }}
         >
           {/* Eyes */}
           <div className="flex space-x-4">
-            <div 
+            <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: settings.eyeColor === 'blue' ? '#4169e1' : settings.eyeColor === 'green' ? '#228b22' : '#8b4513' }}
+              style={{
+                backgroundColor:
+                  settings.eyeColor === 'blue'
+                    ? '#4169e1'
+                    : settings.eyeColor === 'green'
+                      ? '#228b22'
+                      : '#8b4513',
+              }}
             />
-            <div 
+            <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: settings.eyeColor === 'blue' ? '#4169e1' : settings.eyeColor === 'green' ? '#228b22' : '#8b4513' }}
+              style={{
+                backgroundColor:
+                  settings.eyeColor === 'blue'
+                    ? '#4169e1'
+                    : settings.eyeColor === 'green'
+                      ? '#228b22'
+                      : '#8b4513',
+              }}
             />
           </div>
         </div>
-        
+
         {/* Hair representation */}
-        <div 
+        <div
           className="absolute top-4 w-36 h-20 rounded-t-full"
-          style={{ 
-            backgroundColor: settings.hairColor === 'blonde' ? '#ffd700' : settings.hairColor === 'brunette' ? '#8b4513' : settings.hairColor === 'auburn' ? '#a52a2a' : '#2f2f2f'
+          style={{
+            backgroundColor:
+              settings.hairColor === 'blonde'
+                ? '#ffd700'
+                : settings.hairColor === 'brunette'
+                  ? '#8b4513'
+                  : settings.hairColor === 'auburn'
+                    ? '#a52a2a'
+                    : '#2f2f2f',
           }}
         />
-        
+
         {/* Name and style info */}
         <div className="text-white/80 mt-8">
           <h3 className="text-xl font-semibold mb-2">Milla Rayne</h3>
           <p className="text-sm opacity-70 capitalize">
             {settings.style} • {settings.expression}
           </p>
-          <p className="text-xs opacity-60 mt-1">
-            {settings.outfit} attire
-          </p>
+          <p className="text-xs opacity-60 mt-1">{settings.outfit} attire</p>
         </div>
       </div>
-      
+
       {/* Glow overlay */}
       {settings.glow > 30 && (
-        <div 
+        <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background: `radial-gradient(circle at center, rgba(255,255,255,${settings.glow / 200}) 0%, transparent 70%)`,
-            animation: 'pulse 3s ease-in-out infinite'
+            animation: 'pulse 3s ease-in-out infinite',
           }}
         />
       )}
@@ -169,7 +188,7 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
   );
 
   return (
-    <div 
+    <div
       className="w-full h-full relative transition-all duration-1000 ease-in-out"
       style={getAvatarStyles()}
       data-testid="dynamic-avatar"
@@ -184,15 +203,20 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
       ) : (
         renderGeneratedAvatar()
       )}
-      
+
       {/* State indicator */}
       <div className="absolute top-4 right-4 z-10">
-        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-          avatarState === 'thinking' ? 'bg-blue-500/20 text-blue-300' :
-          avatarState === 'responding' ? 'bg-green-500/20 text-green-300' :
-          avatarState === 'listening' ? 'bg-yellow-500/20 text-yellow-300' :
-          'bg-purple-500/20 text-purple-300'
-        }`}>
+        <div
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            avatarState === 'thinking'
+              ? 'bg-blue-500/20 text-blue-300'
+              : avatarState === 'responding'
+                ? 'bg-green-500/20 text-green-300'
+                : avatarState === 'listening'
+                  ? 'bg-yellow-500/20 text-yellow-300'
+                  : 'bg-purple-500/20 text-purple-300'
+          }`}
+        >
           {avatarState}
         </div>
       </div>

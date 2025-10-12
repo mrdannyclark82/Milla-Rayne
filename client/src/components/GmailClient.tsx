@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getRecentEmails, getEmailContent, sendEmail } from "@/services/googleGmailService";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  getRecentEmails,
+  getEmailContent,
+  sendEmail,
+} from '@/services/googleGmailService';
 
 export function GmailClient() {
   const [emails, setEmails] = useState<any[]>([]);
@@ -36,7 +40,7 @@ export function GmailClient() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Button onClick={handleFetchEmails} disabled={isLoading}>
-          {isLoading ? "Loading..." : "Fetch Recent Emails"}
+          {isLoading ? 'Loading...' : 'Fetch Recent Emails'}
         </Button>
         <div className="space-y-2">
           {emails.map((email) => (
@@ -54,11 +58,13 @@ export function GmailClient() {
         {selectedEmail && (
           <div className="p-4 bg-black/20 rounded-lg">
             <h3 className="text-lg font-bold text-white mb-2">
-              {selectedEmail.payload.headers.find((h: any) => h.name === 'Subject')?.value}
+              {
+                selectedEmail.payload.headers.find(
+                  (h: any) => h.name === 'Subject'
+                )?.value
+              }
             </h3>
-            <p className="text-sm text-white/80">
-              {selectedEmail.snippet}
-            </p>
+            <p className="text-sm text-white/80">{selectedEmail.snippet}</p>
           </div>
         )}
       </CardContent>

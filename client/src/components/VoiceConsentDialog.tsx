@@ -21,7 +21,8 @@ interface VoiceConsentDialogProps {
 const consentContent = {
   voice_cloning: {
     title: 'Voice Cloning Consent',
-    description: 'Voice cloning technology can create synthetic versions of human voices.',
+    description:
+      'Voice cloning technology can create synthetic versions of human voices.',
     details: [
       'Your voice data will be used to create a personalized voice model',
       'Voice samples may be stored securely for training purposes',
@@ -37,7 +38,8 @@ const consentContent = {
   },
   voice_persona: {
     title: 'Voice Persona Consent',
-    description: 'Voice personas allow customization of AI assistant voice characteristics.',
+    description:
+      'Voice personas allow customization of AI assistant voice characteristics.',
     details: [
       'You can select and customize different voice personas for the assistant',
       'Persona preferences are stored to provide consistent experience',
@@ -51,7 +53,8 @@ const consentContent = {
   },
   voice_synthesis: {
     title: 'Voice Synthesis Consent',
-    description: 'Text-to-speech synthesis enables the assistant to speak responses aloud.',
+    description:
+      'Text-to-speech synthesis enables the assistant to speak responses aloud.',
     details: [
       'The assistant will use text-to-speech to vocalize responses',
       'No recording or storage of your voice occurs',
@@ -119,7 +122,9 @@ export default function VoiceConsentDialog({
           <Alert className="bg-yellow-900/20 border-yellow-500/50">
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
             <AlertDescription className="text-white/80 ml-2">
-              <h4 className="font-semibold text-yellow-400 mb-2">Important Considerations</h4>
+              <h4 className="font-semibold text-yellow-400 mb-2">
+                Important Considerations
+              </h4>
               <ul className="space-y-1 ml-4">
                 {content.risks.map((risk, index) => (
                   <li key={index} className="text-sm list-disc">
@@ -140,11 +145,13 @@ export default function VoiceConsentDialog({
                 className="mt-1 w-4 h-4 rounded border-white/30 bg-white/10 text-blue-500 focus:ring-blue-500 focus:ring-offset-gray-900"
               />
               <span className="text-sm text-white/90">
-                I have read and understood the above information. I consent to the use of{' '}
+                I have read and understood the above information. I consent to
+                the use of{' '}
                 <span className="font-semibold text-blue-400">
                   {consentType.replace('_', ' ')}
                 </span>{' '}
-                features as described. I understand I can revoke this consent at any time from the settings panel.
+                features as described. I understand I can revoke this consent at
+                any time from the settings panel.
               </span>
             </label>
           </div>

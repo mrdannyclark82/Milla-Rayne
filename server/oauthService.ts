@@ -1,6 +1,6 @@
 /**
  * OAUTH SERVICE
- * 
+ *
  * Handles OAuth 2.0 authentication flow for Google services.
  * Manages token storage, refresh, and validation.
  */
@@ -25,12 +25,16 @@ interface GoogleOAuthConfig {
 export function getGoogleOAuthConfig(): GoogleOAuthConfig {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:5000/oauth/callback';
-  
+  const redirectUri =
+    process.env.GOOGLE_OAUTH_REDIRECT_URI ||
+    'http://localhost:5000/oauth/callback';
+
   if (!clientId || !clientSecret) {
-    throw new Error('Google OAuth credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env');
+    throw new Error(
+      'Google OAuth credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env'
+    );
   }
-  
+
   return {
     clientId,
     clientSecret,
@@ -39,8 +43,8 @@ export function getGoogleOAuthConfig(): GoogleOAuthConfig {
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/tasks',
       'profile',
-      'email'
-    ]
+      'email',
+    ],
   };
 }
 
@@ -55,9 +59,9 @@ export function getAuthorizationUrl(): string {
     response_type: 'code',
     scope: config.scope.join(' '),
     access_type: 'offline',
-    prompt: 'consent'
+    prompt: 'consent',
   });
-  
+
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
@@ -71,7 +75,7 @@ export async function exchangeCodeForToken(code: string): Promise<{
   scope: string;
 }> {
   const config = getGoogleOAuthConfig();
-  
+
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
@@ -85,14 +89,14 @@ export async function exchangeCodeForToken(code: string): Promise<{
       grant_type: 'authorization_code',
     }).toString(),
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to exchange code for token: ${error}`);
   }
-  
+
   const data = await response.json();
-  
+
   return {
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
@@ -109,7 +113,7 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   expiresIn: number;
 }> {
   const config = getGoogleOAuthConfig();
-  
+
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
@@ -122,14 +126,14 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
       grant_type: 'refresh_token',
     }).toString(),
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to refresh token: ${error}`);
   }
-  
+
   const data = await response.json();
-  
+
   return {
     accessToken: data.access_token,
     expiresIn: data.expires_in,
@@ -149,13 +153,15 @@ export async function storeOAuthToken(
 ): Promise<void> {
   const { getMemoryKey } = await import('./crypto');
   const memoryKey = getMemoryKey();
-  
+
   // Encrypt sensitive tokens
   const encryptedAccessToken = encrypt(accessToken, memoryKey);
-  const encryptedRefreshToken = refreshToken ? encrypt(refreshToken, memoryKey) : undefined;
-  
+  const encryptedRefreshToken = refreshToken
+    ? encrypt(refreshToken, memoryKey)
+    : undefined;
+
   const expiresAt = new Date(Date.now() + expiresIn * 1000);
-  
+
   const tokenData: InsertOAuthToken = {
     userId,
     provider,
@@ -164,10 +170,10 @@ export async function storeOAuthToken(
     expiresAt,
     scope,
   };
-  
+
   // Check if token already exists for this user and provider
   const existingToken = await getOAuthToken(userId, provider);
-  
+
   if (existingToken) {
     // Update existing token
     await (storage as any).updateOAuthToken(existingToken.id, tokenData);
@@ -197,33 +203,33 @@ export async function getValidAccessToken(
 ): Promise<string | null> {
   const { getMemoryKey } = await import('./crypto');
   const memoryKey = getMemoryKey();
-  
+
   const token = await getOAuthToken(userId, provider);
-  
+
   if (!token) {
     return null;
   }
-  
+
   // Check if token is expired or about to expire (5 min buffer)
   const expiresAt = new Date(token.expiresAt);
   const now = new Date();
   const bufferTime = 5 * 60 * 1000; // 5 minutes
-  
+
   if (expiresAt.getTime() - now.getTime() > bufferTime) {
     // Token is still valid, decrypt and return
     return decrypt(token.accessToken, memoryKey);
   }
-  
+
   // Token expired or about to expire, refresh it
   if (!token.refreshToken) {
     console.error('No refresh token available, user needs to re-authenticate');
     return null;
   }
-  
+
   try {
     const decryptedRefreshToken = decrypt(token.refreshToken, memoryKey);
     const refreshed = await refreshAccessToken(decryptedRefreshToken);
-    
+
     // Update token in storage
     await storeOAuthToken(
       userId,
@@ -233,7 +239,7 @@ export async function getValidAccessToken(
       refreshed.expiresIn,
       token.scope || ''
     );
-    
+
     return refreshed.accessToken;
   } catch (error) {
     console.error('Failed to refresh token:', error);

@@ -1,6 +1,6 @@
 /**
  * GOOGLE TASKS API SERVICE
- * 
+ *
  * Provides Google Tasks API integration using OAuth tokens.
  * Note: Google Keep doesn't have an official API, so we use Tasks API instead.
  * This allows users to create tasks/notes in Google Tasks.
@@ -40,8 +40,9 @@ export async function addNoteToGoogleTasks(
     if (!accessToken) {
       return {
         success: false,
-        message: "You need to connect your Google account first. Please authenticate via the OAuth settings.",
-        error: 'NO_TOKEN'
+        message:
+          'You need to connect your Google account first. Please authenticate via the OAuth settings.',
+        error: 'NO_TOKEN',
       };
     }
 
@@ -51,8 +52,9 @@ export async function addNoteToGoogleTasks(
     if (!taskListId) {
       return {
         success: false,
-        message: "I couldn't access your Google Tasks. Please make sure Tasks API is enabled.",
-        error: 'NO_TASK_LIST'
+        message:
+          "I couldn't access your Google Tasks. Please make sure Tasks API is enabled.",
+        error: 'NO_TASK_LIST',
       };
     }
 
@@ -60,7 +62,7 @@ export async function addNoteToGoogleTasks(
     const task: TaskItem = {
       title: title,
       notes: content,
-      status: 'needsAction'
+      status: 'needsAction',
     };
 
     // Call Google Tasks API to create the task
@@ -69,21 +71,21 @@ export async function addNoteToGoogleTasks(
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(task)
+        body: JSON.stringify(task),
       }
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('[Google Tasks API] Error:', errorData);
-      
+
       return {
         success: false,
         message: `I had trouble adding the task: ${errorData.error?.message || 'Unknown error'}`,
-        error: errorData.error?.message || 'API_ERROR'
+        error: errorData.error?.message || 'API_ERROR',
       };
     }
 
@@ -93,15 +95,14 @@ export async function addNoteToGoogleTasks(
       success: true,
       message: `I've added "${title}" to your Google Tasks`,
       taskId: createdTask.id,
-      taskLink: createdTask.selfLink
+      taskLink: createdTask.selfLink,
     };
-
   } catch (error) {
     console.error('[Google Tasks API] Error adding task:', error);
     return {
       success: false,
       message: `I encountered an error while adding the task: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR'
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
     };
   }
 }
@@ -116,8 +117,8 @@ async function getDefaultTaskList(accessToken: string): Promise<string | null> {
       {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        }
+          Authorization: `Bearer ${accessToken}`,
+        },
       }
     );
 
@@ -127,14 +128,13 @@ async function getDefaultTaskList(accessToken: string): Promise<string | null> {
     }
 
     const data = await response.json();
-    
+
     // Return the first task list (usually "My Tasks")
     if (data.items && data.items.length > 0) {
       return data.items[0].id;
     }
 
     return null;
-
   } catch (error) {
     console.error('[Google Tasks API] Error getting task lists:', error);
     return null;

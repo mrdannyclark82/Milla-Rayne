@@ -1,6 +1,9 @@
 import fetch from 'node-fetch';
 
-export async function queryWolframAlpha(query: string, appId: string): Promise<string | null> {
+export async function queryWolframAlpha(
+  query: string,
+  appId: string
+): Promise<string | null> {
   const endpoint = `https://api.wolframalpha.com/v1/result?i=${encodeURIComponent(query)}&appid=${appId}`;
   try {
     const response = await fetch(endpoint);

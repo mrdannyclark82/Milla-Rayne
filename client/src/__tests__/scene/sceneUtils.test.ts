@@ -3,12 +3,12 @@
  * Tests time-of-day mapping and scene theme generation
  */
 
-import { 
+import {
   getCurrentTimeOfDay,
   getPaletteForTimeOfDay,
   getAccentForAppState,
   generateSceneTheme,
-  prefersReducedMotion
+  prefersReducedMotion,
 } from '@/lib/scene/sceneUtils';
 import type { TimeOfDay, AppState } from '@shared/sceneTypes';
 
@@ -51,7 +51,7 @@ describe('sceneUtils', () => {
       expect(listening).toBeDefined();
       expect(thinking).toBeDefined();
       expect(speaking).toBeDefined();
-      
+
       // All should be unique
       const colors = new Set([idle, listening, thinking, speaking]);
       expect(colors.size).toBe(4);
@@ -71,11 +71,25 @@ describe('sceneUtils', () => {
     });
 
     it('should adjust intensity based on performance mode', () => {
-      const highQuality = generateSceneTheme('day', 'idle', false, 'high-quality');
-      const performance = generateSceneTheme('day', 'idle', false, 'performance');
-      
-      expect(highQuality.animationSpeed).toBeGreaterThanOrEqual(performance.animationSpeed);
-      expect(highQuality.parallaxIntensity).toBeGreaterThanOrEqual(performance.parallaxIntensity);
+      const highQuality = generateSceneTheme(
+        'day',
+        'idle',
+        false,
+        'high-quality'
+      );
+      const performance = generateSceneTheme(
+        'day',
+        'idle',
+        false,
+        'performance'
+      );
+
+      expect(highQuality.animationSpeed).toBeGreaterThanOrEqual(
+        performance.animationSpeed
+      );
+      expect(highQuality.parallaxIntensity).toBeGreaterThanOrEqual(
+        performance.parallaxIntensity
+      );
     });
 
     it('should use app state accent color', () => {

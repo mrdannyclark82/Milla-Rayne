@@ -10,10 +10,14 @@ interface OutdoorsOverlayProps {
   reducedMotion: boolean;
 }
 
-export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({ timeOfDay, reducedMotion }) => {
-  const opacity = timeOfDay === 'night' ? 0.2 : timeOfDay === 'dusk' ? 0.25 : 0.3;
+export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({
+  timeOfDay,
+  reducedMotion,
+}) => {
+  const opacity =
+    timeOfDay === 'night' ? 0.2 : timeOfDay === 'dusk' ? 0.25 : 0.3;
   const showStars = timeOfDay === 'night' || timeOfDay === 'dusk';
-  
+
   // Star positions (fixed, but could twinkle if not reduced motion)
   const stars = [
     { x: 100, y: 80, size: 2 },
@@ -25,7 +29,7 @@ export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({ timeOfDay, red
     { x: 300, y: 110, size: 2.2 },
     { x: 500, y: 130, size: 1.6 },
   ];
-  
+
   return (
     <svg
       viewBox="0 0 800 600"
@@ -36,7 +40,7 @@ export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({ timeOfDay, red
         width: '100%',
         height: '100%',
         opacity,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
       }}
       aria-hidden="true"
     >
@@ -50,13 +54,22 @@ export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({ timeOfDay, red
               cy={star.y}
               r={star.size}
               fill="currentColor"
-              className={reducedMotion ? 'text-white/60' : 'text-white/60 animate-pulse'}
-              style={reducedMotion ? {} : { animationDuration: `${2 + i * 0.3}s`, animationDelay: `${i * 0.2}s` }}
+              className={
+                reducedMotion ? 'text-white/60' : 'text-white/60 animate-pulse'
+              }
+              style={
+                reducedMotion
+                  ? {}
+                  : {
+                      animationDuration: `${2 + i * 0.3}s`,
+                      animationDelay: `${i * 0.2}s`,
+                    }
+              }
             />
           ))}
         </g>
       )}
-      
+
       {/* Treeline silhouette */}
       <g opacity="0.5">
         {/* Tree shapes */}
@@ -76,17 +89,66 @@ export const OutdoorsOverlay: React.FC<OutdoorsOverlayProps> = ({ timeOfDay, red
           className="text-white/38"
         />
       </g>
-      
+
       {/* Porch railing (optional) */}
       <g opacity="0.6">
-        <rect x="0" y="520" width="600" height="8" fill="currentColor" className="text-white/40" />
+        <rect
+          x="0"
+          y="520"
+          width="600"
+          height="8"
+          fill="currentColor"
+          className="text-white/40"
+        />
         {/* Vertical posts */}
-        <rect x="50" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
-        <rect x="150" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
-        <rect x="250" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
-        <rect x="350" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
-        <rect x="450" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
-        <rect x="550" y="480" width="6" height="48" fill="currentColor" className="text-white/35" />
+        <rect
+          x="50"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
+        <rect
+          x="150"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
+        <rect
+          x="250"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
+        <rect
+          x="350"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
+        <rect
+          x="450"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
+        <rect
+          x="550"
+          y="480"
+          width="6"
+          height="48"
+          fill="currentColor"
+          className="text-white/35"
+        />
       </g>
     </svg>
   );

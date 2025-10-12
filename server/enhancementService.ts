@@ -29,11 +29,19 @@ export interface EnhancementImplementationTask {
 
 // Global enhancement tasks storage
 let enhancementTasks: EnhancementImplementationTask[] = [];
-const ENHANCEMENT_TASKS_FILE = join(process.cwd(), 'memory', 'enhancement_tasks.json');
+const ENHANCEMENT_TASKS_FILE = join(
+  process.cwd(),
+  'memory',
+  'enhancement_tasks.json'
+);
 
 // Global installed suggestions storage
 let installedSuggestions: Set<string> = new Set();
-const INSTALLED_SUGGESTIONS_FILE = join(process.cwd(), 'memory', 'installed_suggestions.json');
+const INSTALLED_SUGGESTIONS_FILE = join(
+  process.cwd(),
+  'memory',
+  'installed_suggestions.json'
+);
 
 /**
  * Initialize enhancement task system
@@ -67,7 +75,11 @@ async function loadEnhancementTasks(): Promise<void> {
  */
 async function saveEnhancementTasks(): Promise<void> {
   try {
-    await fs.writeFile(ENHANCEMENT_TASKS_FILE, JSON.stringify(enhancementTasks, null, 2), 'utf-8');
+    await fs.writeFile(
+      ENHANCEMENT_TASKS_FILE,
+      JSON.stringify(enhancementTasks, null, 2),
+      'utf-8'
+    );
   } catch (error) {
     console.error('Error saving enhancement tasks:', error);
     throw error;
@@ -101,8 +113,12 @@ async function saveInstalledSuggestions(): Promise<void> {
     } catch {
       await fs.mkdir(memoryDir, { recursive: true });
     }
-    
-    await fs.writeFile(INSTALLED_SUGGESTIONS_FILE, JSON.stringify([...installedSuggestions], null, 2), 'utf-8');
+
+    await fs.writeFile(
+      INSTALLED_SUGGESTIONS_FILE,
+      JSON.stringify([...installedSuggestions], null, 2),
+      'utf-8'
+    );
   } catch (error) {
     console.error('Error saving installed suggestions:', error);
     throw error;
@@ -112,7 +128,9 @@ async function saveInstalledSuggestions(): Promise<void> {
 /**
  * Mark a suggestion as installed
  */
-export async function markSuggestionAsInstalled(suggestionText: string): Promise<void> {
+export async function markSuggestionAsInstalled(
+  suggestionText: string
+): Promise<void> {
   // Create a normalized version of the suggestion text for consistent tracking
   const normalizedText = suggestionText.trim().toLowerCase();
   installedSuggestions.add(normalizedText);
@@ -143,13 +161,14 @@ export async function createEnhancementImplementationTask(params: {
   suggestionIndex?: number;
 }): Promise<EnhancementImplementationTask> {
   const { suggestionId, suggestionText, suggestionIndex } = params;
-  
+
   // Mark this suggestion as installed
   await markSuggestionAsInstalled(suggestionText);
-  
+
   // Generate implementation details based on suggestion content
-  const implementationDetails = await generateImplementationDetails(suggestionText);
-  
+  const implementationDetails =
+    await generateImplementationDetails(suggestionText);
+
   const newTask: EnhancementImplementationTask = {
     id: `enhancement-${Date.now()}`,
     type: 'enhancement_implementation',
@@ -166,13 +185,13 @@ export async function createEnhancementImplementationTask(params: {
     progress: {
       completedSteps: 0,
       totalSteps: implementationDetails.steps.length,
-      currentStep: implementationDetails.steps[0]
-    }
+      currentStep: implementationDetails.steps[0],
+    },
   };
 
   enhancementTasks.push(newTask);
   await saveEnhancementTasks();
-  
+
   console.log(`Created enhancement implementation task: ${newTask.title}`);
   return newTask;
 }
@@ -187,8 +206,11 @@ export function getEnhancementTasks(): EnhancementImplementationTask[] {
 /**
  * Update an enhancement task
  */
-export async function updateEnhancementTask(taskId: string, updates: Partial<EnhancementImplementationTask>): Promise<EnhancementImplementationTask | null> {
-  const taskIndex = enhancementTasks.findIndex(task => task.id === taskId);
+export async function updateEnhancementTask(
+  taskId: string,
+  updates: Partial<EnhancementImplementationTask>
+): Promise<EnhancementImplementationTask | null> {
+  const taskIndex = enhancementTasks.findIndex((task) => task.id === taskId);
   if (taskIndex === -1) {
     return null;
   }
@@ -208,123 +230,143 @@ async function generateImplementationDetails(suggestionText: string): Promise<{
   estimatedDuration: string;
 }> {
   const suggestion = suggestionText.toLowerCase();
-  
+
   // Authentication system
-  if (suggestion.includes('authentication') || suggestion.includes('user') || suggestion.includes('login')) {
+  if (
+    suggestion.includes('authentication') ||
+    suggestion.includes('user') ||
+    suggestion.includes('login')
+  ) {
     return {
-      type: "Authentication System",
+      type: 'Authentication System',
       files: [
-        "server/auth/authService.ts",
-        "server/auth/userModel.ts", 
-        "client/src/components/auth/LoginForm.tsx",
-        "client/src/components/auth/RegisterForm.tsx"
+        'server/auth/authService.ts',
+        'server/auth/userModel.ts',
+        'client/src/components/auth/LoginForm.tsx',
+        'client/src/components/auth/RegisterForm.tsx',
       ],
       steps: [
-        "Set up user database schema",
-        "Implement JWT token authentication",
-        "Create login and registration components",
-        "Add protected routes and middleware",
-        "Integrate with existing memory system"
+        'Set up user database schema',
+        'Implement JWT token authentication',
+        'Create login and registration components',
+        'Add protected routes and middleware',
+        'Integrate with existing memory system',
       ],
-      estimatedDuration: "2-3 days"
+      estimatedDuration: '2-3 days',
     };
   }
-  
+
   // Voice chat capabilities
-  if (suggestion.includes('voice') || suggestion.includes('speech') || suggestion.includes('audio')) {
+  if (
+    suggestion.includes('voice') ||
+    suggestion.includes('speech') ||
+    suggestion.includes('audio')
+  ) {
     return {
-      type: "Voice Chat System",
+      type: 'Voice Chat System',
       files: [
-        "client/src/services/speechService.ts",
-        "client/src/components/VoiceChat.tsx",
-        "server/audio/audioProcessor.ts"
+        'client/src/services/speechService.ts',
+        'client/src/components/VoiceChat.tsx',
+        'server/audio/audioProcessor.ts',
       ],
       steps: [
-        "Implement Web Speech API integration",
-        "Add voice recognition components",
-        "Create audio processing pipeline",
-        "Add voice response generation",
-        "Integrate with existing chat system"
+        'Implement Web Speech API integration',
+        'Add voice recognition components',
+        'Create audio processing pipeline',
+        'Add voice response generation',
+        'Integrate with existing chat system',
       ],
-      estimatedDuration: "3-4 days"
+      estimatedDuration: '3-4 days',
     };
   }
-  
+
   // PWA features
-  if (suggestion.includes('pwa') || suggestion.includes('mobile') || suggestion.includes('offline')) {
+  if (
+    suggestion.includes('pwa') ||
+    suggestion.includes('mobile') ||
+    suggestion.includes('offline')
+  ) {
     return {
-      type: "Progressive Web App",
+      type: 'Progressive Web App',
       files: [
-        "client/public/manifest.json",
-        "client/src/serviceWorker.ts",
-        "client/src/hooks/useOfflineSync.ts"
+        'client/public/manifest.json',
+        'client/src/serviceWorker.ts',
+        'client/src/hooks/useOfflineSync.ts',
       ],
       steps: [
-        "Create PWA manifest file",
-        "Implement service worker for caching",
-        "Add offline data synchronization",
-        "Enable push notifications",
-        "Optimize for mobile devices"
+        'Create PWA manifest file',
+        'Implement service worker for caching',
+        'Add offline data synchronization',
+        'Enable push notifications',
+        'Optimize for mobile devices',
       ],
-      estimatedDuration: "1-2 days"
+      estimatedDuration: '1-2 days',
     };
   }
-  
-  // Calendar integration  
-  if (suggestion.includes('calendar') || suggestion.includes('scheduling') || suggestion.includes('meeting')) {
+
+  // Calendar integration
+  if (
+    suggestion.includes('calendar') ||
+    suggestion.includes('scheduling') ||
+    suggestion.includes('meeting')
+  ) {
     return {
-      type: "Calendar Integration",
+      type: 'Calendar Integration',
       files: [
-        "client/src/components/Calendar.tsx",
-        "server/calendar/calendarService.ts",
-        "shared/types/calendar.ts"
+        'client/src/components/Calendar.tsx',
+        'server/calendar/calendarService.ts',
+        'shared/types/calendar.ts',
       ],
       steps: [
-        "Create calendar UI components", 
-        "Implement event management system",
-        "Add scheduling conflict detection",
-        "Integrate with AI for meeting summaries",
-        "Add notification system"
+        'Create calendar UI components',
+        'Implement event management system',
+        'Add scheduling conflict detection',
+        'Integrate with AI for meeting summaries',
+        'Add notification system',
       ],
-      estimatedDuration: "2-3 days"
+      estimatedDuration: '2-3 days',
     };
   }
-  
+
   // Data export/import
-  if (suggestion.includes('export') || suggestion.includes('import') || suggestion.includes('backup')) {
+  if (
+    suggestion.includes('export') ||
+    suggestion.includes('import') ||
+    suggestion.includes('backup')
+  ) {
     return {
-      type: "Data Management System",
+      type: 'Data Management System',
       files: [
-        "server/export/dataExporter.ts",
-        "server/import/dataImporter.ts",
-        "client/src/components/DataManagement.tsx"
+        'server/export/dataExporter.ts',
+        'server/import/dataImporter.ts',
+        'client/src/components/DataManagement.tsx',
       ],
       steps: [
-        "Implement data export functionality",
-        "Create import validation system",
-        "Add cloud backup integration",
-        "Build data management UI",
-        "Add data migration tools"
+        'Implement data export functionality',
+        'Create import validation system',
+        'Add cloud backup integration',
+        'Build data management UI',
+        'Add data migration tools',
       ],
-      estimatedDuration: "1-2 days"
+      estimatedDuration: '1-2 days',
     };
   }
-  
+
   // Default implementation for other suggestions
   return {
-    type: "Custom Enhancement",
+    type: 'Custom Enhancement',
     files: [
-      "server/enhancements/customEnhancement.ts",
-      "client/src/components/CustomFeature.tsx"
+      'server/enhancements/customEnhancement.ts',
+      'client/src/components/CustomFeature.tsx',
     ],
     steps: [
-      "Analyze enhancement requirements",
-      "Design system architecture",
-      "Implement core functionality",
-      "Create user interface components",
-      "Test and integrate with existing system"
+      'Analyze enhancement requirements',
+      'Design system architecture',
+      'Implement core functionality',
+      'Create user interface components',
+      'Test and integrate with existing system',
     ],
-    estimatedDuration: "1-3 days"
+    estimatedDuration: '1-3 days',
   };
 }
 
@@ -333,17 +375,25 @@ async function generateImplementationDetails(suggestionText: string): Promise<{
  */
 function determinePriority(suggestionText: string): 'low' | 'medium' | 'high' {
   const suggestion = suggestionText.toLowerCase();
-  
+
   // High priority suggestions
-  if (suggestion.includes('authentication') || suggestion.includes('security') || suggestion.includes('backup')) {
+  if (
+    suggestion.includes('authentication') ||
+    suggestion.includes('security') ||
+    suggestion.includes('backup')
+  ) {
     return 'high';
   }
-  
-  // Medium priority suggestions  
-  if (suggestion.includes('user') || suggestion.includes('mobile') || suggestion.includes('performance')) {
+
+  // Medium priority suggestions
+  if (
+    suggestion.includes('user') ||
+    suggestion.includes('mobile') ||
+    suggestion.includes('performance')
+  ) {
     return 'medium';
   }
-  
+
   // Default to low priority
   return 'low';
 }
@@ -362,16 +412,16 @@ function parseEstimatedTime(duration: string): number {
       return avgDays * 8 * 60; // 8 hours per day * 60 minutes
     }
   }
-  
+
   if (duration.includes('hour')) {
     const match = duration.match(/(\d+)(?:-(\d+))?\s*hour/);
     if (match) {
       const min = parseInt(match[1]);
       const max = match[2] ? parseInt(match[2]) : min;
-      return (min + max) / 2 * 60;
+      return ((min + max) / 2) * 60;
     }
   }
-  
+
   // Default to 4 hours (240 minutes)
   return 240;
 }

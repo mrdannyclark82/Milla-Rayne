@@ -22,13 +22,13 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
   const {
     enabled = true,
     pollingInterval = 1000,
-    backgroundInterval = 5000
+    backgroundInterval = 5000,
   } = options;
 
   const [sceneData, setSceneData] = useState<RPSceneData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  
+
   const intervalRef = useRef<number | null>(null);
   const isVisibleRef = useRef(true);
 
@@ -49,7 +49,7 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
       if (!response.ok) {
         throw new Error(`Failed to fetch scene: ${response.statusText}`);
       }
-      
+
       const data: RPSceneData = await response.json();
       setSceneData(data);
       setError(null);
@@ -64,9 +64,11 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
   // Start polling with dynamic interval based on visibility
   const startPolling = () => {
     stopPolling(); // Clear any existing interval
-    
-    const currentInterval = isVisibleRef.current ? pollingInterval : backgroundInterval;
-    
+
+    const currentInterval = isVisibleRef.current
+      ? pollingInterval
+      : backgroundInterval;
+
     intervalRef.current = window.setInterval(fetchScene, currentInterval);
   };
 
@@ -76,7 +78,7 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
 
     const handleVisibilityChange = () => {
       isVisibleRef.current = !document.hidden;
-      
+
       // Restart polling with new interval when visibility changes
       if (enabled) {
         startPolling();
@@ -84,7 +86,7 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
@@ -101,7 +103,7 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
 
     // Initial fetch
     fetchScene();
-    
+
     // Start polling
     startPolling();
 
@@ -113,6 +115,6 @@ export function useRPScene(options: UseRPSceneOptions = {}) {
     sceneData,
     isLoading,
     error,
-    refetch: fetchScene
+    refetch: fetchScene,
   };
 }

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { voiceService } from '@/services/voiceService';
 import { Button } from '@/components/ui/button';
@@ -8,20 +7,32 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
-import { getPredictiveUpdatesEnabled, fetchDailySuggestion } from '@/utils/predictiveUpdatesClient';
-import type { AppState, PerformanceMode, WeatherEffect, SceneLocationKey } from '@shared/sceneTypes';
+import {
+  getPredictiveUpdatesEnabled,
+  fetchDailySuggestion,
+} from '@/utils/predictiveUpdatesClient';
+import type {
+  AppState,
+  PerformanceMode,
+  WeatherEffect,
+  SceneLocationKey,
+} from '@shared/sceneTypes';
 import { FloatingInput } from '@/components/FloatingInput';
 import { GuidedMeditation } from '@/components/GuidedMeditation'; // Import the new component
 
 function App() {
   console.log('App render start');
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [messages, setMessages] = useState<
+    Array<{ role: 'user' | 'assistant'; content: string }>
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-import { ElevenLabsVoice } from '@/types/elevenLabs';
-  const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(null);
+  import { ElevenLabsVoice } from '@/types/elevenLabs';
+  const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(
+    null
+  );
   const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [voicePitch, setVoicePitch] = useState(1.0);
@@ -32,10 +43,11 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
   const [lastMessage, setLastMessage] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = React.useRef<any>(null);
-  
+
   const [location, setLocation] = useState<SceneLocationKey>('living_room');
   const [weatherEffect, setWeatherEffect] = useState<WeatherEffect>('none');
-  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
+  const [performanceMode, setPerformanceMode] =
+    useState<PerformanceMode>('balanced');
 
   useNeutralizeLegacyBackground();
 
@@ -47,20 +59,27 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
           if (result.success) {
             console.log('Daily suggestion fetched:', result.suggestion);
           } else {
-            console.log('No daily suggestion available or error:', result.error);
+            console.log(
+              'No daily suggestion available or error:',
+              result.error
+            );
           }
         } catch (error) {
           console.error('Error fetching daily suggestion on load:', error);
         }
       }
     };
-    
+
     fetchOnLoad();
   }, []);
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+      setIsMobile(
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        )
+      );
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -83,7 +102,9 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
 
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
@@ -111,7 +132,7 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
 
     const userMessage = message;
     setMessage('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
     try {
@@ -125,7 +146,10 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
 
       const data = await response.json();
       const assistantMessage = data.response;
-      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: assistantMessage },
+      ]);
 
       if (data.sceneContext) {
         if (data.sceneContext.location) {
@@ -158,7 +182,7 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
     });
     setLastMessage(text);
   };
-  
+
   const toggleListening = () => {
     if (isListening) {
       recognitionRef.current?.stop();
@@ -175,7 +199,7 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
     return 'idle';
   }, [isListening, isLoading, isSpeaking]);
 
-  const getButtonSize = (): "default" | "sm" => "sm";
+  const getButtonSize = (): 'default' | 'sm' => 'sm';
 
   return (
     <SceneProvider
@@ -185,7 +209,7 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
       performanceMode={performanceMode}
     >
       <div className="min-h-screen">
-        <div 
+        <div
           className="w-1/3 h-screen p-6 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-sm border-l border-white/10"
           style={{ position: 'fixed', top: 0, right: 0, zIndex: 10 }}
         >
@@ -193,18 +217,18 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
             <div className="flex gap-2 justify-between items-center flex-shrink-0">
               <Button
                 onClick={() => setVoiceEnabled(!voiceEnabled)}
-                variant={voiceEnabled ? "default" : "outline"}
+                variant={voiceEnabled ? 'default' : 'outline'}
                 size={getButtonSize()}
                 aria-pressed={voiceEnabled}
                 className="flex-1"
               >
                 {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
               </Button>
-              
+
               {!isMobile && (
                 <Button
                   onClick={toggleListening}
-                  variant={isListening ? "default" : "outline"}
+                  variant={isListening ? 'default' : 'outline'}
                   size={getButtonSize()}
                   disabled={isLoading}
                   className={`flex-1 ${isListening ? 'animate-pulse' : ''}`}
@@ -213,7 +237,7 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
                   {isListening ? '🎤 Listening...' : '🎙️ Speak'}
                 </Button>
               )}
-              
+
               <UnifiedSettingsMenu
                 getButtonSize={getButtonSize}
                 setShowVoicePicker={setShowVoicePicker}
@@ -228,7 +252,11 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
               />
             </div>
 
-            <VoiceVisualizer isListening={isListening} isSpeaking={isSpeaking} className="h-16 flex-shrink-0" />
+            <VoiceVisualizer
+              isListening={isListening}
+              isSpeaking={isSpeaking}
+              className="h-16 flex-shrink-0"
+            />
 
             <VoiceControls
               isSpeaking={isSpeaking}
@@ -245,11 +273,18 @@ import { ElevenLabsVoice } from '@/types/elevenLabs';
 
             <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-gray-900/80 backdrop-blur-sm rounded-lg border border-gray-700/60 shadow-inner">
               {messages.length === 0 ? (
-                <p className="text-gray-400 text-center">Start a conversation with Milla...</p>
+                <p className="text-gray-400 text-center">
+                  Start a conversation with Milla...
+                </p>
               ) : (
                 messages.map((msg, idx) => (
-                  <div key={idx} className={`p-3 rounded-lg shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600/90 ml-auto max-w-[85%]' : 'bg-gray-700/90 mr-auto max-w-[85%]'}`}>
-                    <p className="text-sm font-semibold mb-1 text-gray-300">{msg.role === 'user' ? 'You' : 'Milla'}</p>
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-lg shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600/90 ml-auto max-w-[85%]' : 'bg-gray-700/90 mr-auto max-w-[85%]'}`}
+                  >
+                    <p className="text-sm font-semibold mb-1 text-gray-300">
+                      {msg.role === 'user' ? 'You' : 'Milla'}
+                    </p>
                     <p className="text-sm">{msg.content}</p>
                   </div>
                 ))

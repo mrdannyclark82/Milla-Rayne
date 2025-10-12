@@ -1,4 +1,3 @@
-
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { registerRoutes } from '../routes';
 import express from 'express';
@@ -35,6 +34,8 @@ describe('Chat API', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('response');
-    expect(response.body.response).toContain("I don't have any new AI updates to share right now, sweetheart.");
+    expect(response.body.response).toContain(
+      "I don't have any new AI updates to share right now, sweetheart."
+    );
   });
 });

@@ -1,13 +1,18 @@
-export type SceneMood = 'calm' | 'energetic' | 'romantic' | 'mysterious' | 'playful';
+export type SceneMood =
+  | 'calm'
+  | 'energetic'
+  | 'romantic'
+  | 'mysterious'
+  | 'playful';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type AvatarState = 'neutral' | 'thinking' | 'responding' | 'listening';
 export type ParticleType = 'stars' | 'sparkles' | 'hearts' | 'petals' | 'mist';
 
 // Role-play scene locations (Phase 3)
-export type SceneLocation = 
-  | 'living_room' 
-  | 'bedroom' 
-  | 'kitchen' 
+export type SceneLocation =
+  | 'living_room'
+  | 'bedroom'
+  | 'kitchen'
   | 'bathroom'
   | 'front_door'
   | 'dining_room'

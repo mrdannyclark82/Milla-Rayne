@@ -1,11 +1,11 @@
 /**
  * UnifiedSettingsMenu - Consolidated settings dropdown
- * 
+ *
  * Provides a single settings icon that opens a menu with:
  * - Scene Settings
  * - Voice Settings
  * - Developer Mode
- * 
+ *
  * This keeps the UI clean and uncluttered.
  */
 
@@ -33,13 +33,13 @@ interface UnifiedSettingsMenuProps {
   onVoicePitchChange: (pitch: number) => void;
   voiceVolume: number;
   onVoiceVolumeChange: (volume: number) => void;
-  getButtonSize: () => "default" | "sm";
+  getButtonSize: () => 'default' | 'sm';
   setShowVoicePicker: (show: boolean) => void;
 }
 
 export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
   getButtonSize,
-  setShowVoicePicker
+  setShowVoicePicker,
 }) => {
   return (
     <DropdownMenu>
@@ -55,8 +55,8 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
           Settings
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className="w-56 bg-black/90 backdrop-blur-md border border-white/20 text-white"
       >
         <SceneSettingsDialog>
@@ -68,7 +68,7 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
             Scene Settings
           </DropdownMenuItem>
         </SceneSettingsDialog>
-        
+
         <DropdownMenuItem
           onClick={() => setShowVoicePicker(true)}
           className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
@@ -76,7 +76,7 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
           <i className="fas fa-microphone mr-2 text-blue-400"></i>
           Voice Settings
         </DropdownMenuItem>
-        
+
         <DeveloperModeToggle>
           <DropdownMenuItem
             onSelect={(e) => e.preventDefault()}

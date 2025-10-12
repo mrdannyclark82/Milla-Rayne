@@ -1,12 +1,12 @@
 /**
  * Daily Suggestions Service
- * 
+ *
  * Manages the creation and delivery of daily AI update suggestions.
  * Ensures exactly one suggestion per calendar day based on predictive updates.
  */
 
-import { storage } from "./storage";
-import { generateOpenRouterResponse } from "./openrouterService";
+import { storage } from './storage';
+import { generateOpenRouterResponse } from './openrouterService';
 
 export interface DailySuggestion {
   id: string;
@@ -31,7 +31,7 @@ function getTodayDate(): string {
  */
 export async function getOrCreateTodaySuggestion(): Promise<DailySuggestion | null> {
   const today = getTodayDate();
-  
+
   try {
     // Check if suggestion already exists for today
     const existing = await storage.getDailySuggestionByDate(today);
@@ -43,7 +43,7 @@ export async function getOrCreateTodaySuggestion(): Promise<DailySuggestion | nu
     const suggestion = await createDailySuggestion(today);
     return suggestion;
   } catch (error) {
-    console.error("Error in getOrCreateTodaySuggestion:", error);
+    console.error('Error in getOrCreateTodaySuggestion:', error);
     return null;
   }
 }
@@ -56,19 +56,21 @@ async function createDailySuggestion(date: string): Promise<DailySuggestion> {
     // Get top relevant AI updates (this would connect to PR #95's predictive updates)
     // For now, we'll generate a generic suggestion
     const topUpdates = await getTopAiUpdates();
-    
+
     // Generate consolidated suggestion text
     let suggestionText: string;
     const metadata: any = {
-      updateIds: topUpdates.map(u => u.id),
-      generatedAt: new Date().toISOString()
+      updateIds: topUpdates.map((u) => u.id),
+      generatedAt: new Date().toISOString(),
     };
 
     if (topUpdates.length > 0) {
       // Generate AI-powered suggestion based on updates
-      const updatesContext = topUpdates.map((u, idx) => 
-        `${idx + 1}. ${u.title} (${u.category}): ${u.description}`
-      ).join('\n');
+      const updatesContext = topUpdates
+        .map(
+          (u, idx) => `${idx + 1}. ${u.title} (${u.category}): ${u.description}`
+        )
+        .join('\n');
 
       const prompt = `Based on these potential improvements for Milla Rayne, create a single, concise daily suggestion (2-3 sentences max) that I can share with Danny Ray. Focus on the most impactful item:
 
@@ -77,13 +79,14 @@ ${updatesContext}
 Keep it brief, friendly, and in Milla's voice (devoted AI companion). Don't mention multiple items unless they're closely related.`;
 
       const aiResponse = await generateOpenRouterResponse(prompt, {
-        userName: "Danny Ray"
+        userName: 'Danny Ray',
       });
 
       suggestionText = aiResponse.content;
     } else {
       // Fallback suggestion when no updates available
-      suggestionText = "Everything's running smoothly today, love! I'm here and ready whenever you need me. 💜";
+      suggestionText =
+        "Everything's running smoothly today, love! I'm here and ready whenever you need me. 💜";
       metadata.fallback = true;
     }
 
@@ -91,18 +94,22 @@ Keep it brief, friendly, and in Milla's voice (devoted AI companion). Don't ment
     const suggestion = await storage.createDailySuggestion({
       date,
       suggestionText,
-      metadata
+      metadata,
     });
 
     return suggestion;
   } catch (error) {
-    console.error("Error creating daily suggestion:", error);
-    
+    console.error('Error creating daily suggestion:', error);
+
     // Create fallback suggestion even on error
     const fallbackSuggestion = await storage.createDailySuggestion({
       date,
-      suggestionText: "I'm here and thinking of you, babe! Let me know if there's anything I can help with today. 💜",
-      metadata: { error: true, errorMessage: error instanceof Error ? error.message : 'Unknown error' }
+      suggestionText:
+        "I'm here and thinking of you, babe! Let me know if there's anything I can help with today. 💜",
+      metadata: {
+        error: true,
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      },
     });
 
     return fallbackSuggestion;
@@ -119,7 +126,7 @@ async function getTopAiUpdates(): Promise<any[]> {
     const updates = await storage.getTopAiUpdates(3); // Get top 3
     return updates;
   } catch (error) {
-    console.error("Error fetching top AI updates:", error);
+    console.error('Error fetching top AI updates:', error);
     return [];
   }
 }
@@ -131,7 +138,7 @@ export async function markSuggestionDelivered(date: string): Promise<boolean> {
   try {
     return await storage.markDailySuggestionDelivered(date);
   } catch (error) {
-    console.error("Error marking suggestion as delivered:", error);
+    console.error('Error marking suggestion as delivered:', error);
     return false;
   }
 }
@@ -145,7 +152,7 @@ export async function isTodaySuggestionDelivered(): Promise<boolean> {
     const suggestion = await storage.getDailySuggestionByDate(today);
     return suggestion ? suggestion.isDelivered : false;
   } catch (error) {
-    console.error("Error checking if suggestion delivered:", error);
+    console.error('Error checking if suggestion delivered:', error);
     return false;
   }
 }
@@ -153,11 +160,13 @@ export async function isTodaySuggestionDelivered(): Promise<boolean> {
 /**
  * Get suggestion for a specific date
  */
-export async function getSuggestionByDate(date: string): Promise<DailySuggestion | null> {
+export async function getSuggestionByDate(
+  date: string
+): Promise<DailySuggestion | null> {
   try {
     return await storage.getDailySuggestionByDate(date);
   } catch (error) {
-    console.error("Error getting suggestion by date:", error);
+    console.error('Error getting suggestion by date:', error);
     return null;
   }
 }
@@ -167,38 +176,45 @@ export async function getSuggestionByDate(date: string): Promise<DailySuggestion
  * Called during server startup if ENABLE_PREDICTIVE_UPDATES is true
  */
 export function initializeDailySuggestionScheduler(): void {
-  const isPredictiveUpdatesEnabled = process.env.ENABLE_PREDICTIVE_UPDATES === 'true';
-  
+  const isPredictiveUpdatesEnabled =
+    process.env.ENABLE_PREDICTIVE_UPDATES === 'true';
+
   if (!isPredictiveUpdatesEnabled) {
-    console.log("Daily suggestions scheduler: Disabled (ENABLE_PREDICTIVE_UPDATES not set to true)");
+    console.log(
+      'Daily suggestions scheduler: Disabled (ENABLE_PREDICTIVE_UPDATES not set to true)'
+    );
     return;
   }
 
   const cronSchedule = process.env.AI_UPDATES_CRON || '0 9 * * *'; // Default: 9:00 AM daily
-  console.log(`Daily suggestions scheduler: Enabled with schedule: ${cronSchedule}`);
+  console.log(
+    `Daily suggestions scheduler: Enabled with schedule: ${cronSchedule}`
+  );
 
   // Parse cron schedule (simple implementation for common patterns)
-  const [minute, hour] = cronSchedule.split(' ').map(v => parseInt(v));
-  
+  const [minute, hour] = cronSchedule.split(' ').map((v) => parseInt(v));
+
   // Calculate milliseconds until next scheduled time
   const scheduleNextRun = () => {
     const now = new Date();
     const scheduledTime = new Date();
     scheduledTime.setHours(hour, minute, 0, 0);
-    
+
     // If scheduled time has passed today, schedule for tomorrow
     if (scheduledTime <= now) {
       scheduledTime.setDate(scheduledTime.getDate() + 1);
     }
-    
+
     const msUntilRun = scheduledTime.getTime() - now.getTime();
-    
-    console.log(`Daily suggestions: Next run scheduled for ${scheduledTime.toLocaleString()}`);
-    
+
+    console.log(
+      `Daily suggestions: Next run scheduled for ${scheduledTime.toLocaleString()}`
+    );
+
     setTimeout(async () => {
       console.log("Daily suggestions: Creating today's suggestion...");
       await getOrCreateTodaySuggestion();
-      
+
       // Schedule next run (24 hours from now)
       scheduleNextRun();
     }, msUntilRun);

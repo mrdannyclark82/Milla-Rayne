@@ -52,7 +52,11 @@ async function loadUserTasks(): Promise<void> {
  */
 async function saveUserTasks(): Promise<void> {
   try {
-    await fs.writeFile(USER_TASKS_FILE, JSON.stringify(userTasks, null, 2), 'utf-8');
+    await fs.writeFile(
+      USER_TASKS_FILE,
+      JSON.stringify(userTasks, null, 2),
+      'utf-8'
+    );
   } catch (error) {
     console.error('Error saving user tasks:', error);
     throw error;
@@ -65,7 +69,7 @@ async function saveUserTasks(): Promise<void> {
 export function getUserTasks(): UserTask[] {
   // Update overdue status
   const now = new Date();
-  userTasks.forEach(task => {
+  userTasks.forEach((task) => {
     if (task.status === 'pending' && new Date(task.dueDate) < now) {
       task.status = 'overdue';
     }
@@ -76,12 +80,14 @@ export function getUserTasks(): UserTask[] {
 /**
  * Create a new user task
  */
-export async function createUserTask(taskData: Omit<UserTask, 'id' | 'createdAt'>): Promise<UserTask> {
+export async function createUserTask(
+  taskData: Omit<UserTask, 'id' | 'createdAt'>
+): Promise<UserTask> {
   const newTask: UserTask = {
     ...taskData,
     id: Date.now().toString(),
     createdAt: new Date().toISOString(),
-    status: 'pending'
+    status: 'pending',
   };
 
   userTasks.push(newTask);
@@ -92,8 +98,11 @@ export async function createUserTask(taskData: Omit<UserTask, 'id' | 'createdAt'
 /**
  * Update an existing user task
  */
-export async function updateUserTask(taskId: string, updates: Partial<UserTask>): Promise<UserTask | null> {
-  const taskIndex = userTasks.findIndex(task => task.id === taskId);
+export async function updateUserTask(
+  taskId: string,
+  updates: Partial<UserTask>
+): Promise<UserTask | null> {
+  const taskIndex = userTasks.findIndex((task) => task.id === taskId);
   if (taskIndex === -1) {
     return null;
   }
@@ -108,8 +117,8 @@ export async function updateUserTask(taskId: string, updates: Partial<UserTask>)
  */
 export async function deleteUserTask(taskId: string): Promise<boolean> {
   const initialLength = userTasks.length;
-  userTasks = userTasks.filter(task => task.id !== taskId);
-  
+  userTasks = userTasks.filter((task) => task.id !== taskId);
+
   if (userTasks.length < initialLength) {
     await saveUserTasks();
     return true;
@@ -122,14 +131,20 @@ export async function deleteUserTask(taskId: string): Promise<boolean> {
  */
 export function getTasksNeedingNotification(): UserTask[] {
   const now = new Date();
-  return userTasks.filter(task => {
-    if (!task.notifications.enabled || task.status !== 'pending' || !task.dueTime) {
+  return userTasks.filter((task) => {
+    if (
+      !task.notifications.enabled ||
+      task.status !== 'pending' ||
+      !task.dueTime
+    ) {
       return false;
     }
 
     const taskDateTime = new Date(`${task.dueDate} ${task.dueTime}`);
-    const reminderTime = new Date(taskDateTime.getTime() - (task.notifications.reminderMinutes * 60000));
-    
+    const reminderTime = new Date(
+      taskDateTime.getTime() - task.notifications.reminderMinutes * 60000
+    );
+
     return now >= reminderTime && now < taskDateTime;
   });
 }
@@ -139,10 +154,16 @@ export function getTasksNeedingNotification(): UserTask[] {
  */
 export function getUpcomingTasks(days: number = 7): UserTask[] {
   const now = new Date();
-  const futureDate = new Date(now.getTime() + (days * 24 * 60 * 60 * 1000));
-  
-  return userTasks.filter(task => {
-    const taskDate = new Date(task.dueDate);
-    return task.status === 'pending' && taskDate >= now && taskDate <= futureDate;
-  }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  const futureDate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+  return userTasks
+    .filter((task) => {
+      const taskDate = new Date(task.dueDate);
+      return (
+        task.status === 'pending' && taskDate >= now && taskDate <= futureDate
+      );
+    })
+    .sort(
+      (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+    );
 }

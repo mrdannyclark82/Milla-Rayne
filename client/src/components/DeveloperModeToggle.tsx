@@ -1,28 +1,38 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   getPredictiveUpdatesEnabled,
   setPredictiveUpdatesEnabled,
   getDailySuggestionsEnabled,
   setDailySuggestionsEnabled,
   fetchDailySuggestion,
-  manualFetchAIUpdates
-} from "@/utils/predictiveUpdatesClient";
+  manualFetchAIUpdates,
+} from '@/utils/predictiveUpdatesClient';
 
 interface DeveloperModeToggleProps {
   children?: React.ReactNode;
 }
 
-export default function DeveloperModeToggle({ children }: DeveloperModeToggleProps) {
+export default function DeveloperModeToggle({
+  children,
+}: DeveloperModeToggleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const [isDeveloperModeLoading, setIsDeveloperModeLoading] = useState(false);
-  
+
   // Predictive Updates state
-  const [predictiveUpdatesEnabled, setPredictiveUpdatesEnabledState] = useState(false);
-  const [dailySuggestionsEnabled, setDailySuggestionsEnabledState] = useState(false);
+  const [predictiveUpdatesEnabled, setPredictiveUpdatesEnabledState] =
+    useState(false);
+  const [dailySuggestionsEnabled, setDailySuggestionsEnabledState] =
+    useState(false);
   const [isFetchingUpdates, setIsFetchingUpdates] = useState(false);
 
   // Fetch developer mode status when panel opens
@@ -74,10 +84,12 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
     const newState = !predictiveUpdatesEnabled;
     setPredictiveUpdatesEnabled(newState);
     setPredictiveUpdatesEnabledState(newState);
-    
+
     // If enabled, fetch daily suggestion on next app load
     if (newState) {
-      console.log('Predictive updates enabled - will fetch suggestions on app load');
+      console.log(
+        'Predictive updates enabled - will fetch suggestions on app load'
+      );
     }
   };
 
@@ -108,9 +120,7 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] bg-black/90 backdrop-blur-md border border-white/20 text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
@@ -130,9 +140,11 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-white/70 mb-3">
-                Enable Developer Mode to allow Milla to automatically discuss repository analysis, code improvements, and development features during conversations.
+                Enable Developer Mode to allow Milla to automatically discuss
+                repository analysis, code improvements, and development features
+                during conversations.
               </p>
-              
+
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
                   <h4 className="text-base font-semibold text-white flex items-center gap-2 mb-1">
@@ -148,9 +160,9 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {developerMode 
-                      ? "Milla can discuss GitHub repositories and code analysis automatically"
-                      : "Milla will only discuss development when explicitly asked"}
+                    {developerMode
+                      ? 'Milla can discuss GitHub repositories and code analysis automatically'
+                      : 'Milla will only discuss development when explicitly asked'}
                   </p>
                 </div>
                 <Button
@@ -159,11 +171,19 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                   onClick={handleDeveloperModeToggle}
                   disabled={isDeveloperModeLoading}
                   className={`ml-4 border-white/30 text-white/70 hover:text-white ${
-                    developerMode ? 'bg-purple-600/20 border-purple-400/50 text-purple-300' : ''
+                    developerMode
+                      ? 'bg-purple-600/20 border-purple-400/50 text-purple-300'
+                      : ''
                   }`}
                 >
-                  <i className={`fas ${developerMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}></i>
-                  {isDeveloperModeLoading ? 'Updating...' : (developerMode ? 'On' : 'Off')}
+                  <i
+                    className={`fas ${developerMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}
+                  ></i>
+                  {isDeveloperModeLoading
+                    ? 'Updating...'
+                    : developerMode
+                      ? 'On'
+                      : 'Off'}
                 </Button>
               </div>
 
@@ -171,8 +191,10 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                 <p className="text-sm text-purple-300 flex items-start gap-2">
                   <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
                   <span>
-                    When enabled, Milla can automatically analyze GitHub URLs you share and discuss code improvements. 
-                    When disabled, she'll only engage with development topics when you explicitly ask.
+                    When enabled, Milla can automatically analyze GitHub URLs
+                    you share and discuss code improvements. When disabled,
+                    she'll only engage with development topics when you
+                    explicitly ask.
                   </span>
                 </p>
               </div>
@@ -202,9 +224,10 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-white/70 mb-3">
-                Client-side predictive updates feature. Automatically fetches AI-generated daily suggestions when enabled.
+                Client-side predictive updates feature. Automatically fetches
+                AI-generated daily suggestions when enabled.
               </p>
-              
+
               {/* Predictive Updates Toggle */}
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
@@ -221,9 +244,9 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {predictiveUpdatesEnabled 
-                      ? "Automatically fetch daily suggestions on app load"
-                      : "Daily suggestions disabled"}
+                    {predictiveUpdatesEnabled
+                      ? 'Automatically fetch daily suggestions on app load'
+                      : 'Daily suggestions disabled'}
                   </p>
                 </div>
                 <Button
@@ -231,10 +254,14 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                   size="lg"
                   onClick={handlePredictiveUpdatesToggle}
                   className={`ml-4 border-white/30 text-white/70 hover:text-white ${
-                    predictiveUpdatesEnabled ? 'bg-blue-600/20 border-blue-400/50 text-blue-300' : ''
+                    predictiveUpdatesEnabled
+                      ? 'bg-blue-600/20 border-blue-400/50 text-blue-300'
+                      : ''
                   }`}
                 >
-                  <i className={`fas ${predictiveUpdatesEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}></i>
+                  <i
+                    className={`fas ${predictiveUpdatesEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}
+                  ></i>
                   {predictiveUpdatesEnabled ? 'On' : 'Off'}
                 </Button>
               </div>
@@ -258,8 +285,9 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                 <p className="text-sm text-blue-300 flex items-start gap-2">
                   <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
                   <span>
-                    When enabled, the app will call GET /api/ai-updates/daily-suggestion on load. 
-                    Use "Fetch Now" to manually trigger POST /api/ai-updates/fetch.
+                    When enabled, the app will call GET
+                    /api/ai-updates/daily-suggestion on load. Use "Fetch Now" to
+                    manually trigger POST /api/ai-updates/fetch.
                   </span>
                 </p>
               </div>
@@ -276,9 +304,10 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-white/70 mb-3">
-                Client-side toggle for daily suggestions scheduler preference. Server must be configured separately.
+                Client-side toggle for daily suggestions scheduler preference.
+                Server must be configured separately.
               </p>
-              
+
               {/* Daily Suggestions Toggle */}
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
@@ -295,9 +324,9 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {dailySuggestionsEnabled 
-                      ? "Client prefers scheduled daily suggestions"
-                      : "Client does not prefer scheduled suggestions"}
+                    {dailySuggestionsEnabled
+                      ? 'Client prefers scheduled daily suggestions'
+                      : 'Client does not prefer scheduled suggestions'}
                   </p>
                 </div>
                 <Button
@@ -305,10 +334,14 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                   size="lg"
                   onClick={handleDailySuggestionsToggle}
                   className={`ml-4 border-white/30 text-white/70 hover:text-white ${
-                    dailySuggestionsEnabled ? 'bg-green-600/20 border-green-400/50 text-green-300' : ''
+                    dailySuggestionsEnabled
+                      ? 'bg-green-600/20 border-green-400/50 text-green-300'
+                      : ''
                   }`}
                 >
-                  <i className={`fas ${dailySuggestionsEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}></i>
+                  <i
+                    className={`fas ${dailySuggestionsEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}
+                  ></i>
                   {dailySuggestionsEnabled ? 'On' : 'Off'}
                 </Button>
               </div>
@@ -317,7 +350,10 @@ export default function DeveloperModeToggle({ children }: DeveloperModeTogglePro
                 <p className="text-sm text-yellow-300 flex items-start gap-2">
                   <i className="fas fa-exclamation-triangle mt-0.5 flex-shrink-0"></i>
                   <span>
-                    <strong>Server Configuration Required:</strong> Server must set ENABLE_PREDICTIVE_UPDATES=true and AI_UPDATES_CRON to actually schedule suggestions. This toggle controls client behavior only.
+                    <strong>Server Configuration Required:</strong> Server must
+                    set ENABLE_PREDICTIVE_UPDATES=true and AI_UPDATES_CRON to
+                    actually schedule suggestions. This toggle controls client
+                    behavior only.
                   </span>
                 </p>
               </div>

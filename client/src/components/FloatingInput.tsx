@@ -9,7 +9,7 @@ interface FloatingInputProps {
   isListening: boolean;
   toggleListening: () => void;
   isMobile: boolean;
-  getButtonSize: () => "sm" | "default" | "lg" | "icon" | null | undefined;
+  getButtonSize: () => 'sm' | 'default' | 'lg' | 'icon' | null | undefined;
   MobileVoiceControls?: React.ComponentType<any>;
   cancelListening?: () => void;
 }
@@ -24,14 +24,19 @@ export function FloatingInput({
   isMobile,
   getButtonSize,
   MobileVoiceControls,
-  cancelListening
+  cancelListening,
 }: FloatingInputProps) {
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [size, setSize] = useState({ width: 500, height: 150 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 });
+  const [resizeStart, setResizeStart] = useState({
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  });
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Handle dragging
@@ -40,7 +45,7 @@ export function FloatingInput({
     setIsDragging(true);
     setDragStart({
       x: e.clientX - position.x,
-      y: e.clientY - position.y
+      y: e.clientY - position.y,
     });
   };
 
@@ -48,11 +53,17 @@ export function FloatingInput({
     if (isDragging) {
       setPosition({
         x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
+        y: e.clientY - dragStart.y,
       });
     } else if (isResizing) {
-      const newWidth = Math.max(300, resizeStart.width + (e.clientX - resizeStart.x));
-      const newHeight = Math.max(100, resizeStart.height + (e.clientY - resizeStart.y));
+      const newWidth = Math.max(
+        300,
+        resizeStart.width + (e.clientX - resizeStart.x)
+      );
+      const newHeight = Math.max(
+        100,
+        resizeStart.height + (e.clientY - resizeStart.y)
+      );
       setSize({ width: newWidth, height: newHeight });
     }
   };
@@ -81,7 +92,7 @@ export function FloatingInput({
       x: e.clientX,
       y: e.clientY,
       width: size.width,
-      height: size.height
+      height: size.height,
     });
   };
 
@@ -94,7 +105,7 @@ export function FloatingInput({
         top: `${position.y}px`,
         width: `${size.width}px`,
         height: `${size.height}px`,
-        cursor: isDragging ? 'grabbing' : 'grab'
+        cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onMouseDown={handleMouseDown}
     >
@@ -166,12 +177,12 @@ export function FloatingInput({
                   e.stopPropagation();
                   toggleListening();
                 }}
-                variant={isListening ? "default" : "outline"}
+                variant={isListening ? 'default' : 'outline'}
                 disabled={isLoading}
                 title="Click to speak"
                 className={isListening ? 'animate-pulse' : ''}
                 size={getButtonSize()}
-                aria-label={isListening ? "Stop listening" : "Start listening"}
+                aria-label={isListening ? 'Stop listening' : 'Start listening'}
                 aria-pressed={isListening}
               >
                 {isListening ? '🎤' : '🎙️'}

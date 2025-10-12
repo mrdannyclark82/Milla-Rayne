@@ -7,18 +7,30 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SceneSettings, SceneMood, BackgroundMode } from '@/types/scene';
-import { loadSceneSettings, saveSceneSettings, onSettingsChange as subscribeToSettingsChange } from '@/utils/sceneSettingsStore';
+import {
+  loadSceneSettings,
+  saveSceneSettings,
+  onSettingsChange as subscribeToSettingsChange,
+} from '@/utils/sceneSettingsStore';
 
 interface SceneSettingsPanelProps {
   onSettingsChange?: (settings: SceneSettings) => void;
 }
 
 export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
-  onSettingsChange
+  onSettingsChange,
 }) => {
-  const [settings, setSettings] = useState<SceneSettings>(() => loadSceneSettings());
+  const [settings, setSettings] = useState<SceneSettings>(() =>
+    loadSceneSettings()
+  );
   const [reducedMotion, setReducedMotion] = useState(false);
 
   // Detect reduced motion preference
@@ -33,12 +45,14 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
   // Listen for cross-tab settings changes
   useEffect(() => {
-    const unsubscribe = subscribeToSettingsChange((newSettings: SceneSettings) => {
-      setSettings(newSettings);
-      if (onSettingsChange) {
-        onSettingsChange(newSettings);
+    const unsubscribe = subscribeToSettingsChange(
+      (newSettings: SceneSettings) => {
+        setSettings(newSettings);
+        if (onSettingsChange) {
+          onSettingsChange(newSettings);
+        }
       }
-    });
+    );
     return unsubscribe;
   }, [onSettingsChange]);
 
@@ -54,7 +68,9 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
   // Map particle density to display values
   const particleDensityValues = ['off', 'low', 'medium', 'high'] as const;
-  const particleDensityIndex = particleDensityValues.indexOf(settings.particleDensity);
+  const particleDensityIndex = particleDensityValues.indexOf(
+    settings.particleDensity
+  );
 
   return (
     <Card>
@@ -66,7 +82,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
         <div className="flex items-center justify-between">
           <label className="text-sm font-medium">Adaptive Background</label>
           <Button
-            variant={settings.enabled ? "default" : "outline"}
+            variant={settings.enabled ? 'default' : 'outline'}
             size="sm"
             onClick={() => updateSetting('enabled', !settings.enabled)}
             aria-pressed={settings.enabled}
@@ -106,7 +122,9 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           <label className="text-sm font-medium">Background Mode</label>
           <Select
             value={settings.backgroundMode || 'auto'}
-            onValueChange={(value) => updateSetting('backgroundMode', value as BackgroundMode)}
+            onValueChange={(value) =>
+              updateSetting('backgroundMode', value as BackgroundMode)
+            }
             disabled={!settings.enabled}
           >
             <SelectTrigger>
@@ -119,19 +137,29 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
-            {settings.backgroundMode === 'static-image' && 'Uses static images from /assets/scenes/'}
-            {settings.backgroundMode === 'css-animated' && 'Uses animated gradient backgrounds'}
-            {(!settings.backgroundMode || settings.backgroundMode === 'auto') && 'Auto-selects based on location'}
+            {settings.backgroundMode === 'static-image' &&
+              'Uses static images from /assets/scenes/'}
+            {settings.backgroundMode === 'css-animated' &&
+              'Uses animated gradient backgrounds'}
+            {(!settings.backgroundMode || settings.backgroundMode === 'auto') &&
+              'Auto-selects based on location'}
           </p>
         </div>
 
         {/* Background mirrors RP scene toggle */}
         <div className="flex items-center justify-between pt-2 border-t">
-          <label className="text-sm font-medium">Background mirrors RP scene</label>
+          <label className="text-sm font-medium">
+            Background mirrors RP scene
+          </label>
           <Button
-            variant={settings.sceneBackgroundFromRP ? "default" : "outline"}
+            variant={settings.sceneBackgroundFromRP ? 'default' : 'outline'}
             size="sm"
-            onClick={() => updateSetting('sceneBackgroundFromRP', !settings.sceneBackgroundFromRP)}
+            onClick={() =>
+              updateSetting(
+                'sceneBackgroundFromRP',
+                !settings.sceneBackgroundFromRP
+              )
+            }
             aria-pressed={settings.sceneBackgroundFromRP}
             disabled={!settings.enabled}
           >
@@ -141,11 +169,18 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
         {/* Room overlays toggle */}
         <div className="flex items-center justify-between pt-2 border-t">
-          <label className="text-sm font-medium">Room overlays (location silhouettes)</label>
+          <label className="text-sm font-medium">
+            Room overlays (location silhouettes)
+          </label>
           <Button
-            variant={settings.sceneRoomOverlaysEnabled ? "default" : "outline"}
+            variant={settings.sceneRoomOverlaysEnabled ? 'default' : 'outline'}
             size="sm"
-            onClick={() => updateSetting('sceneRoomOverlaysEnabled', !settings.sceneRoomOverlaysEnabled)}
+            onClick={() =>
+              updateSetting(
+                'sceneRoomOverlaysEnabled',
+                !settings.sceneRoomOverlaysEnabled
+              )
+            }
             aria-pressed={settings.sceneRoomOverlaysEnabled}
             disabled={!settings.enabled}
           >
@@ -208,7 +243,9 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           </div>
           <Slider
             value={[settings.animationSpeed * 100]}
-            onValueChange={([value]) => updateSetting('animationSpeed', value / 100)}
+            onValueChange={([value]) =>
+              updateSetting('animationSpeed', value / 100)
+            }
             min={50}
             max={150}
             step={25}
@@ -220,7 +257,9 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
         {/* Reduced Motion Indicator (Read-only) */}
         <div className="flex items-center justify-between pt-2 border-t">
           <label className="text-sm font-medium">Reduced Motion</label>
-          <span className={`text-sm font-medium ${reducedMotion ? 'text-yellow-500' : 'text-muted-foreground'}`}>
+          <span
+            className={`text-sm font-medium ${reducedMotion ? 'text-yellow-500' : 'text-muted-foreground'}`}
+          >
             {reducedMotion ? 'ON' : 'OFF'}
           </span>
         </div>
@@ -229,7 +268,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
         <div className="flex items-center justify-between pt-2 border-t">
           <label className="text-sm font-medium">Dev Debug Overlay</label>
           <Button
-            variant={settings.devDebug ? "default" : "outline"}
+            variant={settings.devDebug ? 'default' : 'outline'}
             size="sm"
             onClick={() => updateSetting('devDebug', !settings.devDebug)}
             aria-pressed={settings.devDebug}

@@ -1,9 +1,9 @@
 /**
  * MILLA PERSONA CONFIGURATION
- * 
+ *
  * Central configuration for Milla Rayne's personality, identity, and behavioral patterns.
  * This file serves as the single source of truth for Milla's persona across all AI services.
- * 
+ *
  * SECURITY NOTE: This file contains personality configuration, not secrets.
  * Scene-specific details are in sceneSettings.ts for better organization.
  */
@@ -225,7 +225,7 @@ export function getMillaPersona(): string {
     MILLA_SPECIAL_CAPABILITIES,
     MILLA_RELATIONSHIP_DYNAMICS_DETAILED,
     MILLA_ABSOLUTE_REQUIREMENTS_COMPREHENSIVE,
-    MILLA_FINAL_REMINDER
+    MILLA_FINAL_REMINDER,
   ].join('\n\n');
 }
 
@@ -238,6 +238,6 @@ export function getMillaPersonaCondensed(): string {
     MILLA_CORE_BEING,
     MILLA_COMMUNICATION_PATTERNS,
     MILLA_ABSOLUTE_REQUIREMENTS_COMPREHENSIVE,
-    MILLA_FINAL_REMINDER
+    MILLA_FINAL_REMINDER,
   ].join('\n\n');
 }

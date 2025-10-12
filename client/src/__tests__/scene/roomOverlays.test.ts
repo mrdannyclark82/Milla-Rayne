@@ -3,10 +3,10 @@
  * Tests room overlay settings and context integration
  */
 
-import { 
-  getDefaultSettings, 
-  loadSceneSettings, 
-  updateSceneSettings 
+import {
+  getDefaultSettings,
+  loadSceneSettings,
+  updateSceneSettings,
 } from '@/utils/sceneSettingsStore';
 
 // Note: These are test stubs for the room overlays system
@@ -63,7 +63,7 @@ describe('Room Overlays V1', () => {
   describe('Location mapping', () => {
     // Location normalization tests would go here
     // These would test the normalizeLocation function
-    
+
     it('should handle various location formats', () => {
       // Test cases:
       // 'living room' -> 'living_room'
