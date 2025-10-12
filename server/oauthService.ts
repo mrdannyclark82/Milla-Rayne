@@ -42,6 +42,9 @@ export function getGoogleOAuthConfig(): GoogleOAuthConfig {
     scope: [
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/tasks',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/gmail.send',
+      'https://www.googleapis.com/auth/youtube.readonly',
       'profile',
       'email',
     ],

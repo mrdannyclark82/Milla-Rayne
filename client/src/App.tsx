@@ -19,6 +19,7 @@ import type {
 } from '@shared/sceneTypes';
 import { FloatingInput } from '@/components/FloatingInput';
 import { GuidedMeditation } from '@/components/GuidedMeditation'; // Import the new component
+import { ElevenLabsVoice } from '@/types/elevenLabs';
 
 function App() {
   console.log('App render start');
@@ -29,7 +30,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  import { ElevenLabsVoice } from '@/types/elevenLabs';
   const [selectedVoice, setSelectedVoice] = useState<ElevenLabsVoice | null>(
     null
   );
