@@ -1,5 +1,5 @@
 /**
- * OpenRouter AI Service - Venice and DeepSeek Chat Integration
+ * OpenRouter AI Service - Chat Integration
  */
 
 import { ScreenShare } from 'lucide-react';
@@ -19,21 +19,25 @@ export interface OpenRouterContext {
   userName?: string;
 }
 
+import { config } from './config';
+
 /**
- * Generate AI response using Venice and DeepSeek Chat through OpenRouter
+ * Generate AI response using OpenRouter
  */
 export async function generateOpenRouterResponse(
   userMessage: string,
-  context: OpenRouterContext = {}
+  context: OpenRouterContext = {},
+  maxTokens?: number
 ): Promise<OpenRouterResponse> {
   try {
-    // Prefer a Venice-specific key if provided (OPENROUTER_VENICE_API_KEY), otherwise fall back to OPENROUTER_API_KEY
+    // Prefer a MiniMax-specific key if provided (OPENROUTER_MINIMAX_API_KEY), otherwise fall back to OPENROUTER_API_KEY
     const openrouterKey =
-      process.env.OPENROUTER_VENICE_API_KEY || process.env.OPENROUTER_API_KEY;
+      config.openrouter.minimaxApiKey || config.openrouter.apiKey;
+    console.log('OpenRouter API Key:', openrouterKey);
     if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
-      // Temporary fallback for demo purposes - in production, add your OPENROUTER_VENICE_API_KEY or OPENROUTER_API_KEY
+      // Temporary fallback for demo purposes - in production, add your OPENROUTER_MINIMAX_API_KEY or OPENROUTER_API_KEY
       console.log(
-        'OpenRouter API key (venice or default) not configured, using intelligent fallback response'
+        'OpenRouter API key (minimax or default) not configured, using intelligent fallback response'
       );
 
       // Create contextual responses based on the user message
@@ -78,7 +82,7 @@ export async function generateOpenRouterResponse(
       };
     }
 
-    const systemPrompt = createDeepSeekSystemPrompt(context);
+    const systemPrompt = createSystemPrompt(context);
     const messages: Array<{ role: string; content: string }> = [];
 
     // Add system prompt
@@ -156,8 +160,7 @@ export async function generateOpenRouterResponse(
       );
     }
 
-    // Try Venice Dolphin-Mistral first
-    let response = await fetch(
+    const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
       {
         method: 'POST',
@@ -167,39 +170,16 @@ export async function generateOpenRouterResponse(
           'X-Title': 'Milla Rayne AI Assistant', // Optional: for logs
         },
         body: JSON.stringify({
-          model:
-            'cognitivecomputations/dolphin-mistral-24b-venice-edition:free', // Venice (Dolphin Mistral 24B - Venice edition) via OpenRouter
+          model: config.openrouter.minimaxModel, // MiniMax M2 via OpenRouter (free tier available)
           messages: messages,
           temperature: 0.8, // Increased for more variety
-          max_tokens: 400, // Reduced to encourage shorter, more focused responses
+          max_tokens: maxTokens || 400, // Reduced to encourage shorter, more focused responses
           top_p: 0.9, // Reduced for better focus while maintaining variety
           frequency_penalty: 0.6, // Added to reduce repetitive phrases
           presence_penalty: 0.4, // Added to encourage new topics/approaches
         }),
       }
     );
-
-    // If Venice fails, fallback to DeepSeek
-    if (!response.ok) {
-      console.warn('Venice model failed, falling back to DeepSeek');
-      response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'X-Title': 'Milla Rayne AI Assistant',
-        },
-        body: JSON.stringify({
-          model: 'deepseek/deepseek-chat-v3.1:free',
-          messages: messages,
-          temperature: 0.8,
-          max_tokens: 1000,
-          top_p: 0.9,
-          frequency_penalty: 0.6,
-          presence_penalty: 0.4,
-        }),
-      });
-    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -242,9 +222,148 @@ export async function generateOpenRouterResponse(
 }
 
 /**
- * Create system prompt for DeepSeek Chat model
+ * Generate AI response using Grok 1 Fast through OpenRouter
+ * Specialized for daily updates, repository analysis, and code-related tasks
  */
-function createDeepSeekSystemPrompt(context: OpenRouterContext): string {
+export async function generateGrokResponse(
+  userMessage: string,
+  context: OpenRouterContext = {},
+  maxTokens?: number
+): Promise<OpenRouterResponse> {
+  try {
+    // Use Grok 1 Fast specific API key if available, otherwise fall back to general OpenRouter key
+    const openrouterKey = config.openrouter.grok1ApiKey || config.openrouter.apiKey;
+
+    if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
+      console.log('OpenRouter API key not configured for Grok');
+      return {
+        content: 'Grok service temporarily unavailable. Please try again later.',
+        success: false,
+        error: 'OpenRouter API key not configured',
+      };
+    }
+
+    const systemPrompt = createSystemPrompt(context);
+    const messages: Array<{ role: string; content: string }> = [];
+
+    // Add system prompt
+    if (systemPrompt && systemPrompt.trim().length > 0) {
+      messages.push({ role: 'system', content: systemPrompt.trim() });
+    }
+
+    // Add conversation history if available
+    if (context.conversationHistory) {
+      const recentHistory = context.conversationHistory.slice(-2);
+      const validMessages = recentHistory.filter(
+        (msg) =>
+          msg.content &&
+          msg.content.trim().length > 0 &&
+          (msg.role === 'user' || msg.role === 'assistant')
+      );
+
+      let startIndex = 0;
+      for (let i = 0; i < validMessages.length; i++) {
+        if (validMessages[i].role === 'user') {
+          startIndex = i;
+          break;
+        }
+      }
+
+      let expectedRole = 'user';
+      for (let i = startIndex; i < validMessages.length; i++) {
+        const msg = validMessages[i];
+        if (msg.role === expectedRole && msg.content.trim()) {
+          messages.push({
+            role: msg.role,
+            content: msg.content.trim(),
+          });
+          expectedRole = expectedRole === 'user' ? 'assistant' : 'user';
+        }
+      }
+    }
+
+    // Add current user message
+    if (userMessage && userMessage.trim().length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (
+        !lastMessage ||
+        lastMessage.role !== 'user' ||
+        lastMessage.content !== userMessage.trim()
+      ) {
+        messages.push({ role: 'user', content: userMessage.trim() });
+      }
+    } else {
+      return {
+        content: "I didn't receive a message. Could you please try again?",
+        success: false,
+        error: 'Empty user message',
+      };
+    }
+
+    // Use Grok 1 Fast for code analysis and repository analysis
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          'Content-Type': 'application/json',
+          'X-Title': 'Milla Rayne AI Assistant',
+        },
+        body: JSON.stringify({
+          model: config.openrouter.grok1Model, // Use configurable Grok 1 model
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: maxTokens || 1000,
+          top_p: 0.9,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Grok API error:', response.status, errorData);
+
+      return {
+        content:
+          "I'm experiencing some technical difficulties with Grok right now. Please try again in a moment.",
+        success: false,
+        error: `Grok API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Unexpected Grok response format:', data);
+      return {
+        content: 'I received an unexpected response format. Please try again.',
+        success: false,
+        error: 'Invalid response format',
+      };
+    }
+
+    const aiMessage = data.choices[0].message.content;
+
+    return {
+      content: aiMessage,
+      success: true,
+    };
+  } catch (error) {
+    console.error('Grok service error:', error);
+    return {
+      content:
+        "I'm having trouble connecting to Grok right now. Please try again in a moment.",
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Create system prompt for the chat model
+ */
+function createSystemPrompt(context: OpenRouterContext): string {
   // Use centralized persona and scene settings
   const basePersonality = getMillaPersona();
   const sceneSettings = getAllSceneSettings();

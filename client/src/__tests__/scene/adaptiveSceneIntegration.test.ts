@@ -12,6 +12,8 @@ import {
   loadSceneSettings,
   getDefaultSettings,
   saveSceneSettings,
+  updateSceneSettings,
+  onSettingsChange,
 } from '@/utils/sceneSettingsStore';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
 import type { TimeOfDay, SceneMood, SceneLocation } from '@/types/scene';
@@ -284,5 +286,69 @@ describe('Adaptive Scene Generation - Milestone Integration Tests', () => {
       expect(settings.enableParallax).toBeDefined();
       expect(settings.animationSpeed).toBeDefined();
     });
+  });
+});
+
+describe('sceneSettingsStore', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('should return default settings when localStorage is empty', () => {
+    const settings = loadSceneSettings();
+    expect(settings).toEqual(getDefaultSettings());
+  });
+
+  it('should return default settings for corrupted JSON', () => {
+    localStorage.setItem('milla.scene.settings.v1', 'not a json');
+    const settings = loadSceneSettings();
+    expect(settings).toEqual(getDefaultSettings());
+  });
+
+  it('should return default settings for incorrect version', () => {
+    const oldSettings = {
+      version: 0,
+      settings: { mood: 'energetic' },
+    };
+    localStorage.setItem('milla.scene.settings.v1', JSON.stringify(oldSettings));
+    const settings = loadSceneSettings();
+    expect(settings).toEqual(getDefaultSettings());
+  });
+
+  it('should sanitize invalid settings', () => {
+    const invalidSettings = {
+      version: 1,
+      settings: {
+        enabled: 'true', // invalid type
+        mood: 'invalid-mood',
+        parallaxIntensity: 200, // out of range
+        animationSpeed: 0.1, // out of range
+      },
+    };
+    localStorage.setItem('milla.scene.settings.v1', JSON.stringify(invalidSettings));
+    const settings = loadSceneSettings();
+    expect(settings.enabled).toBe(true);
+    expect(settings.mood).toBe('calm');
+    expect(settings.parallaxIntensity).toBe(75);
+    expect(settings.animationSpeed).toBe(0.5);
+  });
+
+  it('should update settings', () => {
+    const newSettings = updateSceneSettings({ mood: 'playful', animationSpeed: 1.2 });
+    expect(newSettings.mood).toBe('playful');
+    expect(newSettings.animationSpeed).toBe(1.2);
+    const loaded = loadSceneSettings();
+    expect(loaded.mood).toBe('playful');
+  });
+
+  it('should call listener on change', () => {
+    const listener = vi.fn();
+    const unsubscribe = onSettingsChange(listener);
+
+    // Simulate change in another tab
+    window.dispatchEvent(new Event('storage'));
+
+    expect(listener).toHaveBeenCalled();
+    unsubscribe();
   });
 });

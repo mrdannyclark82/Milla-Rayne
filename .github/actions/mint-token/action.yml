@@ -1,0 +1,20 @@
+name: 'Mint Identity Token'
+description: 'Mints a GitHub App token'
+outputs:
+  token:
+    description: 'The minted GitHub App token'
+    value: ${{ steps.mint_identity_token.outputs.token }}
+runs:
+  using: "composite"
+  steps:
+    - name: 'Mint identity token'
+      id: 'mint_identity_token'
+      if: |-
+        ${{ vars.APP_ID }}
+      uses: 'actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b' # ratchet:actions/create-github-app-token@v2
+      with:
+        app-id: '${{ vars.APP_ID }}'
+        private-key: '${{ secrets.APP_PRIVATE_KEY }}'
+        permission-contents: 'read'
+        permission-issues: 'write'
+        permission-pull-requests: 'write'

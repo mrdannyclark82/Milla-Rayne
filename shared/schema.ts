@@ -16,7 +16,25 @@ export const users = pgTable('users', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   username: text('username').notNull().unique(),
+  email: text('email').notNull().unique(),
   password: text('password').notNull(),
+  preferredAiModel: varchar('preferred_ai_model', {
+    enum: ['minimax', 'venice', 'deepseek', 'xai', 'gemini', 'grok'],
+  }).default('minimax'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  lastLoginAt: timestamp('last_login_at'),
+});
+
+export const userSessions = pgTable('user_sessions', {
+  id: varchar('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  sessionToken: text('session_token').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const messages = pgTable('messages', {
@@ -74,10 +92,42 @@ export const oauthTokens = pgTable('oauth_tokens', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+export const memorySummaries = pgTable('memory_summaries', {
+  id: varchar('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  summaryText: text('summary_text').notNull(),
+  topics: jsonb('topics'), // Array of strings
+  emotionalTone: varchar('emotional_tone', {
+    enum: ['positive', 'negative', 'neutral'],
+  }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const insertMemorySummarySchema = createInsertSchema(memorySummaries).pick({
+  userId: true,
+  title: true,
+  summaryText: true,
+  topics: true,
+  emotionalTone: true,
+});
+
+export type InsertMemorySummary = z.infer<typeof insertMemorySummarySchema>;
+export type MemorySummary = typeof memorySummaries.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
+  email: true,
   password: true,
+  preferredAiModel: true,
 });
+
+export const insertUserSessionSchema = createInsertSchema(userSessions);
 
 export const insertMessageSchema = createInsertSchema(messages).pick({
   content: true,
@@ -114,6 +164,8 @@ export const insertOAuthTokenSchema = createInsertSchema(oauthTokens).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertAiUpdate = z.infer<typeof insertAiUpdateSchema>;

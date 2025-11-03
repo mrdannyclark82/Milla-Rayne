@@ -140,7 +140,6 @@ Milla: I see you shared a GitHub repository link! If you'd like me to
        for you, love. 💜
 ```
 
-**With explicit request:**
 ```
 User: Please analyze https://github.com/torvalds/linux
 Milla: *shifts into repository analysis mode*

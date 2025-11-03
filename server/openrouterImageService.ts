@@ -12,6 +12,8 @@ export interface OpenRouterImageGenerationResult {
   error?: string;
 }
 
+import { config } from './config';
+
 /**
  * Generate image (or an image preview/URL) using OpenRouter.
  * Preferred model: google/gemini-pro-vision
@@ -22,7 +24,7 @@ export async function generateImageWithGemini(
 ): Promise<OpenRouterImageGenerationResult> {
   // Use a provider-specific key if available, otherwise fall back to the general OpenRouter key
   const openrouterKey =
-    process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY;
+    config.openrouter.geminiApiKey || config.openrouter.apiKey;
   if (!openrouterKey) {
     return {
       success: false,

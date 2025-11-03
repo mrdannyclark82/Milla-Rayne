@@ -1,0 +1,32 @@
+{
+  "watchHistory": [
+    {
+      "videoId": "fYkLETrdtws",
+      "title": "Create 10-minute AI Character Videos in ONE Click (InfiniteTalk x n8n Full Guide 🥚)",
+      "query": "create 10 minute ai character video in one click",
+      "timestamp": 1762202906316,
+      "channelName": "RoboNuggets"
+    },
+    {
+      "videoId": "3URtTIdnXIk",
+      "title": "These CATS are too FUNNY! 🤣 | New Cat Videos 2025",
+      "query": "cats",
+      "timestamp": 1762202808516,
+      "channelName": "The Pet Collective"
+    }
+  ],
+  "preferences": {
+    "topQueries": {
+      "cats": 1,
+      "create 10 minute ai character video in one click": 1
+    },
+    "topChannels": {
+      "The Pet Collective": 1,
+      "RoboNuggets": 1
+    },
+    "topCategories": {},
+    "timePreferences": {
+      "14": 2
+    }
+  }
+}

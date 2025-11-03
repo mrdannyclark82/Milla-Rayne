@@ -11,6 +11,7 @@ import {
   getSceneDetails,
   getContextualSceneSettings,
 } from '@shared/sceneSettings';
+import { SmartHomeSensorData, mapSensorDataToSceneContext } from './smartHomeService';
 
 export type SceneLocation =
   | 'living_room'
@@ -217,17 +218,32 @@ export function getCurrentTimeOfDay(): TimeOfDay {
  */
 export function detectSceneContext(
   userMessage: string,
-  previousLocation: SceneLocation = 'unknown'
+  previousLocation: SceneLocation = 'unknown',
+  sensorData?: SmartHomeSensorData
 ): SceneContext {
   const actions = extractActionMarkers(userMessage);
 
-  // If no actions found, maintain previous location with current time/mood
+  // If no actions found, check the full message for location keywords
   if (actions.length === 0) {
+    const detectedLocation = detectLocation('', userMessage);
+    const hasSceneChange =
+      detectedLocation !== 'unknown' && detectedLocation !== previousLocation;
+    const finalLocation =
+      detectedLocation !== 'unknown' ? detectedLocation : previousLocation;
+
+    let timeOfDay = getCurrentTimeOfDay();
+    if (sensorData) {
+      const mappedContext = mapSensorDataToSceneContext(sensorData);
+      if (mappedContext.timeOfDay) {
+        timeOfDay = mappedContext.timeOfDay;
+      }
+    }
+
     return {
-      location: previousLocation,
+      location: finalLocation,
       mood: 'calm',
-      timeOfDay: getCurrentTimeOfDay(),
-      hasSceneChange: false,
+      timeOfDay: timeOfDay,
+      hasSceneChange,
     };
   }
 
@@ -244,10 +260,18 @@ export function detectSceneContext(
   const finalLocation =
     detectedLocation !== 'unknown' ? detectedLocation : previousLocation;
 
+  let timeOfDay = getCurrentTimeOfDay();
+  if (sensorData) {
+    const mappedContext = mapSensorDataToSceneContext(sensorData);
+    if (mappedContext.timeOfDay) {
+      timeOfDay = mappedContext.timeOfDay;
+    }
+  }
+
   return {
     location: finalLocation,
     mood: detectedMood,
-    timeOfDay: getCurrentTimeOfDay(),
+    timeOfDay: timeOfDay,
     action: primaryAction,
     hasSceneChange,
   };
@@ -295,7 +319,7 @@ export function getSceneDescription(location: SceneLocation): string {
   const mappedLocation = locationMap[location];
   if (mappedLocation) {
     try {
-      return getSceneDetails(mappedLocation as any) || '';
+      return getSceneDetails(mappedLocation as any).description || '';
     } catch (error) {
       console.warn(
         `Could not get scene details for location: ${location}`,
