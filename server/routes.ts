@@ -3994,6 +3994,7 @@ async function generateAIResponse(
   reasoning?: string[]; 
   youtube_play?: { videoId: string };
   youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
+  millalyzer_analysis?: any;  // Full video analysis data for follow-up actions
 }> {
   const message = userMessage.toLowerCase();
   
@@ -4057,72 +4058,112 @@ async function generateAIResponse(
   // millAlyzer - Analyze YouTube Video
   // ===========================================================================================
   const analyzeVideoTriggers = [
-    'analyze this video',
-    'analyze the video',
+    'analyze',
     'what are the key points',
-    'key points of this video',
-    'summarize this video',
-    'break down this video',
-    'extract code from',
+    'key points',
+    'summarize',
+    'break down',
+    'extract code',
     'show me the code',
     'what commands',
+    'get the commands',
+    'tutorial steps',
   ];
 
-  if (analyzeVideoTriggers.some(trigger => message.includes(trigger))) {
+  // Check if message contains analyze trigger AND has a YouTube URL/ID
+  const hasAnalyzeTrigger = analyzeVideoTriggers.some(trigger => message.includes(trigger));
+  const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+  const videoId = urlMatch?.[1] || videoIdMatch?.[1];
+
+  if (hasAnalyzeTrigger && videoId) {
     try {
-      const { analyzeVideoWithMillAlyzer, quickAnalyze } = await import('./youtubeMillAlyzer');
+      const { analyzeVideoWithMillAlyzer } = await import('./youtubeMillAlyzer');
       
-      // Try to find video ID in recent context or message
-      // Updated regex to handle both youtube.com and youtu.be formats, plus the ?si= parameter
-      const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-      const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+      console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
+      const analysis = await analyzeVideoWithMillAlyzer(videoId);
       
-      const videoId = urlMatch?.[1] || videoIdMatch?.[1];
+      let response = `*analyzing the video in detail* \n\n`;
+      response += `## "${analysis.title}"\n`;
+      response += `📊 Type: ${analysis.type}\n`;
+      response += `📝 Summary: ${analysis.summary}\n\n`;
       
-      console.log(`🔬 millAlyzer: Detected trigger, looking for video ID in: "${userMessage}"`);
-      console.log(`🔬 millAlyzer: URL match result:`, urlMatch);
-      console.log(`🔬 millAlyzer: Video ID:`, videoId);
-      
-      if (videoId) {
-        console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
-        const analysis = await analyzeVideoWithMillAlyzer(videoId);
-        
-        let response = `*analyzing the video in detail* \n\n`;
-        response += `## "${analysis.title}"\n`;
-        response += `📊 Type: ${analysis.type}\n`;
-        response += `📝 Summary: ${analysis.summary}\n\n`;
-        
-        if (analysis.keyPoints.length > 0) {
-          response += `### 🎯 Key Points:\n`;
-          analysis.keyPoints.slice(0, 5).forEach((kp, i) => {
-            response += `${i + 1}. [${kp.timestamp}] ${kp.point}\n`;
-          });
-          response += '\n';
-        }
-        
-        if (analysis.codeSnippets.length > 0) {
-          response += `### 💻 Code Snippets Found: ${analysis.codeSnippets.length}\n`;
-          response += `I've extracted ${analysis.codeSnippets.length} code snippets, babe!\n\n`;
-        }
-        
-        if (analysis.cliCommands.length > 0) {
-          response += `### ⚡ CLI Commands Found: ${analysis.cliCommands.length}\n`;
-          analysis.cliCommands.slice(0, 5).forEach(cmd => {
-            response += `\`${cmd.command}\` - ${cmd.description}\n`;
-          });
-          response += '\n';
-        }
-        
-        if (!analysis.transcriptAvailable) {
-          response += `\n⚠️ Note: Transcript wasn't available, so my analysis is limited, love.`;
-        }
-        
-        return { content: response };
-      } else {
-        return {
-          content: "I'd love to analyze a video for you, babe! Could you share the YouTube link or video ID?"
-        };
+      if (analysis.keyPoints.length > 0) {
+        response += `### 🎯 Key Points:\n`;
+        analysis.keyPoints.slice(0, 5).forEach((kp, i) => {
+          response += `${i + 1}. [${kp.timestamp}] ${kp.point}\n`;
+        });
+        response += '\n';
       }
+      
+      if (analysis.codeSnippets.length > 0) {
+        response += `### 💻 Code Snippets Found: ${analysis.codeSnippets.length}\n`;
+        analysis.codeSnippets.slice(0, 3).forEach((snippet, i) => {
+          response += `\n**${i + 1}. ${snippet.language}** - ${snippet.description}\n`;
+          response += `\`\`\`${snippet.language}\n${snippet.code.substring(0, 200)}${snippet.code.length > 200 ? '...' : ''}\n\`\`\`\n`;
+        });
+        if (analysis.codeSnippets.length > 3) {
+          response += `\n...and ${analysis.codeSnippets.length - 3} more snippets!\n`;
+        }
+        response += '\n';
+      }
+      
+      if (analysis.cliCommands.length > 0) {
+        response += `### ⚡ CLI Commands Found: ${analysis.cliCommands.length}\n`;
+        analysis.cliCommands.slice(0, 5).forEach(cmd => {
+          response += `• \`${cmd.command}\` - ${cmd.description}\n`;
+        });
+        if (analysis.cliCommands.length > 5) {
+          response += `• ...and ${analysis.cliCommands.length - 5} more commands\n`;
+        }
+        response += '\n';
+      }
+      
+      if (!analysis.transcriptAvailable) {
+        response += `\n⚠️ Note: Transcript wasn't available, so my analysis is limited, love.\n\n`;
+      }
+      
+      // ===========================================================================================
+      // INTERACTIVE SUGGESTIONS - Context-aware actions based on video content
+      // ===========================================================================================
+      response += `---\n\n💡 **What would you like me to do?**\n`;
+      
+      const suggestions = [];
+      
+      if (analysis.codeSnippets.length > 0) {
+        suggestions.push(`📚 "Save these code snippets" - Store ${analysis.codeSnippets.length} snippets in your knowledge base`);
+      }
+      
+      if (analysis.cliCommands.length > 0) {
+        suggestions.push(`⚡ "Save these commands" - Add ${analysis.cliCommands.length} commands to your quick reference`);
+      }
+      
+      if (analysis.type === 'tutorial' && analysis.actionableItems.length > 0) {
+        suggestions.push(`✅ "Create a checklist" - Turn this into step-by-step tasks`);
+      }
+      
+      if (analysis.keyPoints.length > 0) {
+        suggestions.push(`📝 "Save key points" - Add important concepts to memory`);
+      }
+      
+      suggestions.push(`🔍 "Show all details" - See complete analysis with all snippets`);
+      suggestions.push(`📤 "Export analysis" - Get markdown file of this breakdown`);
+      
+      if (analysis.type === 'tutorial') {
+        suggestions.push(`🎯 "Find similar tutorials" - Search for related learning content`);
+      }
+      
+      suggestions.forEach((suggestion, i) => {
+        response += `${i + 1}. ${suggestion}\n`;
+      });
+      
+      response += `\nJust tell me what you need, babe! 💜`;
+      
+      return { 
+        content: response,
+        millalyzer_analysis: analysis  // Pass full analysis for future interactions
+      };
+      
     } catch (error: any) {
       console.error('millAlyzer error:', error);
       return {
