@@ -46,9 +46,9 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
       - name: Typecheck
-        run: npm run typecheck --if-present || npx tsc --noEmit || true
+        run: npm run typecheck --if-present || npx tsc --noEmit
       - name: Test
-        run: npm test --if-present || true
+        run: npm test --if-present
 
   python:
     name: Python Lint and Test

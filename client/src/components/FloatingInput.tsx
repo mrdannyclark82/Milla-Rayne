@@ -12,6 +12,7 @@ interface FloatingInputProps {
   getButtonSize: () => 'sm' | 'default' | 'lg' | 'icon' | null | undefined;
   MobileVoiceControls?: React.ComponentType<any>;
   cancelListening?: () => void;
+  onSendAudio: (audio: Blob) => void;
 }
 
 export function FloatingInput({
@@ -25,11 +26,15 @@ export function FloatingInput({
   getButtonSize,
   MobileVoiceControls,
   cancelListening,
+  onSendAudio,
 }: FloatingInputProps) {
   const [position, setPosition] = useState({ x: 20, y: 20 });
   const [size, setSize] = useState({ width: 500, height: 150 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({
     x: 0,
@@ -49,40 +54,40 @@ export function FloatingInput({
     });
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
-    } else if (isResizing) {
-      const newWidth = Math.max(
-        300,
-        resizeStart.width + (e.clientX - resizeStart.x)
-      );
-      const newHeight = Math.max(
-        100,
-        resizeStart.height + (e.clientY - resizeStart.y)
-      );
-      setSize({ width: newWidth, height: newHeight });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-    setIsResizing(false);
-  };
-
   useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      if (isDragging) {
+        setPosition({
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
+        });
+      } else if (isResizing) {
+        const newWidth = Math.max(
+          300,
+          resizeStart.width + (e.clientX - resizeStart.x)
+        );
+        const newHeight = Math.max(
+          100,
+          resizeStart.height + (e.clientY - resizeStart.y)
+        );
+        setSize({ width: newWidth, height: newHeight });
+      }
+    };
+
+    const handleUp = () => {
+      setIsDragging(false);
+      setIsResizing(false);
+    };
+
     if (isDragging || isResizing) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('mousemove', handleMove);
+      window.addEventListener('mouseup', handleUp);
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMove);
+        window.removeEventListener('mouseup', handleUp);
       };
     }
-  }, [isDragging, isResizing, dragStart, resizeStart]);
+  }, [isDragging, isResizing, dragStart, resizeStart, position, size]);
 
   // Handle resize
   const handleResizeMouseDown = (e: React.MouseEvent) => {
@@ -94,6 +99,26 @@ export function FloatingInput({
       width: size.width,
       height: size.height,
     });
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        audioChunksRef.current.push(event.data);
+      };
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        onSendAudio(audioBlob);
+        audioChunksRef.current = [];
+        setIsRecording(false);
+      };
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
   };
 
   return (
@@ -156,7 +181,7 @@ export function FloatingInput({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-2 flex-1">
+          <div className="flex gap-2 flex-1 h-full">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -171,7 +196,7 @@ export function FloatingInput({
               disabled={isLoading}
               onClick={(e) => e.stopPropagation()}
             />
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 justify-end">
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -185,7 +210,31 @@ export function FloatingInput({
                 aria-label={isListening ? 'Stop listening' : 'Start listening'}
                 aria-pressed={isListening}
               >
-                {isListening ? '🎤' : '🎙️'}
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" x2="12" y1="19" y2="22"/>
+                </svg>
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isRecording) {
+                    mediaRecorderRef.current?.stop();
+                  } else {
+                    startRecording();
+                  }
+                }}
+                variant={isRecording ? 'destructive' : 'outline'}
+                disabled={isLoading}
+                title={isRecording ? 'Stop recording' : 'Start recording'}
+                size={getButtonSize()}
+                aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  {isRecording && <circle cx="12" cy="12" r="4" fill="red" />}
+                </svg>
               </Button>
               <Button
                 onClick={(e) => {
@@ -194,23 +243,41 @@ export function FloatingInput({
                 }}
                 disabled={isLoading || !message.trim()}
                 size={getButtonSize()}
-                className="flex-1"
               >
-                {isLoading ? 'Sending...' : 'Send'}
+                {isLoading ? (
+                  'Sending...'
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m22 2-7 20-4-9-9-4Z"/>
+                    <path d="M22 2 11 13"/>
+                  </svg>
+                )}
               </Button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Resize handle */}
+      {/* Resize handle - bottom right corner */}
       <div
-        className="resize-handle absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+        className="resize-handle absolute bottom-0 right-0 w-6 h-6 cursor-se-resize hover:bg-gray-600/50 transition-colors"
         onMouseDown={handleResizeMouseDown}
         style={{
-          background: 'linear-gradient(135deg, transparent 50%, #4b5563 50%)',
+          background: 'linear-gradient(135deg, transparent 50%, #6b7280 50%)',
+          borderBottomRightRadius: '0.5rem',
         }}
-      />
+        title="Drag to resize"
+      >
+        <svg 
+          className="absolute bottom-0.5 right-0.5 w-4 h-4 text-gray-400"
+          fill="currentColor"
+          viewBox="0 0 16 16"
+        >
+          <path d="M15 14l-5-5m5 5l-5-5m5 5v-4m0 4h-4"/>
+          <path d="M11 10l-4-4m4 4l-4-4"/>
+          <path d="M7 6l-4-4m4 4l-4-4"/>
+        </svg>
+      </div>
     </div>
   );
 }

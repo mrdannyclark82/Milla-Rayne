@@ -53,7 +53,9 @@ const RELEVANCE_KEYWORDS = [
   'openrouter',
   'xai',
   'qwen',
-  'deepseek',
+  'grok',
+  'venice',
+  'mistral',
   'sqlite',
   'voice',
   'tts',
@@ -68,8 +70,6 @@ const RELEVANCE_KEYWORDS = [
   'llm',
   'gpt',
   'claude',
-  'mistral',
-  'grok',
 ];
 
 const MAX_ITEMS_PER_SOURCE = 200;
@@ -116,18 +116,18 @@ function extractTags(title: string, summary: string): string {
   return foundTags.join(', ');
 }
 
+const rssParser = new Parser({
+  timeout: 10000, // 10 second timeout
+});
+
 /**
  * Fetch and parse RSS feed with timeout and retries
  */
 async function fetchRSSFeed(url: string, retries = 3): Promise<RSSItem[]> {
-  const parser = new Parser({
-    timeout: 10000, // 10 second timeout
-  });
-
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       console.log(`Fetching RSS from ${url} (attempt ${attempt}/${retries})`);
-      const feed = await parser.parseURL(url);
+      const feed = await rssParser.parseURL(url);
       return feed.items as RSSItem[];
     } catch (error) {
       console.error(
@@ -144,18 +144,13 @@ async function fetchRSSFeed(url: string, retries = 3): Promise<RSSItem[]> {
   return [];
 }
 
-/**
- * Get database instance
- */
-function getDB(): Database.Database {
-  return new Database(DB_PATH);
-}
+const db = new Database(DB_PATH);
+process.on('exit', () => db.close());
 
 /**
  * Store update in database (dedupe by URL)
  */
 function storeUpdate(
-  db: Database.Database,
   update: Omit<AIUpdate, 'id' | 'createdAt'>
 ): boolean {
   try {
@@ -186,7 +181,6 @@ function storeUpdate(
  * Cleanup old updates per source (keep last N items)
  */
 function cleanupOldUpdates(
-  db: Database.Database,
   source: string,
   keepLast: number = MAX_ITEMS_PER_SOURCE
 ): void {
@@ -215,7 +209,6 @@ export async function fetchAIUpdates(): Promise<{
   errors: string[];
 }> {
   const sources = getConfiguredSources();
-  const db = getDB();
   let itemsAdded = 0;
   const errors: string[] = [];
 
@@ -243,21 +236,19 @@ export async function fetchAIUpdates(): Promise<{
           relevance: computeRelevance(item.title, summary),
         };
 
-        if (storeUpdate(db, update)) {
+        if (storeUpdate(update)) {
           itemsAdded++;
         }
       }
 
       // Cleanup old updates for this source
-      cleanupOldUpdates(db, sourceUrl);
+      cleanupOldUpdates(sourceUrl);
     } catch (error) {
       const errorMsg = `Failed to fetch from ${sourceUrl}: ${error}`;
       console.error(errorMsg);
       errors.push(errorMsg);
     }
   }
-
-  db.close();
 
   console.log(`Fetch complete: ${itemsAdded} new items added`);
   return {
@@ -276,127 +267,121 @@ export function getAIUpdates(options: {
   limit?: number;
   offset?: number;
 }): AIUpdate[] {
-  const db = getDB();
+  // Inspect table columns so we can support alternate schemas (legacy vs current)
+  const cols = db.prepare("PRAGMA table_info('ai_updates')").all() as {
+    name: string;
+  }[];
+  const colSet = new Set(cols.map((c) => c.name));
 
-  try {
-    // Inspect table columns so we can support alternate schemas (legacy vs current)
-    const cols = db.prepare("PRAGMA table_info('ai_updates')").all() as {
-      name: string;
-    }[];
-    const colSet = new Set(cols.map((c) => c.name));
+  // Build SELECT list with aliases to the expected field names used elsewhere in the code
+  const selectParts: string[] = [];
+  selectParts.push('id');
+  selectParts.push('title');
 
-    // Build SELECT list with aliases to the expected field names used elsewhere in the code
-    const selectParts: string[] = [];
-    selectParts.push('id');
-    selectParts.push('title');
-
-    if (colSet.has('url')) {
-      selectParts.push('url');
-    } else {
-      selectParts.push("'' AS url");
-    }
-
-    if (colSet.has('source')) {
-      selectParts.push('source');
-    } else {
-      selectParts.push("'' AS source");
-    }
-
-    if (colSet.has('published')) {
-      selectParts.push('published');
-    } else {
-      selectParts.push('NULL AS published');
-    }
-
-    if (colSet.has('summary')) {
-      selectParts.push('summary');
-    } else if (colSet.has('description')) {
-      selectParts.push('description AS summary');
-    } else {
-      selectParts.push("'' AS summary");
-    }
-
-    if (colSet.has('tags')) {
-      selectParts.push('tags');
-    } else if (colSet.has('metadata')) {
-      selectParts.push('metadata AS tags');
-    } else {
-      selectParts.push("'' AS tags");
-    }
-
-    if (colSet.has('relevance')) {
-      selectParts.push('relevance');
-    } else if (colSet.has('relevance_score')) {
-      selectParts.push('relevance_score AS relevance');
-    } else {
-      selectParts.push('0 AS relevance');
-    }
-
-    if (colSet.has('created_at')) {
-      selectParts.push('created_at');
-    } else if (colSet.has('createdAt')) {
-      selectParts.push('createdAt AS created_at');
-    } else {
-      selectParts.push('CURRENT_TIMESTAMP AS created_at');
-    }
-
-    // Start building query
-    let query = `SELECT ${selectParts.join(', ')} FROM ai_updates WHERE 1=1`;
-    const params: any[] = [];
-
-    // Add source filter only if real source column exists
-    if (options.source && colSet.has('source')) {
-      query += ' AND source = ?';
-      params.push(options.source);
-    }
-
-    // Add relevance filter using the actual column if available
-    if (options.minRelevance !== undefined) {
-      if (colSet.has('relevance')) {
-        query += ' AND relevance >= ?';
-        params.push(options.minRelevance);
-      } else if (colSet.has('relevance_score')) {
-        query += ' AND relevance_score >= ?';
-        params.push(options.minRelevance);
-      } else {
-        // no-op: table doesn't support relevance filtering
-      }
-    }
-
-    // ORDER BY: prefer published if present, otherwise created_at
-    if (colSet.has('published')) {
-      query += ' ORDER BY published DESC, created_at DESC';
-    } else {
-      query += ' ORDER BY created_at DESC';
-    }
-
-    if (options.limit) {
-      query += ' LIMIT ?';
-      params.push(options.limit);
-    }
-
-    if (options.offset) {
-      query += ' OFFSET ?';
-      params.push(options.offset);
-    }
-
-    const stmt = db.prepare(query);
-    const rows = stmt.all(...params) as any[];
-
-    return rows.map((row) => ({
-      id: row.id,
-      title: row.title,
-      url: row.url || '',
-      source: row.source || '',
-      published: row.published ? new Date(row.published) : null,
-      summary: row.summary || '',
-      tags: row.tags || '',
-      relevance: Number(row.relevance) || 0,
-      createdAt: row.created_at ? new Date(row.created_at) : new Date(),
-    }));
-  } finally {
-    db.close();
+  if (colSet.has('url')) {
+    selectParts.push('url');
+  } else {
+    selectParts.push("'' AS url");
   }
+
+  if (colSet.has('source')) {
+    selectParts.push('source');
+  } else {
+    selectParts.push("'' AS source");
+  }
+
+  if (colSet.has('published')) {
+    selectParts.push('published');
+  } else {
+    selectParts.push('NULL AS published');
+  }
+
+  if (colSet.has('summary')) {
+    selectParts.push('summary');
+  } else if (colSet.has('description')) {
+    selectParts.push('description AS summary');
+  } else {
+    selectParts.push("'' AS summary");
+  }
+
+  if (colSet.has('tags')) {
+    selectParts.push('tags');
+  } else if (colSet.has('metadata')) {
+    selectParts.push('metadata AS tags');
+  } else {
+    selectParts.push("'' AS tags");
+  }
+
+  if (colSet.has('relevance')) {
+    selectParts.push('relevance');
+  } else if (colSet.has('relevance_score')) {
+    selectParts.push('relevance_score AS relevance');
+  } else {
+    selectParts.push('0 AS relevance');
+  }
+
+  if (colSet.has('created_at')) {
+    selectParts.push('created_at');
+  } else if (colSet.has('createdAt')) {
+    selectParts.push('createdAt AS created_at');
+  } else {
+    selectParts.push('CURRENT_TIMESTAMP AS created_at');
+  }
+
+  // Start building query
+  let query = `SELECT ${selectParts.join(', ')} FROM ai_updates WHERE 1=1`;
+  const params: any[] = [];
+
+  // Add source filter only if real source column exists
+  if (options.source && colSet.has('source')) {
+    query += ' AND source = ?';
+    params.push(options.source);
+  }
+
+  // Add relevance filter using the actual column if available
+  if (options.minRelevance !== undefined) {
+    if (colSet.has('relevance')) {
+      query += ' AND relevance >= ?';
+      params.push(options.minRelevance);
+    } else if (colSet.has('relevance_score')) {
+      query += ' AND relevance_score >= ?';
+      params.push(options.minRelevance);
+    } else {
+      // no-op: table doesn't support relevance filtering
+    }
+  }
+
+  // ORDER BY: prefer published if present, otherwise created_at
+  if (colSet.has('published')) {
+    query += ' ORDER BY published DESC, created_at DESC';
+  } else {
+    query += ' ORDER BY created_at DESC';
+  }
+
+  if (options.limit) {
+    query += ' LIMIT ?';
+    params.push(options.limit);
+  }
+
+  if (options.offset) {
+    query += ' OFFSET ?';
+    params.push(options.offset);
+  }
+
+  const stmt = db.prepare(query);
+  const rows = stmt.all(...params) as any[];
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    url: row.url || '',
+    source: row.source || '',
+    published: row.published ? new Date(row.published) : null,
+    summary: row.summary || '',
+    tags: row.tags || '',
+    relevance: Number(row.relevance) || 0,
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+  }));
 }
 
 /**
@@ -407,8 +392,6 @@ export function getUpdateStats(): {
   count: number;
   avgRelevance: number;
 }[] {
-  const db = getDB();
-
   const stmt = db.prepare(`
     SELECT source, COUNT(*) as count, AVG(relevance) as avgRelevance
     FROM ai_updates
@@ -417,7 +400,6 @@ export function getUpdateStats(): {
   `);
 
   const rows = stmt.all() as any[];
-  db.close();
 
   return rows.map((row) => ({
     source: row.source,

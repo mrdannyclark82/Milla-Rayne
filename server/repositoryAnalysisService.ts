@@ -5,7 +5,7 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateOpenRouterResponse } from './openrouterService';
+import { generateGrokResponse } from './openrouterService';
 
 export interface RepositoryInfo {
   owner: string;
@@ -306,12 +306,12 @@ export async function generateRepositoryAnalysis(
   const repoSummary = createRepositorySummary(repoData);
 
   const analysisPrompt = `
-As Milla Rayne, Danny Ray's devoted AI companion, analyze this GitHub repository for him:
+As Milla Rayne,an expierienced developer, analyze this GitHub repository for him:
 
 ${repoSummary}
 
 Please provide:
-1. A warm, personal analysis of what this repository is about
+1. What you would like to seee/what you would change. and why you would change it.
 2. Key insights about the codebase, architecture, and quality  
 3. Practical recommendations for improvement or next steps
 4. Your thoughts on how this might be useful for Danny Ray
@@ -320,18 +320,18 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-    // Use OpenRouter (DeepSeek) for AI analysis
+    // Use Grok 1 Fast for repository analysis
     let aiResponse: { content: string; success: boolean } | null = null;
 
     try {
-      aiResponse = await generateOpenRouterResponse(analysisPrompt, {
+      aiResponse = await generateGrokResponse(analysisPrompt, {
         userName: 'Danny Ray',
       });
       if (aiResponse.success && aiResponse.content) {
         return parseAnalysisResponse(aiResponse.content);
       }
     } catch (error) {
-      console.warn('OpenRouter analysis failed:', error);
+      console.warn('Grok analysis failed:', error);
     }
 
     // Fallback to manual analysis if OpenRouter fails

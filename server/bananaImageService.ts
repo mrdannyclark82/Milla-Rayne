@@ -8,6 +8,8 @@ export interface BananaImageGenerationResult {
   error?: string;
 }
 
+import { config } from './config';
+
 /**
  * Call a Banana-hosted Gemini image endpoint. Uses OPENROUTER_GEMINI_API_KEY or BANANA_API_KEY as the credential.
  * Returns either an image URL/data URI or a data:text description when the endpoint returns only text.
@@ -16,7 +18,7 @@ export async function generateImageWithBanana(
   prompt: string
 ): Promise<BananaImageGenerationResult> {
   const bananaKey =
-    process.env.OPENROUTER_GEMINI_API_KEY || process.env.BANANA_API_KEY;
+    config.openrouter.geminiApiKey || config.banana.apiKey;
   if (!bananaKey) {
     return {
       success: false,
@@ -26,12 +28,12 @@ export async function generateImageWithBanana(
   }
 
   const apiUrl =
-    process.env.BANANA_API_URL ||
-    process.env.BANANA_ENDPOINT ||
+    config.banana.apiUrl ||
+    config.banana.apiEndpoint ||
     'https://api.banana.dev/run';
   const modelKey =
-    process.env.BANANA_MODEL_KEY ||
-    process.env.BANANA_MODEL ||
+    config.banana.modelKey ||
+    config.banana.model ||
     'google/gemini-pro-vision';
 
   try {

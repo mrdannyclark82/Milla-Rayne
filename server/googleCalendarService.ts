@@ -70,17 +70,18 @@ export async function listEvents(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || 'Unknown error';
       return {
         success: false,
-        message: `Failed to fetch calendar events: ${errorData.error?.message || 'Unknown error'}`,
-        error: errorData.error?.message || 'API_ERROR',
+        message: `Failed to fetch calendar events: ${errorMessage}`,
+        error: `API_ERROR: ${errorMessage}`,
       };
     }
 
     const data = await response.json();
     return {
       success: true,
-      message: `Successfully fetched ${data.items.length} events.`,
+      message: `Successfully fetched ${data.items ? data.items.length : 0} events.`,
       events: data.items,
     };
   } catch (error) {
@@ -97,6 +98,14 @@ export async function deleteEvent(
   userId: string = 'default-user',
   eventId: string
 ): Promise<CalendarAPIResult> {
+  if (!eventId) {
+    return {
+      success: false,
+      message: 'Event ID cannot be empty.',
+      error: 'INVALID_INPUT',
+    };
+  }
+
   try {
     const accessToken = await getValidAccessToken(userId, 'google');
 
@@ -125,10 +134,11 @@ export async function deleteEvent(
       };
     } else {
       const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || 'Unknown error';
       return {
         success: false,
-        message: `Failed to delete event: ${errorData.error?.message || 'Unknown error'}`,
-        error: errorData.error?.message || 'API_ERROR',
+        message: `Failed to delete event: ${errorMessage}`,
+        error: `API_ERROR: ${errorMessage}`,
       };
     }
   } catch (error) {
@@ -148,6 +158,14 @@ export async function addEventToGoogleCalendar(
   description?: string,
   userId: string = 'default-user'
 ): Promise<CalendarAPIResult> {
+  if (!title || !date) {
+    return {
+      success: false,
+      message: 'Event title and date cannot be empty.',
+      error: 'INVALID_INPUT',
+    };
+  }
+
   try {
     console.log(`[Google Calendar API] Adding event: ${title} on ${date}`);
 
@@ -205,11 +223,11 @@ export async function addEventToGoogleCalendar(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('[Google Calendar API] Error:', errorData);
-
+      const errorMessage = errorData.error?.message || 'Unknown error';
       return {
         success: false,
-        message: `I had trouble adding the event to your calendar: ${errorData.error?.message || 'Unknown error'}`,
-        error: errorData.error?.message || 'API_ERROR',
+        message: `I had trouble adding the event to your calendar: ${errorMessage}`,
+        error: `API_ERROR: ${errorMessage}`,
       };
     }
 

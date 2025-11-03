@@ -1,14 +1,20 @@
 /// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+
 import path from "path";
 import { fileURLToPath } from "url";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
+import tailwindcss from "@tailwindcss/vite";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  root: 'client',
   plugins: [
+    tailwindcss({ config: path.resolve(__dirname, 'tailwind.config.ts') }),
+    
     react(),
     ...(process.env.NODE_ENV !== "production"
       ? [
@@ -31,27 +37,11 @@ export default defineConfig({
     },
     dedupe: ["react", "react-dom"],
   },
-  root: path.resolve(__dirname, "client"),
-  build: {
-    outDir: path.resolve(__dirname, "dist/public"),
-    emptyOutDir: true,
-  },
-  server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
-  },
+
   test: {
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['src/__tests__/**/*.test.ts', '../server/__tests__/**/*.test.ts', 'src/__tests__/**/*.test.tsx'],
+    include: ['src/__tests__/**/*.test.ts', 'src/__tests__/**/*.test.tsx'],
   },
 });

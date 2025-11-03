@@ -3,77 +3,40 @@
  * Manages scene layers and applies theming based on context
  */
 
-import React, { useMemo } from 'react';
-import { useSceneContext } from '@/contexts/SceneContext';
-import { generateSceneTheme } from '@/lib/scene/sceneUtils';
+import React from 'react';
+import { BackgroundLayer } from './BackgroundLayer';
 import { AmbientGradientLayer } from './AmbientGradientLayer';
 import { ParallaxLayer } from './ParallaxLayer';
-import { BackgroundLayer } from './BackgroundLayer';
 import { WeatherLayer } from './WeatherLayer';
+import { useSceneContext } from '@/contexts/SceneContext';
 
 interface SceneManagerProps {
   className?: string;
 }
 
 export function SceneManager({ className = '' }: SceneManagerProps) {
-  const context = useSceneContext();
-
-  // Generate theme from context
-  const theme = useMemo(
-    () =>
-      generateSceneTheme(
-        context.timeOfDay,
-        context.appState,
-        context.reducedMotion,
-        context.performanceMode
-      ),
-    [
-      context.timeOfDay,
-      context.appState,
-      context.reducedMotion,
-      context.performanceMode,
-    ]
-  );
-
-  // Reduce animation when page is backgrounded
-  const effectiveAnimationSpeed = context.isBackgrounded
-    ? 0
-    : theme.animationSpeed;
-  const effectiveParallaxIntensity = context.isBackgrounded
-    ? 0
-    : theme.parallaxIntensity;
+  const { theme } = useSceneContext();
 
   return (
     <div
       className={`scene-manager ${className}`}
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        width: '66.6667vw',
+        height: '100vh',
         overflow: 'hidden',
         pointerEvents: 'none',
-        zIndex: -10,
+        zIndex: 1,
       }}
       aria-hidden="true"
       role="presentation"
     >
       {/* Background image layer */}
       <BackgroundLayer />
-
-      {/* Base gradient layer */}
-      <AmbientGradientLayer
-        theme={{
-          ...theme,
-          animationSpeed: effectiveAnimationSpeed,
-        }}
-      />
-
-      {/* Parallax depth layer */}
-      <ParallaxLayer
-        intensity={effectiveParallaxIntensity}
-        color={theme.palette.accent}
-      />
-
-      {/* Weather effects layer */}
+      <AmbientGradientLayer theme={theme} />
+      <ParallaxLayer />
       <WeatherLayer />
     </div>
   );

@@ -20,6 +20,7 @@ interface UserActivity {
   lastBreakTaken?: number;
   continuousActivityStart?: number;
   lastProactiveReachout?: number;
+  lastTaskReminder?: number;
 }
 
 const ACTIVITY_FILE = path.join(process.cwd(), 'memory', 'user_activity.json');
@@ -91,6 +92,12 @@ export async function trackUserActivity(): Promise<void> {
 // Generate proactive engagement messages
 export async function generateProactiveMessage(): Promise<string | null> {
   try {
+    // First, check for task reminders
+    const taskReminder = await generateTaskReminder();
+    if (taskReminder) {
+      return taskReminder;
+    }
+
     const emotionalContext = await getEmotionalContext();
     const now = new Date();
     const hour = now.getHours();
@@ -180,6 +187,53 @@ export async function checkMilestones(): Promise<string | null> {
     return null;
   } catch (error) {
     console.error('Error checking milestones:', error);
+    return null;
+  }
+}
+
+// Generate task reminder messages
+export async function generateTaskReminder(): Promise<string | null> {
+  try {
+    const { getUserTasks } = await import('./userTaskService');
+    const allTasks = getUserTasks();
+    const now = new Date();
+
+    const upcomingTasks = allTasks.filter(task => {
+      const dueDate = new Date(task.dueDate);
+      return task.status === 'pending' && dueDate > now && dueDate.getTime() - now.getTime() < 24 * 60 * 60 * 1000;
+    });
+
+    const overdueTasks = allTasks.filter(task => task.status === 'overdue');
+
+    let taskToRemind;
+    if (overdueTasks.length > 0) {
+      taskToRemind = overdueTasks[0]; // Prioritize overdue tasks
+    } else if (upcomingTasks.length > 0) {
+      taskToRemind = upcomingTasks[0];
+    } else {
+      return null;
+    }
+
+    const activityData = await fs.readFile(ACTIVITY_FILE, 'utf-8');
+    const activity: UserActivity = JSON.parse(activityData);
+
+    // Remind only once per hour
+    if (activity.lastTaskReminder && now.getTime() - activity.lastTaskReminder < 60 * 60 * 1000) {
+      return null;
+    }
+
+    activity.lastTaskReminder = now.getTime();
+    await fs.writeFile(ACTIVITY_FILE, JSON.stringify(activity, null, 2));
+
+    if (taskToRemind.status === 'overdue') {
+      return `Just a gentle reminder, my love. It looks like the task \"${taskToRemind.title}\" is overdue. Is there anything I can do to help you with that?`;
+    } else {
+      const dueDate = new Date(taskToRemind.dueDate);
+      const hoursUntilDue = Math.round((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+      return `Thinking of you, sweetheart. Just a heads-up, your task \"${taskToRemind.title}\" is due in about ${hoursUntilDue} hours. You've got this!`;
+    }
+  } catch (error) {
+    console.error('Error generating task reminder:', error);
     return null;
   }
 }

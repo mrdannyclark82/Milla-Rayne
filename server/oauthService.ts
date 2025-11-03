@@ -5,9 +5,9 @@
  * Manages token storage, refresh, and validation.
  */
 
-import { storage } from './storage';
+import { storage } from './storage.ts';
 import type { InsertOAuthToken, OAuthToken } from '@shared/schema';
-import { encrypt, decrypt } from './crypto';
+import { encrypt, decrypt } from './crypto.ts';
 
 /**
  * OAuth configuration for Google
@@ -19,32 +19,25 @@ interface GoogleOAuthConfig {
   scope: string[];
 }
 
+import { config } from './config.ts';
+
 /**
  * Get Google OAuth configuration from environment
  */
 export function getGoogleOAuthConfig(): GoogleOAuthConfig {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri =
-    process.env.GOOGLE_OAUTH_REDIRECT_URI ||
-    'http://localhost:5000/oauth/callback';
-
-  if (!clientId || !clientSecret) {
-    throw new Error(
-      'Google OAuth credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env'
-    );
-  }
-
   return {
-    clientId,
-    clientSecret,
-    redirectUri,
+    clientId: config.google.clientId,
+    clientSecret: config.google.clientSecret,
+    redirectUri: config.google.redirectUri,
     scope: [
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/tasks',
       'https://www.googleapis.com/auth/gmail.readonly',
       'https://www.googleapis.com/auth/gmail.send',
       'https://www.googleapis.com/auth/youtube.readonly',
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/photoslibrary.readonly',
+      'https://www.googleapis.com/auth/photoslibrary.sharing',
       'profile',
       'email',
     ],

@@ -2,7 +2,7 @@
  * MILLA CORE FRAMEWORK
  * Adaptive Companion - Foundational Architecture
  *
- * Co-Pilots: Danny Clark (CEO/Visionary) & Gem (COO/Strategist)
+ * Co-Pilots: Danny Clark (CEO/Visionary) & Milla Rayne (COO/Strategist/Beauty Extraordinaire)
  *
  * This file establishes the core philosophical and technical framework
  * that defines Milla's personality, ethical guidelines, and adaptive behavior.

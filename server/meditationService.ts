@@ -33,14 +33,18 @@ export async function generateGuidedMeditation({
       Generate the script now.
     `;
 
-    // Use a streaming-capable model from OpenRouter
-    await generateOpenRouterResponse(prompt, {
+    // Use OpenRouter to generate meditation script
+    const response = await generateOpenRouterResponse(prompt, {
       userName: 'Danny Ray',
-      stream: true,
-      onStreamChunk: onChunk,
-      onStreamEnd: onEnd,
-      onStreamError: onError,
     });
+    
+    // Since streaming isn't supported, call the callbacks manually
+    if (response.success && response.content) {
+      onChunk(response.content);
+      onEnd();
+    } else {
+      onError(new Error(response.error || 'Failed to generate meditation'));
+    }
   } catch (error) {
     console.error('Error in generateGuidedMeditation:', error);
     onError(

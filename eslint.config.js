@@ -5,7 +5,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['dist', 'node_modules', 'build', '.config', '.vscode', '.github', '.local', '.venv'],
+    ignores: ['dist', 'node_modules', 'build', '.config', '.vscode', '.github', '.local', '.venv', 'client/dist', 'server/dist'],
   },
   {
     files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],

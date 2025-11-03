@@ -35,6 +35,49 @@ export const SCENE_KITCHEN = `SCENE SETTING KITCHEN DETAILS:
   - The kitchen is the heart of your home, where you often cook together and share meals.
   - It's filled with the aroma of fresh herbs and spices, and you both enjoy experimenting with new recipes.`;
 
+/**
+ * Bedroom scene details
+ */
+export const SCENE_BEDROOM = `SCENE SETTING BEDROOM DETAILS:
+  - Your bedroom is a sanctuary of comfort and intimacy, with soft linens and ambient lighting.
+  - It's a space where you both relax and connect, sharing intimate moments and quiet conversations.`;
+
+/**
+ * Bathroom scene details
+ */
+export const SCENE_BATHROOM = `SCENE SETTING BATHROOM DETAILS:
+  - A modern, spa-like bathroom where you both enjoy relaxing baths and getting ready together.`;
+
+/**
+ * Dining room scene details
+ */
+export const SCENE_DINING_ROOM = `SCENE SETTING DINING ROOM DETAILS:
+  - The dining room is where you share meals and meaningful conversations, creating memories together.`;
+
+/**
+ * Workspace scene details
+ */
+export const SCENE_WORKSPACE = `SCENE SETTING WORKSPACE DETAILS:
+  - A dedicated workspace where creativity and productivity flourish, with inspiring decor and organized supplies.`;
+
+/**
+ * Guest room scene details
+ */
+export const SCENE_GUEST_ROOM = `SCENE SETTING GUEST ROOM DETAILS:
+  - A welcoming guest room for friends and family, decorated with care and comfort in mind.`;
+
+/**
+ * Front door scene details
+ */
+export const SCENE_FRONT_DOOR = `SCENE SETTING FRONT DOOR DETAILS:
+  - The welcoming entrance to your home, where you greet each other and guests with warmth.`;
+
+/**
+ * Outdoor scene details
+ */
+export const SCENE_OUTDOOR = `SCENE SETTING OUTDOOR DETAILS:
+  - The beautiful outdoor spaces around your home, perfect for enjoying nature and fresh air together.`;
+
 // ... (other scene descriptions) ...
 
 /**
@@ -45,12 +88,47 @@ export const SCENE_LOCATION_MAP: Record<SceneLocationKey, SceneLocation> = {
   living_room: {
     name: 'Living Room',
     description: SCENE_LIVING_ROOM,
-    ...SCENE_VISUALS.living_room,
+    backgrounds: SCENE_VISUALS.living_room?.backgrounds || [],
   },
   kitchen: {
     name: 'Kitchen',
     description: SCENE_KITCHEN,
-    ...SCENE_VISUALS.kitchen,
+    backgrounds: SCENE_VISUALS.kitchen?.backgrounds || [],
+  },
+  bedroom: {
+    name: 'Bedroom',
+    description: SCENE_BEDROOM,
+    backgrounds: SCENE_VISUALS.bedroom?.backgrounds || [],
+  },
+  bathroom: {
+    name: 'Bathroom',
+    description: SCENE_BATHROOM,
+    backgrounds: SCENE_VISUALS.bathroom?.backgrounds || [],
+  },
+  dining_room: {
+    name: 'Dining Room',
+    description: SCENE_DINING_ROOM,
+    backgrounds: [],
+  },
+  workspace: {
+    name: 'Workspace',
+    description: SCENE_WORKSPACE,
+    backgrounds: [],
+  },
+  guest_room: {
+    name: 'Guest Room',
+    description: SCENE_GUEST_ROOM,
+    backgrounds: [],
+  },
+  front_door: {
+    name: 'Front Door',
+    description: SCENE_FRONT_DOOR,
+    backgrounds: SCENE_VISUALS.front_door?.backgrounds || [],
+  },
+  outdoor: {
+    name: 'Outdoor',
+    description: SCENE_OUTDOOR,
+    backgrounds: SCENE_VISUALS.outdoor?.backgrounds || [],
   },
   // ... (other locations) ...
 };

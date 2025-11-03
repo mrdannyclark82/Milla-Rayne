@@ -284,24 +284,29 @@ class AzureTTS implements ITTSProvider {
 class ElevenLabsTTS implements ITTSProvider {
   private audio: HTMLAudioElement | null = null;
   private voices: any[] = [];
+  private voicesFetched = false;
 
-  constructor() {
-    this.fetchVoices();
-  }
+  constructor() {}
 
   async fetchVoices(): Promise<void> {
+    if (this.voicesFetched) {
+      return;
+    }
     try {
       const response = await fetch('/api/elevenlabs/voices');
       if (response.ok) {
         const data = await response.json();
+        console.log(data);
         this.voices = data.voices;
+        this.voicesFetched = true;
       }
     } catch (error) {
       console.error('Error fetching ElevenLabs voices:', error);
     }
   }
 
-  getVoices(): any[] {
+  async getVoices(): Promise<any[]> {
+    await this.fetchVoices();
     return this.voices;
   }
 
@@ -534,10 +539,10 @@ export class VoiceService {
   /**
    * Get available voices for the current provider
    */
-  getAvailableVoices(): any[] {
+  async getAvailableVoices(): Promise<any[]> {
     const provider = this.providers.get(this.currentProvider);
     if (provider && 'getVoices' in provider) {
-      return (provider as any).getVoices();
+      return await (provider as any).getVoices();
     }
     return [];
   }

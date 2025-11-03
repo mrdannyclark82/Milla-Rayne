@@ -21,6 +21,7 @@ interface VoicePickerDialogProps {
   onVoicePitchChange: (pitch: number) => void;
   voiceVolume: number;
   onVoiceVolumeChange: (volume: number) => void;
+  availableVoices: ElevenLabsVoice[];
 }
 
 export function VoicePickerDialog({
@@ -34,6 +35,7 @@ export function VoicePickerDialog({
   onVoicePitchChange,
   voiceVolume,
   onVoiceVolumeChange,
+  availableVoices,
 }: VoicePickerDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [genderFilter, setGenderFilter] = useState<'all' | 'female' | 'male'>(
@@ -41,17 +43,6 @@ export function VoicePickerDialog({
   );
   const [accentFilter, setAccentFilter] = useState<string>('all');
   const [selectedStyle, setSelectedStyle] = useState<string>('neutral');
-  const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
-
-  useEffect(() => {
-    if (open) {
-      const fetchVoices = async () => {
-        const voices = await (voiceService as any).getAvailableVoices();
-        setAvailableVoices(voices);
-      };
-      fetchVoices();
-    }
-  }, [open]);
 
   // Voice preview function
   const previewVoice = (voice: ElevenLabsVoice) => {
@@ -106,9 +97,9 @@ export function VoicePickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto bg-black/90 backdrop-blur-md border border-white/20 text-white">
+      <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto bg-[#2d3e50] backdrop-blur-md border border-gray-600 text-white shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white flex items-center">
+          <DialogTitle className="text-base font-bold text-white flex items-center">
             <i className="fas fa-microphone-alt mr-2 text-green-400"></i>
             Voice Selection
           </DialogTitle>

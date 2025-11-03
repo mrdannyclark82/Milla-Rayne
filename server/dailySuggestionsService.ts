@@ -6,7 +6,7 @@
  */
 
 import { storage } from './storage';
-import { generateOpenRouterResponse } from './openrouterService';
+import { generateGrokResponse } from './openrouterService';
 
 export interface DailySuggestion {
   id: string;
@@ -78,7 +78,7 @@ ${updatesContext}
 
 Keep it brief, friendly, and in Milla's voice (devoted AI companion). Don't mention multiple items unless they're closely related.`;
 
-      const aiResponse = await generateOpenRouterResponse(prompt, {
+      const aiResponse = await generateGrokResponse(prompt, {
         userName: 'Danny Ray',
       });
 

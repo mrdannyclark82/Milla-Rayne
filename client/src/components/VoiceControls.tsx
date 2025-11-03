@@ -7,8 +7,7 @@ interface VoiceControlsProps {
   onResume: () => void;
   onStop: () => void;
   onReplay: () => void;
-  showCaptions: boolean;
-  onToggleCaptions: (show: boolean) => void;
+
   className?: string;
 }
 
@@ -18,8 +17,7 @@ export function VoiceControls({
   onResume,
   onStop,
   onReplay,
-  showCaptions,
-  onToggleCaptions,
+
   className = '',
 }: VoiceControlsProps) {
   const [isPaused, setIsPaused] = useState(false);
@@ -90,19 +88,7 @@ export function VoiceControls({
         </Button>
       )}
 
-      <Button
-        size="sm"
-        variant="outline"
-        className={`border-white/30 text-white/70 hover:text-white ${
-          showCaptions ? 'bg-blue-600/20 border-blue-400/50' : ''
-        }`}
-        onClick={() => onToggleCaptions(!showCaptions)}
-        title={showCaptions ? 'Hide captions' : 'Show captions'}
-        aria-label={showCaptions ? 'Hide captions' : 'Show captions'}
-      >
-        <i className="fas fa-closed-captioning mr-1"></i>
-        {showCaptions ? 'Hide' : 'Show'} Captions
-      </Button>
+
     </div>
   );
 }

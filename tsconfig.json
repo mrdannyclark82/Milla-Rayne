@@ -5,6 +5,7 @@
     "build", 
     "dist", 
     "**/*.test.ts",
+    "**/*.test.tsx",
     "client/src/lib/MillaCore (copy).ts"
   ],
   "compilerOptions": {
