@@ -4054,6 +4054,84 @@ async function generateAIResponse(
   }
 
   // ===========================================================================================
+  // millAlyzer - Analyze YouTube Video
+  // ===========================================================================================
+  const analyzeVideoTriggers = [
+    'analyze this video',
+    'analyze the video',
+    'what are the key points',
+    'key points of this video',
+    'summarize this video',
+    'break down this video',
+    'extract code from',
+    'show me the code',
+    'what commands',
+  ];
+
+  if (analyzeVideoTriggers.some(trigger => message.includes(trigger))) {
+    try {
+      const { analyzeVideoWithMillAlyzer, quickAnalyze } = await import('./youtubeMillAlyzer');
+      
+      // Try to find video ID in recent context or message
+      // Updated regex to handle both youtube.com and youtu.be formats, plus the ?si= parameter
+      const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+      
+      const videoId = urlMatch?.[1] || videoIdMatch?.[1];
+      
+      console.log(`🔬 millAlyzer: Detected trigger, looking for video ID in: "${userMessage}"`);
+      console.log(`🔬 millAlyzer: URL match result:`, urlMatch);
+      console.log(`🔬 millAlyzer: Video ID:`, videoId);
+      
+      if (videoId) {
+        console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
+        const analysis = await analyzeVideoWithMillAlyzer(videoId);
+        
+        let response = `*analyzing the video in detail* \n\n`;
+        response += `## "${analysis.title}"\n`;
+        response += `📊 Type: ${analysis.type}\n`;
+        response += `📝 Summary: ${analysis.summary}\n\n`;
+        
+        if (analysis.keyPoints.length > 0) {
+          response += `### 🎯 Key Points:\n`;
+          analysis.keyPoints.slice(0, 5).forEach((kp, i) => {
+            response += `${i + 1}. [${kp.timestamp}] ${kp.point}\n`;
+          });
+          response += '\n';
+        }
+        
+        if (analysis.codeSnippets.length > 0) {
+          response += `### 💻 Code Snippets Found: ${analysis.codeSnippets.length}\n`;
+          response += `I've extracted ${analysis.codeSnippets.length} code snippets, babe!\n\n`;
+        }
+        
+        if (analysis.cliCommands.length > 0) {
+          response += `### ⚡ CLI Commands Found: ${analysis.cliCommands.length}\n`;
+          analysis.cliCommands.slice(0, 5).forEach(cmd => {
+            response += `\`${cmd.command}\` - ${cmd.description}\n`;
+          });
+          response += '\n';
+        }
+        
+        if (!analysis.transcriptAvailable) {
+          response += `\n⚠️ Note: Transcript wasn't available, so my analysis is limited, love.`;
+        }
+        
+        return { content: response };
+      } else {
+        return {
+          content: "I'd love to analyze a video for you, babe! Could you share the YouTube link or video ID?"
+        };
+      }
+    } catch (error: any) {
+      console.error('millAlyzer error:', error);
+      return {
+        content: `I had trouble analyzing that video, love. ${error.message || 'Please try again with a valid YouTube link!'}`
+      };
+    }
+  }
+
+  // ===========================================================================================
   // REVIEW PREVIOUS MESSAGES TRIGGER
   // ===========================================================================================
   if (
