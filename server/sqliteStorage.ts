@@ -4,7 +4,7 @@
  */
 
 import Database from 'better-sqlite3';
-import type { User, InsertUser, Message, InsertMessage, AiUpdate, InsertAiUpdate, DailySuggestion, InsertDailySuggestion, UserSession, MemorySummary, InsertMemorySummary, } from '../shared/schema';
+import type { User, InsertUser, Message, InsertMessage, AiUpdate, InsertAiUpdate, DailySuggestion, InsertDailySuggestion, UserSession, MemorySummary, InsertMemorySummary, YoutubeKnowledge, InsertYoutubeKnowledge, } from '../shared/schema';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -77,6 +77,12 @@ export interface IStorage {
   createMemorySummary(summary: InsertMemorySummary): Promise<MemorySummary>;
   getMemorySummaries(userId: string, limit?: number): Promise<MemorySummary[]>;
   searchMemorySummaries(userId: string, query: string, limit?: number): Promise<MemorySummary[]>;
+
+  // YouTube Knowledge Base methods
+  saveYoutubeKnowledge(knowledge: InsertYoutubeKnowledge): Promise<YoutubeKnowledge>;
+  getYoutubeKnowledgeByVideoId(videoId: string, userId: string): Promise<YoutubeKnowledge | null>;
+  searchYoutubeKnowledge(filters: any): Promise<YoutubeKnowledge[]>;
+  incrementYoutubeWatchCount(videoId: string, userId: string): Promise<void>;
 }
 
 export interface SessionInfo {
@@ -376,6 +382,29 @@ export class SqliteStorage implements IStorage {
       )
     `);
 
+    // Create youtube_knowledge_base table
+    console.debug('sqlite: creating youtube_knowledge_base table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS youtube_knowledge_base (
+        id TEXT PRIMARY KEY,
+        video_id TEXT NOT NULL UNIQUE,
+        title TEXT NOT NULL,
+        channel_name TEXT,
+        duration INTEGER,
+        video_type TEXT NOT NULL CHECK(video_type IN ('tutorial', 'news', 'discussion', 'entertainment', 'other')),
+        summary TEXT NOT NULL,
+        key_points TEXT, -- Stored as JSON string
+        code_snippets TEXT, -- Stored as JSON string
+        cli_commands TEXT, -- Stored as JSON string
+        actionable_items TEXT, -- Stored as JSON string
+        tags TEXT, -- Stored as JSON string array
+        transcript_available INTEGER NOT NULL DEFAULT 0,
+        analyzed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        watch_count INTEGER NOT NULL DEFAULT 0,
+        user_id TEXT DEFAULT 'default-user'
+      )
+    `);
+
     // Create indexes for ai_updates and daily_suggestions
     console.debug('sqlite: creating indexes');
     this.db.exec(`
@@ -389,6 +418,10 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
+      CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_video_id ON youtube_knowledge_base(video_id);
+      CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_user_id ON youtube_knowledge_base(user_id);
+      CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_type ON youtube_knowledge_base(video_type);
+      CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_analyzed_at ON youtube_knowledge_base(analyzed_at DESC);
     `);
 
     const encryptionStatus = isEncryptionEnabled() ? 'enabled' : 'disabled';
@@ -1103,6 +1136,140 @@ export class SqliteStorage implements IStorage {
       emotionalTone: summary.emotional_tone,
       createdAt: new Date(summary.created_at),
       updatedAt: new Date(summary.updated_at),
+    };
+  }
+
+  // ===========================================================================================
+  // YOUTUBE KNOWLEDGE BASE METHODS
+  // ===========================================================================================
+
+  async saveYoutubeKnowledge(knowledge: InsertYoutubeKnowledge): Promise<YoutubeKnowledge> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO youtube_knowledge_base (
+        id, video_id, title, channel_name, duration, video_type, summary,
+        key_points, code_snippets, cli_commands, actionable_items, tags,
+        transcript_available, user_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(video_id) DO UPDATE SET
+        title = excluded.title,
+        summary = excluded.summary,
+        key_points = excluded.key_points,
+        code_snippets = excluded.code_snippets,
+        cli_commands = excluded.cli_commands,
+        actionable_items = excluded.actionable_items,
+        tags = excluded.tags,
+        analyzed_at = CURRENT_TIMESTAMP
+    `);
+
+    stmt.run(
+      id,
+      knowledge.videoId,
+      knowledge.title,
+      knowledge.channelName || null,
+      knowledge.duration || null,
+      knowledge.videoType,
+      knowledge.summary,
+      knowledge.keyPoints ? JSON.stringify(knowledge.keyPoints) : null,
+      knowledge.codeSnippets ? JSON.stringify(knowledge.codeSnippets) : null,
+      knowledge.cliCommands ? JSON.stringify(knowledge.cliCommands) : null,
+      knowledge.actionableItems ? JSON.stringify(knowledge.actionableItems) : null,
+      knowledge.tags ? JSON.stringify(knowledge.tags) : null,
+      knowledge.transcriptAvailable ? 1 : 0,
+      knowledge.userId || 'default-user'
+    );
+
+    const saved = await this.getYoutubeKnowledgeByVideoId(knowledge.videoId, knowledge.userId || 'default-user');
+    if (!saved) {
+      throw new Error('Failed to save YouTube knowledge');
+    }
+    return saved;
+  }
+
+  async getYoutubeKnowledgeByVideoId(videoId: string, userId: string): Promise<YoutubeKnowledge | null> {
+    const stmt = this.db.prepare('SELECT * FROM youtube_knowledge_base WHERE video_id = ? AND user_id = ?');
+    const video = stmt.get(videoId, userId) as any;
+    
+    if (!video) return null;
+
+    return this.parseYoutubeKnowledge(video);
+  }
+
+  async searchYoutubeKnowledge(filters: any): Promise<YoutubeKnowledge[]> {
+    let query = 'SELECT * FROM youtube_knowledge_base WHERE 1=1';
+    const params: any[] = [];
+
+    if (filters.userId) {
+      query += ' AND user_id = ?';
+      params.push(filters.userId);
+    }
+
+    if (filters.videoType) {
+      query += ' AND video_type = ?';
+      params.push(filters.videoType);
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      query += ' AND (';
+      const tagConditions = filters.tags.map(() => 'tags LIKE ?').join(' OR ');
+      query += tagConditions + ')';
+      filters.tags.forEach((tag: string) => params.push(`%"${tag}"%`));
+    }
+
+    if (filters.hasCode) {
+      query += ' AND code_snippets IS NOT NULL AND code_snippets != "[]"';
+    }
+
+    if (filters.hasCommands) {
+      query += ' AND cli_commands IS NOT NULL AND cli_commands != "[]"';
+    }
+
+    if (filters.query) {
+      query += ' AND (title LIKE ? OR summary LIKE ? OR tags LIKE ?)';
+      const searchTerm = `%${filters.query}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    query += ' ORDER BY analyzed_at DESC';
+
+    if (filters.limit) {
+      query += ' LIMIT ?';
+      params.push(filters.limit);
+    }
+
+    const stmt = this.db.prepare(query);
+    const videos = stmt.all(...params) as any[];
+
+    return videos.map(v => this.parseYoutubeKnowledge(v));
+  }
+
+  async incrementYoutubeWatchCount(videoId: string, userId: string): Promise<void> {
+    const stmt = this.db.prepare(`
+      UPDATE youtube_knowledge_base 
+      SET watch_count = watch_count + 1 
+      WHERE video_id = ? AND user_id = ?
+    `);
+    stmt.run(videoId, userId);
+  }
+
+  private parseYoutubeKnowledge(row: any): YoutubeKnowledge {
+    return {
+      id: row.id,
+      videoId: row.video_id,
+      title: row.title,
+      channelName: row.channel_name,
+      duration: row.duration,
+      videoType: row.video_type,
+      summary: row.summary,
+      keyPoints: row.key_points ? JSON.parse(row.key_points) : [],
+      codeSnippets: row.code_snippets ? JSON.parse(row.code_snippets) : [],
+      cliCommands: row.cli_commands ? JSON.parse(row.cli_commands) : [],
+      actionableItems: row.actionable_items ? JSON.parse(row.actionable_items) : [],
+      tags: row.tags ? JSON.parse(row.tags) : [],
+      transcriptAvailable: row.transcript_available === 1,
+      analyzedAt: new Date(row.analyzed_at),
+      watchCount: row.watch_count,
+      userId: row.user_id,
     };
   }
 

@@ -174,3 +174,49 @@ export type InsertDailySuggestion = z.infer<typeof insertDailySuggestionSchema>;
 export type DailySuggestion = typeof dailySuggestions.$inferSelect;
 export type InsertOAuthToken = z.infer<typeof insertOAuthTokenSchema>;
 export type OAuthToken = typeof oauthTokens.$inferSelect;
+
+// ===========================================================================================
+// YOUTUBE KNOWLEDGE BASE SCHEMA
+// ===========================================================================================
+
+export const youtubeKnowledgeBase = pgTable('youtube_knowledge_base', {
+  id: varchar('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  videoId: varchar('video_id', { length: 20 }).notNull().unique(),
+  title: text('title').notNull(),
+  channelName: text('channel_name'),
+  duration: integer('duration'), // in seconds
+  videoType: varchar('video_type', {
+    enum: ['tutorial', 'news', 'discussion', 'entertainment', 'other'],
+  }).notNull(),
+  summary: text('summary').notNull(),
+  keyPoints: jsonb('key_points'), // KeyPoint[]
+  codeSnippets: jsonb('code_snippets'), // CodeSnippet[]
+  cliCommands: jsonb('cli_commands'), // CLICommand[]
+  actionableItems: jsonb('actionable_items'), // ActionableItem[]
+  tags: jsonb('tags'), // string[] - auto-generated from content
+  transcriptAvailable: boolean('transcript_available').notNull().default(false),
+  analyzedAt: timestamp('analyzed_at').defaultNow().notNull(),
+  watchCount: integer('watch_count').notNull().default(0),
+  userId: varchar('user_id').default('default-user'),
+});
+
+export const insertYoutubeKnowledgeSchema = createInsertSchema(youtubeKnowledgeBase).pick({
+  videoId: true,
+  title: true,
+  channelName: true,
+  duration: true,
+  videoType: true,
+  summary: true,
+  keyPoints: true,
+  codeSnippets: true,
+  cliCommands: true,
+  actionableItems: true,
+  tags: true,
+  transcriptAvailable: true,
+  userId: true,
+});
+
+export type InsertYoutubeKnowledge = z.infer<typeof insertYoutubeKnowledgeSchema>;
+export type YoutubeKnowledge = typeof youtubeKnowledgeBase.$inferSelect;
