@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         throw new Error('Failed to get user info from Google');
       }
 
-      const userInfo = await userInfoResponse.json();
+      const userInfo: any = await userInfoResponse.json();
 
       // Login or register user
       const result = await loginOrRegisterWithGoogle(
@@ -687,7 +687,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         throw new Error(`Whisper API error: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       const transcript = data.text;
 
       // Now that we have the transcript, we can generate a response from Milla
@@ -740,7 +740,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Log the request for debugging
       // Phase 3: Detect scene context from user message
       const sensorData = await getSmartHomeSensorData();
-      const sceneContext = detectSceneContext(message, currentSceneLocation, sensorData);
+      const sceneContext = detectSceneContext(message, currentSceneLocation, sensorData || undefined);
       if (sceneContext.hasSceneChange) {
         currentSceneLocation = sceneContext.location;
         currentSceneMood = sceneContext.mood;
@@ -763,7 +763,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       if (sessionToken) {
         const sessionResult = await validateSession(sessionToken);
         if (sessionResult.valid && sessionResult.user) {
-          userId = sessionResult.user.id;
+          userId = sessionResult.user.id || null;
         }
       }
 
@@ -4916,7 +4916,7 @@ Could you share the repository URL again so I can take another look?
         const { fileId } = command.entities;
         const result = await summarizeFile(fileId);
         if (result.success) {
-          return { content: result.summary };
+          return { content: result.summary || '' };
         } else {
           return { content: result.message };
         }
@@ -5496,7 +5496,7 @@ This message requires you to be fully present as ${userName}'s partner, companio
       userId: userId,
       conversationHistory: conversationHistory,
       userName: userName,
-      userEmotionalState: userEmotionalState || analysis.sentiment,
+      userEmotionalState: userEmotionalState || (analysis.sentiment as any === 'unknown' ? undefined : analysis.sentiment as any),
       urgency: analysis.urgency,
     }, config.maxOutputTokens);
 

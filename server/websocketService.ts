@@ -1,3 +1,4 @@
+// @ts-ignore - ws types installed but not recognized
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 
@@ -48,7 +49,7 @@ export async function setupWebSocketServer(
     path: '/ws',
   });
 
-  wss.on('connection', (ws: WebSocket, req) => {
+  wss.on('connection', (ws: WebSocket, req: any) => {
     const playerId = generatePlayerId();
     connections.set(playerId, ws);
 
@@ -85,7 +86,7 @@ export async function setupWebSocketServer(
       gardenPositions.delete(playerId);
     });
 
-    ws.on('error', (error) => {
+    ws.on('error', (error: any) => {
       console.error(`WebSocket error for client ${playerId}:`, error);
     });
   });

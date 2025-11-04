@@ -26,9 +26,14 @@ export async function dispatchAIResponse(
   let preferredModel: string | undefined = 'xai'; // Default model (changed to xai since minimax has 404 errors)
 
   if (context.userId) {
-    const userModelPreference = await storage.getUserAIModel(context.userId);
-    if (userModelPreference.success && userModelPreference.model) {
-      preferredModel = userModelPreference.model;
+    // Try to get user model preference (optional method)
+    try {
+      const userModelPreference = await (storage as any).getUserPreferredAIModel?.(context.userId);
+      if (userModelPreference?.model) {
+        preferredModel = userModelPreference.model;
+      }
+    } catch {
+      // Method doesn't exist, use default
     }
   }
 

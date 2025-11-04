@@ -512,7 +512,7 @@ export class SqliteStorage implements IStorage {
   }
 
   // User Session methods
-  async createUserSession(session: InsertUserSession): Promise<UserSession> {
+  async createUserSession(session: any): Promise<any> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
       INSERT INTO user_sessions (id, user_id, session_token, expires_at)

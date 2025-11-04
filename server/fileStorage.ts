@@ -190,6 +190,7 @@ export class FileStorage implements IStorage {
       id,
       createdAt: new Date(),
       lastLoginAt: null,
+      preferredAiModel: insertUser.preferredAiModel || null,
     };
     this.users.set(id, user);
     this.saveMessages();

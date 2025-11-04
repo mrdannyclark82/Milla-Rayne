@@ -16,7 +16,8 @@ export async function analyzeVoiceInput(
   audioBuffer: Buffer,
   mimeType: string
 ): Promise<VoiceAnalysisResult> {
-  if (!config.google.apiKey) {
+  const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+  if (!apiKey) {
     return {
       text: '',
       emotionalTone: 'unknown',
