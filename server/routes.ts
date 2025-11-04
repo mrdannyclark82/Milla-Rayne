@@ -69,7 +69,9 @@ import {
   analyzeYouTubeVideo,
   isValidYouTubeUrl,
   searchVideoMemories,
+  extractVideoId,
 } from './youtubeAnalysisService';
+import { analyzeVideoWithMillAlyzer } from './youtubeMillAlyzer';
 import { getRealWorldInfo } from './realWorldInfoService';
 import {
   parseGitHubUrl,
@@ -777,6 +779,55 @@ export async function registerRoutes(app: Express): Promise<void> {
         youtube_play?: { videoId: string };
         youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
       };
+      
+      // millAlyzer: Check if message contains YouTube URL for analysis
+      let videoAnalysis = null;
+      let showKnowledgeBase = false;
+      let dailyNews = null;
+      
+      const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      
+      // Check for knowledge base request
+      if (message.toLowerCase().includes('knowledge base') || 
+          message.toLowerCase().includes('show videos') ||
+          message.toLowerCase().includes('my videos')) {
+        showKnowledgeBase = true;
+        console.log('📚 millAlyzer: Knowledge base request detected');
+      }
+      
+      // Check for daily news request
+      if (message.toLowerCase().includes('daily news') ||
+          message.toLowerCase().includes('tech news') ||
+          message.toLowerCase().includes('what\'s new')) {
+        try {
+          const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
+          dailyNews = await runDailyNewsSearch();
+          console.log('📰 millAlyzer: Daily news digest generated');
+        } catch (error) {
+          console.error('millAlyzer: Failed to get daily news:', error);
+        }
+      }
+      
+      if (youtubeUrlMatch || (message.toLowerCase().includes('analyze') && message.toLowerCase().includes('video'))) {
+        try {
+          let videoId: string | null = null;
+          
+          if (youtubeUrlMatch) {
+            videoId = youtubeUrlMatch[1];
+          } else if (aiResponse?.youtube_play) {
+            videoId = aiResponse.youtube_play.videoId;
+          }
+          
+          if (videoId) {
+            console.log(`🔍 millAlyzer: Detected video analysis request for ${videoId}`);
+            videoAnalysis = await analyzeVideoWithMillAlyzer(videoId);
+            console.log(`✅ millAlyzer: Analysis complete for ${videoId}`);
+          }
+        } catch (error) {
+          console.error('millAlyzer: Analysis failed:', error);
+          // Continue without analysis - don't break the chat
+        }
+      }
 
       if (!aiResponse || !aiResponse.content) {
         console.warn('Chat API: AI response was empty, using fallback');
@@ -803,6 +854,9 @@ export async function registerRoutes(app: Express): Promise<void> {
         ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
         ...(aiResponse.youtube_play && { youtube_play: aiResponse.youtube_play }),
         ...(aiResponse.youtube_videos && { youtube_videos: aiResponse.youtube_videos }),
+        ...(videoAnalysis && { videoAnalysis }),
+        ...(showKnowledgeBase && { showKnowledgeBase: true }),
+        ...(dailyNews && { dailyNews }),
         sceneContext: {
           location: sceneContext.location,
           mood: sceneContext.mood,
