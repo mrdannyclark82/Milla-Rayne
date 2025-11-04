@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Highlight, themes } from 'prism-react-renderer';
 import {
   Clock,
   Code,
@@ -253,7 +254,7 @@ export function VideoAnalysisPanel({
 }
 
 /**
- * CLICommandCard - Display a single CLI command with copy functionality
+ * CLICommandCard - Display a single CLI command with copy functionality and syntax highlighting
  */
 function CLICommandCard({ command, index }: { command: any; index: number }) {
   const [copied, setCopied] = useState(false);
@@ -301,9 +302,26 @@ function CLICommandCard({ command, index }: { command: any; index: number }) {
           )}
         </Button>
       </div>
-      <code className="text-sm text-purple-300 font-mono block bg-black/40 rounded px-3 py-2 mb-2">
-        {command.command}
-      </code>
+      <Highlight
+        theme={themes.nightOwl}
+        code={command.command}
+        language="bash"
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <pre 
+            className={`${className} text-sm font-mono block bg-black/60 rounded px-3 py-2 mb-2 overflow-x-auto`}
+            style={{ ...style, backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line })}>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        )}
+      </Highlight>
       {command.description && (
         <p className="text-xs text-white/60">{command.description}</p>
       )}

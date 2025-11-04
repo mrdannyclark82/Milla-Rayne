@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Code, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Highlight, themes } from 'prism-react-renderer';
 import type { CodeSnippet } from '@/types/millalyzer';
 
 interface CodeSnippetCardProps {
@@ -51,6 +52,30 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
     ? snippet.code
     : snippet.code.split('\n').slice(0, 10).join('\n') + '\n...';
 
+  // Map language names to Prism language identifiers
+  const getPrismLanguage = (lang: string): string => {
+    const langMap: Record<string, string> = {
+      javascript: 'javascript',
+      typescript: 'typescript',
+      python: 'python',
+      java: 'java',
+      go: 'go',
+      rust: 'rust',
+      cpp: 'cpp',
+      'c++': 'cpp',
+      php: 'php',
+      bash: 'bash',
+      shell: 'bash',
+      sql: 'sql',
+      dockerfile: 'docker',
+      docker: 'docker',
+      yaml: 'yaml',
+      json: 'json',
+      markdown: 'markdown',
+    };
+    return langMap[lang.toLowerCase()] || 'javascript';
+  };
+
   return (
     <Card className={`bg-black/40 backdrop-blur-sm border-white/10 p-4 hover:border-blue-500/30 transition-colors group ${className}`}>
       {/* Header */}
@@ -92,13 +117,33 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
         <p className="text-sm text-white/70 mb-3">{snippet.description}</p>
       )}
 
-      {/* Code Block */}
+      {/* Code Block with Syntax Highlighting */}
       <div className="relative">
-        <pre className="bg-black/60 rounded-lg p-4 overflow-x-auto border border-white/5">
-          <code className="text-sm font-mono text-blue-200 leading-relaxed">
-            {displayCode}
-          </code>
-        </pre>
+        <Highlight
+          theme={themes.nightOwl}
+          code={displayCode}
+          language={getPrismLanguage(snippet.language)}
+        >
+          {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => (
+            <pre 
+              className={`${highlightClassName} bg-black/60 rounded-lg p-4 overflow-x-auto border border-white/5`}
+              style={{ ...style, backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
+            >
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })} className="table-row">
+                  <span className="table-cell text-right pr-4 select-none opacity-40 text-xs">
+                    {i + 1}
+                  </span>
+                  <span className="table-cell">
+                    {line.map((token, key) => (
+                      <span key={key} {...getTokenProps({ token })} />
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </pre>
+          )}
+        </Highlight>
 
         {/* Expand/Collapse Button */}
         {shouldCollapse && (
