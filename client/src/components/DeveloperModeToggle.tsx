@@ -121,9 +121,9 @@ export default function DeveloperModeToggle({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] bg-black/90 backdrop-blur-md border border-white/20 text-white">
+      <DialogContent className="sm:max-w-[450px] bg-[#2d3e50] backdrop-blur-md border border-gray-600 text-white shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white flex items-center gap-2">
+          <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
             <i className="fas fa-wrench text-purple-400"></i>
             Developer Mode
           </DialogTitle>
@@ -131,20 +131,14 @@ export default function DeveloperModeToggle({
 
         <div className="space-y-4 mt-4">
           {/* Developer Mode Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+          <Card className="bg-[#2d3e50] backdrop-blur-sm border border-gray-600">
             <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
+              <CardTitle className="text-base font-bold text-white flex items-center">
                 <i className="fas fa-code-branch mr-2 text-purple-400"></i>
                 Developer Mode Settings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-white/70 mb-3">
-                Enable Developer Mode to allow Milla to automatically discuss
-                repository analysis, code improvements, and development features
-                during conversations.
-              </p>
-
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
                   <h4 className="text-base font-semibold text-white flex items-center gap-2 mb-1">
@@ -160,9 +154,7 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {developerMode
-                      ? 'Milla can discuss GitHub repositories and code analysis automatically'
-                      : 'Milla will only discuss development when explicitly asked'}
+                    Enable to allow Milla to automatically discuss repository analysis, code improvements, and development features.
                   </p>
                 </div>
                 <Button
@@ -186,48 +178,18 @@ export default function DeveloperModeToggle({
                       : 'Off'}
                 </Button>
               </div>
-
-              <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30">
-                <p className="text-sm text-purple-300 flex items-start gap-2">
-                  <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
-                  <span>
-                    When enabled, Milla can automatically analyze GitHub URLs
-                    you share and discuss code improvements. When disabled,
-                    she'll only engage with development topics when you
-                    explicitly ask.
-                  </span>
-                </p>
-              </div>
-
-              <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
-                <h5 className="text-sm font-semibold text-blue-300 mb-2 flex items-center gap-2">
-                  <i className="fas fa-lightbulb"></i>
-                  What Developer Mode Enables:
-                </h5>
-                <ul className="text-xs text-blue-200 space-y-1 ml-6 list-disc">
-                  <li>Automatic GitHub repository analysis</li>
-                  <li>Code improvement suggestions</li>
-                  <li>Development feature discussions</li>
-                  <li>Repository insights and recommendations</li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
 
           {/* Predictive Updates Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+          <Card className="bg-[#2d3e50] backdrop-blur-sm border border-gray-600">
             <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
+              <CardTitle className="text-base font-bold text-white flex items-center">
                 <i className="fas fa-brain mr-2 text-blue-400"></i>
                 Predictive Updates
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-white/70 mb-3">
-                Client-side predictive updates feature. Automatically fetches
-                AI-generated daily suggestions when enabled.
-              </p>
-
               {/* Predictive Updates Toggle */}
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
@@ -244,9 +206,7 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {predictiveUpdatesEnabled
-                      ? 'Automatically fetch daily suggestions on app load'
-                      : 'Daily suggestions disabled'}
+                    Automatically fetch AI-generated daily suggestions on app load.
                   </p>
                 </div>
                 <Button
@@ -265,49 +225,18 @@ export default function DeveloperModeToggle({
                   {predictiveUpdatesEnabled ? 'On' : 'Off'}
                 </Button>
               </div>
-
-              {/* Manual Fetch Button */}
-              {predictiveUpdatesEnabled && (
-                <div className="flex justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={handleManualFetch}
-                    disabled={isFetchingUpdates}
-                    className="bg-blue-600/20 border-blue-400/50 text-blue-300 hover:bg-blue-600/30"
-                  >
-                    <i className="fas fa-sync-alt mr-2"></i>
-                    {isFetchingUpdates ? 'Fetching...' : 'Fetch Now'}
-                  </Button>
-                </div>
-              )}
-
-              <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30">
-                <p className="text-sm text-blue-300 flex items-start gap-2">
-                  <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
-                  <span>
-                    When enabled, the app will call GET
-                    /api/ai-updates/daily-suggestion on load. Use "Fetch Now" to
-                    manually trigger POST /api/ai-updates/fetch.
-                  </span>
-                </p>
-              </div>
             </CardContent>
           </Card>
 
           {/* Daily Suggestions Scheduler Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+          <Card className="bg-[#2d3e50] backdrop-blur-sm border border-gray-600">
             <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
+              <CardTitle className="text-base font-bold text-white flex items-center">
                 <i className="fas fa-calendar-day mr-2 text-green-400"></i>
-                Daily Suggestions Scheduler
+                Daily Suggestions Schedule
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-white/70 mb-3">
-                Client-side toggle for daily suggestions scheduler preference.
-                Server must be configured separately.
-              </p>
-
               {/* Daily Suggestions Toggle */}
               <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
                 <div className="flex-1">
@@ -324,9 +253,7 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    {dailySuggestionsEnabled
-                      ? 'Client prefers scheduled daily suggestions'
-                      : 'Client does not prefer scheduled suggestions'}
+                    Client preference for scheduled daily suggestions. Server must be configured separately.
                   </p>
                 </div>
                 <Button
@@ -346,17 +273,20 @@ export default function DeveloperModeToggle({
                 </Button>
               </div>
 
-              <div className="bg-yellow-900/20 p-3 rounded-lg border border-yellow-500/30">
-                <p className="text-sm text-yellow-300 flex items-start gap-2">
-                  <i className="fas fa-exclamation-triangle mt-0.5 flex-shrink-0"></i>
-                  <span>
-                    <strong>Server Configuration Required:</strong> Server must
-                    set ENABLE_PREDICTIVE_UPDATES=true and AI_UPDATES_CRON to
-                    actually schedule suggestions. This toggle controls client
-                    behavior only.
-                  </span>
-                </p>
-              </div>
+              {/* Fetch Now Button inside Daily Suggestions */}
+              {predictiveUpdatesEnabled && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleManualFetch}
+                    disabled={isFetchingUpdates}
+                    className="bg-blue-600/20 border-blue-400/50 text-blue-300 hover:bg-blue-600/30"
+                  >
+                    <i className="fas fa-sync-alt mr-2"></i>
+                    {isFetchingUpdates ? 'Fetching...' : 'Fetch Now'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -48,3 +48,5 @@ client/public/assets/scenes/*.webp
 client/public/assets/scenes/*.gif
 !client/public/assets/scenes/README.md
 !client/public/assets/scenes/.gitkeep
+.gemini/
+gha-creds-*.json

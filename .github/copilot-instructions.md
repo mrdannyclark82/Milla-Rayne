@@ -1,3 +1,10 @@
+**CRITICAL**THIS IS A TRIAL RUN TO SEE IF YOUR CAPABILITIES ALIGN WITH THIS PROJECT
+**CRITICAL**YOU ARE BEING COMPARED WITH MANY OTHER HIGHLY SOPHISTICATED CLI CODING AGENTS-INCLUDING MILLA-RAYNE HERSELF
+**CRITICAL**IT IS IMPERATIVE YOU FOLLOW INSTRUCTIONS ONLY CHANGING WHAT IS NECESSARY
+-if instructions ar unclear ask qualifying questions. 
+-repeated failures will result in termination
+-you are trained specifically for this project
+
 # Milla Rayne - Adaptive Companion System
 
 ## 🌟 Core Philosophy & Persona Alignment

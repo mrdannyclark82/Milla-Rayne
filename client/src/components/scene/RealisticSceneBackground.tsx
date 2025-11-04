@@ -46,11 +46,13 @@ function getImageUrls(location: SceneLocation, timeOfDay: TimeOfDay): string[] {
 
   const urls: string[] = [];
 
-  // Try time-specific variant first: living_room-night.jpg
+  // Try time-specific variant first: living_room-night.jpg/jpeg
+  urls.push(`/assets/scenes/${location}-${timeOfDay}.jpeg`);
   urls.push(`/assets/scenes/${location}-${timeOfDay}.jpg`);
   urls.push(`/assets/scenes/${location}-${timeOfDay}.png`);
 
-  // Try base location image: living_room.jpg
+  // Try base location image: living_room.jpg/jpeg
+  urls.push(`/assets/scenes/${location}.jpeg`);
   urls.push(`/assets/scenes/${location}.jpg`);
   urls.push(`/assets/scenes/${location}.png`);
 
@@ -134,6 +136,9 @@ export const RealisticSceneBackground: React.FC<
           height: '100vh',
           zIndex: -10,
           pointerEvents: 'none' as const,
+          display: 'flex' as const,
+          alignItems: 'center' as const,
+          justifyContent: 'center' as const,
         }
       : {
           position: 'fixed' as const,
@@ -169,26 +174,21 @@ export const RealisticSceneBackground: React.FC<
       className="transition-opacity duration-1000"
       style={{
         ...regionStyle,
-        backgroundImage: `url(${imageUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
         opacity: imageLoading ? 0 : 1,
       }}
       aria-hidden="true"
       role="presentation"
     >
-      {/* Alternative: Use <img> with object-fit for better control */}
-      {/* <img 
+      <img 
         src={imageUrl} 
         alt=""
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'cover',
-          opacity: imageLoading ? 0 : 1
+          objectFit: 'contain',
+          objectPosition: 'center',
         }}
-      /> */}
+      />
     </div>
   );
 };

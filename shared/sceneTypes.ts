@@ -5,6 +5,7 @@
 
 // Valid scene location keys
 export type SceneLocationKey =
+  | 'front_door'
   | 'living_room'
   | 'kitchen'
   | 'dining_room'
@@ -40,6 +41,7 @@ export interface SceneContext {
   isBackgrounded?: boolean; // Tab/app in background
   weatherEffect: WeatherEffect; // New weather effect
   location: SceneLocationKey; // Current scene location
+  theme: SceneTheme; // Derived scene theme
 }
 
 /**

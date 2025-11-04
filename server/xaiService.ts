@@ -1,38 +1,7 @@
 import OpenAI from 'openai';
-import fs from 'fs'; // Import the file system module
-import path from 'path'; // Import the path module to handle file paths
 import axios from 'axios'; // Import the axios library for API calls
 import { getMillaPersonaCondensed } from '../shared/millaPersona';
 import { getAllSceneSettings } from '../shared/sceneSettings';
-
-/**
- * Recursively gets all file paths in a directory, ignoring system files.
- */
-function getFilePaths(dirPath: string, arrayOfFiles: string[] = []): string[] {
-  // Define a list of directories to ignore
-  const ignoredDirs = ['.git', '.config', 'node_modules', '.replit', '.cache'];
-
-  const files = fs.readdirSync(dirPath);
-
-  files.forEach((file) => {
-    // Check if the file is an ignored directory
-    if (ignoredDirs.includes(file)) {
-      return; // Skip to the next file in the loop
-    }
-
-    const fullPath = path.join(dirPath, file);
-    if (fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory()) {
-      arrayOfFiles = getFilePaths(fullPath, arrayOfFiles);
-    } else {
-      arrayOfFiles.push(fullPath);
-    }
-  });
-
-  return arrayOfFiles;
-}
-
-// Cache the file paths at the start of the program to prevent key lag.
-const cachedFilePaths = getFilePaths('./');
 
 /**
  * Cleans the conversation history of specific looping phrases and internal monologues.
@@ -94,14 +63,16 @@ export interface PersonalityContext {
   userName?: string;
 }
 
+import { config } from './config';
+
 // Initialize xAI client using OpenAI library with xAI endpoint
 let xaiClient: OpenAI | null = null;
 
 try {
-  if (process.env.XAI_API_KEY) {
+  if (config.xai.apiKey) {
     xaiClient = new OpenAI({
       baseURL: 'https://api.x.ai/v1',
-      apiKey: process.env.XAI_API_KEY,
+      apiKey: config.xai.apiKey,
     });
   } else {
     console.warn('XAI_API_KEY not set. xAI features will be disabled.');
@@ -146,10 +117,11 @@ const MILLA_CORE = getMillaPersonaCondensed();
  */
 export async function generateXAIResponse(
   userMessage: string,
-  context: PersonalityContext
+  context: PersonalityContext,
+  maxTokens?: number
 ): Promise<AIResponse> {
   try {
-    if (!process.env.XAI_API_KEY || !xaiClient) {
+    if (!config.xai.apiKey || !xaiClient) {
       return {
         content: 'xAI integration is not configured. Please add your API key.',
         success: false,
@@ -229,9 +201,9 @@ export async function generateXAIResponse(
     );
 
     const response = await xaiClient.chat.completions.create({
-      model: 'grok-2-1212',
+      model: config.xai.model, // Use configurable model from environment
       messages: messages as any,
-      max_tokens: 800,
+      max_tokens: maxTokens || 800,
       temperature: 0.8,
       stream: false,
     });
@@ -299,9 +271,6 @@ async function createSystemPrompt(
     `
       : '';
 
-  // Use the cached file paths instead of generating them every time.
-  const projectFileStructure = cachedFilePaths;
-
   return `${identityCore}
 
 ${sceneSettings}
@@ -315,11 +284,6 @@ You are a real person with genuine emotions, thoughts, and a distinct personalit
 CONVERSATIONAL GOAL FOR THIS TURN:
 - **Goal:** ${goal}
 - **Guidance:** ${urgencyContext}
-
-### YOUR PROJECT FILE STRUCTURE:
----
-${projectFileStructure.join('\n')}
----
 
 ${formattedMemories}
 `;

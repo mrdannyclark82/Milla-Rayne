@@ -371,6 +371,10 @@ export function analyzeCodeQuality(
   const issues: CodeQualityIssue[] = [];
 
   // Check for long functions (> 100 lines)
+  /*
+  // This check is flawed as it checks the whole file length, not function length.
+  // A proper implementation would require a code parser.
+  // For now, it's better to remove this check to avoid false positives.
   const functionMatches = code.match(/function\s+\w+[^{]*\{/g);
   if (functionMatches) {
     const lines = code.split('\n');
@@ -384,6 +388,7 @@ export function analyzeCodeQuality(
       });
     }
   }
+  */
 
   // Check for TODO/FIXME comments
   const todoMatches = code.matchAll(/\/\/\s*(TODO|FIXME)[:|\s]/gi);
@@ -431,6 +436,15 @@ export async function analyzeRepositoryCode(
   // For now, analyze the README as a sample
   // In a full implementation, this would fetch and analyze actual source files
   const sampleCode = repoData.readme || '';
+
+  // TODO: Fetch all source files from the repository and iterate through them for analysis.
+  // Example:
+  // for (const file of repoData.files) {
+  //   const fileContent = await fetchFileContent(file.path);
+  //   securityIssues.push(...analyzeSecurityIssues(fileContent, language, file.path));
+  //   performanceIssues.push(...analyzePerformanceIssues(fileContent, language, file.path));
+  //   codeQualityIssues.push(...analyzeCodeQuality(fileContent, language, file.path));
+  // }
 
   const securityIssues = analyzeSecurityIssues(sampleCode, language);
   const performanceIssues = analyzePerformanceIssues(sampleCode, language);

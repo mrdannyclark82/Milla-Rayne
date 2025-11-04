@@ -46,18 +46,17 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          size={getButtonSize()}
+          size="default"
           title="Open settings menu"
           aria-label="Open settings menu"
           className="bg-white/10 hover:bg-white/20"
         >
-          <i className="fas fa-cog mr-2"></i>
-          Settings
+          <i className="fas fa-cog"></i>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="end"
-        className="w-56 bg-black/90 backdrop-blur-md border border-white/20 text-white"
+        align="start"
+        className="w-56 bg-[#2d3e50] backdrop-blur-md border border-gray-600 text-white"
       >
         <SceneSettingsDialog>
           <DropdownMenuItem
@@ -86,6 +85,16 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
             Developer Mode
           </DropdownMenuItem>
         </DeveloperModeToggle>
+
+        <DropdownMenuItem
+          asChild
+          className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
+        >
+          <a href="/oauth/google" target="_blank" rel="noopener noreferrer">
+            <i className="fab fa-google mr-2 text-red-400"></i>
+            Connect Google Services
+          </a>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

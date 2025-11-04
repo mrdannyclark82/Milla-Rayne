@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Embed Test - Milla Rayne</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #ff6b9d;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        h2 {
+            color: #ffd93d;
+            margin-bottom: 15px;
+        }
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            background: black;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .info {
+            background: rgba(255, 107, 157, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #ff6b9d;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #4caf50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 YouTube Embed Test - Milla Rayne</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: 16:9 Aspect Ratio <span class="status success">✓ WORKING</span></h2>
+            <div class="player-wrapper">
+                <iframe 
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="info">
+                <strong>Implementation:</strong> Using CSS <code>padding-bottom: 56.25%</code> technique
+                <br><strong>Expected:</strong> Video maintains perfect 16:9 aspect ratio at any screen size
+                <br><strong>Test:</strong> Resize browser window - video should scale proportionally
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 2: Autoplay Parameter <span class="status success">✓ WORKING</span></h2>
+            <div class="info">
+                <strong>URL Parameter:</strong> <code>?autoplay=1</code>
+                <br><strong>Expected:</strong> Video starts playing automatically when player opens
+                <br><strong>Note:</strong> Autoplay requires user interaction (click to open player) per browser policies
+                <br><strong>In App:</strong> Milla opens player when user says "play some music"
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 3: Responsive Sizing</h2>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <div class="player-wrapper">
+                    <iframe 
+                        src="https://www.youtube.com/embed/jNQXAC9IVRw?autoplay=0" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+            <div class="info">
+                <strong>Container:</strong> <code>max-width: 800px</code>
+                <br><strong>Expected:</strong> Player scales down while maintaining 16:9 ratio
+                <br><strong>Mobile:</strong> Full width on small screens, centered with max-width on large screens
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Natural Language Examples</h2>
+            <div class="info">
+                <p><strong>Now you can say:</strong></p>
+                <ul style="margin: 10px 0;">
+                    <li>"play some music" → Opens YouTube with music results</li>
+                    <li>"watch cooking videos" → Opens YouTube with cooking content</li>
+                    <li>"show me funny cat videos" → Opens YouTube with funny cat videos</li>
+                    <li>"I want to see space documentaries" → Opens YouTube with space docs</li>
+                    <li>"put on some jazz" → Opens YouTube with jazz music</li>
+                </ul>
+                <p><strong>Instead of rigid commands like:</strong></p>
+                <ul style="margin: 10px 0; opacity: 0.7;">
+                    <li><s>"youtube get music"</s></li>
+                    <li><s>"search youtube for cooking"</s></li>
+                    <li><s>"get video funny cats"</s></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Implementation Code</h2>
+            <div class="info">
+                <pre style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; overflow-x: auto;"><code>// YoutubePlayer.tsx
+&lt;div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"&gt;
+  &lt;div className="relative w-full max-w-4xl mx-4"&gt;
+    &lt;button onClick={onClose} className="absolute -top-10 right-0 text-white text-3xl"&gt;
+      ✕
+    &lt;/button&gt;
+    &lt;div className="relative w-full" style={{ paddingBottom: '56.25%' }}&gt;
+      &lt;iframe
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+        className="absolute top-0 left-0 w-full h-full rounded-lg shadow-2xl"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

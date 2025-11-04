@@ -16,6 +16,8 @@ import { AvatarCustomizer } from './AvatarCustomizer';
 import { AccessibilitySettings } from './AccessibilitySettings';
 import { SceneSettingsPanel } from './scene/SceneSettingsPanel';
 import { GmailClient } from './GmailClient';
+import AIModelSelector from './AIModelSelector';
+import LoginDialog from './auth/LoginDialog';
 
 type AvatarSettings = {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -84,6 +86,8 @@ export default function SettingsPanel({
   onPersonalitySettingsChange,
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; email: string } | null>(null);
   const [voiceConsents, setVoiceConsents] = useState<{
     voice_synthesis: boolean;
     voice_persona: boolean;
@@ -110,10 +114,32 @@ export default function SettingsPanel({
       }
     };
 
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/status');
+        const data = await response.json();
+        if (data.authenticated && data.user) {
+          setCurrentUser(data.user);
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+      }
+    };
+
     if (isOpen) {
       fetchOauthStatus();
+      checkAuthStatus();
     }
   }, [isOpen]);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   const handleDisconnect = async () => {
     try {
@@ -837,6 +863,57 @@ export default function SettingsPanel({
               </div>
             </CardContent>
           </Card>
+          {/* AI Model Selection Section */}
+          <AIModelSelector />
+          {/* User Account Section */}
+          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+            <CardHeader>
+              <CardTitle className="text-lg text-white flex items-center">
+                <i className="fas fa-user-circle mr-2 text-pink-400"></i>
+                User Account
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {currentUser ? (
+                <div className="space-y-3">
+                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-sm font-semibold text-white">
+                          {currentUser.username}
+                        </h4>
+                        <p className="text-xs text-white/60">{currentUser.email}</p>
+                      </div>
+                      <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-full border border-green-500/50">
+                        Logged In
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={handleLogout}
+                    className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
+                  >
+                    <i className="fas fa-sign-out-alt mr-2"></i>
+                    Log Out
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-white/60">
+                    Create an account to save your preferences and conversation history across devices.
+                  </p>
+                  <Button
+                    onClick={() => setShowLoginDialog(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  >
+                    <i className="fas fa-user-plus mr-2"></i>
+                    Sign In / Register
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
           {/* Personal Tasks Section */}
           \n\n <PersonalTasksSection />
           {/* Accessibility Section */}
@@ -923,6 +1000,17 @@ export default function SettingsPanel({
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* Login Dialog */}
+    <LoginDialog
+      isOpen={showLoginDialog}
+      onClose={() => setShowLoginDialog(false)}
+      onLoginSuccess={(user) => {
+        setCurrentUser(user);
+        setShowLoginDialog(false);
+      }}
+    />
+    </>
   );
 }
 

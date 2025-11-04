@@ -23,9 +23,9 @@ export const SceneSettingsDialog: React.FC<SceneSettingsDialogProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto bg-black/80 backdrop-blur-md border border-white/20 text-white">
+      <DialogContent className="sm:max-w-[400px] max-h-[80vh] overflow-y-auto bg-[#2d3e50] backdrop-blur-md border border-gray-600 text-white shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-white">
+          <DialogTitle className="text-base font-bold text-white">
             Scene Settings
           </DialogTitle>
         </DialogHeader>

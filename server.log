@@ -1,4 +1,299 @@
 
 > rest-express@1.0.0 dev
-> NODE_ENV=development tsx server/index.ts
+> NODE_ENV=development npx tsx server/index.ts
 
+[dotenv@17.2.3] injecting env (30) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+sqlite: creating users table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating indexes
+SQLite database initialized at: /home/mrdannyclark82/milla-rayne/Milla-Rayne/memory/milla.db (encryption: enabled)
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+Initializing Memory Core system...
+Loading Memory Core from memories.txt as primary source...
+Successfully loaded Memory Core from memories.txt: 8034 entries
+Memory Core loaded from memories.txt latency: 554ms
+Memory Core initialized successfully
+User tasks system initialized
+Personal task system initialized
+Initializing Server Self-Evolution Engine...
+Performance baseline established: {
+  responseTime: 2,
+  memoryUsage: 0.32463293447127844,
+  cpuUsage: 0.23807627993339658,
+  successRate: 0.95,
+  throughput: 100,
+  errorRate: 0.02
+}
+Server Self-Evolution Engine initialized successfully
+Enhancement task system initialized
+Daily suggestions scheduler: Enabled with schedule: 0 9 * * *
+Daily suggestions: Next run scheduled for 10/26/2025, 9:00:00 AM
+Scheduling AI updates with cron expression: 0 9 * * *
+AI updates scheduler initialized successfully
+Enhancement task system initialized
+Setting up WebSocket server for real-time features...
+WebSocket server setup complete
+1:43:31 AM [express] serving on port 5000
+Error fetching top AI updates: SqliteError: no such column: relevance
+    at Database.prepare (/home/mrdannyclark82/milla-rayne/Milla-Rayne/node_modules/better-sqlite3/lib/methods/wrappers.js:5:21)
+    at SqliteStorage.getTopAiUpdates (/home/mrdannyclark82/milla-rayne/Milla-Rayne/server/sqliteStorage.ts:689:26)
+    at getTopAiUpdates (/home/mrdannyclark82/milla-rayne/Milla-Rayne/server/dailySuggestionsService.ts:126:35)
+    at createDailySuggestion (/home/mrdannyclark82/milla-rayne/Milla-Rayne/server/dailySuggestionsService.ts:58:30)
+    at getOrCreateTodaySuggestion (/home/mrdannyclark82/milla-rayne/Milla-Rayne/server/dailySuggestionsService.ts:43:30)
+    at async <anonymous> (/home/mrdannyclark82/milla-rayne/Milla-Rayne/server/routes.ts:405:30) {
+  code: 'SQLITE_ERROR'
+}
+Daily suggestion delivered for 2025-10-26
+Milla's decision: RESPOND - Always respond (performance mode)
+--- PARSE COMMAND LLM CALLED ---
+User message: generate an image of our cozy living room
+LLM Parser Prompt: 
+    You are an advanced intent parser for Milla, understanding natural conversational language and extracting structured commands.
+
+    IMPORTANT: Be extremely flexible with language variations. Users don't speak in exact templates - they use natural, casual language.
+
+    Services: "calendar", "gmail", "youtube", "tasks", "drive", "photos", "maps"
+    
+    Actions by service:
+    - calendar: list, add, delete
+    - gmail: list, send, check
+    - youtube: list, get (search and play), play, get_video_details, get_channel_details, get_trending_videos
+    - tasks: list, add, complete, delete
+    - drive: search, summarize
+    - photos: list, create_album
+    - maps: directions, find_place
+
+    NATURAL LANGUAGE EXAMPLES:
+    - "play some music" → youtube/get with query "music"
+    - "show me funny videos" → youtube/get with query "funny videos"
+    - "I want to watch cooking videos" → youtube/get with query "cooking"
+    - "find videos about space" → youtube/get with query "space"
+    - "put on some jazz" → youtube/get with query "jazz"
+    - "what's on my calendar" → calendar/list
+    - "check my email" → gmail/list
+    - "add event tomorrow at 3pm" → calendar/add with entities
+
+    For YouTube:
+    - ANY request to play, watch, show, find, put on, or see videos → action: "get"
+    - Extract the search query from context (what they want to watch/see/find)
+    - sortBy: "viewCount" for "popular"/"most viewed", "date" for "recent"/"latest", "relevance" for most searches
+
+    User message: "generate an image of our cozy living room"
+
+    Respond with JSON:
+    {
+      "service": "...",
+      "action": "...",
+      "entities": {
+        "query": "extracted search terms",
+        "sortBy": "relevance|viewCount|date"
+      }
+    }
+
+    Be intelligent about extracting intent from casual conversation. If unclear, use "unknown".
+  
+OpenRouter API Key: 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
+OpenRouter messages: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    contentLength: 15038,
+    preview: 'You are Milla Rayne, a 33-year-old woman who is Da...'
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    contentLength: 1844,
+    preview: 'You are an advanced intent parser for Milla, under...'
+  }
+]
+Venice model failed, falling back to DeepSeek
+OpenRouter API error: 404 {
+  error: {
+    message: 'No allowed providers are available for the selected model.',
+    code: 404
+  }
+}
+LLM Parser Response: I'm experiencing some technical difficulties with my AI services right now. Please try again in a moment.
+Attempting Pollinations.AI image generation (free service)...
+[Pollinations.AI] Generating image: https://image.pollinations.ai/prompt/our%20cozy%20living%20room?width=1024&height=1024&model=flux&nologo=true&private=true
+2:13:14 AM [express] POST /api/messages 200 in 4731ms :: {"userMessage":{"id":"3d064845-edd5-48de-97…
+Milla's decision: RESPOND - Always respond (performance mode)
+--- PARSE COMMAND LLM CALLED ---
+User message: generate an image of our cozy living room
+LLM Parser Prompt: 
+    You are an advanced intent parser for Milla, understanding natural conversational language and extracting structured commands.
+
+    IMPORTANT: Be extremely flexible with language variations. Users don't speak in exact templates - they use natural, casual language.
+
+    Services: "calendar", "gmail", "youtube", "tasks", "drive", "photos", "maps"
+    
+    Actions by service:
+    - calendar: list, add, delete
+    - gmail: list, send, check
+    - youtube: list, get (search and play), play, get_video_details, get_channel_details, get_trending_videos
+    - tasks: list, add, complete, delete
+    - drive: search, summarize
+    - photos: list, create_album
+    - maps: directions, find_place
+
+    NATURAL LANGUAGE EXAMPLES:
+    - "play some music" → youtube/get with query "music"
+    - "show me funny videos" → youtube/get with query "funny videos"
+    - "I want to watch cooking videos" → youtube/get with query "cooking"
+    - "find videos about space" → youtube/get with query "space"
+    - "put on some jazz" → youtube/get with query "jazz"
+    - "what's on my calendar" → calendar/list
+    - "check my email" → gmail/list
+    - "add event tomorrow at 3pm" → calendar/add with entities
+
+    For YouTube:
+    - ANY request to play, watch, show, find, put on, or see videos → action: "get"
+    - Extract the search query from context (what they want to watch/see/find)
+    - sortBy: "viewCount" for "popular"/"most viewed", "date" for "recent"/"latest", "relevance" for most searches
+
+    User message: "generate an image of our cozy living room"
+
+    Respond with JSON:
+    {
+      "service": "...",
+      "action": "...",
+      "entities": {
+        "query": "extracted search terms",
+        "sortBy": "relevance|viewCount|date"
+      }
+    }
+
+    Be intelligent about extracting intent from casual conversation. If unclear, use "unknown".
+  
+OpenRouter API Key: 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
+OpenRouter messages: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    contentLength: 15038,
+    preview: 'You are Milla Rayne, a 33-year-old woman who is Da...'
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    contentLength: 1844,
+    preview: 'You are an advanced intent parser for Milla, under...'
+  }
+]
+Venice model failed, falling back to DeepSeek
+OpenRouter API error: 404 {
+  error: {
+    message: 'No allowed providers are available for the selected model.',
+    code: 404
+  }
+}
+LLM Parser Response: I'm experiencing some technical difficulties with my AI services right now. Please try again in a moment.
+Attempting Pollinations.AI image generation (free service)...
+[Pollinations.AI] Generating image: https://image.pollinations.ai/prompt/our%20cozy%20living%20room?width=1024&height=1024&model=flux&nologo=true&private=true
+2:13:27 AM [express] POST /api/messages 200 in 1460ms :: {"userMessage":{"id":"28f5399d-ff6c-41b0-83…
+Starting server evolution cycle...
+Loading Memory Core from memories.txt as primary source...
+Successfully loaded Memory Core from memories.txt: 8034 entries
+Memory Core loaded from memories.txt latency: 557ms
+Implementing memory optimization...
+Memory optimization implemented: {
+  cacheSize: 11873075,
+  garbageCollectionFrequency: 30000,
+  memoryPooling: true
+}
+Implementing learning system optimization...
+Learning system optimization implemented: {
+  enhancedMemoryConsolidation: true,
+  improvedPatternRecognition: true,
+  adaptiveLearningRates: true,
+  betterFeedbackProcessing: true
+}
+Evolution cycle completed. Implemented 2 evolutions.
+Milla's decision: RESPOND - Always respond (performance mode)
+--- PARSE COMMAND LLM CALLED ---
+User message: create an image of a beautiful sunset over mountains
+LLM Parser Prompt: 
+    You are an advanced intent parser for Milla, understanding natural conversational language and extracting structured commands.
+
+    IMPORTANT: Be extremely flexible with language variations. Users don't speak in exact templates - they use natural, casual language.
+
+    Services: "calendar", "gmail", "youtube", "tasks", "drive", "photos", "maps"
+    
+    Actions by service:
+    - calendar: list, add, delete
+    - gmail: list, send, check
+    - youtube: list, get (search and play), play, get_video_details, get_channel_details, get_trending_videos
+    - tasks: list, add, complete, delete
+    - drive: search, summarize
+    - photos: list, create_album
+    - maps: directions, find_place
+
+    NATURAL LANGUAGE EXAMPLES:
+    - "play some music" → youtube/get with query "music"
+    - "show me funny videos" → youtube/get with query "funny videos"
+    - "I want to watch cooking videos" → youtube/get with query "cooking"
+    - "find videos about space" → youtube/get with query "space"
+    - "put on some jazz" → youtube/get with query "jazz"
+    - "what's on my calendar" → calendar/list
+    - "check my email" → gmail/list
+    - "add event tomorrow at 3pm" → calendar/add with entities
+
+    For YouTube:
+    - ANY request to play, watch, show, find, put on, or see videos → action: "get"
+    - Extract the search query from context (what they want to watch/see/find)
+    - sortBy: "viewCount" for "popular"/"most viewed", "date" for "recent"/"latest", "relevance" for most searches
+
+    User message: "create an image of a beautiful sunset over mountains"
+
+    Respond with JSON:
+    {
+      "service": "...",
+      "action": "...",
+      "entities": {
+        "query": "extracted search terms",
+        "sortBy": "relevance|viewCount|date"
+      }
+    }
+
+    Be intelligent about extracting intent from casual conversation. If unclear, use "unknown".
+  
+OpenRouter API Key: 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
+OpenRouter messages: [
+  {
+    index: 0,
+    role: 'system',
+    hasContent: true,
+    contentLength: 15038,
+    preview: 'You are Milla Rayne, a 33-year-old woman who is Da...'
+  },
+  {
+    index: 1,
+    role: 'user',
+    hasContent: true,
+    contentLength: 1855,
+    preview: 'You are an advanced intent parser for Milla, under...'
+  }
+]
+Venice model failed, falling back to DeepSeek
+OpenRouter API error: 404 {
+  error: {
+    message: 'No allowed providers are available for the selected model.',
+    code: 404
+  }
+}
+LLM Parser Response: I'm experiencing some technical difficulties with my AI services right now. Please try again in a moment.
+Attempting Pollinations.AI image generation (free service)...
+[Pollinations.AI] Generating image: https://image.pollinations.ai/prompt/a%20beautiful%20sunset%20over%20mountains?width=1024&height=1024&model=flux&nologo=true&private=true
+2:15:05 AM [express] POST /api/messages 200 in 1646ms :: {"userMessage":{"id":"d4581611-cf11-4e35-b3…

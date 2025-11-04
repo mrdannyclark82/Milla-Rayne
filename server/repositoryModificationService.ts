@@ -5,7 +5,7 @@
  * to GitHub repositories based on analysis and recommendations.
  */
 
-import { generateOpenRouterResponse } from './openrouterService';
+import { generateGrokResponse } from './openrouterService';
 import { RepositoryData, RepositoryInfo } from './repositoryAnalysisService';
 import {
   analyzeRepositoryCode,
@@ -72,13 +72,13 @@ Description: ${repoData.description || 'No description'}
 
 ${analysisContext}
 
-${focusArea ? `Focus on: ${focusArea}` : 'Provide general improvements'}
+${focusArea ? `Focus on: ${focusArea}. Specifically, identify opportunities for code refactoring, adherence to best practices, and performance optimizations.` : 'Provide general improvements, including code refactoring, adherence to best practices, and performance optimizations.'}
 
 Based on the repository analysis, suggest 2-3 specific improvements that could be made.
 For each improvement, specify:
 1. What file(s) need to be modified or created
-2. What changes should be made (be specific)
-3. Why this improvement is valuable
+2. What changes should be made (be specific, provide code snippets if possible)
+3. Why this improvement is valuable (e.g., improves readability, performance, security)
 
 Format your response as JSON with this structure:
 {
@@ -90,7 +90,7 @@ Format your response as JSON with this structure:
         {
           "path": "path/to/file.ts",
           "action": "update" or "create" or "delete",
-          "content": "Full new content for the file",
+          "content": "Full new content for the file (for create/update)",
           "reason": "Why this change"
         }
       ],
@@ -103,19 +103,19 @@ Format your response as JSON with this structure:
   try {
     let aiResponse: { content: string; success: boolean } | null = null;
 
-    // Use OpenRouter (DeepSeek) for AI improvement generation
+    // Use Grok 1 Fast for repository improvement generation
     try {
-      aiResponse = await generateOpenRouterResponse(improvementPrompt, {
+      aiResponse = await generateGrokResponse(improvementPrompt, {
         userName: 'Danny Ray',
       });
       if (aiResponse.success && aiResponse.content) {
         return parseImprovementResponse(aiResponse.content);
       }
     } catch (error) {
-      console.warn('OpenRouter improvement generation failed:', error);
+      console.warn('Grok improvement generation failed:', error);
     }
 
-    // Fallback to simple improvements if OpenRouter fails
+    // Fallback to simple improvements if Grok fails
     return generateFallbackImprovements(repoData, focusArea);
   } catch (error) {
     console.error('Error generating improvements:', error);

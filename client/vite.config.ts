@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -13,11 +14,15 @@ export default defineConfig({
     dedupe: ['react', 'react-dom'],
   },
   server: {
+    port: 5173,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
+    },
+    hmr: {
+      clientPort: 5173,
     },
   },
   test: {

@@ -113,11 +113,13 @@ export function isEncrypted(data: string): boolean {
   return data.startsWith('enc:v1:');
 }
 
+import { config } from './config.ts';
+
 /**
  * Get MEMORY_KEY from environment with validation
  */
 export function getMemoryKey(): string {
-  const key = process.env.MEMORY_KEY;
+  const key = config.memory.key;
 
   if (!key) {
     throw new Error('MEMORY_KEY environment variable is not set');
@@ -134,7 +136,7 @@ export function getMemoryKey(): string {
  * Check if encryption is enabled (MEMORY_KEY is set)
  */
 export function isEncryptionEnabled(): boolean {
-  const key = process.env.MEMORY_KEY;
+  const key = config.memory.key;
   return !!(key && key.length >= 32);
 }
 

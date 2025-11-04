@@ -4,16 +4,7 @@
  */
 
 import Database from 'better-sqlite3';
-import {
-  type User,
-  type InsertUser,
-  type Message,
-  type InsertMessage,
-  type AiUpdate,
-  type InsertAiUpdate,
-  type DailySuggestion,
-  type InsertDailySuggestion,
-} from '@shared/schema';
+import type { User, InsertUser, Message, InsertMessage, AiUpdate, InsertAiUpdate, DailySuggestion, InsertDailySuggestion, UserSession, MemorySummary, InsertMemorySummary, } from '../shared/schema';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -28,7 +19,16 @@ const DB_PATH = path.resolve(__dirname, '..', 'memory', 'milla.db');
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserById(id: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserLastLogin(userId: string): Promise<void>;
+  updateUserAIModel(userId: string, model: string): Promise<void>;
+
+  // User Session methods
+  createUserSession(session: any): Promise<any>;
+  getUserSessionByToken(token: string): Promise<any | null>;
+  deleteUserSession(sessionId: string): Promise<void>;
 
   createMessage(message: InsertMessage): Promise<Message>;
   getMessages(userId?: string): Promise<Message[]>;
@@ -72,6 +72,11 @@ export interface IStorage {
   getOAuthToken(userId: string, provider: string): Promise<any | null>;
   updateOAuthToken(id: string, token: any): Promise<void>;
   deleteOAuthToken(id: string): Promise<void>;
+
+  // Memory Summaries methods
+  createMemorySummary(summary: InsertMemorySummary): Promise<MemorySummary>;
+  getMemorySummaries(userId: string, limit?: number): Promise<MemorySummary[]>;
+  searchMemorySummaries(userId: string, query: string, limit?: number): Promise<MemorySummary[]>;
 }
 
 export interface SessionInfo {
@@ -134,8 +139,24 @@ export class SqliteStorage implements IStorage {
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
         username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        preferred_ai_model TEXT DEFAULT 'minimax',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_login_at DATETIME
+      )
+    `);
+
+    // Create user_sessions table
+    console.debug('sqlite: creating user_sessions table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS user_sessions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        session_token TEXT NOT NULL UNIQUE,
+        expires_at DATETIME NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
 
@@ -339,6 +360,22 @@ export class SqliteStorage implements IStorage {
       )
     `);
 
+    // Create memory_summaries table
+    console.debug('sqlite: creating memory_summaries table');
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS memory_summaries (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        summary_text TEXT NOT NULL,
+        topics TEXT, -- Stored as JSON string
+        emotional_tone TEXT CHECK(emotional_tone IN ('positive', 'negative', 'neutral')),
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     // Create indexes for ai_updates and daily_suggestions
     console.debug('sqlite: creating indexes');
     this.db.exec(`
@@ -397,16 +434,70 @@ export class SqliteStorage implements IStorage {
   async createUser(user: InsertUser): Promise<User> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
-      INSERT INTO users (id, username, password) 
-      VALUES (?, ?, ?)
+      INSERT INTO users (id, username, email, password, preferred_ai_model)
+      VALUES (?, ?, ?, ?, ?)
     `);
-    stmt.run(id, user.username, user.password);
+    stmt.run(id, user.username, user.email, user.password, user.preferredAiModel || 'minimax');
 
-    return {
+    const newUser = {
       id,
       username: user.username,
-      password: user.password,
+      email: user.email,
+      password: user.password, // This will be omitted from the return value
+      preferredAiModel: user.preferredAiModel || 'minimax',
+      createdAt: new Date(),
+      lastLoginAt: null,
     };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = newUser;
+    return userWithoutPassword as User;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM users WHERE email = ?');
+    const user = stmt.get(email) as User | undefined;
+    return user;
+  }
+
+  async getUserById(id: string): Promise<User | undefined> {
+    return this.getUser(id);
+  }
+
+  async updateUserLastLogin(userId: string): Promise<void> {
+    const stmt = this.db.prepare(`
+      UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?
+    `);
+    stmt.run(userId);
+  }
+
+  async updateUserAIModel(userId: string, model: string): Promise<void> {
+    const stmt = this.db.prepare(`
+      UPDATE users SET preferred_ai_model = ? WHERE id = ?
+    `);
+    stmt.run(model, userId);
+  }
+
+  // User Session methods
+  async createUserSession(session: InsertUserSession): Promise<UserSession> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO user_sessions (id, user_id, session_token, expires_at)
+      VALUES (?, ?, ?, ?)
+    `);
+    stmt.run(id, session.userId, session.sessionToken, session.expiresAt.toISOString());
+    return { id, ...session };
+  }
+
+  async getUserSessionByToken(token: string): Promise<UserSession | null> {
+    const stmt = this.db.prepare('SELECT * FROM user_sessions WHERE session_token = ?');
+    const session = stmt.get(token) as UserSession | undefined;
+    return session || null;
+  }
+
+  async deleteUserSession(sessionId: string): Promise<void> {
+    const stmt = this.db.prepare('DELETE FROM user_sessions WHERE id = ?');
+    stmt.run(sessionId);
   }
 
   // Message methods
@@ -931,6 +1022,88 @@ export class SqliteStorage implements IStorage {
   async deleteOAuthToken(id: string): Promise<void> {
     const stmt = this.db.prepare('DELETE FROM oauth_tokens WHERE id = ?');
     stmt.run(id);
+  }
+
+  // Memory Summaries methods
+  async createMemorySummary(summary: InsertMemorySummary): Promise<MemorySummary> {
+    const id = randomUUID();
+    const stmt = this.db.prepare(`
+      INSERT INTO memory_summaries (id, user_id, title, summary_text, topics, emotional_tone)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(
+      id,
+      summary.userId,
+      summary.title,
+      summary.summaryText,
+      summary.topics ? JSON.stringify(summary.topics) : null,
+      summary.emotionalTone || null
+    );
+
+    const created = await this.getMemorySummaryById(id);
+    if (!created) {
+      throw new Error('Failed to create memory summary');
+    }
+    return created;
+  }
+
+  async getMemorySummaries(userId: string, limit: number = 10): Promise<MemorySummary[]> {
+    const stmt = this.db.prepare(
+      'SELECT * FROM memory_summaries WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'
+    );
+    const summaries = stmt.all(userId, limit) as any[];
+
+    return summaries.map((s) => ({
+      id: s.id,
+      userId: s.user_id,
+      title: s.title,
+      summaryText: s.summary_text,
+      topics: s.topics ? JSON.parse(s.topics) : [],
+      emotionalTone: s.emotional_tone,
+      createdAt: new Date(s.created_at),
+      updatedAt: new Date(s.updated_at),
+    }));
+  }
+
+  async searchMemorySummaries(userId: string, query: string, limit: number = 5): Promise<MemorySummary[]> {
+    const searchTerms = query.toLowerCase().split(' ').map(term => `%${term}%`);
+    const placeholders = searchTerms.map(() => 'summary_text LIKE ? OR title LIKE ? OR topics LIKE ?').join(' OR ');
+    const params: string[] = [];
+    searchTerms.forEach(term => params.push(term, term, term));
+
+    const stmt = this.db.prepare(`
+      SELECT * FROM memory_summaries 
+      WHERE user_id = ? AND (${placeholders})
+      ORDER BY created_at DESC LIMIT ?
+    `);
+    const summaries = stmt.all(userId, ...params, limit) as any[];
+
+    return summaries.map((s) => ({
+      id: s.id,
+      userId: s.user_id,
+      title: s.title,
+      summaryText: s.summary_text,
+      topics: s.topics ? JSON.parse(s.topics) : [],
+      emotionalTone: s.emotional_tone,
+      createdAt: new Date(s.created_at),
+      updatedAt: new Date(s.updated_at),
+    }));
+  }
+
+  private async getMemorySummaryById(id: string): Promise<MemorySummary | undefined> {
+    const stmt = this.db.prepare('SELECT * FROM memory_summaries WHERE id = ?');
+    const summary = stmt.get(id) as any;
+    if (!summary) return undefined;
+    return {
+      id: summary.id,
+      userId: summary.user_id,
+      title: summary.title,
+      summaryText: summary.summary_text,
+      topics: summary.topics ? JSON.parse(summary.topics) : [],
+      emotionalTone: summary.emotional_tone,
+      createdAt: new Date(summary.created_at),
+      updatedAt: new Date(summary.updated_at),
+    };
   }
 
   // Helper method to close database connection
