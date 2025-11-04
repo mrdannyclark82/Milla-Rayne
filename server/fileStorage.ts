@@ -185,7 +185,12 @@ export class FileStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date(),
+      lastLoginAt: null,
+    };
     this.users.set(id, user);
     this.saveMessages();
     return user;

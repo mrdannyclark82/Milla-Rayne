@@ -85,7 +85,7 @@ import {
   detectSceneContext,
   type SceneContext,
   type SceneLocation,
-current} from './sceneDetectionService';
+} from './sceneDetectionService';
 import {
   detectBrowserToolRequest,
   getBrowserToolInstructions,

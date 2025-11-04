@@ -36,7 +36,7 @@ export function SceneManager({ className = '' }: SceneManagerProps) {
       {/* Background image layer */}
       <BackgroundLayer />
       <AmbientGradientLayer theme={theme} />
-      <ParallaxLayer />
+      <ParallaxLayer intensity={0} />
       <WeatherLayer />
     </div>
   );
