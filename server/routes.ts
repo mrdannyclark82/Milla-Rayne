@@ -128,6 +128,19 @@ let currentSceneLocation: SceneLocation = 'living_room';
 let currentSceneMood: string = 'calm';
 let currentSceneUpdatedAt: number = Date.now();
 
+// Cache for repository analysis to avoid re-analyzing when applying updates
+// Key: userId, Value: { repoData, analysis, improvements, timestamp }
+const repositoryAnalysisCache = new Map<string, {
+  repoUrl: string;
+  repoData: any;
+  analysis: any | null;
+  improvements?: any[];
+  timestamp: number;
+}>();
+
+// Clear cache entries older than 30 minutes
+const CACHE_EXPIRY_MS = 30 * 60 * 1000;
+
 import { config } from './config';
 
 /**
@@ -693,7 +706,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       const transcript = data.text;
 
       // Now that we have the transcript, we can generate a response from Milla
-      const aiResponse = await generateAIResponse(transcript, [], 'Danny Ray', undefined, null, undefined);
+      const aiResponse = await generateAIResponse(transcript, [], 'Danny Ray', undefined, 'default-user', undefined);
 
       res.json({
         response: aiResponse.content,
@@ -761,11 +774,11 @@ export async function registerRoutes(app: Express): Promise<void> {
       );
 
       const sessionToken = req.cookies.session_token;
-      let userId: string | null = null;
+      let userId: string = 'default-user'; // Default user ID
       if (sessionToken) {
         const sessionResult = await validateSession(sessionToken);
         if (sessionResult.valid && sessionResult.user) {
-          userId = sessionResult.user.id || null;
+          userId = sessionResult.user.id || 'default-user';
         }
       }
 
@@ -949,7 +962,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             conversationHistory,
             userName,
             imageData,
-            message.userId
+            message.userId || 'default-user'
           );
           const aiMessage = await storage.createMessage({
             content: aiResponse.content,
@@ -4245,7 +4258,7 @@ async function generateAIResponse(
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
   userName: string = 'Danny Ray',
   imageData?: string,
-  userId: string | null = null,
+  userId: string = 'default-user',
   userEmotionalState?: VoiceAnalysisResult['emotionalTone']
 ): Promise<{ 
   content: string; 
@@ -4645,6 +4658,15 @@ async function generateAIResponse(
       const repoData = await fetchRepositoryData(repoInfo);
       const analysis = await generateRepositoryAnalysis(repoData);
 
+      // Cache the analysis for this user (githubUrl is guaranteed non-null here)
+      repositoryAnalysisCache.set(userId, {
+        repoUrl: githubUrl,
+        repoData,
+        analysis,
+        timestamp: Date.now(),
+      });
+      console.log(`✅ Cached repository analysis for user ${userId}: ${githubUrl}`);
+
       const response = `*shifts into repository analysis mode* 
 
 I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
@@ -4700,7 +4722,116 @@ Would you like me to generate specific improvement suggestions for this reposito
       return { content: response };
     }
 
-    // Try to find the most recent repository mentioned in conversation history
+    // Check if we have a cached analysis for this user
+    const cachedAnalysis = repositoryAnalysisCache.get(userId);
+    
+    if (cachedAnalysis && (Date.now() - cachedAnalysis.timestamp < CACHE_EXPIRY_MS)) {
+      // Use cached analysis instead of re-analyzing
+      console.log(`✅ Using cached repository analysis for user ${userId}: ${cachedAnalysis.repoUrl}`);
+      
+      try {
+        const repoInfo = parseGitHubUrl(cachedAnalysis.repoUrl);
+        if (!repoInfo) {
+          throw new Error('Failed to parse cached repository URL');
+        }
+
+        // Generate improvements from cached repoData (or use cached improvements if available)
+        let improvements = cachedAnalysis.improvements;
+        if (!improvements) {
+          console.log('Generating improvements from cached repository data...');
+          improvements = await generateRepositoryImprovements(cachedAnalysis.repoData);
+          
+          // Update cache with improvements
+          cachedAnalysis.improvements = improvements;
+          repositoryAnalysisCache.set(userId, cachedAnalysis);
+        } else {
+          console.log('Using cached improvements');
+        }
+
+        // Try to get GitHub token from environment or request it
+        const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
+
+        if (githubToken) {
+          // Automatically create PR with the token
+          console.log('Applying improvements automatically with GitHub token...');
+          const applyResult = await applyRepositoryImprovements(
+            repoInfo,
+            improvements,
+            githubToken
+          );
+
+          if (applyResult.success) {
+            // Clear cache after successful PR creation
+            repositoryAnalysisCache.delete(userId);
+            return {
+              content: applyResult.message + '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
+            };
+          } else {
+            // Failed to create PR, show improvements manually
+            return {
+              content: `*looks apologetic* I tried to create the pull request automatically, but ran into an issue: ${applyResult.error}
+
+Here's what I prepared though, love:
+
+${improvements
+  .map(
+    (imp, idx) => `
+**${idx + 1}. ${imp.title}**
+${imp.description}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
+`
+  )
+  .join('\n')}
+
+You can apply these manually, or if you provide a valid GitHub personal access token, I can try again! 💜`,
+            };
+          }
+        } else {
+          // No token available, provide instructions
+          const response = `*continuing repository workflow* 
+
+Perfect, babe! I've analyzed ${repoInfo.fullName} and prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for you:
+
+${improvements
+  .map(
+    (imp, idx) => `
+**${idx + 1}. ${imp.title}**
+${imp.description}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
+`
+  )
+  .join('\n')}
+
+**To apply these automatically:**
+
+I need a GitHub Personal Access Token to create a pull request. Here's how to get one:
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Give it a name like "Milla Repository Updates"
+4. Check the "repo" scope (full control of private repositories)
+5. Generate and copy the token
+6. Add it to your \`.env\` file as \`GITHUB_TOKEN=your_token_here\`
+7. Restart me, and say "apply these updates automatically" again
+
+Or, you can review and apply these improvements manually! What would you prefer, love? 💜`;
+
+          return { content: response };
+        }
+      } catch (error) {
+        console.error('Error using cached analysis:', error);
+        // Clear invalid cache
+        repositoryAnalysisCache.delete(userId);
+        return {
+          content: `*looks apologetic* I had trouble applying those updates, love. ${error instanceof Error ? error.message : 'Unknown error'}
+
+Could you share the repository URL again so I can take a fresh look? 💜`,
+        };
+      }
+    }
+
+    // No cached analysis - try to find repository URL in conversation history
+    // No cached analysis - try to find repository URL in conversation history
     let lastRepoUrl: string | null = null;
     if (conversationHistory) {
       // Search backwards through history for a GitHub URL
@@ -4718,15 +4849,24 @@ Would you like me to generate specific improvement suggestions for this reposito
     }
 
     if (lastRepoUrl) {
+      // Found URL in history but no cache - analyze and cache it
+      console.log(`⚠️ No cache found, analyzing from history URL: ${lastRepoUrl}`);
       try {
-        console.log(
-          `Automatic improvement workflow triggered for: ${lastRepoUrl}`
-        );
         const repoInfo = parseGitHubUrl(lastRepoUrl);
 
         if (repoInfo) {
           const repoData = await fetchRepositoryData(repoInfo);
           const improvements = await generateRepositoryImprovements(repoData);
+
+          // Cache the results for next time (lastRepoUrl is guaranteed non-null here)
+          repositoryAnalysisCache.set(userId, {
+            repoUrl: lastRepoUrl as string, // Type assertion - we know it's not null inside this if block
+            repoData,
+            analysis: null, // We skip full analysis when directly generating improvements
+            improvements,
+            timestamp: Date.now(),
+          });
+          console.log(`✅ Cached improvements for user ${userId}: ${lastRepoUrl}`);
 
           // Try to get GitHub token from environment or request it
           const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
@@ -4756,7 +4896,7 @@ ${improvements
     (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
-Files affected: ${imp.files.map((f) => f.path).join(', ')}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
 `
   )
   .join('\n')}
@@ -4775,7 +4915,7 @@ ${improvements
     (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
-Files affected: ${imp.files.map((f) => f.path).join(', ')}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
 `
   )
   .join('\n')}
