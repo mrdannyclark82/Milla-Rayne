@@ -299,9 +299,12 @@ class ElevenLabsTTS implements ITTSProvider {
         console.log(data);
         this.voices = data.voices;
         this.voicesFetched = true;
+        return this.voices ?? [];
       }
+      return [];
     } catch (error) {
       console.error('Error fetching ElevenLabs voices:', error);
+      return [];
     }
   }
 

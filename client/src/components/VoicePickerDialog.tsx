@@ -43,6 +43,17 @@ export function VoicePickerDialog({
   );
   const [accentFilter, setAccentFilter] = useState<string>('all');
   const [selectedStyle, setSelectedStyle] = useState<string>('neutral');
+  const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      const fetchVoices = async () => {
+        const voices = await voiceService.getAvailableVoices();
+        setAvailableVoices(voices);
+      };
+      fetchVoices();
+    }
+  }, [open]);
 
   // Voice preview function
   const previewVoice = (voice: ElevenLabsVoice) => {
