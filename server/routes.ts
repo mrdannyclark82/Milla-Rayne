@@ -2901,6 +2901,210 @@ Project: Milla Rayne - AI Virtual Assistant
     res.json({ ok: true, time: Date.now() });
   });
 
+  // ===========================================================================================
+  // YOUTUBE KNOWLEDGE BASE API ENDPOINTS
+  // ===========================================================================================
+
+  app.get('/api/youtube/knowledge', async (req, res) => {
+    try {
+      const { searchKnowledgeBase } = await import('./youtubeKnowledgeBase');
+      const {  query, videoType, tags, hasCode, hasCommands, limit } = req.query;
+      
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 20,
+      };
+
+      if (query) filters.query = query as string;
+      if (videoType) filters.videoType = videoType;
+      if (tags) filters.tags = (tags as string).split(',');
+      if (hasCode === 'true') filters.hasCode = true;
+      if (hasCommands === 'true') filters.hasCommands = true;
+
+      const results = await searchKnowledgeBase(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching knowledge base:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/knowledge/:videoId', async (req, res) => {
+    try {
+      const { getVideoFromKnowledgeBase } = await import('./youtubeKnowledgeBase');
+      const { videoId } = req.params;
+      const userId = req.user?.id || 'default-user';
+
+      const video = await getVideoFromKnowledgeBase(videoId, userId);
+      
+      if (!video) {
+        return res.status(404).json({ success: false, error: 'Video not found in knowledge base' });
+      }
+
+      res.json({ success: true, data: video });
+    } catch (error: any) {
+      console.error('Error getting video from knowledge base:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/code-snippets', async (req, res) => {
+    try {
+      const { searchCodeSnippets } = await import('./youtubeKnowledgeBase');
+      const { language, query, limit } = req.query;
+
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 50,
+      };
+
+      if (language) filters.language = language as string;
+      if (query) filters.query = query as string;
+
+      const results = await searchCodeSnippets(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching code snippets:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/cli-commands', async (req, res) => {
+    try {
+      const { searchCLICommands } = await import('./youtubeKnowledgeBase');
+      const { platform, query, limit } = req.query;
+
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 50,
+      };
+
+      if (platform) filters.platform = platform as string;
+      if (query) filters.query = query as string;
+
+      const results = await searchCLICommands(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching CLI commands:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/knowledge/stats', async (req, res) => {
+    try {
+      const { getKnowledgeBaseStats } = await import('./youtubeKnowledgeBase');
+      const userId = req.user?.id || 'default-user';
+
+      const stats = await getKnowledgeBaseStats(userId);
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      console.error('Error getting knowledge base stats:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/languages', async (req, res) => {
+    try {
+      const { getAvailableLanguages } = await import('./youtubeKnowledgeBase');
+      const userId = req.user?.id || 'default-user';
+
+      const languages = await getAvailableLanguages(userId);
+      res.json({ success: true, data: languages });
+    } catch (error: any) {
+      console.error('Error getting available languages:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ===========================================================================================
+  // YOUTUBE NEWS MONITOR API ENDPOINTS
+  // ===========================================================================================
+
+  app.get('/api/youtube/news/daily', async (req, res) => {
+    try {
+      const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
+      const userId = req.user?.id || 'default-user';
+
+      const digest = await runDailyNewsSearch(userId);
+      res.json({ success: true, data: digest });
+    } catch (error: any) {
+      console.error('Error running daily news search:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/category/:categoryName', async (req, res) => {
+    try {
+      const { searchNewsByCategory } = await import('./youtubeNewsMonitor');
+      const { categoryName } = req.params;
+      const userId = req.user?.id || 'default-user';
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+      const news = await searchNewsByCategory(categoryName, userId, limit);
+      res.json({ success: true, data: news });
+    } catch (error: any) {
+      console.error('Error searching news by category:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/categories', async (req, res) => {
+    try {
+      const { getNewsCategories } = await import('./youtubeNewsMonitor');
+      const categories = getNewsCategories();
+      res.json({ success: true, data: categories });
+    } catch (error: any) {
+      console.error('Error getting news categories:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/run-now', async (req, res) => {
+    try {
+      const { runNewsMonitoringNow } = await import('./youtubeNewsMonitorScheduler');
+      const userId = req.user?.id || 'default-user';
+
+      await runNewsMonitoringNow(userId);
+      res.json({ success: true, message: 'News monitoring triggered successfully' });
+    } catch (error: any) {
+      console.error('Error running news monitoring:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/scheduler/status', async (req, res) => {
+    try {
+      const { getSchedulerStatus } = await import('./youtubeNewsMonitorScheduler');
+      const status = getSchedulerStatus();
+      res.json({ success: true, data: status });
+    } catch (error: any) {
+      console.error('Error getting scheduler status:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/scheduler/start', async (req, res) => {
+    try {
+      const { startNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      startNewsMonitorScheduler(req.body);
+      res.json({ success: true, message: 'News monitor scheduler started' });
+    } catch (error: any) {
+      console.error('Error starting scheduler:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/scheduler/stop', async (req, res) => {
+    try {
+      const { stopNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      stopNewsMonitorScheduler();
+      res.json({ success: true, message: 'News monitor scheduler stopped' });
+    } catch (error: any) {
+      console.error('Error stopping scheduler:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.post('/api/elevenlabs/tts', async (req, res) => {
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
@@ -4020,42 +4224,81 @@ async function generateAIResponse(
     millaWordPattern.test(userMessage);
 
   // ===========================================================================================
-  // YOUTUBE INTEGRATION - Only triggers when "youtube" is explicitly mentioned
+  // YOUTUBE NEWS MONITOR - Daily news and category searches
   // ===========================================================================================
-  try {
-    const { isYouTubeRequest, handleYouTubeRequest } = await import('./youtubeService');
-    
-    console.log('Checking YouTube request for message:', userMessage);
-    const isYT = isYouTubeRequest(userMessage);
-    console.log('Is YouTube request?', isYT);
-    
-    if (isYT) {
-      console.log('🎬 YouTube request detected');
-      const result = await handleYouTubeRequest(userMessage, userId || 'default-user');
+  const newsTriggers = [
+    'tech news',
+    'ai news',
+    'coding news',
+    'what\'s new in',
+    'latest news',
+    'news about',
+    'show me news',
+    'daily news',
+  ];
+
+  const hasNewsTrigger = newsTriggers.some(trigger => message.includes(trigger));
+
+  if (hasNewsTrigger) {
+    try {
+      const { runDailyNewsSearch, searchNewsByCategory, formatNewsDigestAsSuggestion } = await import('./youtubeNewsMonitor');
       
-      console.log('🎬 YouTube result:', JSON.stringify(result, null, 2));
-      
-      const finalResponse = {
-        content: result.content,
-        ...(result.videoId && {
-          youtube_play: { videoId: result.videoId }
-        }),
-        ...(result.videos && {
-          youtube_videos: result.videos
-        }),
+      // Check for specific category
+      let categoryMatch = null;
+      const categoryPatterns = [
+        { pattern: /ai|artificial intelligence|machine learning/, category: 'AI & Machine Learning' },
+        { pattern: /web dev|react|javascript|frontend|backend/, category: 'Web Development' },
+        { pattern: /devops|docker|kubernetes|cloud/, category: 'DevOps & Cloud' },
+        { pattern: /python|rust|golang|programming language/, category: 'Programming Languages' },
+        { pattern: /data science|analytics/, category: 'Data Science' },
+        { pattern: /security|cybersecurity/, category: 'Security & Privacy' },
+      ];
+
+      for (const { pattern, category } of categoryPatterns) {
+        if (pattern.test(message)) {
+          categoryMatch = category;
+          break;
+        }
+      }
+
+      if (categoryMatch) {
+        console.log(`📰 Searching ${categoryMatch} news...`);
+        const news = await searchNewsByCategory(categoryMatch, userId || 'default-user');
+        
+        let response = `*checking the latest ${categoryMatch} news* \n\n`;
+        response += `## 📰 ${categoryMatch} - Latest Updates\n\n`;
+        
+        if (news.length > 0) {
+          response += `Found ${news.length} hot stories for you, babe:\n\n`;
+          news.slice(0, 5).forEach((item, i) => {
+            response += `${i + 1}. **${item.title}**\n`;
+            response += `   📺 ${item.channel}\n`;
+            response += `   🎬 \`${item.videoId}\`\n\n`;
+          });
+          response += `---\n💡 Say "analyze [number]" to dive deeper into any story!`;
+        } else {
+          response += `Hmm, couldn't find recent news in this category right now, love. Try again later!`;
+        }
+        
+        return { content: response };
+      } else {
+        // General daily news digest
+        console.log('📰 Running daily news search...');
+        const digest = await runDailyNewsSearch(userId || 'default-user');
+        const response = formatNewsDigestAsSuggestion(digest);
+        
+        return { content: response };
+      }
+    } catch (error: any) {
+      console.error('Error in news monitoring:', error);
+      return {
+        content: "I ran into trouble fetching the latest news, babe. My news monitoring system might need a moment. Try again in a bit?"
       };
-      
-      console.log('🎬 Final response being returned:', JSON.stringify(finalResponse, null, 2));
-      console.log('🎬 RETURNING FROM YOUTUBE BLOCK NOW');
-      
-      return finalResponse;
     }
-  } catch (error) {
-    console.error('Error in YouTube integration:', error);
   }
 
   // ===========================================================================================
-  // millAlyzer - Analyze YouTube Video
+  // millAlyzer - Analyze YouTube Video (CHECK THIS FIRST before general YouTube service)
   // ===========================================================================================
   const analyzeVideoTriggers = [
     'analyze',
@@ -4079,9 +4322,19 @@ async function generateAIResponse(
   if (hasAnalyzeTrigger && videoId) {
     try {
       const { analyzeVideoWithMillAlyzer } = await import('./youtubeMillAlyzer');
+      const { saveToKnowledgeBase } = await import('./youtubeKnowledgeBase');
       
       console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
       const analysis = await analyzeVideoWithMillAlyzer(videoId);
+      
+      // Save to knowledge base
+      try {
+        await saveToKnowledgeBase(analysis, userId || 'default-user');
+        console.log(`📚 Saved analysis to knowledge base`);
+      } catch (error) {
+        console.error('Error saving to knowledge base:', error);
+        // Continue even if save fails
+      }
       
       let response = `*analyzing the video in detail* \n\n`;
       response += `## "${analysis.title}"\n`;
@@ -4170,6 +4423,41 @@ async function generateAIResponse(
         content: `I had trouble analyzing that video, love. ${error.message || 'Please try again with a valid YouTube link!'}`
       };
     }
+  }
+
+  // ===========================================================================================
+  // YOUTUBE INTEGRATION - Only triggers when "youtube" is explicitly mentioned
+  // ===========================================================================================
+  try {
+    const { isYouTubeRequest, handleYouTubeRequest } = await import('./youtubeService');
+    
+    console.log('Checking YouTube request for message:', userMessage);
+    const isYT = isYouTubeRequest(userMessage);
+    console.log('Is YouTube request?', isYT);
+    
+    if (isYT) {
+      console.log('🎬 YouTube request detected');
+      const result = await handleYouTubeRequest(userMessage, userId || 'default-user');
+      
+      console.log('🎬 YouTube result:', JSON.stringify(result, null, 2));
+      
+      const finalResponse = {
+        content: result.content,
+        ...(result.videoId && {
+          youtube_play: { videoId: result.videoId }
+        }),
+        ...(result.videos && {
+          youtube_videos: result.videos
+        }),
+      };
+      
+      console.log('🎬 Final response being returned:', JSON.stringify(finalResponse, null, 2));
+      console.log('🎬 RETURNING FROM YOUTUBE BLOCK NOW');
+      
+      return finalResponse;
+    }
+  } catch (error) {
+    console.error('Error in YouTube integration:', error);
   }
 
   // ===========================================================================================

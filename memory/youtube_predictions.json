@@ -1,6 +1,27 @@
 {
   "watchHistory": [
     {
+      "videoId": "mnV-lXxaFhk",
+      "title": "I Built A Fully Local AI Agent with GPT-OSS, Ollama &amp; n8n (GPT-4 performance for $0)",
+      "query": "https://www..com/?v=mnv-lxxafhk",
+      "timestamp": 1762208788182,
+      "channelName": "The Recap | AI Automations"
+    },
+    {
+      "videoId": "Fvn-4Tn5QWM",
+      "title": "New Los Job Sahur Troll 😮 #roblox",
+      "query": "im loving these new  features. how do you feel about them?",
+      "timestamp": 1762208676990,
+      "channelName": "GilbartBlox"
+    },
+    {
+      "videoId": "mnV-lXxaFhk",
+      "title": "I Built A Fully Local AI Agent with GPT-OSS, Ollama &amp; n8n (GPT-4 performance for $0)",
+      "query": "https://www..com/?v=mnv-lxxafhk",
+      "timestamp": 1762208597246,
+      "channelName": "The Recap | AI Automations"
+    },
+    {
       "videoId": "fYkLETrdtws",
       "title": "Create 10-minute AI Character Videos in ONE Click (InfiniteTalk x n8n Full Guide 🥚)",
       "query": "create 10 minute ai character video in one click",
@@ -18,15 +39,20 @@
   "preferences": {
     "topQueries": {
       "cats": 1,
-      "create 10 minute ai character video in one click": 1
+      "create 10 minute ai character video in one click": 1,
+      "https://www..com/?v=mnv-lxxafhk": 2,
+      "im loving these new  features. how do you feel about them?": 1
     },
     "topChannels": {
       "The Pet Collective": 1,
-      "RoboNuggets": 1
+      "RoboNuggets": 1,
+      "The Recap | AI Automations": 2,
+      "GilbartBlox": 1
     },
     "topCategories": {},
     "timePreferences": {
-      "14": 2
+      "14": 2,
+      "16": 3
     }
   }
 }

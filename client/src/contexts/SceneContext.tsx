@@ -130,7 +130,29 @@ interface SceneContextProviderProps {
   location?: SceneLocationKey;
 }
 
-const SceneContext = createContext<SceneContextType | null>(null);
+// Create default context value
+const defaultContextValue: SceneContextType = {
+  timeOfDay: 'day',
+  appState: 'idle',
+  reducedMotion: false,
+  performanceMode: 'balanced',
+  isBackgrounded: false,
+  weatherEffect: 'none',
+  location: 'front_door',
+  theme: {
+    palette: {
+      primary: '#667eea',
+      secondary: '#764ba2',
+      accent: '#f093fb',
+      background: '#1a202c',
+    },
+    gradientAngle: 135,
+    animationSpeed: 1,
+    parallaxIntensity: 0.5,
+  },
+};
+
+const SceneContext = createContext<SceneContextType>(defaultContextValue);
 
 /**
  * Provider component for scene context
@@ -247,8 +269,5 @@ export function SceneContextProvider({
  */
 export function useSceneContext(): SceneContextType {
   const context = useContext(SceneContext);
-  if (!context) {
-    throw new Error('useSceneContext must be used within SceneContextProvider');
-  }
   return context;
 }
