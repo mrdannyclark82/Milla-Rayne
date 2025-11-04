@@ -115,7 +115,7 @@ export async function handleYouTubeRequest(
         }));
         
         let response = "*checking what's trending right now* Here are the hottest videos on YouTube:\n\n";
-        videos.forEach((video, index) => {
+        videos.forEach((video: any, index: number) => {
           response += `${index + 1}. **${video.title}** by ${video.channel}\n`;
         });
         response += "\nWhich one catches your eye, love?";
@@ -182,7 +182,7 @@ export async function handleYouTubeRequest(
       }));
       
       let response = `*browsing YouTube* I found ${videos.length} videos for "${query}":\n\n`;
-      videos.forEach((video, index) => {
+      videos.forEach((video: any, index: number) => {
         response += `${index + 1}. **${video.title}** by ${video.channel}\n`;
       });
       

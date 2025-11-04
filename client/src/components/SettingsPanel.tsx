@@ -318,6 +318,7 @@ export default function SettingsPanel({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-w-[90vw] max-h-[85vh] overflow-y-auto bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md border border-white/20 text-white">

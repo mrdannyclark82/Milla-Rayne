@@ -13,7 +13,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: 'client',
   plugins: [
-    tailwindcss({ config: path.resolve(__dirname, 'tailwind.config.ts') }),
+    tailwindcss(),
     
     react(),
     ...(process.env.NODE_ENV !== "production"
@@ -36,12 +36,5 @@ export default defineConfig({
   "@assets": path.resolve(__dirname, "attached_assets"),
     },
     dedupe: ["react", "react-dom"],
-  },
-
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
-    include: ['src/__tests__/**/*.test.ts', 'src/__tests__/**/*.test.tsx'],
   },
 });
