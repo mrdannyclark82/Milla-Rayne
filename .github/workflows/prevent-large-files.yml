@@ -3,7 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    branches: [ main ]
+    branches: [main]
 jobs:
   check-large-files:
     runs-on: ubuntu-latest

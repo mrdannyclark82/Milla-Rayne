@@ -1,347 +1,392 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Adaptive Scene System Demo</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0a15;
-            color: white;
-            overflow-x: hidden;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background: #0a0a15;
+        color: white;
+        overflow-x: hidden;
+      }
 
-        /* Scene Container */
-        .scene-container {
-            position: fixed;
-            inset: 0;
-            overflow: hidden;
-            z-index: -10;
-        }
+      /* Scene Container */
+      .scene-container {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        z-index: -10;
+      }
 
-        /* Ambient Gradient Layer */
+      /* Ambient Gradient Layer */
+      .ambient-gradient {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          var(--scene-primary, #667eea) 0%,
+          var(--scene-secondary, #764ba2) 50%,
+          var(--scene-accent, #f093fb) 100%
+        );
+        transition: background 2s ease-in-out;
+      }
+
+      /* Parallax Layer */
+      .parallax-layer {
+        position: absolute;
+        inset: 0;
+        transition: transform 0.1s ease-out;
+        pointer-events: none;
+      }
+
+      .parallax-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(255, 255, 255, 0.05) 0%,
+          transparent 70%
+        );
+        filter: blur(40px);
+      }
+
+      .parallax-circle-1 {
+        top: 10%;
+        left: 20%;
+        width: 300px;
+        height: 300px;
+        opacity: 0.5;
+      }
+
+      .parallax-circle-2 {
+        bottom: 20%;
+        right: 15%;
+        width: 400px;
+        height: 400px;
+        opacity: 0.35;
+        filter: blur(60px);
+      }
+
+      .parallax-circle-3 {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        opacity: 0.25;
+        filter: blur(30px);
+      }
+
+      /* Content */
+      .content {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+
+      .controls {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        opacity: 0.7;
+        margin-bottom: 2rem;
+      }
+
+      .control-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .control-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 0.75rem 1.5rem;
+        background: rgba(102, 126, 234, 0.8);
+        border: 1px solid rgba(102, 126, 234, 1);
+        border-radius: 8px;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      button:hover {
+        background: rgba(102, 126, 234, 1);
+        transform: translateY(-2px);
+      }
+
+      button.active {
+        background: rgba(102, 126, 234, 1);
+        box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+      }
+
+      .info {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        line-height: 1.6;
+      }
+
+      .info strong {
+        color: #667eea;
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
         .ambient-gradient {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, 
-                var(--scene-primary, #667eea) 0%, 
-                var(--scene-secondary, #764ba2) 50%, 
-                var(--scene-accent, #f093fb) 100%);
-            transition: background 2s ease-in-out;
+          transition: none;
         }
-
-        /* Parallax Layer */
         .parallax-layer {
-            position: absolute;
-            inset: 0;
-            transition: transform 0.1s ease-out;
-            pointer-events: none;
+          display: none;
         }
-
-        .parallax-circle {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
-            filter: blur(40px);
-        }
-
-        .parallax-circle-1 {
-            top: 10%;
-            left: 20%;
-            width: 300px;
-            height: 300px;
-            opacity: 0.5;
-        }
-
-        .parallax-circle-2 {
-            bottom: 20%;
-            right: 15%;
-            width: 400px;
-            height: 400px;
-            opacity: 0.35;
-            filter: blur(60px);
-        }
-
-        .parallax-circle-3 {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            opacity: 0.25;
-            filter: blur(30px);
-        }
-
-        /* Content */
-        .content {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .controls {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            text-align: center;
-        }
-
-        .subtitle {
-            text-align: center;
-            opacity: 0.7;
-            margin-bottom: 2rem;
-        }
-
-        .control-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .control-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 0.75rem 1.5rem;
-            background: rgba(102, 126, 234, 0.8);
-            border: 1px solid rgba(102, 126, 234, 1);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        button:hover {
-            background: rgba(102, 126, 234, 1);
-            transform: translateY(-2px);
-        }
-
-        button.active {
-            background: rgba(102, 126, 234, 1);
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .info {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            font-size: 0.9rem;
-            line-height: 1.6;
-        }
-
-        .info strong {
-            color: #667eea;
-        }
-
-        /* Reduced motion support */
-        @media (prefers-reduced-motion: reduce) {
-            .ambient-gradient {
-                transition: none;
-            }
-            .parallax-layer {
-                display: none;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="scene-container">
-        <div class="ambient-gradient" id="gradient"></div>
-        <div class="parallax-layer" id="parallax">
-            <div class="parallax-circle parallax-circle-1"></div>
-            <div class="parallax-circle parallax-circle-2"></div>
-            <div class="parallax-circle parallax-circle-3"></div>
-        </div>
+      <div class="ambient-gradient" id="gradient"></div>
+      <div class="parallax-layer" id="parallax">
+        <div class="parallax-circle parallax-circle-1"></div>
+        <div class="parallax-circle parallax-circle-2"></div>
+        <div class="parallax-circle parallax-circle-3"></div>
+      </div>
     </div>
 
     <div class="content">
-        <div class="controls">
-            <h1>🎨 Adaptive Scene System</h1>
-            <p class="subtitle">Asset-free, procedural background system</p>
+      <div class="controls">
+        <h1>🎨 Adaptive Scene System</h1>
+        <p class="subtitle">Asset-free, procedural background system</p>
 
-            <div class="control-group">
-                <label>Time of Day:</label>
-                <div class="button-group">
-                    <button onclick="setTimeOfDay('dawn')" id="btn-dawn">Dawn</button>
-                    <button onclick="setTimeOfDay('day')" id="btn-day" class="active">Day</button>
-                    <button onclick="setTimeOfDay('dusk')" id="btn-dusk">Dusk</button>
-                    <button onclick="setTimeOfDay('night')" id="btn-night">Night</button>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>App State:</label>
-                <div class="button-group">
-                    <button onclick="setAppState('idle')" id="btn-idle" class="active">Idle</button>
-                    <button onclick="setAppState('listening')" id="btn-listening">Listening</button>
-                    <button onclick="setAppState('thinking')" id="btn-thinking">Thinking</button>
-                    <button onclick="setAppState('speaking')" id="btn-speaking">Speaking</button>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>Performance Mode:</label>
-                <div class="button-group">
-                    <button onclick="setPerformanceMode('high-quality')" id="btn-high">High Quality</button>
-                    <button onclick="setPerformanceMode('balanced')" id="btn-balanced" class="active">Balanced</button>
-                    <button onclick="setPerformanceMode('performance')" id="btn-perf">Performance</button>
-                </div>
-            </div>
-
-            <div class="info">
-                <strong>Features:</strong><br>
-                ✅ Fully procedural (no assets)<br>
-                ✅ Respects reduced motion preferences<br>
-                ✅ Adapts to time of day automatically<br>
-                ✅ Changes accent based on app state<br>
-                ✅ Parallax effect on mouse movement<br>
-                ✅ < 50KB total size
-            </div>
+        <div class="control-group">
+          <label>Time of Day:</label>
+          <div class="button-group">
+            <button onclick="setTimeOfDay('dawn')" id="btn-dawn">Dawn</button>
+            <button onclick="setTimeOfDay('day')" id="btn-day" class="active">
+              Day
+            </button>
+            <button onclick="setTimeOfDay('dusk')" id="btn-dusk">Dusk</button>
+            <button onclick="setTimeOfDay('night')" id="btn-night">
+              Night
+            </button>
+          </div>
         </div>
+
+        <div class="control-group">
+          <label>App State:</label>
+          <div class="button-group">
+            <button onclick="setAppState('idle')" id="btn-idle" class="active">
+              Idle
+            </button>
+            <button onclick="setAppState('listening')" id="btn-listening">
+              Listening
+            </button>
+            <button onclick="setAppState('thinking')" id="btn-thinking">
+              Thinking
+            </button>
+            <button onclick="setAppState('speaking')" id="btn-speaking">
+              Speaking
+            </button>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Performance Mode:</label>
+          <div class="button-group">
+            <button onclick="setPerformanceMode('high-quality')" id="btn-high">
+              High Quality
+            </button>
+            <button
+              onclick="setPerformanceMode('balanced')"
+              id="btn-balanced"
+              class="active"
+            >
+              Balanced
+            </button>
+            <button onclick="setPerformanceMode('performance')" id="btn-perf">
+              Performance
+            </button>
+          </div>
+        </div>
+
+        <div class="info">
+          <strong>Features:</strong><br />
+          ✅ Fully procedural (no assets)<br />
+          ✅ Respects reduced motion preferences<br />
+          ✅ Adapts to time of day automatically<br />
+          ✅ Changes accent based on app state<br />
+          ✅ Parallax effect on mouse movement<br />
+          ✅ < 50KB total size
+        </div>
+      </div>
     </div>
 
     <script>
-        // Color palettes for time of day
-        const palettes = {
-            dawn: {
-                primary: '#ff9a8b',
-                secondary: '#ffc3a0',
-                accent: '#ffafbd'
-            },
-            day: {
-                primary: '#667eea',
-                secondary: '#764ba2',
-                accent: '#f093fb'
-            },
-            dusk: {
-                primary: '#fa709a',
-                secondary: '#fee140',
-                accent: '#ff8c00'
-            },
-            night: {
-                primary: '#4c669f',
-                secondary: '#3b5998',
-                accent: '#192f6a'
-            }
-        };
+      // Color palettes for time of day
+      const palettes = {
+        dawn: {
+          primary: '#ff9a8b',
+          secondary: '#ffc3a0',
+          accent: '#ffafbd',
+        },
+        day: {
+          primary: '#667eea',
+          secondary: '#764ba2',
+          accent: '#f093fb',
+        },
+        dusk: {
+          primary: '#fa709a',
+          secondary: '#fee140',
+          accent: '#ff8c00',
+        },
+        night: {
+          primary: '#4c669f',
+          secondary: '#3b5998',
+          accent: '#192f6a',
+        },
+      };
 
-        // App state accent colors
-        const appStateColors = {
-            idle: '#667eea',
-            listening: '#10b981',
-            thinking: '#f59e0b',
-            speaking: '#3b82f6'
-        };
+      // App state accent colors
+      const appStateColors = {
+        idle: '#667eea',
+        listening: '#10b981',
+        thinking: '#f59e0b',
+        speaking: '#3b82f6',
+      };
 
-        let currentTimeOfDay = 'day';
-        let currentAppState = 'idle';
-        let currentPerformanceMode = 'balanced';
-        let parallaxIntensity = 0.5;
+      let currentTimeOfDay = 'day';
+      let currentAppState = 'idle';
+      let currentPerformanceMode = 'balanced';
+      let parallaxIntensity = 0.5;
 
-        function setTimeOfDay(timeOfDay) {
-            currentTimeOfDay = timeOfDay;
-            updateButtons('time', timeOfDay);
-            updateScene();
-        }
-
-        function setAppState(appState) {
-            currentAppState = appState;
-            updateButtons('state', appState);
-            updateScene();
-        }
-
-        function setPerformanceMode(mode) {
-            currentPerformanceMode = mode;
-            updateButtons('perf', mode);
-            
-            // Adjust parallax based on performance mode
-            if (mode === 'high-quality') {
-                parallaxIntensity = 1;
-            } else if (mode === 'balanced') {
-                parallaxIntensity = 0.5;
-            } else {
-                parallaxIntensity = 0;
-            }
-        }
-
-        function updateButtons(category, value) {
-            const buttons = {
-                time: ['dawn', 'day', 'dusk', 'night'],
-                state: ['idle', 'listening', 'thinking', 'speaking'],
-                perf: ['high-quality', 'balanced', 'performance']
-            };
-
-            const mapping = {
-                time: { dawn: 'btn-dawn', day: 'btn-day', dusk: 'btn-dusk', night: 'btn-night' },
-                state: { idle: 'btn-idle', listening: 'btn-listening', thinking: 'btn-thinking', speaking: 'btn-speaking' },
-                perf: { 'high-quality': 'btn-high', balanced: 'btn-balanced', performance: 'btn-perf' }
-            };
-
-            buttons[category].forEach(btn => {
-                const element = document.getElementById(mapping[category][btn]);
-                if (element) {
-                    element.classList.toggle('active', btn === value);
-                }
-            });
-        }
-
-        function updateScene() {
-            const gradient = document.getElementById('gradient');
-            const palette = palettes[currentTimeOfDay];
-            const accent = appStateColors[currentAppState];
-
-            gradient.style.setProperty('--scene-primary', palette.primary);
-            gradient.style.setProperty('--scene-secondary', palette.secondary);
-            gradient.style.setProperty('--scene-accent', accent);
-        }
-
-        // Parallax mouse tracking
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', (e) => {
-            if (parallaxIntensity === 0) return;
-            
-            const x = ((e.clientX / window.innerWidth) - 0.5) * 2;
-            const y = ((e.clientY / window.innerHeight) - 0.5) * 2;
-            
-            const offsetX = x * parallaxIntensity * 20;
-            const offsetY = y * parallaxIntensity * 20;
-            
-            const parallax = document.getElementById('parallax');
-            parallax.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-        });
-
-        // Initialize
+      function setTimeOfDay(timeOfDay) {
+        currentTimeOfDay = timeOfDay;
+        updateButtons('time', timeOfDay);
         updateScene();
+      }
+
+      function setAppState(appState) {
+        currentAppState = appState;
+        updateButtons('state', appState);
+        updateScene();
+      }
+
+      function setPerformanceMode(mode) {
+        currentPerformanceMode = mode;
+        updateButtons('perf', mode);
+
+        // Adjust parallax based on performance mode
+        if (mode === 'high-quality') {
+          parallaxIntensity = 1;
+        } else if (mode === 'balanced') {
+          parallaxIntensity = 0.5;
+        } else {
+          parallaxIntensity = 0;
+        }
+      }
+
+      function updateButtons(category, value) {
+        const buttons = {
+          time: ['dawn', 'day', 'dusk', 'night'],
+          state: ['idle', 'listening', 'thinking', 'speaking'],
+          perf: ['high-quality', 'balanced', 'performance'],
+        };
+
+        const mapping = {
+          time: {
+            dawn: 'btn-dawn',
+            day: 'btn-day',
+            dusk: 'btn-dusk',
+            night: 'btn-night',
+          },
+          state: {
+            idle: 'btn-idle',
+            listening: 'btn-listening',
+            thinking: 'btn-thinking',
+            speaking: 'btn-speaking',
+          },
+          perf: {
+            'high-quality': 'btn-high',
+            balanced: 'btn-balanced',
+            performance: 'btn-perf',
+          },
+        };
+
+        buttons[category].forEach((btn) => {
+          const element = document.getElementById(mapping[category][btn]);
+          if (element) {
+            element.classList.toggle('active', btn === value);
+          }
+        });
+      }
+
+      function updateScene() {
+        const gradient = document.getElementById('gradient');
+        const palette = palettes[currentTimeOfDay];
+        const accent = appStateColors[currentAppState];
+
+        gradient.style.setProperty('--scene-primary', palette.primary);
+        gradient.style.setProperty('--scene-secondary', palette.secondary);
+        gradient.style.setProperty('--scene-accent', accent);
+      }
+
+      // Parallax mouse tracking
+      let mouseX = 0,
+        mouseY = 0;
+      document.addEventListener('mousemove', (e) => {
+        if (parallaxIntensity === 0) return;
+
+        const x = (e.clientX / window.innerWidth - 0.5) * 2;
+        const y = (e.clientY / window.innerHeight - 0.5) * 2;
+
+        const offsetX = x * parallaxIntensity * 20;
+        const offsetY = y * parallaxIntensity * 20;
+
+        const parallax = document.getElementById('parallax');
+        parallax.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+      });
+
+      // Initialize
+      updateScene();
     </script>
-</body>
+  </body>
 </html>

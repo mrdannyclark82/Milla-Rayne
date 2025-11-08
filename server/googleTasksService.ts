@@ -122,66 +122,40 @@ export async function addNoteToGoogleTasks(
  */
 
 async function getDefaultTaskList(accessToken: string): Promise<string | null> {
-
   try {
-
     const response = await fetch(
-
       'https://tasks.googleapis.com/tasks/v1/users/@me/lists',
 
       {
-
         method: 'GET',
 
         headers: {
-
           Authorization: `Bearer ${accessToken}`,
-
         },
-
       }
-
     );
 
-
-
     if (!response.ok) {
-
       console.error('[Google Tasks API] Error getting task lists');
 
       return null;
-
     }
 
-
-
     const data = await response.json();
-
-
 
     // Return the first task list (usually "My Tasks")
 
     if (data.items && data.items.length > 0) {
-
       return data.items[0].id;
-
     }
 
-
-
     return null;
-
   } catch (error) {
-
     console.error('[Google Tasks API] Error getting task lists:', error);
 
     return null;
-
   }
-
 }
-
-
 
 /**
 
@@ -190,120 +164,76 @@ async function getDefaultTaskList(accessToken: string): Promise<string | null> {
  */
 
 export async function listTasks(
-
   userId: string = 'default-user'
-
 ): Promise<TasksAPIResult & { tasks?: any[] }> {
-
   try {
-
     const accessToken = await getValidAccessToken(userId, 'google');
 
-
-
     if (!accessToken) {
-
       return {
-
         success: false,
 
         message: 'You need to connect your Google account first.',
 
         error: 'NO_TOKEN',
-
       };
-
     }
-
-
 
     const taskListId = await getDefaultTaskList(accessToken);
 
-
-
     if (!taskListId) {
-
       return {
-
         success: false,
 
         message: "I couldn't access your Google Tasks.",
 
         error: 'NO_TASK_LIST',
-
       };
-
     }
 
-
-
     const response = await fetch(
-
       `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`,
 
       {
-
         headers: {
-
           Authorization: `Bearer ${accessToken}`,
-
         },
-
       }
-
     );
 
-
-
     if (!response.ok) {
-
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error?.message || 'Unknown error';
       return {
-
         success: false,
 
         message: `Failed to fetch tasks: ${errorMessage}`,
 
         error: `API_ERROR: ${errorMessage}`,
-
       };
-
     }
-
-
 
     const data = await response.json();
 
     return {
-
       success: true,
 
       message: `Successfully fetched ${data.items ? data.items.length : 0} tasks.`,
 
       tasks: data.items,
-
     };
-
   } catch (error) {
-
     console.error('[Google Tasks API] Error listing tasks:', error);
 
     return {
-
       success: false,
 
       message: `An error occurred while fetching tasks: ${error instanceof Error ? error.message : 'Unknown error'} `,
 
       error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-
     };
-
   }
-
 }
-
-
 
 /**
 
@@ -312,11 +242,9 @@ export async function listTasks(
  */
 
 export async function completeTask(
-
   taskId: string,
 
   userId: string = 'default-user'
-
 ): Promise<TasksAPIResult> {
   if (!taskId) {
     return {
@@ -327,112 +255,72 @@ export async function completeTask(
   }
 
   try {
-
     const accessToken = await getValidAccessToken(userId, 'google');
 
-
-
     if (!accessToken) {
-
       return {
-
         success: false,
 
         message: 'You need to connect your Google account first.',
 
         error: 'NO_TOKEN',
-
       };
-
     }
-
-
 
     const taskListId = await getDefaultTaskList(accessToken);
 
-
-
     if (!taskListId) {
-
       return {
-
         success: false,
 
         message: "I couldn't access your Google Tasks.",
 
         error: 'NO_TASK_LIST',
-
       };
-
     }
 
-
-
     const response = await fetch(
-
       `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${taskId}`,
 
       {
-
         method: 'PATCH',
 
         headers: {
-
           Authorization: `Bearer ${accessToken}`,
 
           'Content-Type': 'application/json',
-
         },
 
         body: JSON.stringify({ status: 'completed' }),
-
       }
-
     );
 
-
-
     if (!response.ok) {
-
       const errorData = await response.json().catch(() => ({}));
       const errorMessage = errorData.error?.message || 'Unknown error';
       return {
-
         success: false,
 
         message: `Failed to complete task: ${errorMessage}`,
 
         error: `API_ERROR: ${errorMessage}`,
-
       };
-
     }
 
-
-
     return {
-
       success: true,
 
       message: 'Task marked as completed.',
-
     };
-
   } catch (error) {
-
     console.error('[Google Tasks API] Error completing task:', error);
 
     return {
-
       success: false,
 
       message: `An error occurred while completing the task: ${error instanceof Error ? error.message : 'Unknown error'} `,
 
       error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-
     };
   }
 }
-
-
-

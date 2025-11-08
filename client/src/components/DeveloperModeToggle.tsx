@@ -154,7 +154,8 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    Enable to allow Milla to automatically discuss repository analysis, code improvements, and development features.
+                    Enable to allow Milla to automatically discuss repository
+                    analysis, code improvements, and development features.
                   </p>
                 </div>
                 <Button
@@ -206,7 +207,8 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    Automatically fetch AI-generated daily suggestions on app load.
+                    Automatically fetch AI-generated daily suggestions on app
+                    load.
                   </p>
                 </div>
                 <Button
@@ -253,7 +255,8 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    Client preference for scheduled daily suggestions. Server must be configured separately.
+                    Client preference for scheduled daily suggestions. Server
+                    must be configured separately.
                   </p>
                 </div>
                 <Button

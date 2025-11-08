@@ -64,12 +64,10 @@ export async function handleGuidedMeditation(req: Request, res: Response) {
     if (audioUrl) {
       res.json({ success: true, audioUrl });
     } else {
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: 'Failed to generate meditation audio.',
-        });
+      res.status(500).json({
+        success: false,
+        message: 'Failed to generate meditation audio.',
+      });
     }
   } catch (error) {
     console.error('Error handling guided meditation request:', error);

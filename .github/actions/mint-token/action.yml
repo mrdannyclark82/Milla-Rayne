@@ -5,7 +5,7 @@ outputs:
     description: 'The minted GitHub App token'
     value: ${{ steps.mint_identity_token.outputs.token }}
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: 'Mint identity token'
       id: 'mint_identity_token'

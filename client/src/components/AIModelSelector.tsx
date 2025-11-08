@@ -1,6 +1,6 @@
 /**
  * AIModelSelector - Easy AI Model Switching Component
- * 
+ *
  * Allows users to easily swap between different AI models (MiniMax, Venice, DeepSeek, xAI)
  * Stores preference in backend and updates immediately
  */
@@ -110,7 +110,9 @@ export default function AIModelSelector({
 
       if (data.success) {
         setSelectedModel(model);
-        setStatusMessage(`✓ Switched to ${AI_MODELS.find((m) => m.id === model)?.name}`);
+        setStatusMessage(
+          `✓ Switched to ${AI_MODELS.find((m) => m.id === model)?.name}`
+        );
         onModelChange?.(model);
 
         // Clear success message after 3 seconds

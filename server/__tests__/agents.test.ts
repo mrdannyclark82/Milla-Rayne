@@ -1,7 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import calendarAgentModule from '../agents/calendarAgent.js';
 import { millaAgent } from '../agents/millaAgent.js';
-import { readTasks, writeTasks, AgentTask, updateTask, getTask } from '../agents/taskStorage.js';
+import {
+  readTasks,
+  writeTasks,
+  AgentTask,
+  updateTask,
+  getTask,
+} from '../agents/taskStorage.js';
 import { logAuditEvent, getTaskAuditTrail } from '../agents/auditLog.js';
 import { runTask } from '../agents/worker.js';
 import * as googleCalendarService from '../googleCalendarService.js';
@@ -20,7 +26,8 @@ describe('CalendarAgent', () => {
 
   it('should create calendar event', async () => {
     // Mock googleCalendarService
-    const mockAddEvent = vi.spyOn(googleCalendarService, 'addEventToGoogleCalendar')
+    const mockAddEvent = vi
+      .spyOn(googleCalendarService, 'addEventToGoogleCalendar')
       .mockResolvedValue({ success: true, eventId: 'test-event-123' } as any);
 
     const task: AgentTask = {
@@ -32,9 +39,9 @@ describe('CalendarAgent', () => {
         title: 'Test Meeting',
         date: '2025-02-01',
         time: '10:00',
-        description: 'Test description'
+        description: 'Test description',
       },
-      status: 'pending'
+      status: 'pending',
     };
 
     const result = await calendarAgentModule.handleTask(task);
@@ -51,11 +58,15 @@ describe('CalendarAgent', () => {
   });
 
   it('should list calendar events', async () => {
-    const mockListEvents = vi.spyOn(googleCalendarService, 'listEvents')
-      .mockResolvedValue({ success: true, events: [
-        { id: 'event1', summary: 'Event 1' },
-        { id: 'event2', summary: 'Event 2' }
-      ] } as any);
+    const mockListEvents = vi
+      .spyOn(googleCalendarService, 'listEvents')
+      .mockResolvedValue({
+        success: true,
+        events: [
+          { id: 'event1', summary: 'Event 1' },
+          { id: 'event2', summary: 'Event 2' },
+        ],
+      } as any);
 
     const task: AgentTask = {
       taskId: 'test-task-2',
@@ -63,20 +74,26 @@ describe('CalendarAgent', () => {
       agent: 'CalendarAgent',
       action: 'list_events',
       payload: {
-        maxResults: 10
+        maxResults: 10,
       },
-      status: 'pending'
+      status: 'pending',
     };
 
     const result = await calendarAgentModule.handleTask(task);
 
     expect(result.success).toBe(true);
     expect(result.events).toHaveLength(2);
-    expect(mockListEvents).toHaveBeenCalledWith('default-user', undefined, undefined, 10);
+    expect(mockListEvents).toHaveBeenCalledWith(
+      'default-user',
+      undefined,
+      undefined,
+      10
+    );
   });
 
   it('should delete calendar event', async () => {
-    const mockDeleteEvent = vi.spyOn(googleCalendarService, 'deleteEvent')
+    const mockDeleteEvent = vi
+      .spyOn(googleCalendarService, 'deleteEvent')
       .mockResolvedValue({ success: true } as any);
 
     const task: AgentTask = {
@@ -85,15 +102,18 @@ describe('CalendarAgent', () => {
       agent: 'CalendarAgent',
       action: 'delete_event',
       payload: {
-        eventId: 'event-to-delete'
+        eventId: 'event-to-delete',
       },
-      status: 'pending'
+      status: 'pending',
     };
 
     const result = await calendarAgentModule.handleTask(task);
 
     expect(result.success).toBe(true);
-    expect(mockDeleteEvent).toHaveBeenCalledWith('default-user', 'event-to-delete');
+    expect(mockDeleteEvent).toHaveBeenCalledWith(
+      'default-user',
+      'event-to-delete'
+    );
   });
 
   it('should reject invalid action payload', async () => {
@@ -106,7 +126,7 @@ describe('CalendarAgent', () => {
         title: 'Test',
         // Missing required date field
       },
-      status: 'pending'
+      status: 'pending',
     };
 
     await expect(calendarAgentModule.handleTask(task)).rejects.toThrow();
@@ -125,23 +145,28 @@ describe('MillaAgent', () => {
   });
 
   it('should create task from JSON instructions', async () => {
-    const mockGetAgent = vi.spyOn(registry, 'getAgent')
-      .mockReturnValue({ name: 'EmailAgent', description: 'Email agent', handleTask: vi.fn() } as any);
+    const mockGetAgent = vi
+      .spyOn(registry, 'getAgent')
+      .mockReturnValue({
+        name: 'EmailAgent',
+        description: 'Email agent',
+        handleTask: vi.fn(),
+      } as any);
 
     const instructions = JSON.stringify({
       agent: 'EmailAgent',
       action: 'draft',
       payload: { to: 'test@example.com', subject: 'Test', body: 'Hello' },
-      metadata: { safety_level: 'low' }
+      metadata: { safety_level: 'low' },
     });
 
     const result = await millaAgent.execute(instructions);
 
     expect(result).toContain('Created task');
-    
+
     const tasks = await readTasks();
     expect(tasks.length).toBeGreaterThan(0);
-    
+
     const task = tasks[tasks.length - 1];
     expect(task.agent).toBe('EmailAgent');
     expect(task.action).toBe('draft');
@@ -150,14 +175,18 @@ describe('MillaAgent', () => {
   });
 
   it('should auto-run low-safety tasks', async () => {
-    const mockAgent = { name: 'EmailAgent', description: 'Email agent', handleTask: vi.fn().mockResolvedValue({ success: true }) };
+    const mockAgent = {
+      name: 'EmailAgent',
+      description: 'Email agent',
+      handleTask: vi.fn().mockResolvedValue({ success: true }),
+    };
     vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
     const instructions = JSON.stringify({
       agent: 'EmailAgent',
       action: 'draft',
       payload: { to: 'test@example.com', subject: 'Test', body: 'Hello' },
-      metadata: { safety_level: 'low', requireUserApproval: false }
+      metadata: { safety_level: 'low', requireUserApproval: false },
     });
 
     const result = await millaAgent.execute(instructions);
@@ -165,7 +194,7 @@ describe('MillaAgent', () => {
     expect(result).toContain('Created task');
 
     // Wait for background task execution
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const tasks = await readTasks();
     const task = tasks[tasks.length - 1];
@@ -198,7 +227,11 @@ describe('Task Approval Workflow', () => {
   });
 
   it('should block execution of unapproved high-safety tasks', async () => {
-    const mockAgent = { name: 'TestAgent', description: 'Test', handleTask: vi.fn().mockResolvedValue({ success: true }) };
+    const mockAgent = {
+      name: 'TestAgent',
+      description: 'Test',
+      handleTask: vi.fn().mockResolvedValue({ success: true }),
+    };
     vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
     // Create task requiring approval
@@ -210,7 +243,7 @@ describe('Task Approval Workflow', () => {
       payload: { data: 'test' },
       metadata: { requireUserApproval: true, safety_level: 'high' },
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const tasks = await readTasks();
@@ -225,7 +258,11 @@ describe('Task Approval Workflow', () => {
   });
 
   it('should allow execution after approval', async () => {
-    const mockAgent = { name: 'TestAgent', description: 'Test', handleTask: vi.fn().mockResolvedValue({ success: true }) };
+    const mockAgent = {
+      name: 'TestAgent',
+      description: 'Test',
+      handleTask: vi.fn().mockResolvedValue({ success: true }),
+    };
     vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
     // Create task requiring approval
@@ -237,7 +274,7 @@ describe('Task Approval Workflow', () => {
       payload: { data: 'test' },
       metadata: { requireUserApproval: true, safety_level: 'high' },
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     const tasks = await readTasks();
@@ -246,7 +283,7 @@ describe('Task Approval Workflow', () => {
 
     // Approve the task first
     const approvedTask = await updateTask(task.taskId, {
-      metadata: { ...task.metadata, approved: true }
+      metadata: { ...task.metadata, approved: true },
     });
 
     // Now run should succeed
@@ -269,7 +306,13 @@ describe('Audit Log', () => {
 
   it('should log task lifecycle events', async () => {
     await logAuditEvent('test-task-1', 'EmailAgent', 'draft', 'started');
-    await logAuditEvent('test-task-1', 'EmailAgent', 'draft', 'completed', 'Email drafted successfully');
+    await logAuditEvent(
+      'test-task-1',
+      'EmailAgent',
+      'draft',
+      'completed',
+      'Email drafted successfully'
+    );
 
     const trail = await getTaskAuditTrail('test-task-1');
 
@@ -295,8 +338,20 @@ describe('Audit Log', () => {
 
   it('should log approval and rejection events', async () => {
     // Use 'created' status for approval simulation (or could use 'completed' with details)
-    await logAuditEvent('test-task-2', 'TestAgent', 'action', 'created', 'User approved task');
-    await logAuditEvent('test-task-3', 'TestAgent', 'action', 'cancelled', 'User rejected: too risky');
+    await logAuditEvent(
+      'test-task-2',
+      'TestAgent',
+      'action',
+      'created',
+      'User approved task'
+    );
+    await logAuditEvent(
+      'test-task-3',
+      'TestAgent',
+      'action',
+      'cancelled',
+      'User rejected: too risky'
+    );
 
     const approvalTrail = await getTaskAuditTrail('test-task-2');
     const rejectionTrail = await getTaskAuditTrail('test-task-3');

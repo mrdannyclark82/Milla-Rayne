@@ -14,14 +14,18 @@ interface CodeSnippetCardProps {
 
 /**
  * CodeSnippetCard - Display code snippet with syntax highlighting and copy functionality
- * 
+ *
  * Features:
  * - Language badge
  * - Collapsible for long code
  * - Copy to clipboard
  * - Timestamp link (if available)
  */
-export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetCardProps) {
+export function CodeSnippetCard({
+  snippet,
+  index,
+  className = '',
+}: CodeSnippetCardProps) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
@@ -44,13 +48,17 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
       sql: 'bg-pink-500/20 text-pink-300 border-pink-500/30',
       dockerfile: 'bg-blue-400/20 text-blue-200 border-blue-400/30',
     };
-    return colors[language.toLowerCase()] || 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    return (
+      colors[language.toLowerCase()] ||
+      'bg-gray-500/20 text-gray-300 border-gray-500/30'
+    );
   };
 
   const shouldCollapse = snippet.code.split('\n').length > 10;
-  const displayCode = expanded || !shouldCollapse
-    ? snippet.code
-    : snippet.code.split('\n').slice(0, 10).join('\n') + '\n...';
+  const displayCode =
+    expanded || !shouldCollapse
+      ? snippet.code
+      : snippet.code.split('\n').slice(0, 10).join('\n') + '\n...';
 
   // Map language names to Prism language identifiers
   const getPrismLanguage = (lang: string): string => {
@@ -77,11 +85,15 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
   };
 
   return (
-    <Card className={`bg-black/40 backdrop-blur-sm border-white/10 p-4 hover:border-blue-500/30 transition-colors group ${className}`}>
+    <Card
+      className={`bg-black/40 backdrop-blur-sm border-white/10 p-4 hover:border-blue-500/30 transition-colors group ${className}`}
+    >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2 flex-wrap flex-1">
-          <Badge className={`${getLanguageColor(snippet.language)} border text-xs`}>
+          <Badge
+            className={`${getLanguageColor(snippet.language)} border text-xs`}
+          >
             <Code className="w-3 h-3 mr-1" />
             {snippet.language}
           </Badge>
@@ -124,12 +136,24 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
           code={displayCode}
           language={getPrismLanguage(snippet.language)}
         >
-          {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }: {
+          {({
+            className: highlightClassName,
+            style,
+            tokens,
+            getLineProps,
+            getTokenProps,
+          }: {
             className?: string;
             style?: React.CSSProperties;
             tokens: any[][];
-            getLineProps: (props: { line: any; key?: number }) => React.HTMLAttributes<HTMLDivElement>;
-            getTokenProps: (props: { token: any; key?: number }) => React.HTMLAttributes<HTMLSpanElement>;
+            getLineProps: (props: {
+              line: any;
+              key?: number;
+            }) => React.HTMLAttributes<HTMLDivElement>;
+            getTokenProps: (props: {
+              token: any;
+              key?: number;
+            }) => React.HTMLAttributes<HTMLSpanElement>;
           }) => (
             <pre
               className={`${highlightClassName} bg-black/60 rounded-lg p-4 overflow-x-auto border border-white/5`}

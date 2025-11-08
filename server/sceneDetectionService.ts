@@ -11,7 +11,10 @@ import {
   getSceneDetails,
   getContextualSceneSettings,
 } from '@shared/sceneSettings';
-import { SmartHomeSensorData, mapSensorDataToSceneContext } from './smartHomeService';
+import {
+  SmartHomeSensorData,
+  mapSensorDataToSceneContext,
+} from './smartHomeService';
 
 export type SceneLocation =
   | 'living_room'

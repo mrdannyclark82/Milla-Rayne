@@ -232,12 +232,14 @@ export async function generateGrokResponse(
 ): Promise<OpenRouterResponse> {
   try {
     // Use Grok 1 Fast specific API key if available, otherwise fall back to general OpenRouter key
-    const openrouterKey = config.openrouter.grok1ApiKey || config.openrouter.apiKey;
+    const openrouterKey =
+      config.openrouter.grok1ApiKey || config.openrouter.apiKey;
 
     if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
       console.log('OpenRouter API key not configured for Grok');
       return {
-        content: 'Grok service temporarily unavailable. Please try again later.',
+        content:
+          'Grok service temporarily unavailable. Please try again later.',
         success: false,
         error: 'OpenRouter API key not configured',
       };

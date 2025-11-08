@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { listEvents, deleteEvent, addEventToGoogleCalendar } from '../googleCalendarService';
+import {
+  listEvents,
+  deleteEvent,
+  addEventToGoogleCalendar,
+} from '../googleCalendarService';
 import * as oauth from '../oauthService';
 
 vi.mock('../oauthService');

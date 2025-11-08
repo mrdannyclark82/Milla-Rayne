@@ -70,7 +70,10 @@ export function VoicePickerDialog({
 
   // Filter voices based on search and filters
   // Prefer the provided prop list, fallback to internal fetched voices
-  const voiceList = availableVoices && availableVoices.length > 0 ? availableVoices : internalVoices;
+  const voiceList =
+    availableVoices && availableVoices.length > 0
+      ? availableVoices
+      : internalVoices;
 
   const filteredVoices = voiceList.filter((voice) => {
     const labels = voice.labels || {};
@@ -281,10 +284,11 @@ export function VoicePickerDialog({
                 filteredVoices.map((voice, index) => (
                   <div
                     key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${selectedVoice?.voice_id === voice.voice_id
+                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                      selectedVoice?.voice_id === voice.voice_id
                         ? 'bg-green-600/20 border-green-400/50'
                         : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      } cursor-pointer transition-colors`}
+                    } cursor-pointer transition-colors`}
                     onClick={() => onVoiceSelect(voice)}
                     role="button"
                     tabIndex={0}

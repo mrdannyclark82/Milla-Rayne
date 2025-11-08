@@ -31,9 +31,10 @@ export async function getSmartHomeSensorData(): Promise<SmartHomeSensorData | nu
 /**
  * Maps smart home sensor data to Milla's SceneContext.
  */
-export function mapSensorDataToSceneContext(
-  sensorData: SmartHomeSensorData
-): { location?: SceneLocation; timeOfDay?: TimeOfDay } {
+export function mapSensorDataToSceneContext(sensorData: SmartHomeSensorData): {
+  location?: SceneLocation;
+  timeOfDay?: TimeOfDay;
+} {
   const mappedContext: { location?: SceneLocation; timeOfDay?: TimeOfDay } = {};
 
   // Map light level to time of day
@@ -49,7 +50,9 @@ export function mapSensorDataToSceneContext(
   if (sensorData.motionDetected) {
     // In a real scenario, this would be more sophisticated, e.g., motion in kitchen -> kitchen scene
     // For now, we'll just log it.
-    console.log('Motion detected in smart home, potentially indicating scene change.');
+    console.log(
+      'Motion detected in smart home, potentially indicating scene change.'
+    );
   }
 
   return mappedContext;

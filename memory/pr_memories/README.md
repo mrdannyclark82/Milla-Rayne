@@ -5,6 +5,7 @@ This folder stores Pull Request conversations and context separately from genera
 ## Structure
 
 Each PR conversation is stored in a separate JSON file:
+
 - `pr-{number}.json` - Contains messages and metadata for PR #{number}
 
 ## Format
@@ -28,6 +29,7 @@ Each PR conversation is stored in a separate JSON file:
 ## Purpose
 
 Separating PR memories allows Milla to:
+
 - Maintain context specific to each PR
 - Keep PR discussions separate from personal conversations
 - Easily reference past PR conversations

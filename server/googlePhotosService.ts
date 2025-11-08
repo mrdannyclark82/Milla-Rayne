@@ -48,7 +48,9 @@ export async function searchPhotos(
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ filters: { contentFilter: { includedContentCategories: [query] } } }),
+        body: JSON.stringify({
+          filters: { contentFilter: { includedContentCategories: [query] } },
+        }),
       }
     );
 

@@ -115,7 +115,7 @@ export class HuggingFaceMCPService {
       const model =
         this.config.model || 'philipp-zettl/UnfilteredAI-NSFW-gen-v2';
 
-      const blob = await this.client.textToImage({
+      const blob = (await this.client.textToImage({
         model,
         inputs: prompt,
         parameters: {
@@ -125,7 +125,7 @@ export class HuggingFaceMCPService {
           width: options.width,
           height: options.height,
         },
-      }) as unknown as Blob;
+      })) as unknown as Blob;
 
       // Convert blob to base64
       const arrayBuffer = await blob.arrayBuffer();

@@ -20,7 +20,11 @@ import {
   X,
 } from 'lucide-react';
 import { CodeSnippetCard } from './CodeSnippetCard';
-import type { VideoAnalysis, KeyPoint, ActionableItem } from '@/types/millalyzer';
+import type {
+  VideoAnalysis,
+  KeyPoint,
+  ActionableItem,
+} from '@/types/millalyzer';
 
 interface VideoAnalysisPanelProps {
   analysis: VideoAnalysis;
@@ -31,7 +35,7 @@ interface VideoAnalysisPanelProps {
 
 /**
  * VideoAnalysisPanel - Display millAlyzer video analysis results
- * 
+ *
  * Shows comprehensive video analysis including:
  * - Video metadata and summary
  * - Key points with timestamps
@@ -45,7 +49,9 @@ export function VideoAnalysisPanel({
   onSaveToKnowledge,
   className = '',
 }: VideoAnalysisPanelProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'code' | 'commands' | 'steps'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'code' | 'commands' | 'steps'
+  >('overview');
 
   const getTypeColor = (type: string) => {
     const colors = {
@@ -59,8 +65,10 @@ export function VideoAnalysisPanel({
   };
 
   const getImportanceIcon = (importance: string) => {
-    if (importance === 'high') return <AlertCircle className="w-4 h-4 text-red-400" />;
-    if (importance === 'medium') return <Info className="w-4 h-4 text-yellow-400" />;
+    if (importance === 'high')
+      return <AlertCircle className="w-4 h-4 text-red-400" />;
+    if (importance === 'medium')
+      return <Info className="w-4 h-4 text-yellow-400" />;
     return <CheckCircle2 className="w-4 h-4 text-blue-400" />;
   };
 
@@ -69,32 +77,47 @@ export function VideoAnalysisPanel({
   };
 
   return (
-    <Card className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}>
+    <Card
+      className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}
+    >
       <CardHeader className="flex flex-row items-start justify-between pb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-5 h-5 text-purple-400" />
-            <CardTitle className="text-xl text-white">millAlyzer Analysis</CardTitle>
+            <CardTitle className="text-xl text-white">
+              millAlyzer Analysis
+            </CardTitle>
           </div>
-          <h3 className="text-lg font-semibold text-white/90 mb-2">{analysis.title}</h3>
+          <h3 className="text-lg font-semibold text-white/90 mb-2">
+            {analysis.title}
+          </h3>
           <div className="flex items-center gap-2 flex-wrap">
             <Badge className={`${getTypeColor(analysis.type)} border`}>
               {analysis.type}
             </Badge>
             {analysis.transcriptAvailable && (
-              <Badge variant="outline" className="border-green-500/30 text-green-300">
+              <Badge
+                variant="outline"
+                className="border-green-500/30 text-green-300"
+              >
                 <BookOpen className="w-3 h-3 mr-1" />
                 Transcript
               </Badge>
             )}
             {analysis.codeSnippets.length > 0 && (
-              <Badge variant="outline" className="border-blue-500/30 text-blue-300">
+              <Badge
+                variant="outline"
+                className="border-blue-500/30 text-blue-300"
+              >
                 <Code className="w-3 h-3 mr-1" />
                 {analysis.codeSnippets.length} snippets
               </Badge>
             )}
             {analysis.cliCommands.length > 0 && (
-              <Badge variant="outline" className="border-purple-500/30 text-purple-300">
+              <Badge
+                variant="outline"
+                className="border-purple-500/30 text-purple-300"
+              >
                 <Terminal className="w-3 h-3 mr-1" />
                 {analysis.cliCommands.length} commands
               </Badge>
@@ -123,20 +146,22 @@ export function VideoAnalysisPanel({
         <div className="flex gap-2 border-b border-white/10">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'overview'
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === 'overview'
                 ? 'text-purple-300 border-b-2 border-purple-400'
                 : 'text-white/60 hover:text-white/80'
-              }`}
+            }`}
           >
             Overview
           </button>
           {analysis.codeSnippets.length > 0 && (
             <button
               onClick={() => setActiveTab('code')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'code'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'code'
                   ? 'text-blue-300 border-b-2 border-blue-400'
                   : 'text-white/60 hover:text-white/80'
-                }`}
+              }`}
             >
               Code ({analysis.codeSnippets.length})
             </button>
@@ -144,10 +169,11 @@ export function VideoAnalysisPanel({
           {analysis.cliCommands.length > 0 && (
             <button
               onClick={() => setActiveTab('commands')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'commands'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'commands'
                   ? 'text-purple-300 border-b-2 border-purple-400'
                   : 'text-white/60 hover:text-white/80'
-                }`}
+              }`}
             >
               Commands ({analysis.cliCommands.length})
             </button>
@@ -155,10 +181,11 @@ export function VideoAnalysisPanel({
           {analysis.actionableItems.length > 0 && (
             <button
               onClick={() => setActiveTab('steps')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'steps'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'steps'
                   ? 'text-green-300 border-b-2 border-green-400'
                   : 'text-white/60 hover:text-white/80'
-                }`}
+              }`}
             >
               Steps ({analysis.actionableItems.length})
             </button>
@@ -216,9 +243,11 @@ export function VideoAnalysisPanel({
 
           {activeTab === 'steps' && (
             <div className="space-y-3 pr-4">
-              {analysis.actionableItems.map((item: ActionableItem, index: number) => (
-                <ActionableItemCard key={index} item={item} index={index} />
-              ))}
+              {analysis.actionableItems.map(
+                (item: ActionableItem, index: number) => (
+                  <ActionableItemCard key={index} item={item} index={index} />
+                )
+              )}
             </div>
           )}
         </ScrollArea>
@@ -238,7 +267,12 @@ export function VideoAnalysisPanel({
           <Button
             variant="outline"
             className="border-white/20 text-white/80 hover:bg-white/10"
-            onClick={() => window.open(`https://youtube.com/watch?v=${analysis.videoId}`, '_blank')}
+            onClick={() =>
+              window.open(
+                `https://youtube.com/watch?v=${analysis.videoId}`,
+                '_blank'
+              )
+            }
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             Watch on YouTube
@@ -276,7 +310,9 @@ function CLICommandCard({ command, index }: { command: any; index: number }) {
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-purple-400" />
-          <span className={`text-xs font-semibold ${getPlatformColor(command.platform)}`}>
+          <span
+            className={`text-xs font-semibold ${getPlatformColor(command.platform)}`}
+          >
             {command.platform.toUpperCase()}
           </span>
           {command.timestamp && (
@@ -298,17 +334,25 @@ function CLICommandCard({ command, index }: { command: any; index: number }) {
           )}
         </Button>
       </div>
-      <Highlight
-        theme={themes.nightOwl}
-        code={command.command}
-        language="bash"
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }: {
+      <Highlight theme={themes.nightOwl} code={command.command} language="bash">
+        {({
+          className,
+          style,
+          tokens,
+          getLineProps,
+          getTokenProps,
+        }: {
           className?: string;
           style?: React.CSSProperties;
           tokens: any[][];
-          getLineProps: (props: { line: any; key?: number }) => React.HTMLAttributes<HTMLDivElement>;
-          getTokenProps: (props: { token: any; key?: number }) => React.HTMLAttributes<HTMLSpanElement>;
+          getLineProps: (props: {
+            line: any;
+            key?: number;
+          }) => React.HTMLAttributes<HTMLDivElement>;
+          getTokenProps: (props: {
+            token: any;
+            key?: number;
+          }) => React.HTMLAttributes<HTMLSpanElement>;
         }) => (
           <pre
             className={`${className} text-sm font-mono block bg-black/60 rounded px-3 py-2 mb-2 overflow-x-auto`}
@@ -334,11 +378,19 @@ function CLICommandCard({ command, index }: { command: any; index: number }) {
 /**
  * ActionableItemCard - Display actionable step from tutorial
  */
-function ActionableItemCard({ item, index }: { item: ActionableItem; index: number }) {
+function ActionableItemCard({
+  item,
+  index,
+}: {
+  item: ActionableItem;
+  index: number;
+}) {
   const getTypeIcon = (type: string) => {
-    if (type === 'warning') return <AlertCircle className="w-4 h-4 text-yellow-400" />;
+    if (type === 'warning')
+      return <AlertCircle className="w-4 h-4 text-yellow-400" />;
     if (type === 'tip') return <Info className="w-4 h-4 text-blue-400" />;
-    if (type === 'resource') return <ExternalLink className="w-4 h-4 text-purple-400" />;
+    if (type === 'resource')
+      return <ExternalLink className="w-4 h-4 text-purple-400" />;
     return <CheckCircle2 className="w-4 h-4 text-green-400" />;
   };
 

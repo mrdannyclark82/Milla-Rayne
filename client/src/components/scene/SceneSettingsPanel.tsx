@@ -75,7 +75,9 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
   return (
     <Card className="bg-[#2d3e50] border-gray-600">
       <CardHeader>
-        <CardTitle className="text-base font-bold text-white">Adaptive Background</CardTitle>
+        <CardTitle className="text-base font-bold text-white">
+          Adaptive Background
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Enable/Disable Toggle */}

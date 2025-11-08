@@ -87,7 +87,11 @@ export default function SettingsPanel({
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: string; username: string; email: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    username: string;
+    email: string;
+  } | null>(null);
   const [voiceConsents, setVoiceConsents] = useState<{
     voice_synthesis: boolean;
     voice_persona: boolean;
@@ -319,698 +323,712 @@ export default function SettingsPanel({
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-w-[90vw] max-h-[85vh] overflow-y-auto bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md border border-white/20 text-white">
-        <DialogHeader className="sticky top-0 z-10 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 pb-2 border-b border-white/10">
-          <DialogTitle className="text-2xl font-bold text-white">
-            Settings
-          </DialogTitle>
-        </DialogHeader>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>{children}</DialogTrigger>
+        <DialogContent className="sm:max-w-[600px] max-w-[90vw] max-h-[85vh] overflow-y-auto bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md border border-white/20 text-white">
+          <DialogHeader className="sticky top-0 z-10 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 pb-2 border-b border-white/10">
+            <DialogTitle className="text-2xl font-bold text-white">
+              Settings
+            </DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-3 mt-4 overflow-y-auto pr-2">
-          {/* Appearance Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-palette mr-2 text-purple-400"></i>
-                Appearance
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Theme</span>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`border-white/30 text-white/70 hover:text-white ${
-                      theme === 'light' ? 'bg-white/20 border-white/50' : ''
-                    }`}
-                    onClick={() => onThemeChange?.('light')}
-                    data-testid="button-theme-light"
-                  >
-                    <i className="fas fa-sun mr-1"></i>
-                    Light
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`border-white/30 text-white/70 hover:text-white ${
-                      theme === 'dark' ? 'bg-white/20 border-white/50' : ''
-                    }`}
-                    onClick={() => onThemeChange?.('dark')}
-                    data-testid="button-theme-dark"
-                  >
-                    <i className="fas fa-moon mr-1"></i>
-                    Dark
-                  </Button>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Background Blur</span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={backgroundBlur}
-                    onChange={(e) =>
-                      onBackgroundBlurChange?.(Number(e.target.value))
-                    }
-                    className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
-                    data-testid="slider-background-blur"
-                  />
-                  <span className="text-white/60 text-xs w-8">
-                    {backgroundBlur}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Chat Transparency</span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={chatTransparency}
-                    onChange={(e) =>
-                      onChatTransparencyChange?.(Number(e.target.value))
-                    }
-                    className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
-                    data-testid="slider-chat-transparency"
-                  />
-                  <span className="text-white/60 text-xs w-8">
-                    {chatTransparency}%
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          {/* Avatar Customization Section */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
-            <AvatarCustomizer
-              currentSettings={avatarSettings}
-              onSettingsChange={onAvatarSettingsChange || (() => {})}
-            />
-          </div>
-          {/* Personality Tuning Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-brain mr-2 text-blue-400"></i>
-                Personality Tuning
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Communication Style</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                  onClick={() => {
-                    const styles = [
-                      'adaptive',
-                      'formal',
-                      'casual',
-                      'friendly',
-                    ] as const;
-                    const currentIndex = styles.indexOf(
-                      currentPersonalitySettings.communicationStyle
-                    );
-                    const nextStyle =
-                      styles[(currentIndex + 1) % styles.length];
-                    onPersonalitySettingsChange?.({
-                      ...currentPersonalitySettings,
-                      communicationStyle: nextStyle,
-                    });
-                  }}
-                  data-testid="button-communication-style"
-                >
-                  <i className="fas fa-comments mr-1"></i>
-                  {currentPersonalitySettings.communicationStyle
-                    .charAt(0)
-                    .toUpperCase() +
-                    currentPersonalitySettings.communicationStyle.slice(1)}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Formality Level</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                  onClick={() => {
-                    const levels = ['formal', 'balanced', 'casual'] as const;
-                    const currentIndex = levels.indexOf(
-                      currentPersonalitySettings.formalityLevel
-                    );
-                    const nextLevel =
-                      levels[(currentIndex + 1) % levels.length];
-                    onPersonalitySettingsChange?.({
-                      ...currentPersonalitySettings,
-                      formalityLevel: nextLevel,
-                    });
-                  }}
-                  data-testid="button-formality-level"
-                >
-                  <i className="fas fa-balance-scale mr-1"></i>
-                  {currentPersonalitySettings.formalityLevel
-                    .charAt(0)
-                    .toUpperCase() +
-                    currentPersonalitySettings.formalityLevel.slice(1)}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Response Length</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                  onClick={() => {
-                    const lengths = ['short', 'medium', 'long'] as const;
-                    const currentIndex = lengths.indexOf(
-                      currentPersonalitySettings.responseLength
-                    );
-                    const nextLength =
-                      lengths[(currentIndex + 1) % lengths.length];
-                    onPersonalitySettingsChange?.({
-                      ...currentPersonalitySettings,
-                      responseLength: nextLength,
-                    });
-                  }}
-                  data-testid="button-response-length"
-                >
-                  <i className="fas fa-text-width mr-1"></i>
-                  {currentPersonalitySettings.responseLength
-                    .charAt(0)
-                    .toUpperCase() +
-                    currentPersonalitySettings.responseLength.slice(1)}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Emotional Intelligence</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                  onClick={() => {
-                    const levels = ['low', 'medium', 'high'] as const;
-                    const currentIndex = levels.indexOf(
-                      currentPersonalitySettings.emotionalIntelligence
-                    );
-                    const nextLevel =
-                      levels[(currentIndex + 1) % levels.length];
-                    onPersonalitySettingsChange?.({
-                      ...currentPersonalitySettings,
-                      emotionalIntelligence: nextLevel,
-                    });
-                  }}
-                  data-testid="button-emotional-intelligence"
-                >
-                  <i className="fas fa-heart mr-1"></i>
-                  {currentPersonalitySettings.emotionalIntelligence
-                    .charAt(0)
-                    .toUpperCase() +
-                    currentPersonalitySettings.emotionalIntelligence.slice(1)}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-          {/* Voice Settings Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-volume-up mr-2 text-green-400"></i>
-                Voice Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Voice Responses</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`border-white/30 text-white/70 hover:text-white ${voiceEnabled ? 'bg-green-600/20 border-green-400/50 text-green-300' : ''}`}
-                  onClick={handleVoiceToggle}
-                  data-testid="button-voice-toggle"
-                >
-                  <i
-                    className={`fas ${voiceEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
-                  ></i>
-                  {voiceEnabled ? 'On' : 'Off'}
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Voice Input</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                >
-                  <i className="fas fa-microphone mr-1"></i>
-                  Available
-                </Button>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-white/80">Speech Rate</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-white/30 text-white/70 hover:text-white"
-                  onClick={handleSpeechRateChange}
-                  data-testid="button-speech-rate"
-                >
-                  <i className="fas fa-tachometer-alt mr-1"></i>
-                  {getSpeechRateLabel()}
-                </Button>
-              </div>
-
-              {voiceEnabled && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80">Voice Selection</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-white/30 text-white/70 hover:text-white"
-                      onClick={() => {
-                        const femaleVoices = availableVoices.filter(
-                          (v) =>
-                            v.lang.startsWith('en') &&
-                            (v.name.toLowerCase().includes('female') ||
-                              v.name.toLowerCase().includes('woman') ||
-                              v.name.toLowerCase().includes('zira') ||
-                              v.name.toLowerCase().includes('hazel') ||
-                              v.name.toLowerCase().includes('samantha'))
-                        );
-                        const allEnglishVoices = availableVoices.filter((v) =>
-                          v.lang.startsWith('en')
-                        );
-                        const voicesToCycle =
-                          femaleVoices.length > 0
-                            ? femaleVoices
-                            : allEnglishVoices;
-
-                        if (voicesToCycle.length === 0) return;
-
-                        const currentIndex = selectedVoice
-                          ? voicesToCycle.findIndex(
-                              (v) => v.name === selectedVoice.name
-                            )
-                          : -1;
-                        const nextIndex =
-                          (currentIndex + 1) % voicesToCycle.length;
-                        onVoiceChange?.(voicesToCycle[nextIndex]);
-                      }}
-                      data-testid="button-voice-picker"
-                    >
-                      <i className="fas fa-user-circle mr-1"></i>
-                      {getVoiceDisplayName()}
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80">Voice Pitch</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-white/30 text-white/70 hover:text-white"
-                      onClick={handleVoicePitchChange}
-                      data-testid="button-voice-pitch"
-                    >
-                      <i className="fas fa-music mr-1"></i>
-                      {getVoicePitchLabel()}
-                    </Button>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80">Voice Volume</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-white/30 text-white/70 hover:text-white"
-                      onClick={handleVoiceVolumeChange}
-                      data-testid="button-voice-volume"
-                    >
-                      <i className="fas fa-volume-up mr-1"></i>
-                      {getVoiceVolumeLabel()}
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-          {/* Privacy & Consent Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <Shield className="w-5 h-5 mr-2 text-blue-400" />
-                Privacy & Consent
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-white/60 mb-3">
-                Manage your consent for voice features. You can revoke consent
-                at any time.
-              </p>
-
-              {/* Voice Synthesis Consent */}
-              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                      Voice Synthesis
-                      {voiceConsents.voice_synthesis ? (
-                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
-                          Granted
-                        </span>
-                      ) : (
-                        <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
-                          Not Granted
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-white/60 mt-1">
-                      Text-to-speech output for AI responses
-                    </p>
-                  </div>
-                </div>
-                {voiceConsents.voice_synthesis && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRevokeConsent('voice_synthesis')}
-                    className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
-                  >
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Revoke Consent
-                  </Button>
-                )}
-              </div>
-
-              {/* Voice Persona Consent */}
-              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                      Voice Persona
-                      {voiceConsents.voice_persona ? (
-                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
-                          Granted
-                        </span>
-                      ) : (
-                        <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
-                          Not Granted
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-white/60 mt-1">
-                      Custom voice characteristics and preferences
-                    </p>
-                  </div>
-                </div>
-                {voiceConsents.voice_persona && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRevokeConsent('voice_persona')}
-                    className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
-                  >
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Revoke Consent
-                  </Button>
-                )}
-              </div>
-
-              {/* Voice Cloning Consent */}
-              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                      Voice Cloning
-                      {voiceConsents.voice_cloning ? (
-                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
-                          Granted
-                        </span>
-                      ) : (
-                        <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/50">
-                          Not Available
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-white/60 mt-1">
-                      Synthetic voice generation (Not yet implemented)
-                    </p>
-                  </div>
-                </div>
-                {voiceConsents.voice_cloning && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleRevokeConsent('voice_cloning')}
-                    className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
-                  >
-                    <AlertCircle className="w-3 h-3 mr-1" />
-                    Revoke Consent
-                  </Button>
-                )}
-              </div>
-
-              <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30 mt-3">
-                <p className="text-xs text-blue-300 flex items-start gap-2">
-                  <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>
-                    Your privacy matters. All consent records are stored
-                    securely and you can revoke consent at any time. See{' '}
-                    <span className="underline cursor-pointer">
-                      VOICE_CLONING_CONSENT.md
-                    </span>{' '}
-                    for details.
-                  </span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          {/* Developer Mode Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-code mr-2 text-purple-400"></i>
-                Developer Mode
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-white/60 mb-3">
-                Enable Developer Mode to allow Milla to automatically discuss
-                repository analysis, code improvements, and development features
-                during conversations.
-              </p>
-
-              <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/10">
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-white flex items-center gap-2">
-                    Developer Mode
-                    {developerMode ? (
-                      <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
-                        Enabled
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
-                        Disabled
-                      </span>
-                    )}
-                  </h4>
-                  <p className="text-xs text-white/60 mt-1">
-                    {developerMode
-                      ? 'Milla can discuss GitHub repositories and code analysis automatically'
-                      : 'Milla will only discuss development when explicitly asked'}
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDeveloperModeToggle}
-                  disabled={isDeveloperModeLoading}
-                  className={`ml-3 border-white/30 text-white/70 hover:text-white ${
-                    developerMode
-                      ? 'bg-purple-600/20 border-purple-400/50 text-purple-300'
-                      : ''
-                  }`}
-                  data-testid="button-developer-mode-toggle"
-                >
-                  <i
-                    className={`fas ${developerMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
-                  ></i>
-                  {isDeveloperModeLoading
-                    ? 'Updating...'
-                    : developerMode
-                      ? 'On'
-                      : 'Off'}
-                </Button>
-              </div>
-
-              <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30 mt-3">
-                <p className="text-xs text-purple-300 flex items-start gap-2">
-                  <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
-                  <span>
-                    When enabled, Milla can automatically analyze GitHub URLs
-                    you share and discuss code improvements. When disabled,
-                    she'll only engage with development topics when you
-                    explicitly ask.
-                  </span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          {/* AI Model Selection Section */}
-          <AIModelSelector />
-          {/* User Account Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-user-circle mr-2 text-pink-400"></i>
-                User Account
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {currentUser ? (
-                <div className="space-y-3">
-                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-sm font-semibold text-white">
-                          {currentUser.username}
-                        </h4>
-                        <p className="text-xs text-white/60">{currentUser.email}</p>
-                      </div>
-                      <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-full border border-green-500/50">
-                        Logged In
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    onClick={handleLogout}
-                    className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
-                  >
-                    <i className="fas fa-sign-out-alt mr-2"></i>
-                    Log Out
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-white/60">
-                    Create an account to save your preferences and conversation history across devices.
-                  </p>
-                  <Button
-                    onClick={() => setShowLoginDialog(true)}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <i className="fas fa-user-plus mr-2"></i>
-                    Sign In / Register
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          {/* Personal Tasks Section */}
-          \n\n <PersonalTasksSection />
-          {/* Accessibility Section */}
-          <AccessibilitySettings
-            highContrast={false}
-            onHighContrastChange={() => {}}
-            dyslexiaFont={false}
-            onDyslexiaFontChange={() => {}}
-            colorBlindMode="none"
-            onColorBlindModeChange={() => {}}
-            largeTouchTargets={false}
-            onLargeTouchTargetsChange={() => {}}
-          />
-          {/* Scene Settings Section */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
-            <SceneSettingsPanel />
-          </div>
-          {/* Gmail Client Section */}
-          <GmailClient />
-
-          {/* Connected Services Section */}
-          <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
-            <CardHeader>
-              <CardTitle className="text-lg text-white flex items-center">
-                <i className="fas fa-link mr-2 text-yellow-400"></i>
-                Connected Services
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+          <div className="space-y-3 mt-4 overflow-y-auto pr-2">
+            {/* Appearance Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-palette mr-2 text-purple-400"></i>
+                  Appearance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <img src="/google-logo.svg" alt="Google" className="w-6 h-6 mr-3" />
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">Google</h4>
-                      <p className="text-xs text-white/60">Calendar, Gmail, YouTube</p>
-                    </div>
+                  <span className="text-white/80">Theme</span>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`border-white/30 text-white/70 hover:text-white ${
+                        theme === 'light' ? 'bg-white/20 border-white/50' : ''
+                      }`}
+                      onClick={() => onThemeChange?.('light')}
+                      data-testid="button-theme-light"
+                    >
+                      <i className="fas fa-sun mr-1"></i>
+                      Light
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`border-white/30 text-white/70 hover:text-white ${
+                        theme === 'dark' ? 'bg-white/20 border-white/50' : ''
+                      }`}
+                      onClick={() => onThemeChange?.('dark')}
+                      data-testid="button-theme-dark"
+                    >
+                      <i className="fas fa-moon mr-1"></i>
+                      Dark
+                    </Button>
                   </div>
-                  {oauthStatus.connected ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-green-400">Connected</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Background Blur</span>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={backgroundBlur}
+                      onChange={(e) =>
+                        onBackgroundBlurChange?.(Number(e.target.value))
+                      }
+                      className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                      data-testid="slider-background-blur"
+                    />
+                    <span className="text-white/60 text-xs w-8">
+                      {backgroundBlur}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Chat Transparency</span>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={chatTransparency}
+                      onChange={(e) =>
+                        onChatTransparencyChange?.(Number(e.target.value))
+                      }
+                      className="w-20 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                      data-testid="slider-chat-transparency"
+                    />
+                    <span className="text-white/60 text-xs w-8">
+                      {chatTransparency}%
+                    </span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Avatar Customization Section */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
+              <AvatarCustomizer
+                currentSettings={avatarSettings}
+                onSettingsChange={onAvatarSettingsChange || (() => {})}
+              />
+            </div>
+            {/* Personality Tuning Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-brain mr-2 text-blue-400"></i>
+                  Personality Tuning
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Communication Style</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                    onClick={() => {
+                      const styles = [
+                        'adaptive',
+                        'formal',
+                        'casual',
+                        'friendly',
+                      ] as const;
+                      const currentIndex = styles.indexOf(
+                        currentPersonalitySettings.communicationStyle
+                      );
+                      const nextStyle =
+                        styles[(currentIndex + 1) % styles.length];
+                      onPersonalitySettingsChange?.({
+                        ...currentPersonalitySettings,
+                        communicationStyle: nextStyle,
+                      });
+                    }}
+                    data-testid="button-communication-style"
+                  >
+                    <i className="fas fa-comments mr-1"></i>
+                    {currentPersonalitySettings.communicationStyle
+                      .charAt(0)
+                      .toUpperCase() +
+                      currentPersonalitySettings.communicationStyle.slice(1)}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Formality Level</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                    onClick={() => {
+                      const levels = ['formal', 'balanced', 'casual'] as const;
+                      const currentIndex = levels.indexOf(
+                        currentPersonalitySettings.formalityLevel
+                      );
+                      const nextLevel =
+                        levels[(currentIndex + 1) % levels.length];
+                      onPersonalitySettingsChange?.({
+                        ...currentPersonalitySettings,
+                        formalityLevel: nextLevel,
+                      });
+                    }}
+                    data-testid="button-formality-level"
+                  >
+                    <i className="fas fa-balance-scale mr-1"></i>
+                    {currentPersonalitySettings.formalityLevel
+                      .charAt(0)
+                      .toUpperCase() +
+                      currentPersonalitySettings.formalityLevel.slice(1)}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Response Length</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                    onClick={() => {
+                      const lengths = ['short', 'medium', 'long'] as const;
+                      const currentIndex = lengths.indexOf(
+                        currentPersonalitySettings.responseLength
+                      );
+                      const nextLength =
+                        lengths[(currentIndex + 1) % lengths.length];
+                      onPersonalitySettingsChange?.({
+                        ...currentPersonalitySettings,
+                        responseLength: nextLength,
+                      });
+                    }}
+                    data-testid="button-response-length"
+                  >
+                    <i className="fas fa-text-width mr-1"></i>
+                    {currentPersonalitySettings.responseLength
+                      .charAt(0)
+                      .toUpperCase() +
+                      currentPersonalitySettings.responseLength.slice(1)}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Emotional Intelligence</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                    onClick={() => {
+                      const levels = ['low', 'medium', 'high'] as const;
+                      const currentIndex = levels.indexOf(
+                        currentPersonalitySettings.emotionalIntelligence
+                      );
+                      const nextLevel =
+                        levels[(currentIndex + 1) % levels.length];
+                      onPersonalitySettingsChange?.({
+                        ...currentPersonalitySettings,
+                        emotionalIntelligence: nextLevel,
+                      });
+                    }}
+                    data-testid="button-emotional-intelligence"
+                  >
+                    <i className="fas fa-heart mr-1"></i>
+                    {currentPersonalitySettings.emotionalIntelligence
+                      .charAt(0)
+                      .toUpperCase() +
+                      currentPersonalitySettings.emotionalIntelligence.slice(1)}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Voice Settings Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-volume-up mr-2 text-green-400"></i>
+                  Voice Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Voice Responses</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`border-white/30 text-white/70 hover:text-white ${voiceEnabled ? 'bg-green-600/20 border-green-400/50 text-green-300' : ''}`}
+                    onClick={handleVoiceToggle}
+                    data-testid="button-voice-toggle"
+                  >
+                    <i
+                      className={`fas ${voiceEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
+                    ></i>
+                    {voiceEnabled ? 'On' : 'Off'}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Voice Input</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                  >
+                    <i className="fas fa-microphone mr-1"></i>
+                    Available
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/80">Speech Rate</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/30 text-white/70 hover:text-white"
+                    onClick={handleSpeechRateChange}
+                    data-testid="button-speech-rate"
+                  >
+                    <i className="fas fa-tachometer-alt mr-1"></i>
+                    {getSpeechRateLabel()}
+                  </Button>
+                </div>
+
+                {voiceEnabled && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/80">Voice Selection</span>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleDisconnect}
-                        className="border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
+                        className="border-white/30 text-white/70 hover:text-white"
+                        onClick={() => {
+                          const femaleVoices = availableVoices.filter(
+                            (v) =>
+                              v.lang.startsWith('en') &&
+                              (v.name.toLowerCase().includes('female') ||
+                                v.name.toLowerCase().includes('woman') ||
+                                v.name.toLowerCase().includes('zira') ||
+                                v.name.toLowerCase().includes('hazel') ||
+                                v.name.toLowerCase().includes('samantha'))
+                          );
+                          const allEnglishVoices = availableVoices.filter((v) =>
+                            v.lang.startsWith('en')
+                          );
+                          const voicesToCycle =
+                            femaleVoices.length > 0
+                              ? femaleVoices
+                              : allEnglishVoices;
+
+                          if (voicesToCycle.length === 0) return;
+
+                          const currentIndex = selectedVoice
+                            ? voicesToCycle.findIndex(
+                                (v) => v.name === selectedVoice.name
+                              )
+                            : -1;
+                          const nextIndex =
+                            (currentIndex + 1) % voicesToCycle.length;
+                          onVoiceChange?.(voicesToCycle[nextIndex]);
+                        }}
+                        data-testid="button-voice-picker"
                       >
-                        Disconnect
+                        <i className="fas fa-user-circle mr-1"></i>
+                        {getVoiceDisplayName()}
                       </Button>
                     </div>
-                  ) : (
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/80">Voice Pitch</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-white/30 text-white/70 hover:text-white"
+                        onClick={handleVoicePitchChange}
+                        data-testid="button-voice-pitch"
+                      >
+                        <i className="fas fa-music mr-1"></i>
+                        {getVoicePitchLabel()}
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/80">Voice Volume</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-white/30 text-white/70 hover:text-white"
+                        onClick={handleVoiceVolumeChange}
+                        data-testid="button-voice-volume"
+                      >
+                        <i className="fas fa-volume-up mr-1"></i>
+                        {getVoiceVolumeLabel()}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+            {/* Privacy & Consent Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-blue-400" />
+                  Privacy & Consent
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-white/60 mb-3">
+                  Manage your consent for voice features. You can revoke consent
+                  at any time.
+                </p>
+
+                {/* Voice Synthesis Consent */}
+                <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                        Voice Synthesis
+                        {voiceConsents.voice_synthesis ? (
+                          <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
+                            Granted
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
+                            Not Granted
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-white/60 mt-1">
+                        Text-to-speech output for AI responses
+                      </p>
+                    </div>
+                  </div>
+                  {voiceConsents.voice_synthesis && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => (window.location.href = '/api/oauth/google')}
-                      className="border-white/30 text-white/70 hover:text-white"
+                      onClick={() => handleRevokeConsent('voice_synthesis')}
+                      className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
                     >
-                      Connect to Google
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Revoke Consent
                     </Button>
                   )}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        <Separator className="bg-white/20" />
+                {/* Voice Persona Consent */}
+                <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                        Voice Persona
+                        {voiceConsents.voice_persona ? (
+                          <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
+                            Granted
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
+                            Not Granted
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-white/60 mt-1">
+                        Custom voice characteristics and preferences
+                      </p>
+                    </div>
+                  </div>
+                  {voiceConsents.voice_persona && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRevokeConsent('voice_persona')}
+                      className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
+                    >
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Revoke Consent
+                    </Button>
+                  )}
+                </div>
 
-        {/* Footer */}
-        <div className="flex justify-between items-center pt-4">
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            className="border-white/30 text-white/70 hover:text-white"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => setIsOpen(false)}
-            className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-          >
-            Save Settings
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-    
-    {/* Login Dialog */}
-    <LoginDialog
-      isOpen={showLoginDialog}
-      onClose={() => setShowLoginDialog(false)}
-      onLoginSuccess={(user) => {
-        setCurrentUser(user);
-        setShowLoginDialog(false);
-      }}
-    />
+                {/* Voice Cloning Consent */}
+                <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                        Voice Cloning
+                        {voiceConsents.voice_cloning ? (
+                          <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
+                            Granted
+                          </span>
+                        ) : (
+                          <span className="text-xs bg-yellow-600/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/50">
+                            Not Available
+                          </span>
+                        )}
+                      </h4>
+                      <p className="text-xs text-white/60 mt-1">
+                        Synthetic voice generation (Not yet implemented)
+                      </p>
+                    </div>
+                  </div>
+                  {voiceConsents.voice_cloning && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRevokeConsent('voice_cloning')}
+                      className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300 mt-2"
+                    >
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Revoke Consent
+                    </Button>
+                  )}
+                </div>
+
+                <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/30 mt-3">
+                  <p className="text-xs text-blue-300 flex items-start gap-2">
+                    <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>
+                      Your privacy matters. All consent records are stored
+                      securely and you can revoke consent at any time. See{' '}
+                      <span className="underline cursor-pointer">
+                        VOICE_CLONING_CONSENT.md
+                      </span>{' '}
+                      for details.
+                    </span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            {/* Developer Mode Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-code mr-2 text-purple-400"></i>
+                  Developer Mode
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-white/60 mb-3">
+                  Enable Developer Mode to allow Milla to automatically discuss
+                  repository analysis, code improvements, and development
+                  features during conversations.
+                </p>
+
+                <div className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/10">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-white flex items-center gap-2">
+                      Developer Mode
+                      {developerMode ? (
+                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/50">
+                          Enabled
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
+                          Disabled
+                        </span>
+                      )}
+                    </h4>
+                    <p className="text-xs text-white/60 mt-1">
+                      {developerMode
+                        ? 'Milla can discuss GitHub repositories and code analysis automatically'
+                        : 'Milla will only discuss development when explicitly asked'}
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDeveloperModeToggle}
+                    disabled={isDeveloperModeLoading}
+                    className={`ml-3 border-white/30 text-white/70 hover:text-white ${
+                      developerMode
+                        ? 'bg-purple-600/20 border-purple-400/50 text-purple-300'
+                        : ''
+                    }`}
+                    data-testid="button-developer-mode-toggle"
+                  >
+                    <i
+                      className={`fas ${developerMode ? 'fa-toggle-on' : 'fa-toggle-off'} mr-1`}
+                    ></i>
+                    {isDeveloperModeLoading
+                      ? 'Updating...'
+                      : developerMode
+                        ? 'On'
+                        : 'Off'}
+                  </Button>
+                </div>
+
+                <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-500/30 mt-3">
+                  <p className="text-xs text-purple-300 flex items-start gap-2">
+                    <i className="fas fa-info-circle mt-0.5 flex-shrink-0"></i>
+                    <span>
+                      When enabled, Milla can automatically analyze GitHub URLs
+                      you share and discuss code improvements. When disabled,
+                      she'll only engage with development topics when you
+                      explicitly ask.
+                    </span>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            {/* AI Model Selection Section */}
+            <AIModelSelector />
+            {/* User Account Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-user-circle mr-2 text-pink-400"></i>
+                  User Account
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {currentUser ? (
+                  <div className="space-y-3">
+                    <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-white">
+                            {currentUser.username}
+                          </h4>
+                          <p className="text-xs text-white/60">
+                            {currentUser.email}
+                          </p>
+                        </div>
+                        <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded-full border border-green-500/50">
+                          Logged In
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleLogout}
+                      className="w-full border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
+                    >
+                      <i className="fas fa-sign-out-alt mr-2"></i>
+                      Log Out
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-white/60">
+                      Create an account to save your preferences and
+                      conversation history across devices.
+                    </p>
+                    <Button
+                      onClick={() => setShowLoginDialog(true)}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      <i className="fas fa-user-plus mr-2"></i>
+                      Sign In / Register
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            {/* Personal Tasks Section */}
+            \n\n <PersonalTasksSection />
+            {/* Accessibility Section */}
+            <AccessibilitySettings
+              highContrast={false}
+              onHighContrastChange={() => {}}
+              dyslexiaFont={false}
+              onDyslexiaFontChange={() => {}}
+              colorBlindMode="none"
+              onColorBlindModeChange={() => {}}
+              largeTouchTargets={false}
+              onLargeTouchTargetsChange={() => {}}
+            />
+            {/* Scene Settings Section */}
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
+              <SceneSettingsPanel />
+            </div>
+            {/* Gmail Client Section */}
+            <GmailClient />
+            {/* Connected Services Section */}
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20">
+              <CardHeader>
+                <CardTitle className="text-lg text-white flex items-center">
+                  <i className="fas fa-link mr-2 text-yellow-400"></i>
+                  Connected Services
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <img
+                        src="/google-logo.svg"
+                        alt="Google"
+                        className="w-6 h-6 mr-3"
+                      />
+                      <div>
+                        <h4 className="text-sm font-semibold text-white">
+                          Google
+                        </h4>
+                        <p className="text-xs text-white/60">
+                          Calendar, Gmail, YouTube
+                        </p>
+                      </div>
+                    </div>
+                    {oauthStatus.connected ? (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-green-400">
+                          Connected
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleDisconnect}
+                          className="border-red-500/50 text-red-400 hover:bg-red-900/20 hover:text-red-300"
+                        >
+                          Disconnect
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          (window.location.href = '/api/oauth/google')
+                        }
+                        className="border-white/30 text-white/70 hover:text-white"
+                      >
+                        Connect to Google
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Separator className="bg-white/20" />
+
+          {/* Footer */}
+          <div className="flex justify-between items-center pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="border-white/30 text-white/70 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setIsOpen(false)}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
+            >
+              Save Settings
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Login Dialog */}
+      <LoginDialog
+        isOpen={showLoginDialog}
+        onClose={() => setShowLoginDialog(false)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          setShowLoginDialog(false);
+        }}
+      />
     </>
   );
 }

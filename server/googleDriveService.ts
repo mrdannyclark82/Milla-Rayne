@@ -146,7 +146,7 @@ export async function getFile(
     } else {
       return {
         success: false,
-        message: "I can only summarize Google Docs and plain text files.",
+        message: 'I can only summarize Google Docs and plain text files.',
         error: 'UNSUPPORTED_MIME_TYPE',
       };
     }

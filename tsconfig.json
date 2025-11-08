@@ -1,9 +1,9 @@
 {
   "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
   "exclude": [
-    "node_modules", 
-    "build", 
-    "dist", 
+    "node_modules",
+    "build",
+    "dist",
     "**/*.test.ts",
     "**/*.test.tsx",
     "client/src/lib/MillaCore (copy).ts"

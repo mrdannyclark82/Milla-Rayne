@@ -46,7 +46,10 @@ export async function initApp() {
   // Add CORS headers
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS'
+    );
     res.header(
       'Access-Control-Allow-Headers',
       'Origin, X-Requested-With, Content-Type, Accept, Authorization'
@@ -139,7 +142,9 @@ export async function initApp() {
   agentController.registerAgent(millaAgent);
 
   // Start email delivery loop if enabled
-  const { startEmailDeliveryLoop } = await import('./agents/emailDeliveryWorker');
+  const { startEmailDeliveryLoop } = await import(
+    './agents/emailDeliveryWorker'
+  );
   startEmailDeliveryLoop();
 
   // Admin endpoints for email delivery (manual trigger)
@@ -149,14 +154,19 @@ export async function initApp() {
       const { config } = await import('./config');
       const adminToken = config.admin.token;
       if (adminToken) {
-        const authHeader = (req.headers.authorization as string) || req.headers['x-admin-token'];
+        const authHeader =
+          (req.headers.authorization as string) || req.headers['x-admin-token'];
         let tokenValue = '';
-        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) tokenValue = authHeader.substring(7);
+        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer '))
+          tokenValue = authHeader.substring(7);
         else if (typeof authHeader === 'string') tokenValue = authHeader;
-        if (tokenValue !== adminToken) return res.status(403).json({ error: 'Unauthorized' });
+        if (tokenValue !== adminToken)
+          return res.status(403).json({ error: 'Unauthorized' });
       }
 
-      const { deliverOutboxOnce } = await import('./agents/emailDeliveryWorker');
+      const { deliverOutboxOnce } = await import(
+        './agents/emailDeliveryWorker'
+      );
       const summary = await deliverOutboxOnce();
       res.json({ success: true, summary });
     } catch (error) {

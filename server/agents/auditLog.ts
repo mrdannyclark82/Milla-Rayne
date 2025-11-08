@@ -36,7 +36,10 @@ export async function logAuditEvent(
 export async function readAuditLog(maxLines: number = 100): Promise<string[]> {
   try {
     const content = await fs.readFile(AUDIT_LOG, 'utf-8');
-    const lines = content.trim().split('\n').filter((l) => l.length > 0);
+    const lines = content
+      .trim()
+      .split('\n')
+      .filter((l) => l.length > 0);
     return lines.slice(-maxLines);
   } catch (err) {
     if ((err as any).code === 'ENOENT') {

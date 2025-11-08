@@ -13,7 +13,8 @@ describe('Google Drive Service', () => {
       vi.mocked(oauth.getValidAccessToken).mockResolvedValue('test_token');
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ files: [{ id: '1', name: 'Test File' }] }),
+        json: () =>
+          Promise.resolve({ files: [{ id: '1', name: 'Test File' }] }),
       });
 
       const result = await searchFiles('test query');
@@ -49,16 +50,25 @@ describe('Google Drive Service', () => {
   describe('summarizeFile', () => {
     it('should return summary on successful summarization', async () => {
       vi.mocked(oauth.getValidAccessToken).mockResolvedValue('test_token');
-      mockFetch.mockResolvedValueOnce({ // for getFile metadata
-        ok: true,
-        json: () => Promise.resolve({ mimeType: 'text/plain' }),
-      }).mockResolvedValueOnce({ // for getFile content
-        ok: true,
-        text: () => Promise.resolve('This is the file content'),
-      }).mockResolvedValueOnce({ // for summarizeFile
-        ok: true,
-        json: () => Promise.resolve({ choices: [{ message: { content: 'This is the summary' } }] }),
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          // for getFile metadata
+          ok: true,
+          json: () => Promise.resolve({ mimeType: 'text/plain' }),
+        })
+        .mockResolvedValueOnce({
+          // for getFile content
+          ok: true,
+          text: () => Promise.resolve('This is the file content'),
+        })
+        .mockResolvedValueOnce({
+          // for summarizeFile
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              choices: [{ message: { content: 'This is the summary' } }],
+            }),
+        });
 
       const result = await summarizeFile('file_id');
 
