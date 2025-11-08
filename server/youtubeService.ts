@@ -23,6 +23,13 @@ export interface YouTubeResponse {
 export function isYouTubeRequest(message: string): boolean {
   const lowerMessage = message.toLowerCase();
   
+  // Don't trigger on GitHub links or other non-YouTube domains
+  if (lowerMessage.includes('github.com') || 
+      lowerMessage.includes('gitlab.com') ||
+      lowerMessage.includes('bitbucket.org')) {
+    return false;
+  }
+  
   // Only trigger if "youtube" is explicitly mentioned
   return lowerMessage.includes('youtube');
 }

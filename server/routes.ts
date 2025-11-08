@@ -846,7 +846,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       let showKnowledgeBase = false;
       let dailyNews = null;
 
-      const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      // Don't trigger YouTube analysis for GitHub or other repository links
+      const hasGitHubLink = message.match(/(?:github\.com|gitlab\.com|bitbucket\.org)/i);
+      const youtubeUrlMatch = !hasGitHubLink ? message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
 
       // Check for knowledge base request
       if (message.toLowerCase().includes('knowledge base') ||
@@ -3106,9 +3108,36 @@ Project: Milla Rayne - AI Virtual Assistant
         });
       }
 
-      // This is a runtime change, so we can't just change the config file.
-      // We will update the config object in memory.
+      // Update in-memory config
       config.enableDevTalk = enabled;
+
+      // Also update the .env file for persistence
+      try {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const envPath = path.join(process.cwd(), '.env');
+        
+        let envContent = '';
+        try {
+          envContent = await fs.readFile(envPath, 'utf-8');
+        } catch (err) {
+          // File doesn't exist, will create it
+        }
+
+        const lines = envContent.split('\n');
+        const devTalkIndex = lines.findIndex(line => line.startsWith('ENABLE_DEV_TALK='));
+        
+        if (devTalkIndex >= 0) {
+          lines[devTalkIndex] = `ENABLE_DEV_TALK=${enabled ? 'true' : 'false'}`;
+        } else {
+          lines.push(`ENABLE_DEV_TALK=${enabled ? 'true' : 'false'}`);
+        }
+
+        await fs.writeFile(envPath, lines.join('\n'), 'utf-8');
+      } catch (fsError) {
+        console.error('Error updating .env file:', fsError);
+        // Continue anyway since in-memory config is updated
+      }
 
       res.json({
         success: true,
@@ -4746,13 +4775,19 @@ async function generateAIResponse(
     'tutorial steps',
   ];
 
-  // Check if message contains analyze trigger AND has a YouTube URL/ID
+  // Don't trigger on GitHub or other repository links
+  const hasGitHubLink = userMessage.match(/(?:github\.com|gitlab\.com|bitbucket\.org)/i);
+  
+  // Check if message contains analyze trigger AND has a YouTube URL/ID (but not GitHub)
   const hasAnalyzeTrigger = analyzeVideoTriggers.some(trigger => message.includes(trigger));
-  const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-  const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+  const urlMatch = !hasGitHubLink ? userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
+  // Only match video ID pattern if no GitHub link AND there's a YouTube-related context
+  const videoIdMatch = !hasGitHubLink && (userMessage.includes('youtube') || userMessage.includes('youtu.be')) 
+    ? userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/) 
+    : null;
   const videoId = urlMatch?.[1] || videoIdMatch?.[1];
 
-  if (hasAnalyzeTrigger && videoId) {
+  if (hasAnalyzeTrigger && videoId && !hasGitHubLink) {
     try {
       const { analyzeVideoWithMillAlyzer } = await import('./youtubeMillAlyzer');
       const { saveToKnowledgeBase } = await import('./youtubeKnowledgeBase');

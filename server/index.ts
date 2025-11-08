@@ -26,6 +26,9 @@ export async function initApp() {
   // Do not create the http server here; let registerRoutes create and return the server.
   let httpServer = null;
 
+  // Enable trust proxy for proper IP detection behind proxies (fixes X-Forwarded-For warning)
+  app.set('trust proxy', 1);
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
