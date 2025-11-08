@@ -721,6 +721,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   app.post('/api/chat', async (req, res) => {
+    console.log('--- /api/chat handler called ---');
+    console.log('CHAT API CALLED');
     try {
       let { message, audioData, audioMimeType } = req.body;
       let userEmotionalState: VoiceAnalysisResult['emotionalTone'] | undefined;
@@ -782,6 +784,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         }
       }
 
+      console.log('--- Calling generateAIResponse ---');
       const aiResponsePromise = generateAIResponse(message, [], 'Danny Ray', undefined, userId, userEmotionalState);
       const aiResponse = (await Promise.race([
         aiResponsePromise,
@@ -902,6 +905,27 @@ export async function registerRoutes(app: Express): Promise<void> {
           process.env.NODE_ENV === 'development' && error instanceof Error
             ? error.message
             : undefined,
+      });
+    }
+  });
+
+  app.post('/api/agent/:agentName', async (req, res) => {
+    try {
+      const { agentName } = req.params;
+      const { task } = req.body;
+
+      if (!task) {
+        return res.status(400).json({ error: 'Task is required' });
+      }
+
+      const { agentController } = await import('./agentController');
+      const result = await agentController.dispatch(agentName, task);
+
+      res.json({ response: result, success: true });
+    } catch (error) {
+      console.error(`Agent dispatch error for ${req.params.agentName}:`, error);
+      res.status(500).json({
+        response: "I'm having some technical issues with my agents. Please try again in a moment.",
       });
     }
   });
@@ -2963,6 +2987,17 @@ Project: Milla Rayne - AI Virtual Assistant
     });
   });
 
+  app.post('/api/ai-updates/run', async (req, res) => {
+    try {
+      const { fetchAndProcessAIUpdates } = await import('./aiUpdatesScheduler');
+      await fetchAndProcessAIUpdates();
+      res.status(200).json({ message: 'AI updates process started successfully.' });
+    } catch (error) {
+      console.error('Error running AI updates process:', error);
+      res.status(500).json({ message: 'Error running AI updates process.' });
+    }
+  });
+
   // Simple debug ping route
   app.get('/api/debug/ping', (req, res) => {
     res.json({ ok: true, time: Date.now() });
@@ -3214,14 +3249,37 @@ Project: Milla Rayne - AI Virtual Assistant
   });
 
   app.get('/api/elevenlabs/voices', async (req, res) => {
-    console.log('Fetching ElevenLabs voices...');
-    const apiKey = config.elevenLabs.apiKey;
+    console.log('Fetching voices...');
+    const apiKey = config.elevenLabs?.apiKey;
 
     if (!apiKey) {
-      console.error('ElevenLabs API key not configured');
-      return res
-        .status(500)
-        .json({ error: 'ElevenLabs API key not configured' });
+      console.log('ElevenLabs API key not configured, returning browser fallback voices');
+      // Return fallback browser voices when ElevenLabs is not configured
+      const fallbackVoices = {
+        voices: [
+          {
+            voice_id: 'browser-female-us-1',
+            name: 'Browser Voice (Female US)',
+            labels: { accent: 'American', gender: 'female', age: 'young' }
+          },
+          {
+            voice_id: 'browser-female-us-2',
+            name: 'Browser Voice (Female US 2)',
+            labels: { accent: 'American', gender: 'female', age: 'middle aged' }
+          },
+          {
+            voice_id: 'browser-female-uk',
+            name: 'Browser Voice (Female UK)',
+            labels: { accent: 'British', gender: 'female', age: 'young' }
+          },
+          {
+            voice_id: 'browser-male-us',
+            name: 'Browser Voice (Male US)',
+            labels: { accent: 'American', gender: 'male', age: 'young' }
+          }
+        ]
+      };
+      return res.json(fallbackVoices);
     }
 
     try {
@@ -4253,6 +4311,8 @@ function generateIntelligentFallback(
   return `${deterministicResponse}\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*`;
 }
 
+
+
 async function generateAIResponse(
   userMessage: string,
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
@@ -4973,227 +5033,9 @@ Could you share the repository URL again so I can take another look?
     }
   }
 
-  // Check for YouTube URL in the message
-  const youtubeUrlMatch = userMessage.match(
-    /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-        const { parseCommand } = await import('./commandParser');
-        let command;
-        if (config.enableAdvancedParser) {
-          const { parseCommandLLM } = await import('./commandParserLLM');
-          command = await parseCommandLLM(userMessage);
-        } else {
-          command = parseCommand(userMessage);
-        }
-  if (command.service === 'profile') {
-    if (command.action === 'update') {
-      const { name, interest } = command.entities;
-      if (name && userId) {
-        const { updateProfile } = await import('./profileService');
-        await updateProfile(userId, { name });
-        return { content: `I'll remember that your name is ${name}.` };
-      }
-      if (interest && userId) {
-        const { getProfile, updateProfile } = await import('./profileService');
-        const profile = await getProfile(userId);
-        const interests = profile?.interests || [];
-        if (!interests.includes(interest)) {
-          interests.push(interest);
-          await updateProfile(userId, { interests });
-        }
-        return { content: `I'll remember that you like ${interest}.` };
-      }
-    }
-  }
 
-  if (command.service === 'calendar') {
-    try {
-      if (command.action === 'list') {
-        const { listEvents } = await import('./googleCalendarService');
-        const now = new Date();
-        const timeMin = now.toISOString();
-        const timeMax = new Date(now.setDate(now.getDate() + 7)).toISOString(); // Next 7 days
-        const result = await listEvents('default-user', timeMin, timeMax);
-        if (result.success && result.events && result.events.length > 0) {
-          let response = "Here are your upcoming events:\n";
-          result.events.forEach(event => {
-            const start = event.start.dateTime || event.start.date;
-            response += `- ${event.summary} at ${new Date(start).toLocaleString()}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "You have no upcoming events." };
-        }
-      } else if (command.action === 'add') {
-        const { addEventToGoogleCalendar } = await import('./googleCalendarService');
-        const { title, date, time } = command.entities;
-        const result = await addEventToGoogleCalendar(title, date, time);
-        return { content: result.message };
-      }
-      return { content: "I can help with your calendar. You can ask me to 'list events', or 'add event [title] on [date] at [time]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your calendar. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'gmail') {
-    try {
-      if (command.action === 'list') {
-        const { getRecentEmails } = await import('./googleGmailService');
-        const result = await getRecentEmails();
-        if (result.success && result.data && result.data.length > 0) {
-          let response = "Here are your recent emails:\n";
-          result.data.forEach((email: any) => {
-            const subject = email.payload.headers.find((h: any) => h.name === 'Subject')?.value;
-            const from = email.payload.headers.find((h: any) => h.name === 'From')?.value;
-            response += `- From: ${from}, Subject: ${subject}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "Your inbox is empty." };
-        }
-      } else if (command.action === 'send') {
-        const { sendEmail } = await import('./googleGmailService');
-        const { to, subject, body } = command.entities;
-        const result = await sendEmail('default-user', to, subject, body);
-        return { content: result.message };
-      }
-      return { content: "I can help with your email. You can ask me to 'check my email', or 'send email to [recipient] with subject [subject] and body [body]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your email. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'tasks') {
-    try {
-      if (command.action === 'list') {
-        const { listTasks } = await import('./googleTasksService');
-        const result = await listTasks();
-        if (result.success && result.tasks && result.tasks.length > 0) {
-          let response = "Here are your tasks:\n";
-          result.tasks.forEach(task => {
-            response += `- ${task.title}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "You have no tasks." };
-        }
-      } else if (command.action === 'complete') {
-        const { completeTask } = await import('./googleTasksService');
-        const { taskId } = command.entities;
-        const result = await completeTask(taskId);
-        return { content: result.message };
-      }
-      return { content: "I can help with your tasks. You can ask me to 'list tasks', or 'complete task [task id]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your tasks. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'drive') {
-    try {
-      if (command.action === 'search') {
-        const { searchFiles } = await import('./googleDriveService');
-        const { query } = command.entities;
-        const result = await searchFiles(query);
-        if (result.success && result.files && result.files.length > 0) {
-          let response = "Here are the files I found:\n";
-          result.files.forEach(file => {
-            response += `- ${file.name}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "I couldn't find any files matching that query." };
-        }
-      } else if (command.action === 'summarize') {
-        const { summarizeFile } = await import('./googleDriveService');
-        const { fileId } = command.entities;
-        const result = await summarizeFile(fileId);
-        if (result.success) {
-          return { content: result.summary || '' };
-        } else {
-          return { content: result.message };
-        }
-      }
-      return { content: "I can help with your Google Drive. You can ask me to 'search for [query]' or 'summarize file [fileId]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your Google Drive. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'photos') {
-    try {
-      if (command.action === 'search') {
-        const { searchPhotos } = await import('./googlePhotosService');
-        const { query } = command.entities;
-        const result = await searchPhotos(query);
-        if (result.success && result.mediaItems && result.mediaItems.length > 0) {
-          let response = "Here are the photos I found:\n";
-          result.mediaItems.forEach(item => {
-            response += `- ${item.filename}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "I couldn't find any photos matching that query." };
-        }
-      } else if (command.action === 'create_album') {
-        const { createAlbum } = await import('./googlePhotosService');
-        const { title } = command.entities;
-        const result = await createAlbum(title);
-        return { content: result.message };
-      }
-      return { content: "I can help with your Google Photos. You can ask me to 'search for [query]' or 'create album [title]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your Google Photos. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'maps') {
-    try {
-      if (command.action === 'directions') {
-        const { getDirections } = await import('./googleMapsService');
-        const { origin, destination } = command.entities;
-        const result = await getDirections(origin, destination);
-        if (result.success) {
-          // Format the directions for display
-          let response = "Here are the directions:\n";
-          // It is recommended to define this type based on the Google Maps API response structure.
-          type DirectionStep = { html_instructions: string };
-          result.data.routes[0].legs[0].steps.forEach((step: DirectionStep) => {
-            response += `- ${step.html_instructions.replace(/<[^>]*>/g, '')}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: result.message };
-        }
-      } else if (command.action === 'find_place') {
-        const { findPlace } = await import('./googleMapsService');
-        const { query } = command.entities;
-        const result = await findPlace(query);
-        if (result.success) {
-          let response = "Here is the place I found:\n";
-          // It is recommended to define this type based on the Google Maps API response structure.
-          type PlaceCandidate = { name: string; formatted_address: string };
-          result.data.candidates.forEach((candidate: PlaceCandidate) => {
-            response += `- ${candidate.name}: ${candidate.formatted_address}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: result.message };
-        }
-      }
-      return { content: "I can help with Google Maps. You can ask me for 'directions from [origin] to [destination]' or to 'find [place]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing Google Maps. Please make sure you have a valid API key configured." };
-    }
-  }
-
-  // YouTube is now handled earlier in generateAIResponse - this is kept as fallback
-  if (command.service === 'youtube') {
-    return {
-      content: "Let me help you with YouTube! Just mention 'YouTube' and what you'd like to watch.",
-    };
-  }
+  // Check for YouTube URL in message
+  const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 
   if (youtubeUrlMatch) {
     const youtubeUrl = youtubeUrlMatch[0].startsWith('http')

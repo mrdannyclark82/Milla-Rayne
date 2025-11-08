@@ -37,8 +37,6 @@ interface RSSItem {
 // Default RSS sources
 const DEFAULT_SOURCES = [
   'https://openai.com/blog/rss.xml',
-  'https://x.ai/blog/rss',
-  'https://perplexity.ai/blog/rss',
   'https://huggingface.co/blog/feed.xml',
   'https://github.blog/changelog/feed/',
 ];

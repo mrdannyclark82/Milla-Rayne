@@ -6,8 +6,13 @@ import { setupVite, serveStatic, log } from './vite';
 import { initializeMemoryCore } from './memoryService';
 import { initializePersonalTaskSystem } from './personalTaskService';
 import { initializeServerSelfEvolution } from './selfEvolutionService';
+import { createServer } from 'http';
 import crypto from 'crypto';
-import { createServer, type Server } from 'http'; // Import createServer
+import { initializeAIUpdatesScheduler } from './aiUpdatesScheduler';
+import { agentController } from './agentController';
+import { codingAgent } from './agents/codingAgent';
+import { imageGenerationAgent } from './agents/imageGenerationAgent';
+import { enhancementSearchAgent } from './agents/enhancementSearchAgent';
 
 // Polyfill crypto.getRandomValues for Node.js
 if (!globalThis.crypto) {
@@ -120,6 +125,11 @@ export async function initApp() {
   // Initialize AI Updates Scheduler
   const { initializeAIUpdatesScheduler } = await import('./aiUpdatesScheduler');
   initializeAIUpdatesScheduler();
+
+  // Register agents
+  agentController.registerAgent(codingAgent);
+  agentController.registerAgent(imageGenerationAgent);
+  agentController.registerAgent(enhancementSearchAgent);
 
   // Register API routes BEFORE Vite setup to prevent catch-all interference
   await registerRoutes(app);

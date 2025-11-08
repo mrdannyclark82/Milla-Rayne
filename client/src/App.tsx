@@ -284,7 +284,7 @@ function App() {
       appState={appState}
       performanceMode={performanceMode}
     >
-      <div className="min-h-screen flex" style={{ backgroundColor: '#000' }}>
+      <div className="min-h-screen" style={{ backgroundColor: '#000' }}>
         {/* Left 2/3 - Background Image Container */}
         <div 
           className="w-2/3 h-screen"
@@ -300,37 +300,39 @@ function App() {
         </div>
 
         {/* Right 1/3 - Chat Interface */}
-        {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayer
-            videoId={youtubeVideoId || undefined}
-            videos={youtubeVideos || undefined}
-            onClose={() => {
-              setYoutubeVideoId(null);
-              setYoutubeVideos(null);
-            }}
-            onSelectVideo={(videoId) => {
-              setYoutubeVideoId(videoId);
-              setYoutubeVideos(null);
-            }}
-            onAnalyzeVideo={async (videoId) => {
-              try {
-                console.log('🔍 Analyzing video:', videoId);
-                const res = await fetch('/api/youtube/analyze', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ videoId }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                  setCurrentAnalysis(data.analysis);
-                  setActivePanel('analysis');
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '66.66%', height: '100%', zIndex: 5 }}>
+          {(youtubeVideoId || youtubeVideos) && (
+            <YoutubePlayer
+              videoId={youtubeVideoId || undefined}
+              videos={youtubeVideos || undefined}
+              onClose={() => {
+                setYoutubeVideoId(null);
+                setYoutubeVideos(null);
+              }}
+              onSelectVideo={(videoId) => {
+                setYoutubeVideoId(videoId);
+                setYoutubeVideos(null);
+              }}
+              onAnalyzeVideo={async (videoId) => {
+                try {
+                  console.log('🔍 Analyzing video:', videoId);
+                  const res = await fetch('/api/youtube/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ videoId }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    setCurrentAnalysis(data.analysis);
+                    setActivePanel('analysis');
+                  }
+                } catch (error) {
+                  console.error('Failed to analyze video:', error);
                 }
-              } catch (error) {
-                console.error('Failed to analyze video:', error);
-              }
-            }}
-          />
-        )}
+              }}
+            />
+          )}
+        </div>
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
           style={{ 

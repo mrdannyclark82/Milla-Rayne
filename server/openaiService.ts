@@ -19,14 +19,15 @@ export interface PersonalityContext {
 }
 
 /**
- * Generate AI response using Perplexity with personality-aware prompts
+ * Generate AI response using OpenAI with personality-aware prompts
  */
 export async function generateAIResponse(
   userMessage: string,
   context: PersonalityContext
 ): Promise<AIResponse> {
+  console.log('--- generateAIResponse in openaiService called ---');
   try {
-    if (!process.env.PERPLEXITY_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return {
         content: 'AI integration is not configured. Please add your API key.',
         success: false,
@@ -96,7 +97,7 @@ export async function generateAIResponse(
 
     // Debug: Log the messages array to ensure all have content
     console.log(
-      'Sending messages to Perplexity API:',
+      'Sending messages to OpenAI API:',
       messages.map((msg, index) => ({
         index,
         role: msg.role,
@@ -105,24 +106,24 @@ export async function generateAIResponse(
       }))
     );
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    console.log('--- OpenAI request body:', JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 800, temperature: 0.8, stream: false }));
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar',
+        model: 'gpt-4o',
         messages,
         max_tokens: 800,
         temperature: 0.8,
         stream: false,
       }),
     });
-
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Perplexity API error:', response.status, errorText);
+      console.error('OpenAI API error:', response.status, errorText);
       return {
         content:
           "I'm experiencing technical difficulties right now. Please try again in a moment.",
@@ -148,7 +149,7 @@ export async function generateAIResponse(
       success: true,
     };
   } catch (error) {
-    console.error('Perplexity API error:', error);
+    console.error('OpenAI API error:', error);
 
     return {
       content:
