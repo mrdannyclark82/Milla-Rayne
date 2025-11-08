@@ -1,0 +1,57 @@
+[
+  {
+    "taskId": "bc04762b-5b99-4bca-acae-1d9a4b1e7252",
+    "supervisor": "MillaAgent",
+    "agent": "TestAgent",
+    "action": "dangerous_action",
+    "payload": {
+      "data": "test"
+    },
+    "metadata": {
+      "requireUserApproval": true,
+      "safety_level": "high",
+      "approved": true
+    },
+    "status": "completed",
+    "createdAt": "2025-11-08T17:37:12.024Z",
+    "updatedAt": "2025-11-08T17:37:12.026Z",
+    "result": {
+      "success": true
+    }
+  },
+  {
+    "taskId": "603eef97-8082-40f8-bb4f-9919570e723c",
+    "supervisor": "MillaAgent",
+    "agent": "CalendarAgent",
+    "action": "list_events",
+    "payload": {
+      "maxResults": 5
+    },
+    "metadata": {
+      "requireUserApproval": true,
+      "safety_level": "high",
+      "approved": true
+    },
+    "status": "pending",
+    "createdAt": "2025-11-08T17:45:48.986Z",
+    "updatedAt": "2025-11-08T17:46:16.034Z"
+  },
+  {
+    "taskId": "98c91f4a-5284-494b-80fc-d0a9042bd8ac",
+    "supervisor": "MillaAgent",
+    "agent": "EmailAgent",
+    "action": "send",
+    "payload": {
+      "to": "test@example.com",
+      "subject": "Test"
+    },
+    "metadata": {
+      "requireUserApproval": true,
+      "approved": false,
+      "rejectionReason": "Too risky for production"
+    },
+    "status": "cancelled",
+    "createdAt": "2025-11-08T17:46:26.732Z",
+    "updatedAt": "2025-11-08T17:46:57.047Z"
+  }
+]

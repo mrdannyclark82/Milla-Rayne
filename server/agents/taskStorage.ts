@@ -14,7 +14,7 @@ export interface AgentTask {
     result?: any;
 }
 
-const TASK_FILE = join(process.cwd(), 'memory', 'enhancement_tasks.json');
+const TASK_FILE = join(process.cwd(), 'memory', 'agent_tasks.json');
 
 async function ensureFile(): Promise<void> {
     try {

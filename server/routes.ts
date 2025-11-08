@@ -954,6 +954,166 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // Agent orchestration endpoints (must be before /api/agent/:agentName to avoid route conflicts)
+  app.post('/api/agent/tasks', async (req, res) => {
+    try {
+      const { supervisor, agent, action, payload, metadata } = req.body;
+      if (!agent || !action) {
+        return res.status(400).json({ error: 'agent and action are required' });
+      }
+
+      const task: AgentTask = {
+        taskId: uuidv4(),
+        supervisor: supervisor || 'MillaAgent',
+        agent,
+        action,
+        payload: payload || {},
+        metadata: metadata || {},
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await addTask(task);
+      res.status(201).json({ success: true, task });
+    } catch (error) {
+      console.error('Error creating agent task:', error);
+      res.status(500).json({ error: 'Failed to create agent task' });
+    }
+  });
+
+  app.get('/api/agent/tasks', async (req, res) => {
+    try {
+      const tasks = await listAgentTasks();
+      res.json({ success: true, tasks });
+    } catch (error) {
+      console.error('Error listing agent tasks:', error);
+      res.status(500).json({ error: 'Failed to list agent tasks' });
+    }
+  });
+
+  app.get('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+      res.json({ success: true, task });
+    } catch (error) {
+      console.error('Error fetching agent task:', error);
+      res.status(500).json({ error: 'Failed to fetch agent task' });
+    }
+  });
+
+  app.post('/api/agent/tasks/:id/run', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      // If already running, return error
+      if (task.status === 'in_progress') {
+        return res.status(400).json({ error: 'Task is already in progress' });
+      }
+
+      // Check if task requires approval
+      if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
+        return res.status(403).json({ error: 'Task requires user approval before running' });
+      }
+
+      // Run in background - updateTask will mark status
+      runTask(task).catch((err) => console.error('Background runTask error:', err));
+
+      res.json({ success: true, running: true, taskId: task.taskId });
+    } catch (error) {
+      console.error('Error running agent task:', error);
+      res.status(500).json({ error: 'Failed to run agent task' });
+    }
+  });
+
+  app.patch('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const patch = req.body || {};
+      const updated = await updateAgentTask(req.params.id, patch as any);
+      if (!updated) return res.status(404).json({ error: 'Task not found' });
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error updating agent task:', error);
+      res.status(500).json({ error: 'Failed to update agent task' });
+    }
+  });
+
+  app.post('/api/agent/tasks/:id/approve', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      // Update metadata to mark approved
+      const updated = await updateAgentTask(req.params.id, {
+        metadata: { ...task.metadata, approved: true }
+      });
+
+      // Log approval in audit trail
+      const { logAuditEvent } = await import('./agents/auditLog.js');
+      await logAuditEvent(task.taskId, task.agent, task.action, 'created', 'User approved task');
+
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error approving agent task:', error);
+      res.status(500).json({ error: 'Failed to approve agent task' });
+    }
+  });
+
+  app.post('/api/agent/tasks/:id/reject', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      const reason = req.body?.reason || 'User rejected task';
+
+      // Update metadata and mark as cancelled
+      const updated = await updateAgentTask(req.params.id, {
+        status: 'cancelled',
+        metadata: { ...task.metadata, approved: false, rejectionReason: reason }
+      });
+
+      // Log rejection in audit trail
+      const { logAuditEvent } = await import('./agents/auditLog.js');
+      await logAuditEvent(task.taskId, task.agent, task.action, 'cancelled', reason);
+
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error rejecting agent task:', error);
+      res.status(500).json({ error: 'Failed to reject agent task' });
+    }
+  });
+
+  app.delete('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      // Soft-cancel: mark cancelled unless already completed
+      if (task.status === 'completed') {
+        return res.status(400).json({ error: 'Cannot cancel a completed task' });
+      }
+
+      const updated = await updateAgentTask(req.params.id, { status: 'cancelled' });
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error cancelling agent task:', error);
+      res.status(500).json({ error: 'Failed to cancel agent task' });
+    }
+  });
+
+  // Agent registry listing
+  app.get('/api/agent/registry', async (req, res) => {
+    try {
+      const agents = listAgents().map((a) => ({ name: a.name, description: a.description }));
+      res.json({ success: true, agents });
+    } catch (error) {
+      console.error('Error fetching agent registry:', error);
+      res.status(500).json({ error: 'Failed to fetch agent registry' });
+    }
+  });
+
   app.post('/api/agent/:agentName', async (req, res) => {
     try {
       const { agentName } = req.params;
@@ -1513,116 +1673,6 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     } catch (error) {
       console.error('Error completing task:', error);
       res.status(500).json({ message: 'Failed to complete task' });
-    }
-  });
-
-  // Agent orchestration endpoints (create/list/get/run/update/cancel tasks)
-  app.post('/api/agent/tasks', async (req, res) => {
-    try {
-      const { supervisor, agent, action, payload, metadata } = req.body;
-      if (!agent || !action) {
-        return res.status(400).json({ error: 'agent and action are required' });
-      }
-
-      const task: AgentTask = {
-        taskId: uuidv4(),
-        supervisor: supervisor || 'MillaAgent',
-        agent,
-        action,
-        payload: payload || {},
-        metadata: metadata || {},
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      await addTask(task);
-      res.status(201).json({ success: true, task });
-    } catch (error) {
-      console.error('Error creating agent task:', error);
-      res.status(500).json({ error: 'Failed to create agent task' });
-    }
-  });
-
-  app.get('/api/agent/tasks', async (req, res) => {
-    try {
-      const tasks = await listAgentTasks();
-      res.json({ success: true, tasks });
-    } catch (error) {
-      console.error('Error listing agent tasks:', error);
-      res.status(500).json({ error: 'Failed to list agent tasks' });
-    }
-  });
-
-  app.get('/api/agent/tasks/:id', async (req, res) => {
-    try {
-      const task = await getAgentTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'Task not found' });
-      res.json({ success: true, task });
-    } catch (error) {
-      console.error('Error fetching agent task:', error);
-      res.status(500).json({ error: 'Failed to fetch agent task' });
-    }
-  });
-
-  app.post('/api/agent/tasks/:id/run', async (req, res) => {
-    try {
-      const task = await getAgentTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'Task not found' });
-
-      // If already running, return error
-      if (task.status === 'in_progress') {
-        return res.status(400).json({ error: 'Task is already in progress' });
-      }
-
-      // Run in background - updateTask will mark status
-      runTask(task).catch((err) => console.error('Background runTask error:', err));
-
-      res.json({ success: true, running: true, taskId: task.taskId });
-    } catch (error) {
-      console.error('Error running agent task:', error);
-      res.status(500).json({ error: 'Failed to run agent task' });
-    }
-  });
-
-  app.patch('/api/agent/tasks/:id', async (req, res) => {
-    try {
-      const patch = req.body || {};
-      const updated = await updateAgentTask(req.params.id, patch as any);
-      if (!updated) return res.status(404).json({ error: 'Task not found' });
-      res.json({ success: true, task: updated });
-    } catch (error) {
-      console.error('Error updating agent task:', error);
-      res.status(500).json({ error: 'Failed to update agent task' });
-    }
-  });
-
-  app.delete('/api/agent/tasks/:id', async (req, res) => {
-    try {
-      const task = await getAgentTask(req.params.id);
-      if (!task) return res.status(404).json({ error: 'Task not found' });
-
-      // Soft-cancel: mark cancelled unless already completed
-      if (task.status === 'completed') {
-        return res.status(400).json({ error: 'Cannot cancel a completed task' });
-      }
-
-      const updated = await updateAgentTask(req.params.id, { status: 'cancelled' });
-      res.json({ success: true, task: updated });
-    } catch (error) {
-      console.error('Error cancelling agent task:', error);
-      res.status(500).json({ error: 'Failed to cancel agent task' });
-    }
-  });
-
-  // Agent registry listing
-  app.get('/api/agent/registry', async (req, res) => {
-    try {
-      const agents = listAgents().map((a) => ({ name: a.name, description: a.description }));
-      res.json({ success: true, agents });
-    } catch (error) {
-      console.error('Error fetching agent registry:', error);
-      res.status(500).json({ error: 'Failed to fetch agent registry' });
     }
   });
 
@@ -3671,11 +3721,15 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Return the http server so callers (tests) receive a proper Server instance they can close
+  // In test environments, start the server on an ephemeral port so tests can use it and close it.
+  if (process.env.NODE_ENV === 'test') {
+    await new Promise<void>((resolve) => {
+      httpServer.listen(0, '127.0.0.1', () => resolve());
+    });
+  }
 
-
-
-
-
+  return httpServer;
 }
 
 /**
@@ -5864,13 +5918,4 @@ This message requires you to be fully present as ${userName}'s partner, companio
       };
     }
   }
-  // Return the http server so callers (tests) receive a proper Server instance they can close
-  // In test environments, start the server on an ephemeral port so tests can use it and close it.
-  if (process.env.NODE_ENV === 'test') {
-    await new Promise<void>((resolve) => {
-      httpServer.listen(0, '127.0.0.1', () => resolve());
-    });
-  }
-
-  return httpServer;
 }
