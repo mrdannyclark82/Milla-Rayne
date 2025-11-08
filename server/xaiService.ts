@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { config } from './config';
 import axios from 'axios'; // Import the axios library for API calls
 import { getMillaPersonaCondensed } from '../shared/millaPersona';
 import { getAllSceneSettings } from '../shared/sceneSettings';
@@ -198,7 +199,7 @@ export async function generateXAIResponse(
     );
 
     const response = await xaiClient.chat.completions.create({
-      model: process.env.XAI_MODEL, // Use configurable model from environment
+      model: (process.env.XAI_MODEL || (config && (config.xai as any)?.model) || 'grok-1') as string, // Use configurable model from environment or fallback
       messages: messages as any,
       max_tokens: maxTokens || 800,
       temperature: 0.8,

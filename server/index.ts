@@ -23,7 +23,8 @@ if (!globalThis.crypto) {
 
 export async function initApp() {
   const app = express();
-  const httpServer = createServer(app); // Create httpServer here
+  // Do not create the http server here; let registerRoutes create and return the server.
+  let httpServer = null;
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -130,9 +131,40 @@ export async function initApp() {
   agentController.registerAgent(codingAgent);
   agentController.registerAgent(imageGenerationAgent);
   agentController.registerAgent(enhancementSearchAgent);
+  // Register Milla supervisor agent
+  const { millaAgent } = await import('./agents/millaAgent');
+  agentController.registerAgent(millaAgent);
+
+  // Start email delivery loop if enabled
+  const { startEmailDeliveryLoop } = await import('./agents/emailDeliveryWorker');
+  startEmailDeliveryLoop();
+
+  // Admin endpoints for email delivery (manual trigger)
+  // We'll register a small route here rather than a separate file to keep changes minimal.
+  app.post('/api/admin/email/deliver', async (req, res) => {
+    try {
+      const { config } = await import('./config');
+      const adminToken = config.admin.token;
+      if (adminToken) {
+        const authHeader = (req.headers.authorization as string) || req.headers['x-admin-token'];
+        let tokenValue = '';
+        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) tokenValue = authHeader.substring(7);
+        else if (typeof authHeader === 'string') tokenValue = authHeader;
+        if (tokenValue !== adminToken) return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const { deliverOutboxOnce } = await import('./agents/emailDeliveryWorker');
+      const summary = await deliverOutboxOnce();
+      res.json({ success: true, summary });
+    } catch (error) {
+      console.error('Admin deliver error:', error);
+      res.status(500).json({ success: false, error: 'Delivery failed' });
+    }
+  });
 
   // Register API routes BEFORE Vite setup to prevent catch-all interference
-  await registerRoutes(app);
+  // registerRoutes will return an http.Server instance that we should use
+  httpServer = await registerRoutes(app);
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
@@ -168,15 +200,18 @@ export async function initApp() {
 // It is the only port that is not firewalled.
 const port = parseInt(process.env.PORT || '5000', 10);
 
-initApp().then((httpServer) => {
-  httpServer.listen(
-    {
-      port,
-      host: '0.0.0.0',
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    }
-  );
-});
+// Only auto-start the server when not running tests. Tests will call registerRoutes or initApp directly.
+if (process.env.NODE_ENV !== 'test') {
+  initApp().then((httpServer) => {
+    httpServer.listen(
+      {
+        port,
+        host: '0.0.0.0',
+        reusePort: true,
+      },
+      () => {
+        log(`serving on port ${port}`);
+      }
+    );
+  });
+}

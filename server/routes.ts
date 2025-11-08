@@ -1,5 +1,6 @@
 import type { Express } from 'express';
 import express from 'express';
+import { createServer, type Server as HttpServer } from 'http';
 import path from 'path';
 import { storage } from './storage';
 import { insertMessageSchema } from '@shared/schema';
@@ -112,6 +113,16 @@ import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import FormData from 'form-data';
+import rateLimit from 'express-rate-limit';
+import {
+  getEmailOutbox,
+  writeEmailOutbox,
+  deliverOutboxOnce,
+  emailMetrics,
+} from './agents/emailDeliveryWorker';
+import { AgentTask, addTask, updateTask as updateAgentTask, getTask as getAgentTask, listTasks as listAgentTasks } from './agents/taskStorage';
+import { runTask } from './agents/worker';
+import { listAgents } from './agents/registry';
 
 const audioStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -224,7 +235,9 @@ async function analyzeImageWithOpenAI(
   return imageResponses[Math.floor(Math.random() * imageResponses.length)];
 }
 
-export async function registerRoutes(app: Express): Promise<void> {
+export async function registerRoutes(app: Express): Promise<HttpServer> {
+  // create an http server wrapper for the express app so tests can use a proper Server instance
+  const httpServer = createServer(app);
   // Middleware
   app.use(cookieParser());
 
@@ -2055,6 +2068,8 @@ Project: Milla Rayne - AI Virtual Assistant
       // Store both user request and AI response in persistent memory
       try {
         // Store user message
+
+        // Store user message
         await storage.createMessage({
           content: `Here's a repository I'd like you to analyze: ${repositoryUrl}`,
           role: 'user',
@@ -3154,12 +3169,84 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post('/api/ai-updates/run', async (req, res) => {
     try {
-      const { fetchAndProcessAIUpdates } = await import('./aiUpdatesScheduler');
-      await fetchAndProcessAIUpdates();
+      const { triggerManualFetch } = await import('./aiUpdatesScheduler');
+      await triggerManualFetch();
       res.status(200).json({ message: 'AI updates process started successfully.' });
     } catch (error) {
       console.error('Error running AI updates process:', error);
       res.status(500).json({ message: 'Error running AI updates process.' });
+    }
+  });
+
+  // Admin email outbox management
+  const adminEmailLimiter = rateLimit({ windowMs: 60 * 1000, max: 20 });
+
+  app.get('/api/admin/email/outbox', adminEmailLimiter, async (req, res) => {
+    try {
+      // admin auth
+      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
+      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+
+      const outbox = await getEmailOutbox();
+      res.json({ success: true, outbox });
+    } catch (err) {
+      console.error('Admin outbox list error:', err);
+      res.status(500).json({ error: 'Failed to read outbox' });
+    }
+  });
+
+  app.post('/api/admin/email/outbox/:id/resend', adminEmailLimiter, async (req, res) => {
+    try {
+      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
+      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+
+      const id = req.params.id;
+      const outbox = await getEmailOutbox();
+      const idx = outbox.findIndex((i: any) => i.id === id);
+      if (idx === -1) return res.status(404).json({ error: 'Not found' });
+
+      // reset attempts and schedule immediate retry
+      outbox[idx].attempts = 0;
+      outbox[idx].nextAttemptAt = new Date().toISOString();
+      outbox[idx].sent = false;
+      outbox[idx].failed = false;
+      outbox[idx].error = undefined;
+
+      await writeEmailOutbox(outbox);
+      // trigger a delivery pass in background
+      deliverOutboxOnce().catch((err) => console.error('Manual deliver error:', err));
+
+      res.json({ success: true, item: outbox[idx] });
+    } catch (err) {
+      console.error('Admin resend error:', err);
+      res.status(500).json({ error: 'Failed to resend' });
+    }
+  });
+
+  app.delete('/api/admin/email/outbox/:id', adminEmailLimiter, async (req, res) => {
+    try {
+      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
+      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+
+      const id = req.params.id;
+      const outbox = await getEmailOutbox();
+      const filtered = outbox.filter((i: any) => i.id !== id);
+      if (filtered.length === outbox.length) return res.status(404).json({ error: 'Not found' });
+      await writeEmailOutbox(filtered);
+      res.json({ success: true });
+    } catch (err) {
+      console.error('Admin delete outbox error:', err);
+      res.status(500).json({ error: 'Failed to delete' });
+    }
+  });
+
+  app.get('/api/admin/email/metrics', adminEmailLimiter, async (req, res) => {
+    try {
+      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
+      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+      res.json({ success: true, metrics: emailMetrics });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to read metrics' });
     }
   });
 
@@ -5777,4 +5864,13 @@ This message requires you to be fully present as ${userName}'s partner, companio
       };
     }
   }
+  // Return the http server so callers (tests) receive a proper Server instance they can close
+  // In test environments, start the server on an ephemeral port so tests can use it and close it.
+  if (process.env.NODE_ENV === 'test') {
+    await new Promise<void>((resolve) => {
+      httpServer.listen(0, '127.0.0.1', () => resolve());
+    });
+  }
+
+  return httpServer;
 }

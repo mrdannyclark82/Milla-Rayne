@@ -16,6 +16,10 @@ export async function generateGeminiResponse(
   userMessage: string,
 ): Promise<GeminiResponse> {
   try {
+    if (!config.gemini || !config.gemini.apiKey) {
+      return { content: 'Gemini API key not configured', success: false, error: 'Missing GEMINI API key' };
+    }
+
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 

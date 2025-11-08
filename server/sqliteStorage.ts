@@ -439,11 +439,13 @@ export class SqliteStorage implements IStorage {
       const existing = stmt.get('default-user');
 
       if (!existing) {
+        // Insert a default user with a non-null email to satisfy the schema
         const insertStmt = this.db.prepare(`
-          INSERT INTO users (id, username, password, created_at)
-          VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+          INSERT INTO users (id, username, email, password, created_at)
+          VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
         `);
-        insertStmt.run('default-user', 'default', 'default');
+        // Use a clearly local/internal email to avoid collisions with real accounts
+        insertStmt.run('default-user', 'default', 'default@localhost', 'default');
         console.log('Default user created for consent storage');
       }
     } catch (error) {
@@ -1189,7 +1191,7 @@ export class SqliteStorage implements IStorage {
   async getYoutubeKnowledgeByVideoId(videoId: string, userId: string): Promise<YoutubeKnowledge | null> {
     const stmt = this.db.prepare('SELECT * FROM youtube_knowledge_base WHERE video_id = ? AND user_id = ?');
     const video = stmt.get(videoId, userId) as any;
-    
+
     if (!video) return null;
 
     return this.parseYoutubeKnowledge(video);

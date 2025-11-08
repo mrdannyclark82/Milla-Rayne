@@ -19,51 +19,51 @@ import type {
  * Provider capabilities registry
  */
 const PROVIDER_CAPABILITIES: Record<VoiceProvider, VoiceProviderCapabilities> =
-  {
-    'browser-native': {
-      provider: 'browser-native',
-      streaming: false,
-      accents: ['en-US', 'en-GB', 'en-AU'],
-      requiresApiKey: false,
-      platforms: ['web', 'android', 'ios'],
-      latency: 'low',
-    },
-    'google-cloud': {
-      provider: 'google-cloud',
-      streaming: true,
-      accents: ['en-US', 'en-US-Southern', 'en-US-Standard', 'en-GB', 'en-AU'],
-      maxCharacters: 5000,
-      requiresApiKey: true,
-      platforms: ['web', 'android'],
-      latency: 'low',
-    },
-    azure: {
-      provider: 'azure',
-      streaming: true,
-      accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
-      maxCharacters: 5000,
-      requiresApiKey: true,
-      platforms: ['web', 'android'],
-      latency: 'low',
-    },
-    elevenlabs: {
-      provider: 'elevenlabs',
-      streaming: true,
-      accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
-      maxCharacters: 5000,
-      requiresApiKey: true,
-      platforms: ['web', 'android'],
-      latency: 'medium',
-    },
-    coqui: {
-      provider: 'coqui',
-      streaming: false,
-      accents: ['en-US'],
-      requiresApiKey: false,
-      platforms: ['web'],
-      latency: 'high',
-    },
-  };
+{
+  'browser-native': {
+    provider: 'browser-native',
+    streaming: false,
+    accents: ['en-US', 'en-GB', 'en-AU'],
+    requiresApiKey: false,
+    platforms: ['web', 'android', 'ios'],
+    latency: 'low',
+  },
+  'google-cloud': {
+    provider: 'google-cloud',
+    streaming: true,
+    accents: ['en-US', 'en-US-Southern', 'en-US-Standard', 'en-GB', 'en-AU'],
+    maxCharacters: 5000,
+    requiresApiKey: true,
+    platforms: ['web', 'android'],
+    latency: 'low',
+  },
+  azure: {
+    provider: 'azure',
+    streaming: true,
+    accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
+    maxCharacters: 5000,
+    requiresApiKey: true,
+    platforms: ['web', 'android'],
+    latency: 'low',
+  },
+  elevenlabs: {
+    provider: 'elevenlabs',
+    streaming: true,
+    accents: ['en-US', 'en-US-Southern', 'en-GB', 'en-AU'],
+    maxCharacters: 5000,
+    requiresApiKey: true,
+    platforms: ['web', 'android'],
+    latency: 'medium',
+  },
+  coqui: {
+    provider: 'coqui',
+    streaming: false,
+    accents: ['en-US'],
+    requiresApiKey: false,
+    platforms: ['web'],
+    latency: 'high',
+  },
+};
 
 /**
  * Voice name mappings for different providers
@@ -286,11 +286,11 @@ class ElevenLabsTTS implements ITTSProvider {
   private voices: any[] = [];
   private voicesFetched = false;
 
-  constructor() {}
+  constructor() { }
 
-  async fetchVoices(): Promise<void> {
+  async fetchVoices(): Promise<any[]> {
     if (this.voicesFetched) {
-      return;
+      return this.voices ?? [];
     }
     try {
       const response = await fetch('/api/elevenlabs/voices');

@@ -146,7 +146,7 @@ export async function searchVideos(
   try {
     // Try using Google API key first (doesn't require OAuth)
     const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY;
-    
+
     if (apiKey) {
       console.log('Using YouTube Data API with API key for search:', query);
       const params = new URLSearchParams({

@@ -19,10 +19,20 @@ class ImageGenerationAgent implements Agent {
         inputs: task,
       });
       // The response is a Blob, we need to convert it to a data URL
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
-      return dataUrl;
+      if (typeof response === 'string') {
+        // Some HF clients return a string (already a URL or base64) — return as-is
+        return response;
+      }
+
+      if (response && typeof (response as any).arrayBuffer === 'function') {
+        const arrayBuffer = await (response as any).arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+        return dataUrl;
+      }
+
+      // Fallback: stringify response
+      return String(response);
     } catch (error) {
       console.error('Error generating image:', error);
       return 'I was unable to generate the image.';

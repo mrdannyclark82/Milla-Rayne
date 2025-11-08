@@ -123,22 +123,20 @@ export function VideoAnalysisPanel({
         <div className="flex gap-2 border-b border-white/10">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === 'overview'
+            className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'overview'
                 ? 'text-purple-300 border-b-2 border-purple-400'
                 : 'text-white/60 hover:text-white/80'
-            }`}
+              }`}
           >
             Overview
           </button>
           {analysis.codeSnippets.length > 0 && (
             <button
               onClick={() => setActiveTab('code')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'code'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'code'
                   ? 'text-blue-300 border-b-2 border-blue-400'
                   : 'text-white/60 hover:text-white/80'
-              }`}
+                }`}
             >
               Code ({analysis.codeSnippets.length})
             </button>
@@ -146,11 +144,10 @@ export function VideoAnalysisPanel({
           {analysis.cliCommands.length > 0 && (
             <button
               onClick={() => setActiveTab('commands')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'commands'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'commands'
                   ? 'text-purple-300 border-b-2 border-purple-400'
                   : 'text-white/60 hover:text-white/80'
-              }`}
+                }`}
             >
               Commands ({analysis.cliCommands.length})
             </button>
@@ -158,11 +155,10 @@ export function VideoAnalysisPanel({
           {analysis.actionableItems.length > 0 && (
             <button
               onClick={() => setActiveTab('steps')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'steps'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'steps'
                   ? 'text-green-300 border-b-2 border-green-400'
                   : 'text-white/60 hover:text-white/80'
-              }`}
+                }`}
             >
               Steps ({analysis.actionableItems.length})
             </button>
@@ -307,14 +303,20 @@ function CLICommandCard({ command, index }: { command: any; index: number }) {
         code={command.command}
         language="bash"
       >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <pre 
+        {({ className, style, tokens, getLineProps, getTokenProps }: {
+          className?: string;
+          style?: React.CSSProperties;
+          tokens: any[][];
+          getLineProps: (props: { line: any; key?: number }) => React.HTMLAttributes<HTMLDivElement>;
+          getTokenProps: (props: { token: any; key?: number }) => React.HTMLAttributes<HTMLSpanElement>;
+        }) => (
+          <pre
             className={`${className} text-sm font-mono block bg-black/60 rounded px-3 py-2 mb-2 overflow-x-auto`}
             style={{ ...style, backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
           >
-            {tokens.map((line, i) => (
+            {tokens.map((line: any[], i: number) => (
               <div key={i} {...getLineProps({ line })}>
-                {line.map((token, key) => (
+                {line.map((token: any, key: number) => (
                   <span key={key} {...getTokenProps({ token })} />
                 ))}
               </div>

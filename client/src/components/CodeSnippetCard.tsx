@@ -124,18 +124,24 @@ export function CodeSnippetCard({ snippet, index, className = '' }: CodeSnippetC
           code={displayCode}
           language={getPrismLanguage(snippet.language)}
         >
-          {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }) => (
-            <pre 
+          {({ className: highlightClassName, style, tokens, getLineProps, getTokenProps }: {
+            className?: string;
+            style?: React.CSSProperties;
+            tokens: any[][];
+            getLineProps: (props: { line: any; key?: number }) => React.HTMLAttributes<HTMLDivElement>;
+            getTokenProps: (props: { token: any; key?: number }) => React.HTMLAttributes<HTMLSpanElement>;
+          }) => (
+            <pre
               className={`${highlightClassName} bg-black/60 rounded-lg p-4 overflow-x-auto border border-white/5`}
               style={{ ...style, backgroundColor: 'rgba(0, 0, 0, 0.6)' }}
             >
-              {tokens.map((line, i) => (
+              {tokens.map((line: any[], i: number) => (
                 <div key={i} {...getLineProps({ line })} className="table-row">
                   <span className="table-cell text-right pr-4 select-none opacity-40 text-xs">
                     {i + 1}
                   </span>
                   <span className="table-cell">
-                    {line.map((token, key) => (
+                    {line.map((token: any, key: number) => (
                       <span key={key} {...getTokenProps({ token })} />
                     ))}
                   </span>

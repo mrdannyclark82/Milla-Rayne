@@ -26,9 +26,9 @@ import { config } from './config.ts';
  */
 export function getGoogleOAuthConfig(): GoogleOAuthConfig {
   return {
-    clientId: config.google.clientId,
-    clientSecret: config.google.clientSecret,
-    redirectUri: config.google.redirectUri,
+    clientId: config.google.clientId || '',
+    clientSecret: config.google.clientSecret || '',
+    redirectUri: config.google.redirectUri || '',
     scope: [
       'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/tasks',

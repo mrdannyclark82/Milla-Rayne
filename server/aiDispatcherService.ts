@@ -1,7 +1,6 @@
 import { generateXAIResponse, PersonalityContext as XAIPersonalityContext } from './xaiService';
 import { generateOpenRouterResponse, generateGrokResponse, OpenRouterContext } from './openrouterService';
 import { generateGeminiResponse } from './geminiService';
-import { generateAIResponse as generateOpenAIResponse } from './openaiService';
 import { storage } from './storage';
 import { config } from './config';
 import { generateOpenAIResponse } from './openaiChatService';
@@ -73,13 +72,14 @@ export async function dispatchAIResponse(
 
   switch (modelToUse) {
     case 'openai':
-      // Use OpenAI chat wrapper
-      return generateOpenAIResponse(
-        userMessage,
-        context.conversationHistory,
-        context.userName,
-        maxTokens || 1024
-      ).then((r) => ({ content: r.content, success: r.success, error: r.error }));
+      // Use OpenAI chat wrapper (supports both conversation array or full PersonalityContext)
+      response = await generateOpenAIResponse(userMessage, {
+        conversationHistory: context.conversationHistory,
+        userName: context.userName,
+        userEmotionalState: context.userEmotionalState,
+        urgency: context.urgency,
+      } as any, maxTokens || 1024);
+      break;
 
     case 'xai':
       response = await generateXAIResponse(userMessage, {
@@ -93,14 +93,6 @@ export async function dispatchAIResponse(
       response = await generateGeminiResponse(userMessage);
       break;
 
-    case 'openai':
-      response = await generateOpenAIResponse(userMessage, {
-        conversationHistory: context.conversationHistory,
-        userEmotionalState: context.userEmotionalState,
-        urgency: context.urgency,
-        userName: context.userName,
-      } as OpenRouterContext, maxTokens);
-      break;
     case 'grok':
       response = await generateGrokResponse(userMessage, {
         conversationHistory: context.conversationHistory,
