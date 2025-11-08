@@ -1,6 +1,6 @@
 /**
  * LoginDialog - User Authentication Component
- * 
+ *
  * Provides login/register functionality for user accounts
  * Supports session management and persistent authentication
  */
@@ -21,7 +21,11 @@ import { UserCircle, Lock, Mail, AlertCircle } from 'lucide-react';
 interface LoginDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess?: (user: { id: string; username: string; email: string }) => void;
+  onLoginSuccess?: (user: {
+    id: string;
+    username: string;
+    email: string;
+  }) => void;
 }
 
 export default function LoginDialog({
@@ -32,7 +36,7 @@ export default function LoginDialog({
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  
+
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -78,7 +82,8 @@ export default function LoginDialog({
         }
       }
 
-      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const endpoint =
+        mode === 'login' ? '/api/auth/login' : '/api/auth/register';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -125,7 +130,7 @@ export default function LoginDialog({
     const height = 600;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
-    
+
     window.open(
       '/api/auth/google',
       'Google Sign In',

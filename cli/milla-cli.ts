@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Milla CLI - Command-line interface for Milla Rayne AI Companion
- * 
+ *
  * A simple text-based interface to chat with Milla from the terminal.
  */
 
@@ -44,11 +44,14 @@ class MillaCLI {
   async start(): Promise<void> {
     console.clear();
     this.displayWelcome();
-    
+
     // Check server connection
     const isConnected = await this.checkServerConnection();
     if (!isConnected) {
-      console.log('\n\x1b[33m⚠ Warning: Could not connect to Milla server at', API_BASE_URL);
+      console.log(
+        '\n\x1b[33m⚠ Warning: Could not connect to Milla server at',
+        API_BASE_URL
+      );
       console.log('Make sure the server is running with: npm run dev\x1b[0m\n');
     }
 
@@ -60,7 +63,7 @@ class MillaCLI {
 
     this.rl.on('line', async (input: string) => {
       const message = input.trim();
-      
+
       if (!message) {
         this.rl.prompt();
         return;
@@ -78,7 +81,9 @@ class MillaCLI {
     });
 
     this.rl.on('close', () => {
-      console.log('\n\x1b[35mMilla:\x1b[0m Take care, love! Chat with you soon. 💜\n');
+      console.log(
+        '\n\x1b[35mMilla:\x1b[0m Take care, love! Chat with you soon. 💜\n'
+      );
       process.exit(0);
     });
   }
@@ -116,14 +121,14 @@ class MillaCLI {
     try {
       const response = await axios.get(`${API_BASE_URL}/api/messages?limit=5`);
       const messages = response.data as Message[];
-      
+
       if (messages && messages.length > 0) {
         console.log('\n\x1b[90m--- Recent Conversation ---\x1b[0m');
         messages.slice(-5).forEach((msg: Message) => {
           const role = msg.role === 'user' ? '\x1b[36mYou' : '\x1b[35mMilla';
           console.log(`${role}:\x1b[0m ${msg.content}`);
         });
-        
+
         this.conversationHistory = messages;
       }
     } catch (error) {
@@ -144,7 +149,9 @@ class MillaCLI {
       });
 
       // Show thinking indicator
-      process.stdout.write('\n\x1b[35mMilla:\x1b[0m \x1b[90m(thinking...)\x1b[0m');
+      process.stdout.write(
+        '\n\x1b[35mMilla:\x1b[0m \x1b[90m(thinking...)\x1b[0m'
+      );
 
       // Send to server
       const response = await axios.post(
@@ -157,7 +164,7 @@ class MillaCLI {
       process.stdout.write('\r\x1b[K');
 
       const reply = response.data.response || response.data;
-      
+
       // Add assistant message to history
       this.conversationHistory.push({
         role: 'assistant',
@@ -177,7 +184,7 @@ class MillaCLI {
       }
     } catch (error) {
       process.stdout.write('\r\x1b[K');
-      
+
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED') {
           console.log(
@@ -189,9 +196,7 @@ class MillaCLI {
             '\n\x1b[31m✗ Server error occurred. Check server logs.\x1b[0m'
           );
         } else {
-          console.log(
-            `\n\x1b[31m✗ Error: ${error.message}\x1b[0m`
-          );
+          console.log(`\n\x1b[31m✗ Error: ${error.message}\x1b[0m`);
         }
       } else {
         console.log('\n\x1b[31m✗ Unexpected error occurred.\x1b[0m');
@@ -255,8 +260,8 @@ class MillaCLI {
     console.log('\n\x1b[90m--- Conversation History ---\x1b[0m\n');
     this.conversationHistory.forEach((msg) => {
       const role = msg.role === 'user' ? '\x1b[36mYou' : '\x1b[35mMilla';
-      const timestamp = msg.timestamp 
-        ? new Date(msg.timestamp).toLocaleTimeString() 
+      const timestamp = msg.timestamp
+        ? new Date(msg.timestamp).toLocaleTimeString()
         : '';
       console.log(`${role}:\x1b[0m ${msg.content} \x1b[90m${timestamp}\x1b[0m`);
     });

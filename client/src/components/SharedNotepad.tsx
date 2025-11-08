@@ -8,7 +8,10 @@ interface SharedNotepadProps {
   onClose: () => void;
 }
 
-export const SharedNotepad: React.FC<SharedNotepadProps> = ({ isOpen, onClose }) => {
+export const SharedNotepad: React.FC<SharedNotepadProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [noteContent, setNoteContent] = useState('');
 
   if (!isOpen) return null;
@@ -16,8 +19,13 @@ export const SharedNotepad: React.FC<SharedNotepadProps> = ({ isOpen, onClose })
   return (
     <Card className="fixed bottom-20 left-1/2 -translate-x-1/2 w-96 h-64 bg-neutral-100/90 backdrop-blur-md shadow-xl z-50 flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-semibold text-neutral-900">Shared Notepad</CardTitle>
-        <button onClick={onClose} className="text-neutral-500 hover:text-neutral-900">
+        <CardTitle className="text-lg font-semibold text-neutral-900">
+          Shared Notepad
+        </CardTitle>
+        <button
+          onClick={onClose}
+          className="text-neutral-500 hover:text-neutral-900"
+        >
           &times;
         </button>
       </CardHeader>

@@ -1,6 +1,6 @@
 /**
  * YouTube Knowledge Base Tests
- * 
+ *
  * Tests for storing, searching, and retrieving analyzed videos
  */
 
@@ -32,7 +32,7 @@ describe('YouTube Knowledge Base', () => {
 
     it('should prevent duplicate videos', () => {
       const videos = new Map<string, any>();
-      
+
       const addVideo = (id: string, data: any) => {
         if (videos.has(id)) {
           throw new Error('Video already exists');
@@ -41,8 +41,10 @@ describe('YouTube Knowledge Base', () => {
       };
 
       addVideo('test1', { title: 'First' });
-      
-      expect(() => addVideo('test1', { title: 'Duplicate' })).toThrow('Video already exists');
+
+      expect(() => addVideo('test1', { title: 'Duplicate' })).toThrow(
+        'Video already exists'
+      );
       expect(videos.size).toBe(1);
     });
   });
@@ -50,18 +52,28 @@ describe('YouTube Knowledge Base', () => {
   describe('Search Functionality', () => {
     it('should search by title', () => {
       const database = [
-        { videoId: '1', title: 'Docker Tutorial', tags: ['docker', 'containers'] },
+        {
+          videoId: '1',
+          title: 'Docker Tutorial',
+          tags: ['docker', 'containers'],
+        },
         { videoId: '2', title: 'React Basics', tags: ['react', 'javascript'] },
-        { videoId: '3', title: 'Docker Compose Guide', tags: ['docker', 'devops'] },
+        {
+          videoId: '3',
+          title: 'Docker Compose Guide',
+          tags: ['docker', 'devops'],
+        },
       ];
 
-      const search = (query: string) => 
-        database.filter(v => v.title.toLowerCase().includes(query.toLowerCase()));
+      const search = (query: string) =>
+        database.filter((v) =>
+          v.title.toLowerCase().includes(query.toLowerCase())
+        );
 
       const results = search('docker');
-      
+
       expect(results).toHaveLength(2);
-      expect(results.map(r => r.videoId)).toEqual(['1', '3']);
+      expect(results.map((r) => r.videoId)).toEqual(['1', '3']);
     });
 
     it('should filter by video type', () => {
@@ -71,53 +83,67 @@ describe('YouTube Knowledge Base', () => {
         { videoId: '3', type: 'tutorial' },
       ];
 
-      const filterByType = (type: string) => database.filter(v => v.type === type);
+      const filterByType = (type: string) =>
+        database.filter((v) => v.type === type);
 
       const tutorials = filterByType('tutorial');
-      
+
       expect(tutorials).toHaveLength(2);
     });
 
     it('should filter by language', () => {
       const database = [
-        { videoId: '1', codeSnippets: [{ language: 'javascript', code: 'const x = 1' }] },
+        {
+          videoId: '1',
+          codeSnippets: [{ language: 'javascript', code: 'const x = 1' }],
+        },
         { videoId: '2', codeSnippets: [{ language: 'python', code: 'x = 1' }] },
-        { videoId: '3', codeSnippets: [{ language: 'javascript', code: 'let y = 2' }] },
+        {
+          videoId: '3',
+          codeSnippets: [{ language: 'javascript', code: 'let y = 2' }],
+        },
       ];
 
-      const filterByLanguage = (lang: string) => 
-        database.filter(v => v.codeSnippets.some((s: any) => s.language === lang));
+      const filterByLanguage = (lang: string) =>
+        database.filter((v) =>
+          v.codeSnippets.some((s: any) => s.language === lang)
+        );
 
       const jsVideos = filterByLanguage('javascript');
-      
+
       expect(jsVideos).toHaveLength(2);
     });
 
     it('should search code snippets', () => {
       const database = [
-        { 
-          videoId: '1', 
+        {
+          videoId: '1',
           codeSnippets: [
-            { code: 'const express = require("express")', description: 'Import Express' }
-          ]
+            {
+              code: 'const express = require("express")',
+              description: 'Import Express',
+            },
+          ],
         },
         {
           videoId: '2',
           codeSnippets: [
-            { code: 'import React from "react"', description: 'Import React' }
-          ]
+            { code: 'import React from "react"', description: 'Import React' },
+          ],
         },
       ];
 
       const searchCode = (query: string) =>
-        database.filter(v => 
-          v.codeSnippets.some((s: any) => 
-            s.code.includes(query) || s.description.toLowerCase().includes(query.toLowerCase())
+        database.filter((v) =>
+          v.codeSnippets.some(
+            (s: any) =>
+              s.code.includes(query) ||
+              s.description.toLowerCase().includes(query.toLowerCase())
           )
         );
 
       const results = searchCode('express');
-      
+
       expect(results).toHaveLength(1);
       expect(results[0].videoId).toBe('1');
     });
@@ -129,12 +155,12 @@ describe('YouTube Knowledge Base', () => {
       ];
 
       const searchCommands = (query: string) =>
-        database.filter(v =>
+        database.filter((v) =>
           v.cliCommands.some((c: any) => c.command.includes(query))
         );
 
       const npmCommands = searchCommands('npm');
-      
+
       expect(npmCommands).toHaveLength(1);
       expect(npmCommands[0].videoId).toBe('1');
     });
@@ -142,25 +168,26 @@ describe('YouTube Knowledge Base', () => {
 
   describe('Statistics', () => {
     it('should count total videos', () => {
-      const database = [
-        { videoId: '1' },
-        { videoId: '2' },
-        { videoId: '3' },
-      ];
+      const database = [{ videoId: '1' }, { videoId: '2' }, { videoId: '3' }];
 
       expect(database.length).toBe(3);
     });
 
     it('should count by language', () => {
       const database = [
-        { codeSnippets: [{ language: 'javascript' }, { language: 'typescript' }] },
+        {
+          codeSnippets: [
+            { language: 'javascript' },
+            { language: 'typescript' },
+          ],
+        },
         { codeSnippets: [{ language: 'python' }] },
         { codeSnippets: [{ language: 'javascript' }] },
       ];
 
       const countByLanguage = () => {
         const counts: Record<string, number> = {};
-        database.forEach(v => {
+        database.forEach((v) => {
           v.codeSnippets.forEach((s: any) => {
             counts[s.language] = (counts[s.language] || 0) + 1;
           });
@@ -169,7 +196,7 @@ describe('YouTube Knowledge Base', () => {
       };
 
       const stats = countByLanguage();
-      
+
       expect(stats.javascript).toBe(2);
       expect(stats.python).toBe(1);
       expect(stats.typescript).toBe(1);
@@ -184,8 +211,8 @@ describe('YouTube Knowledge Base', () => {
 
       const getTopTags = (limit: number) => {
         const tagCounts: Record<string, number> = {};
-        database.forEach(v => {
-          v.tags.forEach(tag => {
+        database.forEach((v) => {
+          v.tags.forEach((tag) => {
             tagCounts[tag] = (tagCounts[tag] || 0) + 1;
           });
         });
@@ -197,7 +224,7 @@ describe('YouTube Knowledge Base', () => {
       };
 
       const top2 = getTopTags(2);
-      
+
       expect(top2).toContain('react');
       expect(top2).toContain('javascript');
     });
@@ -218,7 +245,7 @@ describe('YouTube Knowledge Base', () => {
           .slice(0, limit);
 
       const recent2 = getRecent(2);
-      
+
       expect(recent2[0].videoId).toBe('3'); // Most recent
       expect(recent2[1].videoId).toBe('1');
     });
@@ -228,7 +255,8 @@ describe('YouTube Knowledge Base', () => {
     it('should auto-generate tags from content', () => {
       const video = {
         title: 'Docker and Kubernetes Tutorial',
-        description: 'Learn containerization with Docker and orchestration with Kubernetes',
+        description:
+          'Learn containerization with Docker and orchestration with Kubernetes',
         codeSnippets: [
           { language: 'dockerfile', code: 'FROM node:18' },
           { language: 'yaml', code: 'apiVersion: v1' },
@@ -237,7 +265,7 @@ describe('YouTube Knowledge Base', () => {
 
       const generateTags = (video: typeof video) => {
         const tags = new Set<string>();
-        
+
         // From title/description
         const text = `${video.title} ${video.description}`.toLowerCase();
         if (text.includes('docker')) tags.add('docker');
@@ -245,13 +273,13 @@ describe('YouTube Knowledge Base', () => {
         if (text.includes('tutorial')) tags.add('tutorial');
 
         // From code languages
-        video.codeSnippets.forEach(s => tags.add(s.language));
+        video.codeSnippets.forEach((s) => tags.add(s.language));
 
         return Array.from(tags);
       };
 
       const tags = generateTags(video);
-      
+
       expect(tags).toContain('docker');
       expect(tags).toContain('kubernetes');
       expect(tags).toContain('dockerfile');

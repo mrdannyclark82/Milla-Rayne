@@ -199,7 +199,9 @@ export async function generateXAIResponse(
     );
 
     const response = await xaiClient.chat.completions.create({
-      model: (process.env.XAI_MODEL || (config && (config.xai as any)?.model) || 'grok-1') as string, // Use configurable model from environment or fallback
+      model: (process.env.XAI_MODEL ||
+        (config && (config.xai as any)?.model) ||
+        'grok-1') as string, // Use configurable model from environment or fallback
       messages: messages as any,
       max_tokens: maxTokens || 800,
       temperature: 0.8,

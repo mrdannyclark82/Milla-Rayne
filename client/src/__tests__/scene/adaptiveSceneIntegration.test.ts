@@ -310,7 +310,10 @@ describe('sceneSettingsStore', () => {
       version: 0,
       settings: { mood: 'energetic' },
     };
-    localStorage.setItem('milla.scene.settings.v1', JSON.stringify(oldSettings));
+    localStorage.setItem(
+      'milla.scene.settings.v1',
+      JSON.stringify(oldSettings)
+    );
     const settings = loadSceneSettings();
     expect(settings).toEqual(getDefaultSettings());
   });
@@ -325,7 +328,10 @@ describe('sceneSettingsStore', () => {
         animationSpeed: 0.1, // out of range
       },
     };
-    localStorage.setItem('milla.scene.settings.v1', JSON.stringify(invalidSettings));
+    localStorage.setItem(
+      'milla.scene.settings.v1',
+      JSON.stringify(invalidSettings)
+    );
     const settings = loadSceneSettings();
     expect(settings.enabled).toBe(true);
     expect(settings.mood).toBe('calm');
@@ -334,7 +340,10 @@ describe('sceneSettingsStore', () => {
   });
 
   it('should update settings', () => {
-    const newSettings = updateSceneSettings({ mood: 'playful', animationSpeed: 1.2 });
+    const newSettings = updateSceneSettings({
+      mood: 'playful',
+      animationSpeed: 1.2,
+    });
     expect(newSettings.mood).toBe('playful');
     expect(newSettings.animationSpeed).toBe(1.2);
     const loaded = loadSceneSettings();

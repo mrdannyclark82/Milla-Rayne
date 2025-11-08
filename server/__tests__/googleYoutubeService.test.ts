@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getMySubscriptions, getVideoDetails, searchVideos, getChannelDetails, getTrendingVideos } from '../googleYoutubeService';
+import {
+  getMySubscriptions,
+  getVideoDetails,
+  searchVideos,
+  getChannelDetails,
+  getTrendingVideos,
+} from '../googleYoutubeService';
 
 vi.mock('undici', () => ({
   fetch: vi.fn(),

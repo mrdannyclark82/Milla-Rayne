@@ -15,7 +15,11 @@ import {
   Tag,
   Sparkles,
 } from 'lucide-react';
-import type { YoutubeKnowledge, KnowledgeBaseStats, SearchKnowledgeParams } from '@/types/millalyzer';
+import type {
+  YoutubeKnowledge,
+  KnowledgeBaseStats,
+  SearchKnowledgeParams,
+} from '@/types/millalyzer';
 
 interface KnowledgeBaseSearchProps {
   onSelectVideo?: (video: YoutubeKnowledge) => void;
@@ -24,14 +28,17 @@ interface KnowledgeBaseSearchProps {
 
 /**
  * KnowledgeBaseSearch - Search and browse analyzed videos
- * 
+ *
  * Features:
  * - Full-text search across videos
  * - Filter by type, tags, content
  * - Statistics dashboard
  * - Quick access to code/commands
  */
-export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: KnowledgeBaseSearchProps) {
+export function KnowledgeBaseSearch({
+  onSelectVideo,
+  className = '',
+}: KnowledgeBaseSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<YoutubeKnowledge[]>([]);
   const [stats, setStats] = useState<KnowledgeBaseStats | null>(null);
@@ -84,7 +91,9 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
   };
 
   return (
-    <Card className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}>
+    <Card
+      className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -92,7 +101,10 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
             <CardTitle className="text-xl text-white">Knowledge Base</CardTitle>
           </div>
           {stats && (
-            <Badge variant="outline" className="border-purple-500/30 text-purple-300">
+            <Badge
+              variant="outline"
+              className="border-purple-500/30 text-purple-300"
+            >
               {stats.totalVideos} videos
             </Badge>
           )}
@@ -152,7 +164,9 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setFilters({ ...filters, videoType: 'tutorial' })}
+                onClick={() =>
+                  setFilters({ ...filters, videoType: 'tutorial' })
+                }
                 className={`border-blue-500/30 text-blue-300 ${
                   filters.videoType === 'tutorial' ? 'bg-blue-500/20' : ''
                 }`}
@@ -253,15 +267,22 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
 
               {/* By Type */}
               <div className="mb-4">
-                <h4 className="text-sm font-semibold text-white/80 mb-2">By Type</h4>
+                <h4 className="text-sm font-semibold text-white/80 mb-2">
+                  By Type
+                </h4>
                 <div className="space-y-2">
                   {Object.entries(stats.byType).map(([type, count]) => (
                     <div
                       key={type}
                       className="flex items-center justify-between bg-white/5 rounded p-2"
                     >
-                      <span className="text-sm text-white/70 capitalize">{type}</span>
-                      <Badge variant="outline" className="border-white/20 text-white/60">
+                      <span className="text-sm text-white/70 capitalize">
+                        {type}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="border-white/20 text-white/60"
+                      >
                         {count}
                       </Badge>
                     </div>
@@ -272,7 +293,9 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
               {/* Top Languages */}
               {stats.topLanguages.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-white/80 mb-2">Top Languages</h4>
+                  <h4 className="text-sm font-semibold text-white/80 mb-2">
+                    Top Languages
+                  </h4>
                   <div className="space-y-2">
                     {stats.topLanguages.slice(0, 5).map((lang, index) => (
                       <div
@@ -280,10 +303,17 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
                         className="flex items-center justify-between bg-white/5 rounded p-2"
                       >
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-purple-300">#{index + 1}</span>
-                          <span className="text-sm text-white/70">{lang.language}</span>
+                          <span className="text-xs text-purple-300">
+                            #{index + 1}
+                          </span>
+                          <span className="text-sm text-white/70">
+                            {lang.language}
+                          </span>
                         </div>
-                        <Badge variant="outline" className="border-purple-500/30 text-purple-300">
+                        <Badge
+                          variant="outline"
+                          className="border-purple-500/30 text-purple-300"
+                        >
                           {lang.count}
                         </Badge>
                       </div>
@@ -295,7 +325,9 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
               {/* Top Tags */}
               {stats.topTags.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-semibold text-white/80 mb-2">Popular Tags</h4>
+                  <h4 className="text-sm font-semibold text-white/80 mb-2">
+                    Popular Tags
+                  </h4>
                   <div className="flex flex-wrap gap-2">
                     {stats.topTags.slice(0, 10).map((tag) => (
                       <Badge
@@ -323,7 +355,9 @@ export function KnowledgeBaseSearch({ onSelectVideo, className = '' }: Knowledge
                         key={video.videoId}
                         className="bg-white/5 rounded p-2 hover:bg-white/10 transition-colors cursor-pointer"
                       >
-                        <p className="text-sm text-white/80 line-clamp-1">{video.title}</p>
+                        <p className="text-sm text-white/80 line-clamp-1">
+                          {video.title}
+                        </p>
                         <p className="text-xs text-white/40 mt-1">
                           {new Date(video.analyzedAt).toLocaleDateString()}
                         </p>
@@ -353,25 +387,35 @@ function VideoResultCard({
       className="bg-black/40 rounded-lg p-4 border border-white/10 hover:border-purple-500/30 transition-colors cursor-pointer group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <h4 className="text-sm font-semibold text-white line-clamp-2 flex-1">{video.title}</h4>
+        <h4 className="text-sm font-semibold text-white line-clamp-2 flex-1">
+          {video.title}
+        </h4>
         <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 border">
           {video.videoType}
         </Badge>
       </div>
 
       {video.summary && (
-        <p className="text-xs text-white/60 mb-2 line-clamp-2">{video.summary}</p>
+        <p className="text-xs text-white/60 mb-2 line-clamp-2">
+          {video.summary}
+        </p>
       )}
 
       <div className="flex items-center gap-2 flex-wrap">
         {video.codeSnippets.length > 0 && (
-          <Badge variant="outline" className="border-blue-500/30 text-blue-300 text-xs">
+          <Badge
+            variant="outline"
+            className="border-blue-500/30 text-blue-300 text-xs"
+          >
             <Code className="w-3 h-3 mr-1" />
             {video.codeSnippets.length}
           </Badge>
         )}
         {video.cliCommands.length > 0 && (
-          <Badge variant="outline" className="border-green-500/30 text-green-300 text-xs">
+          <Badge
+            variant="outline"
+            className="border-green-500/30 text-green-300 text-xs"
+          >
             <Terminal className="w-3 h-3 mr-1" />
             {video.cliCommands.length}
           </Badge>
@@ -409,7 +453,9 @@ function StatCard({
   };
 
   return (
-    <div className={`rounded-lg border p-3 ${colorClasses[color] || colorClasses.purple}`}>
+    <div
+      className={`rounded-lg border p-3 ${colorClasses[color] || colorClasses.purple}`}
+    >
       <div className="flex items-center gap-2 mb-1">
         {icon}
         <span className="text-xs text-white/60">{label}</span>

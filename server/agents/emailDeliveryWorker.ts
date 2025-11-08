@@ -40,7 +40,9 @@ export const emailMetrics = {
   pending: 0,
 };
 
-async function sendViaSendGrid(item: any): Promise<{ ok: boolean; error?: string }> {
+async function sendViaSendGrid(
+  item: any
+): Promise<{ ok: boolean; error?: string }> {
   const apiKey = config.email.sendgridApiKey || process.env.SENDGRID_API_KEY;
   if (!apiKey) return { ok: false, error: 'SendGrid API key not configured' };
 
@@ -53,7 +55,12 @@ async function sendViaSendGrid(item: any): Promise<{ ok: boolean; error?: string
         subject: item.subject,
       },
     ],
-    from: { email: config.email.fromAddress || process.env.EMAIL_FROM || 'noreply@example.com' },
+    from: {
+      email:
+        config.email.fromAddress ||
+        process.env.EMAIL_FROM ||
+        'noreply@example.com',
+    },
     content: [{ type: 'text/plain', value: item.body }],
   };
 
@@ -75,7 +82,9 @@ async function sendViaSendGrid(item: any): Promise<{ ok: boolean; error?: string
   }
 }
 
-async function sendViaSMTP(item: any): Promise<{ ok: boolean; error?: string }> {
+async function sendViaSMTP(
+  item: any
+): Promise<{ ok: boolean; error?: string }> {
   const smtp = config.email.smtp || {};
   if (!smtp.host || !smtp.port) {
     return { ok: false, error: 'SMTP configuration missing (host/port)' };
@@ -87,13 +96,19 @@ async function sendViaSMTP(item: any): Promise<{ ok: boolean; error?: string }> 
       port: smtp.port,
       secure: smtp.secure === true, // true for 465, false for other ports
       requireTLS: smtp.requireTLS === true,
-      auth: smtp.user && smtp.pass ? { user: smtp.user, pass: smtp.pass } : undefined,
+      auth:
+        smtp.user && smtp.pass
+          ? { user: smtp.user, pass: smtp.pass }
+          : undefined,
     } as any);
 
     const toList = Array.isArray(item.to) ? item.to.join(', ') : item.to;
 
     const mailOptions: any = {
-      from: config.email.fromAddress || process.env.EMAIL_FROM || 'noreply@example.com',
+      from:
+        config.email.fromAddress ||
+        process.env.EMAIL_FROM ||
+        'noreply@example.com',
       to: toList,
       subject: item.subject,
       text: item.body,
@@ -105,7 +120,10 @@ async function sendViaSMTP(item: any): Promise<{ ok: boolean; error?: string }> 
     const res = await transporter.sendMail(mailOptions);
 
     // Nodemailer returns an info object; consider success if accepted has entries
-    if ((res && (res.accepted && res.accepted.length > 0)) || (res && res.messageId)) {
+    if (
+      (res && res.accepted && res.accepted.length > 0) ||
+      (res && res.messageId)
+    ) {
       return { ok: true };
     }
 
@@ -115,7 +133,11 @@ async function sendViaSMTP(item: any): Promise<{ ok: boolean; error?: string }> 
   }
 }
 
-export async function deliverOutboxOnce(): Promise<{ sent: number; failed: number; skipped: number }> {
+export async function deliverOutboxOnce(): Promise<{
+  sent: number;
+  failed: number;
+  skipped: number;
+}> {
   const items = await readOutbox();
   let changed = false;
   let sentCount = 0;
@@ -129,7 +151,10 @@ export async function deliverOutboxOnce(): Promise<{ sent: number; failed: numbe
     if (item.sent) continue;
 
     // Respect nextAttemptAt for exponential backoff
-    if (item.nextAttemptAt && new Date(item.nextAttemptAt).getTime() > Date.now()) {
+    if (
+      item.nextAttemptAt &&
+      new Date(item.nextAttemptAt).getTime() > Date.now()
+    ) {
       // Not yet time to retry
       skippedCount++;
       continue;
@@ -137,8 +162,14 @@ export async function deliverOutboxOnce(): Promise<{ sent: number; failed: numbe
 
     // Only proceed if email sending is enabled
     if (!config.email.sendEmails) {
-      console.log('[emailDeliveryWorker] SEND_EMAILS disabled; skipping delivery');
-      return { sent: 0, failed: 0, skipped: items.filter((i) => !i.sent).length };
+      console.log(
+        '[emailDeliveryWorker] SEND_EMAILS disabled; skipping delivery'
+      );
+      return {
+        sent: 0,
+        failed: 0,
+        skipped: items.filter((i) => !i.sent).length,
+      };
     }
 
     // Respect max attempts
@@ -150,11 +181,22 @@ export async function deliverOutboxOnce(): Promise<{ sent: number; failed: numbe
       item.error = item.error || 'Max attempts reached';
       failedCount++;
       changed = true;
-      console.warn('[emailDeliveryWorker] Giving up on', item.id, 'after', item.attempts, 'attempts');
+      console.warn(
+        '[emailDeliveryWorker] Giving up on',
+        item.id,
+        'after',
+        item.attempts,
+        'attempts'
+      );
       continue;
     }
 
-    console.log('[emailDeliveryWorker] Delivering email', item.id || '<no-id>', 'attempt', item.attempts + 1);
+    console.log(
+      '[emailDeliveryWorker] Delivering email',
+      item.id || '<no-id>',
+      'attempt',
+      item.attempts + 1
+    );
 
     // Currently support SendGrid provider
     if (config.email.provider === 'sendgrid') {
@@ -174,12 +216,21 @@ export async function deliverOutboxOnce(): Promise<{ sent: number; failed: numbe
         item.attempts = (item.attempts || 0) + 1;
         const base = config.email.baseBackoffMs || 60000;
         const maxBack = config.email.maxBackoffMs || 24 * 60 * 60 * 1000;
-        const nextDelay = Math.min(base * Math.pow(2, item.attempts - 1), maxBack);
+        const nextDelay = Math.min(
+          base * Math.pow(2, item.attempts - 1),
+          maxBack
+        );
         item.nextAttemptAt = new Date(Date.now() + nextDelay).toISOString();
         failedCount += 1;
         emailMetrics.failed += 1;
         changed = true;
-        console.error('[emailDeliveryWorker] Failed to send', item.id, result.error, 'scheduling nextAttemptAt', item.nextAttemptAt);
+        console.error(
+          '[emailDeliveryWorker] Failed to send',
+          item.id,
+          result.error,
+          'scheduling nextAttemptAt',
+          item.nextAttemptAt
+        );
       }
     } else if (config.email.provider === 'smtp') {
       const result = await sendViaSMTP(item);
@@ -196,12 +247,21 @@ export async function deliverOutboxOnce(): Promise<{ sent: number; failed: numbe
         item.attempts = (item.attempts || 0) + 1;
         const base = config.email.baseBackoffMs || 60000;
         const maxBack = config.email.maxBackoffMs || 24 * 60 * 60 * 1000;
-        const nextDelay = Math.min(base * Math.pow(2, item.attempts - 1), maxBack);
+        const nextDelay = Math.min(
+          base * Math.pow(2, item.attempts - 1),
+          maxBack
+        );
         item.nextAttemptAt = new Date(Date.now() + nextDelay).toISOString();
         failedCount += 1;
         emailMetrics.failed += 1;
         changed = true;
-        console.error('[emailDeliveryWorker] Failed to send via SMTP', item.id, result.error, 'scheduling nextAttemptAt', item.nextAttemptAt);
+        console.error(
+          '[emailDeliveryWorker] Failed to send via SMTP',
+          item.id,
+          result.error,
+          'scheduling nextAttemptAt',
+          item.nextAttemptAt
+        );
       }
     } else {
       // Provider not implemented: mark attempted and leave unsent for manual processing
@@ -224,20 +284,28 @@ let loopHandle: NodeJS.Timeout | null = null;
 
 export function startEmailDeliveryLoop(): void {
   if (!config.email.sendEmails) {
-    console.log('[emailDeliveryWorker] Email sending disabled by config.SEND_EMAILS');
+    console.log(
+      '[emailDeliveryWorker] Email sending disabled by config.SEND_EMAILS'
+    );
     return;
   }
 
   const interval = config.email.deliveryIntervalMs || 60000;
   if (loopHandle) return; // already running
 
-  console.log(`[emailDeliveryWorker] Starting delivery loop (interval ${interval}ms)`);
+  console.log(
+    `[emailDeliveryWorker] Starting delivery loop (interval ${interval}ms)`
+  );
   loopHandle = setInterval(() => {
-    deliverOutboxOnce().catch((err) => console.error('Email delivery error:', err));
+    deliverOutboxOnce().catch((err) =>
+      console.error('Email delivery error:', err)
+    );
   }, interval);
 
   // Also run immediately once
-  deliverOutboxOnce().catch((err) => console.error('Initial email delivery error:', err));
+  deliverOutboxOnce().catch((err) =>
+    console.error('Initial email delivery error:', err)
+  );
 }
 
 export function stopEmailDeliveryLoop(): void {

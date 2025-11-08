@@ -17,8 +17,7 @@ import { config } from './config';
 export async function generateImageWithBanana(
   prompt: string
 ): Promise<BananaImageGenerationResult> {
-  const bananaKey =
-    config.openrouter.geminiApiKey || config.banana.apiKey;
+  const bananaKey = config.openrouter.geminiApiKey || config.banana.apiKey;
   if (!bananaKey) {
     return {
       success: false,
@@ -32,9 +31,7 @@ export async function generateImageWithBanana(
     config.banana.apiEndpoint ||
     'https://api.banana.dev/run';
   const modelKey =
-    config.banana.modelKey ||
-    config.banana.model ||
-    'google/gemini-pro-vision';
+    config.banana.modelKey || config.banana.model || 'google/gemini-pro-vision';
 
   try {
     const body: any = { modelKey, input: { prompt } };

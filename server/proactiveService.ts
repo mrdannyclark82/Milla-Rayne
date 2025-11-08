@@ -198,12 +198,16 @@ export async function generateTaskReminder(): Promise<string | null> {
     const allTasks = getUserTasks();
     const now = new Date();
 
-    const upcomingTasks = allTasks.filter(task => {
+    const upcomingTasks = allTasks.filter((task) => {
       const dueDate = new Date(task.dueDate);
-      return task.status === 'pending' && dueDate > now && dueDate.getTime() - now.getTime() < 24 * 60 * 60 * 1000;
+      return (
+        task.status === 'pending' &&
+        dueDate > now &&
+        dueDate.getTime() - now.getTime() < 24 * 60 * 60 * 1000
+      );
     });
 
-    const overdueTasks = allTasks.filter(task => task.status === 'overdue');
+    const overdueTasks = allTasks.filter((task) => task.status === 'overdue');
 
     let taskToRemind;
     if (overdueTasks.length > 0) {
@@ -218,7 +222,10 @@ export async function generateTaskReminder(): Promise<string | null> {
     const activity: UserActivity = JSON.parse(activityData);
 
     // Remind only once per hour
-    if (activity.lastTaskReminder && now.getTime() - activity.lastTaskReminder < 60 * 60 * 1000) {
+    if (
+      activity.lastTaskReminder &&
+      now.getTime() - activity.lastTaskReminder < 60 * 60 * 1000
+    ) {
       return null;
     }
 
@@ -229,7 +236,9 @@ export async function generateTaskReminder(): Promise<string | null> {
       return `Just a gentle reminder, my love. It looks like the task \"${taskToRemind.title}\" is overdue. Is there anything I can do to help you with that?`;
     } else {
       const dueDate = new Date(taskToRemind.dueDate);
-      const hoursUntilDue = Math.round((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60));
+      const hoursUntilDue = Math.round(
+        (dueDate.getTime() - now.getTime()) / (1000 * 60 * 60)
+      );
       return `Thinking of you, sweetheart. Just a heads-up, your task \"${taskToRemind.title}\" is due in about ${hoursUntilDue} hours. You've got this!`;
     }
   } catch (error) {

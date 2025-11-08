@@ -1,6 +1,6 @@
 /**
  * millAlyzer Chat Integration Tests
- * 
+ *
  * Tests for the chat endpoint integration with video analysis
  */
 
@@ -15,9 +15,10 @@ describe('millAlyzer Chat Integration', () => {
         'http://www.youtube.com/watch?v=test1234567',
       ];
 
-      const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const regex =
+        /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
-      testUrls.forEach(url => {
+      testUrls.forEach((url) => {
         const match = url.match(regex);
         expect(match).toBeDefined();
         expect(match![1]).toHaveLength(11);
@@ -30,9 +31,10 @@ describe('millAlyzer Chat Integration', () => {
         'youtu.be/abc123XYZ-_',
       ];
 
-      const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const regex =
+        /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
-      shortUrls.forEach(url => {
+      shortUrls.forEach((url) => {
         const match = url.match(regex);
         expect(match).toBeDefined();
         expect(match![1]).toHaveLength(11);
@@ -41,7 +43,8 @@ describe('millAlyzer Chat Integration', () => {
 
     it('should extract video ID from URL', () => {
       const url = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-      const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const regex =
+        /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
       const match = url.match(regex);
 
       expect(match![1]).toBe('dQw4w9WgXcQ');
@@ -54,9 +57,10 @@ describe('millAlyzer Chat Integration', () => {
         'not a url at all',
       ];
 
-      const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+      const regex =
+        /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
 
-      invalidUrls.forEach(url => {
+      invalidUrls.forEach((url) => {
         const match = url.match(regex);
         expect(match).toBeNull();
       });
@@ -71,9 +75,9 @@ describe('millAlyzer Chat Integration', () => {
         'please analyze https://youtube.com/watch?v=test',
       ];
 
-      messages.forEach(msg => {
-        const isAnalyzeRequest = 
-          msg.toLowerCase().includes('analyze') && 
+      messages.forEach((msg) => {
+        const isAnalyzeRequest =
+          msg.toLowerCase().includes('analyze') &&
           msg.toLowerCase().includes('video');
         expect(isAnalyzeRequest).toBe(true);
       });
@@ -87,8 +91,8 @@ describe('millAlyzer Chat Integration', () => {
         'my videos',
       ];
 
-      messages.forEach(msg => {
-        const isKBRequest = 
+      messages.forEach((msg) => {
+        const isKBRequest =
           msg.toLowerCase().includes('knowledge base') ||
           msg.toLowerCase().includes('show videos') ||
           msg.toLowerCase().includes('my videos');
@@ -99,16 +103,16 @@ describe('millAlyzer Chat Integration', () => {
     it('should detect daily news requests', () => {
       const messages = [
         'show me daily news',
-        'what\'s new in tech?',
+        "what's new in tech?",
         'tech news today',
         'daily tech news',
       ];
 
-      messages.forEach(msg => {
-        const isNewsRequest = 
+      messages.forEach((msg) => {
+        const isNewsRequest =
           msg.toLowerCase().includes('daily news') ||
           msg.toLowerCase().includes('tech news') ||
-          msg.toLowerCase().includes('what\'s new');
+          msg.toLowerCase().includes("what's new");
         expect(isNewsRequest).toBe(true);
       });
     });
@@ -116,13 +120,13 @@ describe('millAlyzer Chat Integration', () => {
     it('should not false-positive on unrelated messages', () => {
       const messages = [
         'hello how are you',
-        'what\'s the weather today',
+        "what's the weather today",
         'tell me a joke',
       ];
 
-      messages.forEach(msg => {
-        const isAnalyzeRequest = 
-          msg.toLowerCase().includes('analyze') && 
+      messages.forEach((msg) => {
+        const isAnalyzeRequest =
+          msg.toLowerCase().includes('analyze') &&
           msg.toLowerCase().includes('video');
         expect(isAnalyzeRequest).toBe(false);
       });
@@ -132,7 +136,7 @@ describe('millAlyzer Chat Integration', () => {
   describe('Response Structure', () => {
     it('should include videoAnalysis when URL detected', () => {
       const mockResponse = {
-        response: 'I\'ve analyzed that video for you!',
+        response: "I've analyzed that video for you!",
         videoAnalysis: {
           videoId: 'test123',
           title: 'Test Video',
@@ -169,7 +173,7 @@ describe('millAlyzer Chat Integration', () => {
 
     it('should include dailyNews when requested', () => {
       const mockResponse = {
-        response: 'Here are today\'s top tech stories...',
+        response: "Here are today's top tech stories...",
         dailyNews: {
           date: new Date().toISOString(),
           categories: {
@@ -207,7 +211,9 @@ describe('millAlyzer Chat Integration', () => {
 
   describe('Error Handling', () => {
     it('should continue chat if analysis fails', async () => {
-      const analyzeVideo = vi.fn().mockRejectedValue(new Error('Analysis failed'));
+      const analyzeVideo = vi
+        .fn()
+        .mockRejectedValue(new Error('Analysis failed'));
 
       let videoAnalysis = null;
       try {
@@ -237,8 +243,8 @@ describe('millAlyzer Chat Integration', () => {
         content: 'Chat response',
       });
 
-      const analyzeVideo = vi.fn().mockImplementation(() => 
-        new Promise(resolve => setTimeout(resolve, 5000)) // Slow analysis
+      const analyzeVideo = vi.fn().mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 5000)) // Slow analysis
       );
 
       // Simulate concurrent execution

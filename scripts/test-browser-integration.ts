@@ -4,13 +4,13 @@
  * Test script to verify browser integration service
  */
 
-import { 
-  detectBrowserToolRequest, 
+import {
+  detectBrowserToolRequest,
   getBrowserToolInstructions,
   navigateToUrl,
   addNoteToKeep,
   addCalendarEvent,
-  searchWeb
+  searchWeb,
 } from '../server/browserIntegrationService';
 
 console.log('🧪 Testing Browser Integration Service\n');
@@ -24,10 +24,10 @@ const testMessages = [
   'Open YouTube in the browser',
   'Add an appointment to my calendar for tomorrow',
   'Search for the best restaurants nearby',
-  'Just having a casual conversation'
+  'Just having a casual conversation',
 ];
 
-testMessages.forEach(msg => {
+testMessages.forEach((msg) => {
   const result = detectBrowserToolRequest(msg);
   console.log(`Message: "${msg}"`);
   console.log(`Detected: ${result.tool || 'none'}`);
@@ -51,7 +51,11 @@ console.log('='.repeat(50));
   const noteResult = await addNoteToKeep('Shopping List', 'Buy groceries');
   console.log('Add Note:', noteResult.message);
 
-  const calResult = await addCalendarEvent('Dentist Appointment', '2025-01-15', '10:00 AM');
+  const calResult = await addCalendarEvent(
+    'Dentist Appointment',
+    '2025-01-15',
+    '10:00 AM'
+  );
   console.log('Add Calendar:', calResult.message);
 
   const searchResult = await searchWeb('Italian restaurants near me');

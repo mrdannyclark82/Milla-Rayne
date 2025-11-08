@@ -1,9 +1,9 @@
 /**
  * YouTube Knowledge Base Service
- * 
+ *
  * Stores and retrieves analyzed YouTube videos with searchable content.
  * Provides code snippet library, command reference, and learning path tracking.
- * 
+ *
  * Sprint 2 Features:
  * - Store millAlyzer results in database
  * - Search analyzed videos by content, tags, or type
@@ -101,12 +101,13 @@ function generateTags(analysis: VideoAnalysis): string[] {
   // Extract tools from CLI commands
   analysis.cliCommands.forEach((cmd) => {
     const command = cmd.command.toLowerCase();
-    
+
     // Common tools
     if (command.startsWith('npm')) tags.add('npm');
     if (command.startsWith('docker')) tags.add('docker');
     if (command.startsWith('git')) tags.add('git');
-    if (command.startsWith('python') || command.startsWith('pip')) tags.add('python');
+    if (command.startsWith('python') || command.startsWith('pip'))
+      tags.add('python');
     if (command.startsWith('node')) tags.add('nodejs');
     if (command.startsWith('yarn')) tags.add('yarn');
     if (command.startsWith('cargo')) tags.add('rust');
@@ -117,15 +118,38 @@ function generateTags(analysis: VideoAnalysis): string[] {
 
   // Extract keywords from title and summary
   const text = `${analysis.title} ${analysis.summary}`.toLowerCase();
-  
+
   const keywords = [
-    'api', 'rest', 'graphql', 'database', 'frontend', 'backend',
-    'react', 'vue', 'angular', 'nextjs', 'express', 'fastify',
-    'mongodb', 'postgresql', 'mysql', 'redis',
-    'aws', 'azure', 'gcp', 'cloud',
-    'ci/cd', 'devops', 'testing', 'deployment',
-    'machine learning', 'ai', 'data science',
-    'authentication', 'security', 'encryption',
+    'api',
+    'rest',
+    'graphql',
+    'database',
+    'frontend',
+    'backend',
+    'react',
+    'vue',
+    'angular',
+    'nextjs',
+    'express',
+    'fastify',
+    'mongodb',
+    'postgresql',
+    'mysql',
+    'redis',
+    'aws',
+    'azure',
+    'gcp',
+    'cloud',
+    'ci/cd',
+    'devops',
+    'testing',
+    'deployment',
+    'machine learning',
+    'ai',
+    'data science',
+    'authentication',
+    'security',
+    'encryption',
   ];
 
   keywords.forEach((keyword) => {
@@ -168,12 +192,12 @@ export async function getVideoFromKnowledgeBase(
 ): Promise<YoutubeKnowledge | null> {
   try {
     const video = await storage.getYoutubeKnowledgeByVideoId(videoId, userId);
-    
+
     if (video) {
       // Increment watch count
       await storage.incrementYoutubeWatchCount(videoId, userId);
     }
-    
+
     return video;
   } catch (error) {
     console.error('Error getting video from knowledge base:', error);
@@ -203,19 +227,23 @@ export async function searchCodeSnippets(
     const results: Array<{ video: YoutubeKnowledge; snippet: any }> = [];
 
     videos.forEach((video) => {
-      const snippets = video.codeSnippets as any[] || [];
-      
+      const snippets = (video.codeSnippets as any[]) || [];
+
       snippets.forEach((snippet) => {
         let matches = true;
 
         // Filter by language
-        if (filters.language && snippet.language?.toLowerCase() !== filters.language.toLowerCase()) {
+        if (
+          filters.language &&
+          snippet.language?.toLowerCase() !== filters.language.toLowerCase()
+        ) {
           matches = false;
         }
 
         // Filter by query in code or description
         if (filters.query) {
-          const searchText = `${snippet.code} ${snippet.description}`.toLowerCase();
+          const searchText =
+            `${snippet.code} ${snippet.description}`.toLowerCase();
           if (!searchText.includes(filters.query.toLowerCase())) {
             matches = false;
           }
@@ -238,16 +266,18 @@ export async function searchCodeSnippets(
 /**
  * Get all unique programming languages in knowledge base
  */
-export async function getAvailableLanguages(userId: string = 'default-user'): Promise<string[]> {
+export async function getAvailableLanguages(
+  userId: string = 'default-user'
+): Promise<string[]> {
   const videos = await storage.searchYoutubeKnowledge({
     hasCode: true,
     userId,
   });
 
   const languages = new Set<string>();
-  
+
   videos.forEach((video) => {
-    const snippets = video.codeSnippets as any[] || [];
+    const snippets = (video.codeSnippets as any[]) || [];
     snippets.forEach((snippet) => {
       if (snippet.language) {
         languages.add(snippet.language);
@@ -280,19 +310,24 @@ export async function searchCLICommands(
     const results: Array<{ video: YoutubeKnowledge; command: any }> = [];
 
     videos.forEach((video) => {
-      const commands = video.cliCommands as any[] || [];
-      
+      const commands = (video.cliCommands as any[]) || [];
+
       commands.forEach((command) => {
         let matches = true;
 
         // Filter by platform
-        if (filters.platform && command.platform !== filters.platform && command.platform !== 'all') {
+        if (
+          filters.platform &&
+          command.platform !== filters.platform &&
+          command.platform !== 'all'
+        ) {
           matches = false;
         }
 
         // Filter by query in command or description
         if (filters.query) {
-          const searchText = `${command.command} ${command.description}`.toLowerCase();
+          const searchText =
+            `${command.command} ${command.description}`.toLowerCase();
           if (!searchText.includes(filters.query.toLowerCase())) {
             matches = false;
           }
@@ -320,7 +355,10 @@ export async function searchCLICommands(
  * Get knowledge base statistics for a user
  */
 export async function getKnowledgeBaseStats(userId: string = 'default-user') {
-  const allVideos = await storage.searchYoutubeKnowledge({ userId, limit: 1000 });
+  const allVideos = await storage.searchYoutubeKnowledge({
+    userId,
+    limit: 1000,
+  });
 
   const stats = {
     totalVideos: allVideos.length,
@@ -347,10 +385,10 @@ export async function getKnowledgeBaseStats(userId: string = 'default-user') {
     stats.byType[video.videoType]++;
 
     // Count snippets, commands, points
-    const snippets = video.codeSnippets as any[] || [];
-    const commands = video.cliCommands as any[] || [];
-    const keyPoints = video.keyPoints as any[] || [];
-    
+    const snippets = (video.codeSnippets as any[]) || [];
+    const commands = (video.cliCommands as any[]) || [];
+    const keyPoints = (video.keyPoints as any[]) || [];
+
     stats.totalCodeSnippets += snippets.length;
     stats.totalCLICommands += commands.length;
     stats.totalKeyPoints += keyPoints.length;
@@ -362,7 +400,7 @@ export async function getKnowledgeBaseStats(userId: string = 'default-user') {
     });
 
     // Count tags
-    const tags = video.tags as string[] || [];
+    const tags = (video.tags as string[]) || [];
     tags.forEach((tag) => {
       tagCounts[tag] = (tagCounts[tag] || 0) + 1;
     });
@@ -382,7 +420,10 @@ export async function getKnowledgeBaseStats(userId: string = 'default-user') {
 
   // Recently analyzed (last 5)
   stats.recentlyAnalyzed = allVideos
-    .sort((a, b) => new Date(b.analyzedAt).getTime() - new Date(a.analyzedAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.analyzedAt).getTime() - new Date(a.analyzedAt).getTime()
+    )
     .slice(0, 5);
 
   return stats;
@@ -391,18 +432,24 @@ export async function getKnowledgeBaseStats(userId: string = 'default-user') {
 /**
  * Get recommended videos based on user's knowledge base
  */
-export async function getRecommendedVideos(userId: string = 'default-user', limit: number = 5) {
+export async function getRecommendedVideos(
+  userId: string = 'default-user',
+  limit: number = 5
+) {
   // Get user's most common tags
   const stats = await getKnowledgeBaseStats(userId);
-  const topTags = stats.topTags.slice(0, 3).map(t => t.tag);
+  const topTags = stats.topTags.slice(0, 3).map((t) => t.tag);
 
   if (topTags.length === 0) {
     return [];
   }
 
   // Search for videos with those tags (excluding already analyzed ones)
-  const allAnalyzed = await storage.searchYoutubeKnowledge({ userId, limit: 1000 });
-  const analyzedVideoIds = new Set(allAnalyzed.map(v => v.videoId));
+  const allAnalyzed = await storage.searchYoutubeKnowledge({
+    userId,
+    limit: 1000,
+  });
+  const analyzedVideoIds = new Set(allAnalyzed.map((v) => v.videoId));
 
   // This would integrate with YouTube search API to find new videos
   // For now, return empty - this is a placeholder for future enhancement

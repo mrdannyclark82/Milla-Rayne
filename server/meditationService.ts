@@ -37,7 +37,7 @@ export async function generateGuidedMeditation({
     const response = await generateOpenRouterResponse(prompt, {
       userName: 'Danny Ray',
     });
-    
+
     // Since streaming isn't supported, call the callbacks manually
     if (response.success && response.content) {
       onChunk(response.content);

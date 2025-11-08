@@ -147,7 +147,7 @@ export function onSettingsChange(
   callback: (settings: SceneSettings) => void
 ): () => void {
   if (typeof window === 'undefined') {
-    return () => { };
+    return () => {};
   }
 
   const handler = () => {

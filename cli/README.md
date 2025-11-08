@@ -84,11 +84,13 @@ API_URL=http://localhost:5000  # Optional, defaults to localhost:5000
 ### Cannot Connect to Server
 
 If you see:
+
 ```
 ⚠ Warning: Could not connect to Milla server at http://localhost:5000
 ```
 
 Make sure the server is running:
+
 ```bash
 npm run dev
 ```
@@ -96,17 +98,20 @@ npm run dev
 ### Colors Not Displaying
 
 Most modern terminals support ANSI colors. If colors aren't showing:
+
 - Use a terminal that supports ANSI escape codes (iTerm2, Windows Terminal, etc.)
 - Check your terminal color settings
 
 ## Development
 
 The CLI is built with TypeScript and uses:
+
 - `readline` for interactive input
 - `axios` for API communication
 - ANSI escape codes for colors
 
 To modify the CLI, edit `cli/milla-cli.ts` and run:
+
 ```bash
 npx tsx cli/milla-cli.ts
 ```

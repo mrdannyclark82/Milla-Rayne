@@ -148,9 +148,7 @@ process.on('exit', () => db.close());
 /**
  * Store update in database (dedupe by URL)
  */
-function storeUpdate(
-  update: Omit<AIUpdate, 'id' | 'createdAt'>
-): boolean {
+function storeUpdate(update: Omit<AIUpdate, 'id' | 'createdAt'>): boolean {
   try {
     const stmt = db.prepare(`
       INSERT OR IGNORE INTO ai_updates (id, title, url, source, published, summary, tags, relevance)

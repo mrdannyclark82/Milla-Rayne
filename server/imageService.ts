@@ -41,7 +41,10 @@ export async function generateImage(
         };
       }
       // If MCP fails, fall back to direct API
-      console.warn('MCP generation failed, falling back to direct API:', mcpResult.error);
+      console.warn(
+        'MCP generation failed, falling back to direct API:',
+        mcpResult.error
+      );
     } catch (mcpError) {
       console.warn('MCP service error, falling back to direct API:', mcpError);
     }
@@ -50,8 +53,7 @@ export async function generateImage(
   // Fallback to direct API implementation
   try {
     const model =
-      process.env.HUGGINGFACE_MODEL ||
-      'philipp-zettl/UnfilteredAI-NSFW-gen-v2';
+      process.env.HUGGINGFACE_MODEL || 'philipp-zettl/UnfilteredAI-NSFW-gen-v2';
     const endpoint = `https://api-inference.huggingface.co/models/${model}`;
     const maxAttempts = 3;
     let lastError: string | undefined;
@@ -75,10 +77,11 @@ export async function generateImage(
 
         if (!response.ok) {
           const errorText = await response.text();
-          
+
           // Handle model loading case
           if (response.status === 503 && errorText.includes('loading')) {
-            lastError = 'Model is currently loading. Please try again in a moment.';
+            lastError =
+              'Model is currently loading. Please try again in a moment.';
             if (attempt < maxAttempts) {
               await new Promise((r) => setTimeout(r, 2000 * attempt));
               continue;

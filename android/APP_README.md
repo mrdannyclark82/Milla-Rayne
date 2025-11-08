@@ -81,7 +81,8 @@ Edit `app/src/main/res/values/strings.xml`:
 </resources>
 ```
 
-**Note**: 
+**Note**:
+
 - `10.0.2.2` is the special IP for the emulator to reach the host machine's localhost
 - For physical devices, use your computer's actual IP address on the local network
 
@@ -121,6 +122,7 @@ The APK will be in `app/build/outputs/apk/release/`
 ## Dependencies
 
 Main dependencies used:
+
 - **Jetpack Compose**: Modern UI toolkit
 - **Material 3**: Material Design components
 - **Retrofit**: HTTP client for API calls
@@ -143,10 +145,12 @@ Update the API URL in one of these places:
 ### Database
 
 The app uses Room for local storage. Database schema is defined in:
+
 - `data/AppDatabase.kt`
 - `data/MessageDao.kt`
 
 To clear the database:
+
 ```bash
 adb shell pm clear com.millarayne
 ```
@@ -154,6 +158,7 @@ adb shell pm clear com.millarayne
 ## Permissions
 
 The app requires:
+
 - `INTERNET`: To connect to the Milla server
 
 Declared in `AndroidManifest.xml`
@@ -164,18 +169,21 @@ Declared in `AndroidManifest.xml`
 
 **Emulator**: Make sure you're using `http://10.0.2.2:5000` as the API URL
 
-**Physical Device**: 
+**Physical Device**:
+
 1. Ensure your device and computer are on the same network
 2. Use your computer's IP address (e.g., `http://192.168.1.100:5000`)
 3. Make sure your firewall allows connections on port 5000
 
 Find your IP:
+
 - **macOS/Linux**: `ifconfig` or `ip addr`
 - **Windows**: `ipconfig`
 
 ### Build Errors
 
 1. Clean and rebuild:
+
    ```bash
    ./gradlew clean build
    ```
@@ -191,6 +199,7 @@ Find your IP:
 ### App Crashes
 
 Check logcat in Android Studio for error details:
+
 ```bash
 adb logcat -s MillaApp
 ```
@@ -206,11 +215,13 @@ Format code: **Ctrl+Alt+L** (Windows/Linux) or **Cmd+Option+L** (macOS)
 ### Testing
 
 Run unit tests:
+
 ```bash
 ./gradlew test
 ```
 
 Run instrumented tests:
+
 ```bash
 ./gradlew connectedAndroidTest
 ```
@@ -225,7 +236,7 @@ The app follows Clean Architecture principles:
 
 ## Screenshots
 
-*(Screenshots to be added after implementation)*
+_(Screenshots to be added after implementation)_
 
 ## Known Limitations
 

@@ -1,6 +1,6 @@
 /**
  * millAlyzer Type Definitions
- * 
+ *
  * Type definitions for YouTube video analysis, news monitoring,
  * and knowledge base features.
  */

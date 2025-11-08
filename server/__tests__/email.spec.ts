@@ -2,7 +2,11 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { handleTask as enqueueTask } from '../agents/emailAgent';
-import { deliverOutboxOnce, getEmailOutbox, writeEmailOutbox } from '../agents/emailDeliveryWorker';
+import {
+  deliverOutboxOnce,
+  getEmailOutbox,
+  writeEmailOutbox,
+} from '../agents/emailDeliveryWorker';
 import nodemailer from 'nodemailer';
 
 const OUTBOX = join(process.cwd(), 'memory', 'email_outbox.json');
@@ -24,13 +28,16 @@ beforeEach(async () => {
 afterEach(async () => {
   try {
     await fs.writeFile(OUTBOX, '[]', 'utf-8');
-  } catch (e) { }
+  } catch (e) {}
   vi.restoreAllMocks();
 });
 
 describe('Email queue and delivery', () => {
   it('enqueues an email via agent', async () => {
-    const task: any = { action: 'enqueue', payload: { to: 'test@example.com', subject: 'Hi', body: 'Hello' } };
+    const task: any = {
+      action: 'enqueue',
+      payload: { to: 'test@example.com', subject: 'Hi', body: 'Hello' },
+    };
     const res = await enqueueTask(task as any);
     expect(res.queued).toBeDefined();
 
@@ -42,7 +49,14 @@ describe('Email queue and delivery', () => {
   it('delivers via SendGrid when fetch returns ok', async () => {
     // write an outbox item
     await writeEmailOutbox([
-      { id: 't1', to: 'a@b.com', subject: 's', body: 'b', sent: false, attempts: 0 },
+      {
+        id: 't1',
+        to: 'a@b.com',
+        subject: 's',
+        body: 'b',
+        sent: false,
+        attempts: 0,
+      },
     ]);
 
     // mock fetch
@@ -58,12 +72,21 @@ describe('Email queue and delivery', () => {
   it('delivers via SMTP when transporter accepted', async () => {
     // write an outbox item
     await writeEmailOutbox([
-      { id: 't2', to: 'a@b.com', subject: 's', body: 'b', sent: false, attempts: 0 },
+      {
+        id: 't2',
+        to: 'a@b.com',
+        subject: 's',
+        body: 'b',
+        sent: false,
+        attempts: 0,
+      },
     ]);
 
     // mock nodemailer
     const sendMailMock = vi.fn().mockResolvedValue({ accepted: ['a@b.com'] });
-    vi.spyOn(nodemailer, 'createTransport').mockReturnValue({ sendMail: sendMailMock } as any);
+    vi.spyOn(nodemailer, 'createTransport').mockReturnValue({
+      sendMail: sendMailMock,
+    } as any);
 
     // set provider to smtp via env var so worker picks it up
     process.env.EMAIL_PROVIDER = 'smtp';

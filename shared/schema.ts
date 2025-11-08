@@ -109,7 +109,9 @@ export const memorySummaries = pgTable('memory_summaries', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const insertMemorySummarySchema = createInsertSchema(memorySummaries).pick({
+export const insertMemorySummarySchema = createInsertSchema(
+  memorySummaries
+).pick({
   userId: true,
   title: true,
   summaryText: true,
@@ -202,7 +204,9 @@ export const youtubeKnowledgeBase = pgTable('youtube_knowledge_base', {
   userId: varchar('user_id').default('default-user'),
 });
 
-export const insertYoutubeKnowledgeSchema = createInsertSchema(youtubeKnowledgeBase).pick({
+export const insertYoutubeKnowledgeSchema = createInsertSchema(
+  youtubeKnowledgeBase
+).pick({
   videoId: true,
   title: true,
   channelName: true,
@@ -218,5 +222,7 @@ export const insertYoutubeKnowledgeSchema = createInsertSchema(youtubeKnowledgeB
   userId: true,
 });
 
-export type InsertYoutubeKnowledge = z.infer<typeof insertYoutubeKnowledgeSchema>;
+export type InsertYoutubeKnowledge = z.infer<
+  typeof insertYoutubeKnowledgeSchema
+>;
 export type YoutubeKnowledge = typeof youtubeKnowledgeBase.$inferSelect;

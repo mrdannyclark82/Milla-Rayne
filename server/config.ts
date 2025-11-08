@@ -58,12 +58,17 @@ export const config = {
     provider: process.env.EMAIL_PROVIDER || 'sendgrid',
     sendgridApiKey: process.env.SENDGRID_API_KEY,
     fromAddress: process.env.EMAIL_FROM || 'noreply@example.com',
-    deliveryIntervalMs: parseInt(process.env.EMAIL_DELIVERY_INTERVAL_MS || '60000', 10),
+    deliveryIntervalMs: parseInt(
+      process.env.EMAIL_DELIVERY_INTERVAL_MS || '60000',
+      10
+    ),
     maxAttempts: parseInt(process.env.EMAIL_MAX_ATTEMPTS || '3', 10),
     // SMTP specific settings (used when provider === 'smtp')
     smtp: {
       host: process.env.EMAIL_SMTP_HOST,
-      port: process.env.EMAIL_SMTP_PORT ? parseInt(process.env.EMAIL_SMTP_PORT, 10) : undefined,
+      port: process.env.EMAIL_SMTP_PORT
+        ? parseInt(process.env.EMAIL_SMTP_PORT, 10)
+        : undefined,
       user: process.env.EMAIL_SMTP_USER,
       pass: process.env.EMAIL_SMTP_PASS,
       secure: process.env.EMAIL_SMTP_SECURE === 'true',
@@ -71,7 +76,10 @@ export const config = {
     },
     // Backoff settings for retries (ms)
     baseBackoffMs: parseInt(process.env.EMAIL_BASE_BACKOFF_MS || '60000', 10),
-    maxBackoffMs: parseInt(process.env.EMAIL_MAX_BACKOFF_MS || String(24 * 60 * 60 * 1000), 10),
+    maxBackoffMs: parseInt(
+      process.env.EMAIL_MAX_BACKOFF_MS || String(24 * 60 * 60 * 1000),
+      10
+    ),
   },
   // Feature flags and global settings
   enableDevTalk: process.env.ENABLE_DEV_TALK === 'true',

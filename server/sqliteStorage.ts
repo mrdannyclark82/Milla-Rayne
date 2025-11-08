@@ -4,7 +4,21 @@
  */
 
 import Database from 'better-sqlite3';
-import type { User, InsertUser, Message, InsertMessage, AiUpdate, InsertAiUpdate, DailySuggestion, InsertDailySuggestion, UserSession, MemorySummary, InsertMemorySummary, YoutubeKnowledge, InsertYoutubeKnowledge, } from '../shared/schema';
+import type {
+  User,
+  InsertUser,
+  Message,
+  InsertMessage,
+  AiUpdate,
+  InsertAiUpdate,
+  DailySuggestion,
+  InsertDailySuggestion,
+  UserSession,
+  MemorySummary,
+  InsertMemorySummary,
+  YoutubeKnowledge,
+  InsertYoutubeKnowledge,
+} from '../shared/schema';
 import { randomUUID } from 'crypto';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -76,11 +90,20 @@ export interface IStorage {
   // Memory Summaries methods
   createMemorySummary(summary: InsertMemorySummary): Promise<MemorySummary>;
   getMemorySummaries(userId: string, limit?: number): Promise<MemorySummary[]>;
-  searchMemorySummaries(userId: string, query: string, limit?: number): Promise<MemorySummary[]>;
+  searchMemorySummaries(
+    userId: string,
+    query: string,
+    limit?: number
+  ): Promise<MemorySummary[]>;
 
   // YouTube Knowledge Base methods
-  saveYoutubeKnowledge(knowledge: InsertYoutubeKnowledge): Promise<YoutubeKnowledge>;
-  getYoutubeKnowledgeByVideoId(videoId: string, userId: string): Promise<YoutubeKnowledge | null>;
+  saveYoutubeKnowledge(
+    knowledge: InsertYoutubeKnowledge
+  ): Promise<YoutubeKnowledge>;
+  getYoutubeKnowledgeByVideoId(
+    videoId: string,
+    userId: string
+  ): Promise<YoutubeKnowledge | null>;
   searchYoutubeKnowledge(filters: any): Promise<YoutubeKnowledge[]>;
   incrementYoutubeWatchCount(videoId: string, userId: string): Promise<void>;
 }
@@ -445,7 +468,12 @@ export class SqliteStorage implements IStorage {
           VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
         `);
         // Use a clearly local/internal email to avoid collisions with real accounts
-        insertStmt.run('default-user', 'default', 'default@localhost', 'default');
+        insertStmt.run(
+          'default-user',
+          'default',
+          'default@localhost',
+          'default'
+        );
         console.log('Default user created for consent storage');
       }
     } catch (error) {
@@ -472,7 +500,13 @@ export class SqliteStorage implements IStorage {
       INSERT INTO users (id, username, email, password, preferred_ai_model)
       VALUES (?, ?, ?, ?, ?)
     `);
-    stmt.run(id, user.username, user.email, user.password, user.preferredAiModel || 'minimax');
+    stmt.run(
+      id,
+      user.username,
+      user.email,
+      user.password,
+      user.preferredAiModel || 'minimax'
+    );
 
     const newUser = {
       id,
@@ -520,12 +554,19 @@ export class SqliteStorage implements IStorage {
       INSERT INTO user_sessions (id, user_id, session_token, expires_at)
       VALUES (?, ?, ?, ?)
     `);
-    stmt.run(id, session.userId, session.sessionToken, session.expiresAt.toISOString());
+    stmt.run(
+      id,
+      session.userId,
+      session.sessionToken,
+      session.expiresAt.toISOString()
+    );
     return { id, ...session };
   }
 
   async getUserSessionByToken(token: string): Promise<UserSession | null> {
-    const stmt = this.db.prepare('SELECT * FROM user_sessions WHERE session_token = ?');
+    const stmt = this.db.prepare(
+      'SELECT * FROM user_sessions WHERE session_token = ?'
+    );
     const session = stmt.get(token) as UserSession | undefined;
     return session || null;
   }
@@ -1060,7 +1101,9 @@ export class SqliteStorage implements IStorage {
   }
 
   // Memory Summaries methods
-  async createMemorySummary(summary: InsertMemorySummary): Promise<MemorySummary> {
+  async createMemorySummary(
+    summary: InsertMemorySummary
+  ): Promise<MemorySummary> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
       INSERT INTO memory_summaries (id, user_id, title, summary_text, topics, emotional_tone)
@@ -1082,7 +1125,10 @@ export class SqliteStorage implements IStorage {
     return created;
   }
 
-  async getMemorySummaries(userId: string, limit: number = 10): Promise<MemorySummary[]> {
+  async getMemorySummaries(
+    userId: string,
+    limit: number = 10
+  ): Promise<MemorySummary[]> {
     const stmt = this.db.prepare(
       'SELECT * FROM memory_summaries WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'
     );
@@ -1100,11 +1146,20 @@ export class SqliteStorage implements IStorage {
     }));
   }
 
-  async searchMemorySummaries(userId: string, query: string, limit: number = 5): Promise<MemorySummary[]> {
-    const searchTerms = query.toLowerCase().split(' ').map(term => `%${term}%`);
-    const placeholders = searchTerms.map(() => 'summary_text LIKE ? OR title LIKE ? OR topics LIKE ?').join(' OR ');
+  async searchMemorySummaries(
+    userId: string,
+    query: string,
+    limit: number = 5
+  ): Promise<MemorySummary[]> {
+    const searchTerms = query
+      .toLowerCase()
+      .split(' ')
+      .map((term) => `%${term}%`);
+    const placeholders = searchTerms
+      .map(() => 'summary_text LIKE ? OR title LIKE ? OR topics LIKE ?')
+      .join(' OR ');
     const params: string[] = [];
-    searchTerms.forEach(term => params.push(term, term, term));
+    searchTerms.forEach((term) => params.push(term, term, term));
 
     const stmt = this.db.prepare(`
       SELECT * FROM memory_summaries 
@@ -1125,7 +1180,9 @@ export class SqliteStorage implements IStorage {
     }));
   }
 
-  private async getMemorySummaryById(id: string): Promise<MemorySummary | undefined> {
+  private async getMemorySummaryById(
+    id: string
+  ): Promise<MemorySummary | undefined> {
     const stmt = this.db.prepare('SELECT * FROM memory_summaries WHERE id = ?');
     const summary = stmt.get(id) as any;
     if (!summary) return undefined;
@@ -1145,7 +1202,9 @@ export class SqliteStorage implements IStorage {
   // YOUTUBE KNOWLEDGE BASE METHODS
   // ===========================================================================================
 
-  async saveYoutubeKnowledge(knowledge: InsertYoutubeKnowledge): Promise<YoutubeKnowledge> {
+  async saveYoutubeKnowledge(
+    knowledge: InsertYoutubeKnowledge
+  ): Promise<YoutubeKnowledge> {
     const id = randomUUID();
     const stmt = this.db.prepare(`
       INSERT INTO youtube_knowledge_base (
@@ -1175,21 +1234,31 @@ export class SqliteStorage implements IStorage {
       knowledge.keyPoints ? JSON.stringify(knowledge.keyPoints) : null,
       knowledge.codeSnippets ? JSON.stringify(knowledge.codeSnippets) : null,
       knowledge.cliCommands ? JSON.stringify(knowledge.cliCommands) : null,
-      knowledge.actionableItems ? JSON.stringify(knowledge.actionableItems) : null,
+      knowledge.actionableItems
+        ? JSON.stringify(knowledge.actionableItems)
+        : null,
       knowledge.tags ? JSON.stringify(knowledge.tags) : null,
       knowledge.transcriptAvailable ? 1 : 0,
       knowledge.userId || 'default-user'
     );
 
-    const saved = await this.getYoutubeKnowledgeByVideoId(knowledge.videoId, knowledge.userId || 'default-user');
+    const saved = await this.getYoutubeKnowledgeByVideoId(
+      knowledge.videoId,
+      knowledge.userId || 'default-user'
+    );
     if (!saved) {
       throw new Error('Failed to save YouTube knowledge');
     }
     return saved;
   }
 
-  async getYoutubeKnowledgeByVideoId(videoId: string, userId: string): Promise<YoutubeKnowledge | null> {
-    const stmt = this.db.prepare('SELECT * FROM youtube_knowledge_base WHERE video_id = ? AND user_id = ?');
+  async getYoutubeKnowledgeByVideoId(
+    videoId: string,
+    userId: string
+  ): Promise<YoutubeKnowledge | null> {
+    const stmt = this.db.prepare(
+      'SELECT * FROM youtube_knowledge_base WHERE video_id = ? AND user_id = ?'
+    );
     const video = stmt.get(videoId, userId) as any;
 
     if (!video) return null;
@@ -1242,10 +1311,13 @@ export class SqliteStorage implements IStorage {
     const stmt = this.db.prepare(query);
     const videos = stmt.all(...params) as any[];
 
-    return videos.map(v => this.parseYoutubeKnowledge(v));
+    return videos.map((v) => this.parseYoutubeKnowledge(v));
   }
 
-  async incrementYoutubeWatchCount(videoId: string, userId: string): Promise<void> {
+  async incrementYoutubeWatchCount(
+    videoId: string,
+    userId: string
+  ): Promise<void> {
     const stmt = this.db.prepare(`
       UPDATE youtube_knowledge_base 
       SET watch_count = watch_count + 1 
@@ -1266,7 +1338,9 @@ export class SqliteStorage implements IStorage {
       keyPoints: row.key_points ? JSON.parse(row.key_points) : [],
       codeSnippets: row.code_snippets ? JSON.parse(row.code_snippets) : [],
       cliCommands: row.cli_commands ? JSON.parse(row.cli_commands) : [],
-      actionableItems: row.actionable_items ? JSON.parse(row.actionable_items) : [],
+      actionableItems: row.actionable_items
+        ? JSON.parse(row.actionable_items)
+        : [],
       tags: row.tags ? JSON.parse(row.tags) : [],
       transcriptAvailable: row.transcript_available === 1,
       analyzedAt: new Date(row.analyzed_at),
