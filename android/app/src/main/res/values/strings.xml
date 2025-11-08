@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Milla</string>
+    <string name="api_base_url">http://10.0.2.2:5000</string>
+    
+    <!-- Chat Screen -->
+    <string name="type_message_hint">Type a message…</string>
+    <string name="send">Send</string>
+    <string name="loading">Loading…</string>
+    <string name="error_connection">Cannot connect to server</string>
+    <string name="error_generic">An error occurred</string>
+    <string name="retry">Retry</string>
+    
+    <!-- Scene Context -->
+    <string name="scene_context_format">%1$s • %2$s • %3$s</string>
+</resources>
