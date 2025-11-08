@@ -63,16 +63,13 @@ export interface PersonalityContext {
   userName?: string;
 }
 
-import { config } from './config';
-
-// Initialize xAI client using OpenAI library with xAI endpoint
 let xaiClient: OpenAI | null = null;
 
 try {
-  if (config.xai.apiKey) {
+  if (process.env.XAI_API_KEY) {
     xaiClient = new OpenAI({
       baseURL: 'https://api.x.ai/v1',
-      apiKey: config.xai.apiKey,
+      apiKey: process.env.XAI_API_KEY,
     });
   } else {
     console.warn('XAI_API_KEY not set. xAI features will be disabled.');
@@ -121,7 +118,7 @@ export async function generateXAIResponse(
   maxTokens?: number
 ): Promise<AIResponse> {
   try {
-    if (!config.xai.apiKey || !xaiClient) {
+    if (!process.env.XAI_API_KEY || !xaiClient) {
       return {
         content: 'xAI integration is not configured. Please add your API key.',
         success: false,
@@ -201,7 +198,7 @@ export async function generateXAIResponse(
     );
 
     const response = await xaiClient.chat.completions.create({
-      model: config.xai.model, // Use configurable model from environment
+      model: process.env.XAI_MODEL, // Use configurable model from environment
       messages: messages as any,
       max_tokens: maxTokens || 800,
       temperature: 0.8,

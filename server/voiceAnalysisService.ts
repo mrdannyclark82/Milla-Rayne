@@ -16,7 +16,8 @@ export async function analyzeVoiceInput(
   audioBuffer: Buffer,
   mimeType: string
 ): Promise<VoiceAnalysisResult> {
-  if (!config.google.apiKey) {
+  const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+  if (!apiKey) {
     return {
       text: '',
       emotionalTone: 'unknown',
@@ -28,7 +29,7 @@ export async function analyzeVoiceInput(
   try {
     // Step 1: Speech-to-Text Transcription
     const speechToTextResponse = await axios.post(
-      `https://speech.googleapis.com/v1/recognize?key=${config.google.apiKey}`,
+      `https://speech.googleapis.com/v1/recognize?key=${process.env.GOOGLE_CLOUD_API_KEY || ''}`,
       {
         config: {
           encoding: 'LINEAR16', // Assuming common audio format, adjust if needed
@@ -59,7 +60,7 @@ export async function analyzeVoiceInput(
 
     // Step 2: Natural Language API for Emotional Tone Analysis
     const naturalLanguageResponse = await axios.post(
-      `https://language.googleapis.com/v1/documents:analyzeSentiment?key=${config.google.apiKey}`,
+      `https://language.googleapis.com/v1/documents:analyzeSentiment?key=${process.env.GOOGLE_CLOUD_API_KEY || ''}`,
       {
         document: {
           content: transcription,

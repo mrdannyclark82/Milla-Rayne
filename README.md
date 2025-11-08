@@ -16,13 +16,13 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Low Latency**: Optimized for conversational response times
 - **Automatic Fallback**: Seamless switching between providers
 - **Speech-to-Text**: Use your microphone to send voice messages
-- See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) and [VOICE_ENGINE_README.md](VOICE_ENGINE_README.md) for details
+- See [VOICE_FEATURES_GUIDE.md](docs/VOICE_FEATURES_GUIDE.md) and [VOICE_ENGINE_README.md](docs/VOICE_ENGINE_README.md) for details
 
 ### Enhanced Memory System
 - **SQLite Database**: Migrated from JSON to SQLite for better performance
 - **Session Tracking**: Automatic conversation session management
 - **Usage Patterns**: Tracks conversation patterns by day and time
-- See [MEMORY_MIGRATION_GUIDE.md](MEMORY_MIGRATION_GUIDE.md) for migration instructions
+- See [MEMORY_MIGRATION_GUIDE.md](docs/MEMORY_MIGRATION_GUIDE.md) for migration instructions
 
 ### Persona Refinement
 - Removed tech support persona - Milla is now exclusively your devoted AI companion
@@ -131,7 +131,7 @@ This will:
 - Analyze usage patterns
 - Backup your original file
 
-See [MEMORY_MIGRATION_GUIDE.md](MEMORY_MIGRATION_GUIDE.md) for details.
+See [MEMORY_MIGRATION_GUIDE.md](docs/MEMORY_MIGRATION_GUIDE.md) for details.
 
 ### Predictive Updates Behavior
 
@@ -161,7 +161,7 @@ Voice features work out of the box with supported browsers:
 - ✅ Safari (full support)
 - ⚠️ Firefox (limited support)
 
-Grant microphone permissions when prompted. See [VOICE_FEATURES_GUIDE.md](VOICE_FEATURES_GUIDE.md) for troubleshooting.
+Grant microphone permissions when prompted. See [VOICE_FEATURES_GUIDE.md](docs/VOICE_FEATURES_GUIDE.md) for troubleshooting.
 
 ### Adaptive Scene Backgrounds
 
@@ -674,4 +674,120 @@ Higher relevance scores indicate updates more likely to benefit this project.
 - ❌ No UI components in this release (API-only)
 - ❌ No automatic PR creation on updates (use repository modification feature separately)
 - ❌ No real-time push notifications (polling-based via API)
+
+## Development
+
+This document provides a comprehensive overview of the Milla Rayne project, its architecture, and development practices to guide future interactions and development.
+
+### Project Overview
+
+Milla Rayne is a virtual AI companion with an adaptive personality. It features a modern user interface, a persistent memory system, and voice interaction capabilities. The project is built as a full-stack TypeScript application with a client-server architecture.
+
+### Key Technologies
+
+*   **Backend:** Node.js, Express.js, TypeScript
+*   **Frontend:** React, Vite, Tailwind CSS
+*   **Database:** SQLite, managed with Drizzle ORM
+*   **AI/ML:** Integrations with multiple AI services including OpenRouter (DeepSeek, Qwen, Gemini), xAI, and OpenAI. It also uses TensorFlow.js for client-side visual recognition.
+*   **Testing:** Vitest for unit and integration tests.
+*   **Linting & Formatting:** ESLint and Prettier.
+
+### Core Features
+
+*   **AI Companion:** A personality-driven AI assistant for conversation.
+*   **Persistent Memory:** Uses an SQLite database to remember past conversations and user details, with support for AES-256-GCM encryption.
+*   **Voice Interaction:** Supports Text-to-Speech (TTS) and Speech-to-Text (STT) using various providers.
+*   **Adaptive Scenes:** Dynamically changes UI backgrounds based on conversational context.
+*   **Repository Analysis:** Can analyze GitHub repositories to provide improvement suggestions and even create Pull Requests.
+*   **Predictive Updates:** Monitors AI news and suggests relevant feature updates for the project itself.
+*   **Self-Evolution:** Contains services for self-improvement and task management.
+
+### Building and Running
+
+The project uses `npm` for package management and running scripts.
+
+#### Initial Setup
+
+1.  Install dependencies:
+    ```bash
+    npm install
+    ```
+2.  Create the environment configuration file by copying the example:
+    ```bash
+    cp .env.example .env
+    ```
+3.  Fill in the `.env` file with the necessary API keys for AI services, database encryption, and GitHub. The application has fallback mechanisms if keys are not provided.
+4.  If you have existing data in `memory/memories.txt`, migrate it to the SQLite database:
+    ```bash
+    npm run migrate:memory
+    ```
+
+#### Development
+
+To run the application in development mode with hot-reloading:
+
+```bash
+npm run dev
 ```
+
+The application will be available at `http://localhost:5000`.
+
+#### Production
+
+To build and run the application in production mode:
+
+1.  Build the client and server:
+    ```bash
+    npm run build
+    ```
+2.  Start the production server:
+    ```bash
+    npm run start
+    ```
+
+#### Testing and Code Quality
+
+*   **Run tests:**
+    ```bash
+    npm test
+    ```
+*   **Lint files:**
+    ```bash
+    npm run lint
+    ```
+*   **Format files:**
+    ```bash
+    npm run format
+    ```
+
+#### Database
+
+The project uses Drizzle ORM for database management.
+
+*   To apply schema changes to the database:
+    ```bash
+    npm run db:push
+    ```
+
+### Development Conventions
+
+#### Code Style
+
+Code style is enforced by ESLint and Prettier. Please run `npm run format` and `npm run lint` before committing changes.
+
+#### File Structure
+
+*   `server/`: Contains all backend source code.
+    *   `server/index.ts`: The main entry point for the server.
+    *   `server/routes.ts`: Defines the API routes.
+    *   `server/*Service.ts`: Core logic for different features (e.g., `memoryService.ts`, `voiceService.ts`).
+*   `client/`: Contains all frontend source code (React + Vite).
+    *   `client/src/main.tsx`: The main entry point for the React application.
+*   `shared/`: Contains code and types shared between the client and server.
+*   `memory/`: Contains the SQLite database (`milla.db`) and other memory-related files.
+*   `docs/`: Contains detailed documentation and specifications for various features.
+*   `.env`: Environment variables for configuration (API keys, feature flags). This file is ignored by git.
+
+#### API
+
+The backend exposes a RESTful API under the `/api/` path. The routes are defined in `server/routes.ts`. The server is responsible for handling all AI service calls, database interactions, and business logic.

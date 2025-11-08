@@ -12,9 +12,10 @@ interface YoutubePlayerProps {
   videos?: Video[];
   onClose: () => void;
   onSelectVideo?: (videoId: string) => void;
+  onAnalyzeVideo?: (videoId: string) => void;
 }
 
-export function YoutubePlayer({ videoId, videos, onClose, onSelectVideo }: YoutubePlayerProps) {
+export function YoutubePlayer({ videoId, videos, onClose, onSelectVideo, onAnalyzeVideo }: YoutubePlayerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [showFeed, setShowFeed] = useState(!videoId && videos && videos.length > 0);
   const [isDragging, setIsDragging] = useState(false);
@@ -109,6 +110,21 @@ export function YoutubePlayer({ videoId, videos, onClose, onSelectVideo }: Youtu
           <span className="text-white font-semibold text-sm">YouTube</span>
         </div>
         <div className="flex items-center gap-2">
+          {videoId && onAnalyzeVideo && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAnalyzeVideo(videoId);
+              }}
+              className="text-white hover:bg-white/20 rounded px-2 py-1 text-xs transition-colors flex items-center gap-1"
+              title="Analyze this video"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Analyze
+            </button>
+          )}
           {videos && videos.length > 0 && (
             <button
               onClick={(e) => {

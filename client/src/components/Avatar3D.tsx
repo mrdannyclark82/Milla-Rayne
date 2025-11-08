@@ -49,8 +49,8 @@ export default function Avatar3D({
   const [lightPosition, setLightPosition] = useState({ x: 50, y: 30 });
 
   const avatarRef = useRef<HTMLDivElement>(null);
-  const animationFrameRef = useRef<number>();
-  const blinkIntervalRef = useRef<NodeJS.Timeout>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
+  const blinkIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Mouse tracking for 3D face rotation and eye movement
   const handleMouseMove = useCallback((e: MouseEvent) => {

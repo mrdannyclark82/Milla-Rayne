@@ -48,6 +48,7 @@ async function migrateMemories() {
     // Create a default user for migration
     try {
       await storage.createUser({
+        email: 'danny@millarayne.com',
         username: 'Danny Ray',
         password: 'migrated',
       });

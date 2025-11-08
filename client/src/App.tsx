@@ -10,8 +10,12 @@ import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
 import { YoutubePlayer } from '@/components/YoutubePlayer';
+import { VideoAnalysisPanel } from '@/components/VideoAnalysisPanel';
+import { KnowledgeBaseSearch } from '@/components/KnowledgeBaseSearch';
+import { DailyNewsDigest } from '@/components/DailyNewsDigest';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
+import type { VideoAnalysis, YoutubeKnowledge, DailyNewsDigest as NewsDigestType } from '@/types/millalyzer';
 import {
   getPredictiveUpdatesEnabled,
   fetchDailySuggestion,
@@ -50,6 +54,12 @@ function App() {
   const [lastMessage, setLastMessage] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const recognitionRef = React.useRef<any>(null);
+
+  // millAlyzer state
+  const [currentAnalysis, setCurrentAnalysis] = useState<VideoAnalysis | null>(null);
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [dailyNews, setDailyNews] = useState<NewsDigestType | null>(null);
+  const [activePanel, setActivePanel] = useState<'analysis' | 'knowledge' | 'news' | null>(null);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
   const [youtubeVideos, setYoutubeVideos] = useState<Array<{
     id: string;
@@ -167,6 +177,26 @@ function App() {
         }
       }
 
+      // millAlyzer integration - check for video analysis
+      if (data.videoAnalysis) {
+        console.log('🔍 Video analysis received:', data.videoAnalysis);
+        setCurrentAnalysis(data.videoAnalysis);
+        setActivePanel('analysis');
+      }
+
+      // Check for daily news digest
+      if (data.dailyNews) {
+        console.log('📰 Daily news digest received');
+        setDailyNews(data.dailyNews);
+        setActivePanel('news');
+      }
+
+      // Check for knowledge base trigger
+      if (data.showKnowledgeBase || userMessage.toLowerCase().includes('knowledge base')) {
+        console.log('📚 Opening knowledge base');
+        setActivePanel('knowledge');
+      }
+
       if (voiceEnabled && selectedVoice) {
         speakMessage(assistantMessage);
       }
@@ -256,7 +286,7 @@ function App() {
       appState={appState}
       performanceMode={performanceMode}
     >
-      <div className="min-h-screen flex" style={{ backgroundColor: '#000' }}>
+      <div className="min-h-screen" style={{ backgroundColor: '#000' }}>
         {/* Left 2/3 - Background Image Container */}
         <div
           className="w-2/3 h-screen"
@@ -272,20 +302,39 @@ function App() {
         </div>
 
         {/* Right 1/3 - Chat Interface */}
-        {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayer
-            videoId={youtubeVideoId || undefined}
-            videos={youtubeVideos || undefined}
-            onClose={() => {
-              setYoutubeVideoId(null);
-              setYoutubeVideos(null);
-            }}
-            onSelectVideo={(videoId) => {
-              setYoutubeVideoId(videoId);
-              setYoutubeVideos(null);
-            }}
-          />
-        )}
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '66.66%', height: '100%', zIndex: 5 }}>
+          {(youtubeVideoId || youtubeVideos) && (
+            <YoutubePlayer
+              videoId={youtubeVideoId || undefined}
+              videos={youtubeVideos || undefined}
+              onClose={() => {
+                setYoutubeVideoId(null);
+                setYoutubeVideos(null);
+              }}
+              onSelectVideo={(videoId) => {
+                setYoutubeVideoId(videoId);
+                setYoutubeVideos(null);
+              }}
+              onAnalyzeVideo={async (videoId) => {
+                try {
+                  console.log('🔍 Analyzing video:', videoId);
+                  const res = await fetch('/api/youtube/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ videoId }),
+                  });
+                  const data = await res.json();
+                  if (data.success) {
+                    setCurrentAnalysis(data.analysis);
+                    setActivePanel('analysis');
+                  }
+                } catch (error) {
+                  console.error('Failed to analyze video:', error);
+                }
+              }}
+            />
+          )}
+        </div>
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
           style={{
@@ -450,18 +499,67 @@ function App() {
           <CentralDock onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)} />
           <SharedNotepad isOpen={showSharedNotepad} onClose={() => setShowSharedNotepad(false)} />
 
-          {/* FloatingInput is now outside the main container to be fixed at the bottom */}
-          <FloatingInput
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            isListening={isListening}
-            toggleListening={toggleListening}
-            isMobile={isMobile}
-            onSendAudio={onSendAudio}
-            getButtonSize={getButtonSize}
-          />
+          {/* millAlyzer Panels - Slide in from right */}
+          {activePanel === 'analysis' && currentAnalysis && (
+            <div className="fixed top-0 right-0 h-screen w-1/3 z-50 animate-in slide-in-from-right duration-300">
+              <VideoAnalysisPanel
+                analysis={currentAnalysis}
+                onClose={() => {
+                  setActivePanel(null);
+                  setCurrentAnalysis(null);
+                }}
+                onSaveToKnowledge={async () => {
+                  try {
+                    await fetch('/api/youtube/knowledge', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(currentAnalysis),
+                    });
+                    console.log('✅ Saved to knowledge base');
+                  } catch (error) {
+                    console.error('Failed to save:', error);
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {activePanel === 'knowledge' && (
+            <div className="fixed top-0 right-0 h-screen w-1/3 z-50 animate-in slide-in-from-right duration-300">
+              <KnowledgeBaseSearch
+                onSelectVideo={(video) => {
+                  // Show the video's analysis
+                  setCurrentAnalysis(video as any);
+                  setActivePanel('analysis');
+                }}
+              />
+            </div>
+          )}
+
+          {activePanel === 'news' && dailyNews && (
+            <div className="fixed top-0 right-0 h-screen w-1/3 z-50 animate-in slide-in-from-right duration-300">
+              <DailyNewsDigest
+                digest={dailyNews}
+                onAnalyzeVideo={async (videoId) => {
+                  try {
+                    const res = await fetch('/api/youtube/analyze', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ videoId }),
+                    });
+                    const data = await res.json();
+                    setCurrentAnalysis(data.analysis);
+                    setActivePanel('analysis');
+                  } catch (error) {
+                    console.error('Failed to analyze:', error);
+                  }
+                }}
+                onWatchVideo={(videoId) => {
+                  setYoutubeVideoId(videoId);
+                }}
+              />
+            </div>
+          )}
 
           <VoicePickerDialog
             open={showVoicePicker}

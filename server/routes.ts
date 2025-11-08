@@ -70,16 +70,9 @@ import {
   analyzeYouTubeVideo,
   isValidYouTubeUrl,
   searchVideoMemories,
+  extractVideoId,
 } from './youtubeAnalysisService';
-import {
-  addTask,
-  updateTask as updateAgentTask,
-  getTask as getAgentTask,
-  listTasks as listAgentTasks,
-  AgentTask,
-} from './agents/taskStorage';
-import { runTask } from './agents/worker';
-import { listAgents } from './agents/registry';
+import { analyzeVideoWithMillAlyzer } from './youtubeMillAlyzer';
 import { getRealWorldInfo } from './realWorldInfoService';
 import {
   parseGitHubUrl,
@@ -95,7 +88,6 @@ import {
   detectSceneContext,
   type SceneContext,
   type SceneLocation,
-  current
 } from './sceneDetectionService';
 import {
   detectBrowserToolRequest,
@@ -136,6 +128,19 @@ const upload = multer({ storage: audioStorage });
 let currentSceneLocation: SceneLocation = 'living_room';
 let currentSceneMood: string = 'calm';
 let currentSceneUpdatedAt: number = Date.now();
+
+// Cache for repository analysis to avoid re-analyzing when applying updates
+// Key: userId, Value: { repoData, analysis, improvements, timestamp }
+const repositoryAnalysisCache = new Map<string, {
+  repoUrl: string;
+  repoData: any;
+  analysis: any | null;
+  improvements?: any[];
+  timestamp: number;
+}>();
+
+// Clear cache entries older than 30 minutes
+const CACHE_EXPIRY_MS = 30 * 60 * 1000;
 
 import { config } from './config';
 
@@ -415,7 +420,7 @@ export async function registerRoutes(app: Express): Promise<void> {
         throw new Error('Failed to get user info from Google');
       }
 
-      const userInfo = await userInfoResponse.json();
+      const userInfo: any = await userInfoResponse.json();
 
       // Login or register user
       const result = await loginOrRegisterWithGoogle(
@@ -729,11 +734,11 @@ export async function registerRoutes(app: Express): Promise<void> {
         throw new Error(`Whisper API error: ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       const transcript = data.text;
 
       // Now that we have the transcript, we can generate a response from Milla
-      const aiResponse = await generateAIResponse(transcript, [], 'Danny Ray', undefined, null, undefined);
+      const aiResponse = await generateAIResponse(transcript, [], 'Danny Ray', undefined, 'default-user', undefined);
 
       res.json({
         response: aiResponse.content,
@@ -748,6 +753,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
 
   app.post('/api/chat', async (req, res) => {
+    console.log('--- /api/chat handler called ---');
+    console.log('CHAT API CALLED');
     try {
       let { message, audioData, audioMimeType } = req.body;
       let userEmotionalState: VoiceAnalysisResult['emotionalTone'] | undefined;
@@ -782,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       // Log the request for debugging
       // Phase 3: Detect scene context from user message
       const sensorData = await getSmartHomeSensorData();
-      const sceneContext = detectSceneContext(message, currentSceneLocation, sensorData);
+      const sceneContext = detectSceneContext(message, currentSceneLocation, sensorData || undefined);
       if (sceneContext.hasSceneChange) {
         currentSceneLocation = sceneContext.location;
         currentSceneMood = sceneContext.mood;
@@ -801,14 +808,15 @@ export async function registerRoutes(app: Express): Promise<void> {
       );
 
       const sessionToken = req.cookies.session_token;
-      let userId: string | null = null;
+      let userId: string = 'default-user'; // Default user ID
       if (sessionToken) {
         const sessionResult = await validateSession(sessionToken);
         if (sessionResult.valid && sessionResult.user) {
-          userId = sessionResult.user.id;
+          userId = sessionResult.user.id || 'default-user';
         }
       }
 
+      console.log('--- Calling generateAIResponse ---');
       const aiResponsePromise = generateAIResponse(message, [], 'Danny Ray', undefined, userId, userEmotionalState);
       const aiResponse = (await Promise.race([
         aiResponsePromise,
@@ -819,6 +827,55 @@ export async function registerRoutes(app: Express): Promise<void> {
         youtube_play?: { videoId: string };
         youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
       };
+
+      // millAlyzer: Check if message contains YouTube URL for analysis
+      let videoAnalysis = null;
+      let showKnowledgeBase = false;
+      let dailyNews = null;
+
+      const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+
+      // Check for knowledge base request
+      if (message.toLowerCase().includes('knowledge base') ||
+        message.toLowerCase().includes('show videos') ||
+        message.toLowerCase().includes('my videos')) {
+        showKnowledgeBase = true;
+        console.log('📚 millAlyzer: Knowledge base request detected');
+      }
+
+      // Check for daily news request
+      if (message.toLowerCase().includes('daily news') ||
+        message.toLowerCase().includes('tech news') ||
+        message.toLowerCase().includes('what\'s new')) {
+        try {
+          const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
+          dailyNews = await runDailyNewsSearch();
+          console.log('📰 millAlyzer: Daily news digest generated');
+        } catch (error) {
+          console.error('millAlyzer: Failed to get daily news:', error);
+        }
+      }
+
+      if (youtubeUrlMatch || (message.toLowerCase().includes('analyze') && message.toLowerCase().includes('video'))) {
+        try {
+          let videoId: string | null = null;
+
+          if (youtubeUrlMatch) {
+            videoId = youtubeUrlMatch[1];
+          } else if (aiResponse?.youtube_play) {
+            videoId = aiResponse.youtube_play.videoId;
+          }
+
+          if (videoId) {
+            console.log(`🔍 millAlyzer: Detected video analysis request for ${videoId}`);
+            videoAnalysis = await analyzeVideoWithMillAlyzer(videoId);
+            console.log(`✅ millAlyzer: Analysis complete for ${videoId}`);
+          }
+        } catch (error) {
+          console.error('millAlyzer: Analysis failed:', error);
+          // Continue without analysis - don't break the chat
+        }
+      }
 
       if (!aiResponse || !aiResponse.content) {
         console.warn('Chat API: AI response was empty, using fallback');
@@ -845,6 +902,9 @@ export async function registerRoutes(app: Express): Promise<void> {
         ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
         ...(aiResponse.youtube_play && { youtube_play: aiResponse.youtube_play }),
         ...(aiResponse.youtube_videos && { youtube_videos: aiResponse.youtube_videos }),
+        ...(videoAnalysis && { videoAnalysis }),
+        ...(showKnowledgeBase && { showKnowledgeBase: true }),
+        ...(dailyNews && { dailyNews }),
         sceneContext: {
           location: sceneContext.location,
           mood: sceneContext.mood,
@@ -877,6 +937,27 @@ export async function registerRoutes(app: Express): Promise<void> {
           process.env.NODE_ENV === 'development' && error instanceof Error
             ? error.message
             : undefined,
+      });
+    }
+  });
+
+  app.post('/api/agent/:agentName', async (req, res) => {
+    try {
+      const { agentName } = req.params;
+      const { task } = req.body;
+
+      if (!task) {
+        return res.status(400).json({ error: 'Task is required' });
+      }
+
+      const { agentController } = await import('./agentController');
+      const result = await agentController.dispatch(agentName, task);
+
+      res.json({ response: result, success: true });
+    } catch (error) {
+      console.error(`Agent dispatch error for ${req.params.agentName}:`, error);
+      res.status(500).json({
+        response: "I'm having some technical issues with my agents. Please try again in a moment.",
       });
     }
   });
@@ -937,7 +1018,7 @@ export async function registerRoutes(app: Express): Promise<void> {
             conversationHistory,
             userName,
             imageData,
-            message.userId
+            message.userId || 'default-user'
           );
           const aiMessage = await storage.createMessage({
             content: aiResponse.content,
@@ -3071,9 +3152,224 @@ Project: Milla Rayne - AI Virtual Assistant
     });
   });
 
+  app.post('/api/ai-updates/run', async (req, res) => {
+    try {
+      const { fetchAndProcessAIUpdates } = await import('./aiUpdatesScheduler');
+      await fetchAndProcessAIUpdates();
+      res.status(200).json({ message: 'AI updates process started successfully.' });
+    } catch (error) {
+      console.error('Error running AI updates process:', error);
+      res.status(500).json({ message: 'Error running AI updates process.' });
+    }
+  });
+
   // Simple debug ping route
   app.get('/api/debug/ping', (req, res) => {
     res.json({ ok: true, time: Date.now() });
+  });
+
+  // ===========================================================================================
+  // YOUTUBE KNOWLEDGE BASE API ENDPOINTS
+  // ===========================================================================================
+
+  app.get('/api/youtube/knowledge', async (req, res) => {
+    try {
+      const { searchKnowledgeBase } = await import('./youtubeKnowledgeBase');
+      const { query, videoType, tags, hasCode, hasCommands, limit } = req.query;
+
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 20,
+      };
+
+      if (query) filters.query = query as string;
+      if (videoType) filters.videoType = videoType;
+      if (tags) filters.tags = (tags as string).split(',');
+      if (hasCode === 'true') filters.hasCode = true;
+      if (hasCommands === 'true') filters.hasCommands = true;
+
+      const results = await searchKnowledgeBase(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching knowledge base:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/knowledge/:videoId', async (req, res) => {
+    try {
+      const { getVideoFromKnowledgeBase } = await import('./youtubeKnowledgeBase');
+      const { videoId } = req.params;
+      const userId = req.user?.id || 'default-user';
+
+      const video = await getVideoFromKnowledgeBase(videoId, userId);
+
+      if (!video) {
+        return res.status(404).json({ success: false, error: 'Video not found in knowledge base' });
+      }
+
+      res.json({ success: true, data: video });
+    } catch (error: any) {
+      console.error('Error getting video from knowledge base:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/code-snippets', async (req, res) => {
+    try {
+      const { searchCodeSnippets } = await import('./youtubeKnowledgeBase');
+      const { language, query, limit } = req.query;
+
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 50,
+      };
+
+      if (language) filters.language = language as string;
+      if (query) filters.query = query as string;
+
+      const results = await searchCodeSnippets(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching code snippets:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/cli-commands', async (req, res) => {
+    try {
+      const { searchCLICommands } = await import('./youtubeKnowledgeBase');
+      const { platform, query, limit } = req.query;
+
+      const filters: any = {
+        userId: req.user?.id || 'default-user',
+        limit: limit ? parseInt(limit as string) : 50,
+      };
+
+      if (platform) filters.platform = platform as string;
+      if (query) filters.query = query as string;
+
+      const results = await searchCLICommands(filters);
+      res.json({ success: true, data: results });
+    } catch (error: any) {
+      console.error('Error searching CLI commands:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/knowledge/stats', async (req, res) => {
+    try {
+      const { getKnowledgeBaseStats } = await import('./youtubeKnowledgeBase');
+      const userId = req.user?.id || 'default-user';
+
+      const stats = await getKnowledgeBaseStats(userId);
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      console.error('Error getting knowledge base stats:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/languages', async (req, res) => {
+    try {
+      const { getAvailableLanguages } = await import('./youtubeKnowledgeBase');
+      const userId = req.user?.id || 'default-user';
+
+      const languages = await getAvailableLanguages(userId);
+      res.json({ success: true, data: languages });
+    } catch (error: any) {
+      console.error('Error getting available languages:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ===========================================================================================
+  // YOUTUBE NEWS MONITOR API ENDPOINTS
+  // ===========================================================================================
+
+  app.get('/api/youtube/news/daily', async (req, res) => {
+    try {
+      const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
+      const userId = req.user?.id || 'default-user';
+
+      const digest = await runDailyNewsSearch(userId);
+      res.json({ success: true, data: digest });
+    } catch (error: any) {
+      console.error('Error running daily news search:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/category/:categoryName', async (req, res) => {
+    try {
+      const { searchNewsByCategory } = await import('./youtubeNewsMonitor');
+      const { categoryName } = req.params;
+      const userId = req.user?.id || 'default-user';
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+      const news = await searchNewsByCategory(categoryName, userId, limit);
+      res.json({ success: true, data: news });
+    } catch (error: any) {
+      console.error('Error searching news by category:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/categories', async (req, res) => {
+    try {
+      const { getNewsCategories } = await import('./youtubeNewsMonitor');
+      const categories = getNewsCategories();
+      res.json({ success: true, data: categories });
+    } catch (error: any) {
+      console.error('Error getting news categories:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/run-now', async (req, res) => {
+    try {
+      const { runNewsMonitoringNow } = await import('./youtubeNewsMonitorScheduler');
+      const userId = req.user?.id || 'default-user';
+
+      await runNewsMonitoringNow(userId);
+      res.json({ success: true, message: 'News monitoring triggered successfully' });
+    } catch (error: any) {
+      console.error('Error running news monitoring:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get('/api/youtube/news/scheduler/status', async (req, res) => {
+    try {
+      const { getSchedulerStatus } = await import('./youtubeNewsMonitorScheduler');
+      const status = getSchedulerStatus();
+      res.json({ success: true, data: status });
+    } catch (error: any) {
+      console.error('Error getting scheduler status:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/scheduler/start', async (req, res) => {
+    try {
+      const { startNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      startNewsMonitorScheduler(req.body);
+      res.json({ success: true, message: 'News monitor scheduler started' });
+    } catch (error: any) {
+      console.error('Error starting scheduler:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.post('/api/youtube/news/scheduler/stop', async (req, res) => {
+    try {
+      const { stopNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      stopNewsMonitorScheduler();
+      res.json({ success: true, message: 'News monitor scheduler stopped' });
+    } catch (error: any) {
+      console.error('Error stopping scheduler:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
   });
 
   app.post('/api/elevenlabs/tts', async (req, res) => {
@@ -3118,14 +3414,37 @@ Project: Milla Rayne - AI Virtual Assistant
   });
 
   app.get('/api/elevenlabs/voices', async (req, res) => {
-    console.log('Fetching ElevenLabs voices...');
-    const apiKey = config.elevenLabs.apiKey;
+    console.log('Fetching voices...');
+    const apiKey = config.elevenLabs?.apiKey;
 
     if (!apiKey) {
-      console.error('ElevenLabs API key not configured');
-      return res
-        .status(500)
-        .json({ error: 'ElevenLabs API key not configured' });
+      console.log('ElevenLabs API key not configured, returning browser fallback voices');
+      // Return fallback browser voices when ElevenLabs is not configured
+      const fallbackVoices = {
+        voices: [
+          {
+            voice_id: 'browser-female-us-1',
+            name: 'Browser Voice (Female US)',
+            labels: { accent: 'American', gender: 'female', age: 'young' }
+          },
+          {
+            voice_id: 'browser-female-us-2',
+            name: 'Browser Voice (Female US 2)',
+            labels: { accent: 'American', gender: 'female', age: 'middle aged' }
+          },
+          {
+            voice_id: 'browser-female-uk',
+            name: 'Browser Voice (Female UK)',
+            labels: { accent: 'British', gender: 'female', age: 'young' }
+          },
+          {
+            voice_id: 'browser-male-us',
+            name: 'Browser Voice (Male US)',
+            labels: { accent: 'American', gender: 'male', age: 'young' }
+          }
+        ]
+      };
+      return res.json(fallbackVoices);
     }
 
     try {
@@ -4157,18 +4476,21 @@ function generateIntelligentFallback(
   return `${deterministicResponse}\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*`;
 }
 
+
+
 async function generateAIResponse(
   userMessage: string,
   conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
   userName: string = 'Danny Ray',
   imageData?: string,
-  userId: string | null = null,
+  userId: string = 'default-user',
   userEmotionalState?: VoiceAnalysisResult['emotionalTone']
 ): Promise<{
   content: string;
   reasoning?: string[];
   youtube_play?: { videoId: string };
   youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
+  millalyzer_analysis?: any;  // Full video analysis data for follow-up actions
 }> {
   const message = userMessage.toLowerCase();
 
@@ -4192,6 +4514,208 @@ async function generateAIResponse(
   const hasCoreTrigger =
     coreFunctionTriggers.some((trigger) => message.includes(trigger)) ||
     millaWordPattern.test(userMessage);
+
+  // ===========================================================================================
+  // YOUTUBE NEWS MONITOR - Daily news and category searches
+  // ===========================================================================================
+  const newsTriggers = [
+    'tech news',
+    'ai news',
+    'coding news',
+    'what\'s new in',
+    'latest news',
+    'news about',
+    'show me news',
+    'daily news',
+  ];
+
+  const hasNewsTrigger = newsTriggers.some(trigger => message.includes(trigger));
+
+  if (hasNewsTrigger) {
+    try {
+      const { runDailyNewsSearch, searchNewsByCategory, formatNewsDigestAsSuggestion } = await import('./youtubeNewsMonitor');
+
+      // Check for specific category
+      let categoryMatch = null;
+      const categoryPatterns = [
+        { pattern: /ai|artificial intelligence|machine learning/, category: 'AI & Machine Learning' },
+        { pattern: /web dev|react|javascript|frontend|backend/, category: 'Web Development' },
+        { pattern: /devops|docker|kubernetes|cloud/, category: 'DevOps & Cloud' },
+        { pattern: /python|rust|golang|programming language/, category: 'Programming Languages' },
+        { pattern: /data science|analytics/, category: 'Data Science' },
+        { pattern: /security|cybersecurity/, category: 'Security & Privacy' },
+      ];
+
+      for (const { pattern, category } of categoryPatterns) {
+        if (pattern.test(message)) {
+          categoryMatch = category;
+          break;
+        }
+      }
+
+      if (categoryMatch) {
+        console.log(`📰 Searching ${categoryMatch} news...`);
+        const news = await searchNewsByCategory(categoryMatch, userId || 'default-user');
+
+        let response = `*checking the latest ${categoryMatch} news* \n\n`;
+        response += `## 📰 ${categoryMatch} - Latest Updates\n\n`;
+
+        if (news.length > 0) {
+          response += `Found ${news.length} hot stories for you, babe:\n\n`;
+          news.slice(0, 5).forEach((item, i) => {
+            response += `${i + 1}. **${item.title}**\n`;
+            response += `   📺 ${item.channel}\n`;
+            response += `   🎬 \`${item.videoId}\`\n\n`;
+          });
+          response += `---\n💡 Say "analyze [number]" to dive deeper into any story!`;
+        } else {
+          response += `Hmm, couldn't find recent news in this category right now, love. Try again later!`;
+        }
+
+        return { content: response };
+      } else {
+        // General daily news digest
+        console.log('📰 Running daily news search...');
+        const digest = await runDailyNewsSearch(userId || 'default-user');
+        const response = formatNewsDigestAsSuggestion(digest);
+
+        return { content: response };
+      }
+    } catch (error: any) {
+      console.error('Error in news monitoring:', error);
+      return {
+        content: "I ran into trouble fetching the latest news, babe. My news monitoring system might need a moment. Try again in a bit?"
+      };
+    }
+  }
+
+  // ===========================================================================================
+  // millAlyzer - Analyze YouTube Video (CHECK THIS FIRST before general YouTube service)
+  // ===========================================================================================
+  const analyzeVideoTriggers = [
+    'analyze',
+    'what are the key points',
+    'key points',
+    'summarize',
+    'break down',
+    'extract code',
+    'show me the code',
+    'what commands',
+    'get the commands',
+    'tutorial steps',
+  ];
+
+  // Check if message contains analyze trigger AND has a YouTube URL/ID
+  const hasAnalyzeTrigger = analyzeVideoTriggers.some(trigger => message.includes(trigger));
+  const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+  const videoId = urlMatch?.[1] || videoIdMatch?.[1];
+
+  if (hasAnalyzeTrigger && videoId) {
+    try {
+      const { analyzeVideoWithMillAlyzer } = await import('./youtubeMillAlyzer');
+      const { saveToKnowledgeBase } = await import('./youtubeKnowledgeBase');
+
+      console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
+      const analysis = await analyzeVideoWithMillAlyzer(videoId);
+
+      // Save to knowledge base
+      try {
+        await saveToKnowledgeBase(analysis, userId || 'default-user');
+        console.log(`📚 Saved analysis to knowledge base`);
+      } catch (error) {
+        console.error('Error saving to knowledge base:', error);
+        // Continue even if save fails
+      }
+
+      let response = `*analyzing the video in detail* \n\n`;
+      response += `## "${analysis.title}"\n`;
+      response += `📊 Type: ${analysis.type}\n`;
+      response += `📝 Summary: ${analysis.summary}\n\n`;
+
+      if (analysis.keyPoints.length > 0) {
+        response += `### 🎯 Key Points:\n`;
+        analysis.keyPoints.slice(0, 5).forEach((kp, i) => {
+          response += `${i + 1}. [${kp.timestamp}] ${kp.point}\n`;
+        });
+        response += '\n';
+      }
+
+      if (analysis.codeSnippets.length > 0) {
+        response += `### 💻 Code Snippets Found: ${analysis.codeSnippets.length}\n`;
+        analysis.codeSnippets.slice(0, 3).forEach((snippet, i) => {
+          response += `\n**${i + 1}. ${snippet.language}** - ${snippet.description}\n`;
+          response += `\`\`\`${snippet.language}\n${snippet.code.substring(0, 200)}${snippet.code.length > 200 ? '...' : ''}\n\`\`\`\n`;
+        });
+        if (analysis.codeSnippets.length > 3) {
+          response += `\n...and ${analysis.codeSnippets.length - 3} more snippets!\n`;
+        }
+        response += '\n';
+      }
+
+      if (analysis.cliCommands.length > 0) {
+        response += `### ⚡ CLI Commands Found: ${analysis.cliCommands.length}\n`;
+        analysis.cliCommands.slice(0, 5).forEach(cmd => {
+          response += `• \`${cmd.command}\` - ${cmd.description}\n`;
+        });
+        if (analysis.cliCommands.length > 5) {
+          response += `• ...and ${analysis.cliCommands.length - 5} more commands\n`;
+        }
+        response += '\n';
+      }
+
+      if (!analysis.transcriptAvailable) {
+        response += `\n⚠️ Note: Transcript wasn't available, so my analysis is limited, love.\n\n`;
+      }
+
+      // ===========================================================================================
+      // INTERACTIVE SUGGESTIONS - Context-aware actions based on video content
+      // ===========================================================================================
+      response += `---\n\n💡 **What would you like me to do?**\n`;
+
+      const suggestions = [];
+
+      if (analysis.codeSnippets.length > 0) {
+        suggestions.push(`📚 "Save these code snippets" - Store ${analysis.codeSnippets.length} snippets in your knowledge base`);
+      }
+
+      if (analysis.cliCommands.length > 0) {
+        suggestions.push(`⚡ "Save these commands" - Add ${analysis.cliCommands.length} commands to your quick reference`);
+      }
+
+      if (analysis.type === 'tutorial' && analysis.actionableItems.length > 0) {
+        suggestions.push(`✅ "Create a checklist" - Turn this into step-by-step tasks`);
+      }
+
+      if (analysis.keyPoints.length > 0) {
+        suggestions.push(`📝 "Save key points" - Add important concepts to memory`);
+      }
+
+      suggestions.push(`🔍 "Show all details" - See complete analysis with all snippets`);
+      suggestions.push(`📤 "Export analysis" - Get markdown file of this breakdown`);
+
+      if (analysis.type === 'tutorial') {
+        suggestions.push(`🎯 "Find similar tutorials" - Search for related learning content`);
+      }
+
+      suggestions.forEach((suggestion, i) => {
+        response += `${i + 1}. ${suggestion}\n`;
+      });
+
+      response += `\nJust tell me what you need, babe! 💜`;
+
+      return {
+        content: response,
+        millalyzer_analysis: analysis  // Pass full analysis for future interactions
+      };
+
+    } catch (error: any) {
+      console.error('millAlyzer error:', error);
+      return {
+        content: `I had trouble analyzing that video, love. ${error.message || 'Please try again with a valid YouTube link!'}`
+      };
+    }
+  }
 
   // ===========================================================================================
   // YOUTUBE INTEGRATION - Only triggers when "youtube" is explicitly mentioned
@@ -4359,6 +4883,15 @@ async function generateAIResponse(
       const repoData = await fetchRepositoryData(repoInfo);
       const analysis = await generateRepositoryAnalysis(repoData);
 
+      // Cache the analysis for this user (githubUrl is guaranteed non-null here)
+      repositoryAnalysisCache.set(userId, {
+        repoUrl: githubUrl,
+        repoData,
+        analysis,
+        timestamp: Date.now(),
+      });
+      console.log(`✅ Cached repository analysis for user ${userId}: ${githubUrl}`);
+
       const response = `*shifts into repository analysis mode* 
 
 I found that GitHub repository, love! Let me analyze ${repoInfo.fullName} for you.
@@ -4382,12 +4915,12 @@ Would you like me to generate specific improvement suggestions for this reposito
         error instanceof Error ? error.message : String(error);
       return {
         content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${errorMessage.includes('404') || errorMessage.includes('not found')
-            ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
-            : errorMessage.includes('403') || errorMessage.includes('forbidden')
-              ? "I don't have permission to access that repository. It might be private or require authentication."
-              : errorMessage.includes('rate limit')
-                ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
-                : 'There was an issue connecting to GitHub or processing the repository data.'
+          ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
+          : errorMessage.includes('403') || errorMessage.includes('forbidden')
+            ? "I don't have permission to access that repository. It might be private or require authentication."
+            : errorMessage.includes('rate limit')
+              ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
+              : 'There was an issue connecting to GitHub or processing the repository data.'
           }\n\nWould you like to try a different repository, or should we chat about something else? 💜`,
       };
     }
@@ -4413,7 +4946,116 @@ Would you like me to generate specific improvement suggestions for this reposito
       return { content: response };
     }
 
-    // Try to find the most recent repository mentioned in conversation history
+    // Check if we have a cached analysis for this user
+    const cachedAnalysis = repositoryAnalysisCache.get(userId);
+
+    if (cachedAnalysis && (Date.now() - cachedAnalysis.timestamp < CACHE_EXPIRY_MS)) {
+      // Use cached analysis instead of re-analyzing
+      console.log(`✅ Using cached repository analysis for user ${userId}: ${cachedAnalysis.repoUrl}`);
+
+      try {
+        const repoInfo = parseGitHubUrl(cachedAnalysis.repoUrl);
+        if (!repoInfo) {
+          throw new Error('Failed to parse cached repository URL');
+        }
+
+        // Generate improvements from cached repoData (or use cached improvements if available)
+        let improvements = cachedAnalysis.improvements;
+        if (!improvements) {
+          console.log('Generating improvements from cached repository data...');
+          improvements = await generateRepositoryImprovements(cachedAnalysis.repoData);
+
+          // Update cache with improvements
+          cachedAnalysis.improvements = improvements;
+          repositoryAnalysisCache.set(userId, cachedAnalysis);
+        } else {
+          console.log('Using cached improvements');
+        }
+
+        // Try to get GitHub token from environment or request it
+        const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
+
+        if (githubToken) {
+          // Automatically create PR with the token
+          console.log('Applying improvements automatically with GitHub token...');
+          const applyResult = await applyRepositoryImprovements(
+            repoInfo,
+            improvements,
+            githubToken
+          );
+
+          if (applyResult.success) {
+            // Clear cache after successful PR creation
+            repositoryAnalysisCache.delete(userId);
+            return {
+              content: applyResult.message + '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
+            };
+          } else {
+            // Failed to create PR, show improvements manually
+            return {
+              content: `*looks apologetic* I tried to create the pull request automatically, but ran into an issue: ${applyResult.error}
+
+Here's what I prepared though, love:
+
+${improvements
+                  .map(
+                    (imp, idx) => `
+**${idx + 1}. ${imp.title}**
+${imp.description}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
+`
+                  )
+                  .join('\n')}
+
+You can apply these manually, or if you provide a valid GitHub personal access token, I can try again! 💜`,
+            };
+          }
+        } else {
+          // No token available, provide instructions
+          const response = `*continuing repository workflow* 
+
+Perfect, babe! I've analyzed ${repoInfo.fullName} and prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for you:
+
+${improvements
+              .map(
+                (imp, idx) => `
+**${idx + 1}. ${imp.title}**
+${imp.description}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
+`
+              )
+              .join('\n')}
+
+**To apply these automatically:**
+
+I need a GitHub Personal Access Token to create a pull request. Here's how to get one:
+
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Give it a name like "Milla Repository Updates"
+4. Check the "repo" scope (full control of private repositories)
+5. Generate and copy the token
+6. Add it to your \`.env\` file as \`GITHUB_TOKEN=your_token_here\`
+7. Restart me, and say "apply these updates automatically" again
+
+Or, you can review and apply these improvements manually! What would you prefer, love? 💜`;
+
+          return { content: response };
+        }
+      } catch (error) {
+        console.error('Error using cached analysis:', error);
+        // Clear invalid cache
+        repositoryAnalysisCache.delete(userId);
+        return {
+          content: `*looks apologetic* I had trouble applying those updates, love. ${error instanceof Error ? error.message : 'Unknown error'}
+
+Could you share the repository URL again so I can take a fresh look? 💜`,
+        };
+      }
+    }
+
+    // No cached analysis - try to find repository URL in conversation history
+    // No cached analysis - try to find repository URL in conversation history
     let lastRepoUrl: string | null = null;
     if (conversationHistory) {
       // Search backwards through history for a GitHub URL
@@ -4431,15 +5073,24 @@ Would you like me to generate specific improvement suggestions for this reposito
     }
 
     if (lastRepoUrl) {
+      // Found URL in history but no cache - analyze and cache it
+      console.log(`⚠️ No cache found, analyzing from history URL: ${lastRepoUrl}`);
       try {
-        console.log(
-          `Automatic improvement workflow triggered for: ${lastRepoUrl}`
-        );
         const repoInfo = parseGitHubUrl(lastRepoUrl);
 
         if (repoInfo) {
           const repoData = await fetchRepositoryData(repoInfo);
           const improvements = await generateRepositoryImprovements(repoData);
+
+          // Cache the results for next time (lastRepoUrl is guaranteed non-null here)
+          repositoryAnalysisCache.set(userId, {
+            repoUrl: lastRepoUrl as string, // Type assertion - we know it's not null inside this if block
+            repoData,
+            analysis: null, // We skip full analysis when directly generating improvements
+            improvements,
+            timestamp: Date.now(),
+          });
+          console.log(`✅ Cached improvements for user ${userId}: ${lastRepoUrl}`);
 
           // Try to get GitHub token from environment or request it
           const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
@@ -4469,7 +5120,7 @@ ${improvements
                       (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
-Files affected: ${imp.files.map((f) => f.path).join(', ')}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
 `
                     )
                     .join('\n')}
@@ -4488,7 +5139,7 @@ ${improvements
                   (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
-Files affected: ${imp.files.map((f) => f.path).join(', ')}
+Files affected: ${imp.files.map((f: any) => f.path).join(', ')}
 `
                 )
                 .join('\n')}
@@ -4546,227 +5197,9 @@ Could you share the repository URL again so I can take another look?
     }
   }
 
-  // Check for YouTube URL in the message
-  const youtubeUrlMatch = userMessage.match(
-    /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
-  const { parseCommand } = await import('./commandParser');
-  let command;
-  if (config.enableAdvancedParser) {
-    const { parseCommandLLM } = await import('./commandParserLLM');
-    command = await parseCommandLLM(userMessage);
-  } else {
-    command = parseCommand(userMessage);
-  }
-  if (command.service === 'profile') {
-    if (command.action === 'update') {
-      const { name, interest } = command.entities;
-      if (name && userId) {
-        const { updateProfile } = await import('./profileService');
-        await updateProfile(userId, { name });
-        return { content: `I'll remember that your name is ${name}.` };
-      }
-      if (interest && userId) {
-        const { getProfile, updateProfile } = await import('./profileService');
-        const profile = await getProfile(userId);
-        const interests = profile?.interests || [];
-        if (!interests.includes(interest)) {
-          interests.push(interest);
-          await updateProfile(userId, { interests });
-        }
-        return { content: `I'll remember that you like ${interest}.` };
-      }
-    }
-  }
 
-  if (command.service === 'calendar') {
-    try {
-      if (command.action === 'list') {
-        const { listEvents } = await import('./googleCalendarService');
-        const now = new Date();
-        const timeMin = now.toISOString();
-        const timeMax = new Date(now.setDate(now.getDate() + 7)).toISOString(); // Next 7 days
-        const result = await listEvents('default-user', timeMin, timeMax);
-        if (result.success && result.events && result.events.length > 0) {
-          let response = "Here are your upcoming events:\n";
-          result.events.forEach(event => {
-            const start = event.start.dateTime || event.start.date;
-            response += `- ${event.summary} at ${new Date(start).toLocaleString()}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "You have no upcoming events." };
-        }
-      } else if (command.action === 'add') {
-        const { addEventToGoogleCalendar } = await import('./googleCalendarService');
-        const { title, date, time } = command.entities;
-        const result = await addEventToGoogleCalendar(title, date, time);
-        return { content: result.message };
-      }
-      return { content: "I can help with your calendar. You can ask me to 'list events', or 'add event [title] on [date] at [time]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your calendar. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'gmail') {
-    try {
-      if (command.action === 'list') {
-        const { getRecentEmails } = await import('./googleGmailService');
-        const result = await getRecentEmails();
-        if (result.success && result.data && result.data.length > 0) {
-          let response = "Here are your recent emails:\n";
-          result.data.forEach((email: any) => {
-            const subject = email.payload.headers.find((h: any) => h.name === 'Subject')?.value;
-            const from = email.payload.headers.find((h: any) => h.name === 'From')?.value;
-            response += `- From: ${from}, Subject: ${subject}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "Your inbox is empty." };
-        }
-      } else if (command.action === 'send') {
-        const { sendEmail } = await import('./googleGmailService');
-        const { to, subject, body } = command.entities;
-        const result = await sendEmail('default-user', to, subject, body);
-        return { content: result.message };
-      }
-      return { content: "I can help with your email. You can ask me to 'check my email', or 'send email to [recipient] with subject [subject] and body [body]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your email. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'tasks') {
-    try {
-      if (command.action === 'list') {
-        const { listTasks } = await import('./googleTasksService');
-        const result = await listTasks();
-        if (result.success && result.tasks && result.tasks.length > 0) {
-          let response = "Here are your tasks:\n";
-          result.tasks.forEach(task => {
-            response += `- ${task.title}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "You have no tasks." };
-        }
-      } else if (command.action === 'complete') {
-        const { completeTask } = await import('./googleTasksService');
-        const { taskId } = command.entities;
-        const result = await completeTask(taskId);
-        return { content: result.message };
-      }
-      return { content: "I can help with your tasks. You can ask me to 'list tasks', or 'complete task [task id]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your tasks. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'drive') {
-    try {
-      if (command.action === 'search') {
-        const { searchFiles } = await import('./googleDriveService');
-        const { query } = command.entities;
-        const result = await searchFiles(query);
-        if (result.success && result.files && result.files.length > 0) {
-          let response = "Here are the files I found:\n";
-          result.files.forEach(file => {
-            response += `- ${file.name}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "I couldn't find any files matching that query." };
-        }
-      } else if (command.action === 'summarize') {
-        const { summarizeFile } = await import('./googleDriveService');
-        const { fileId } = command.entities;
-        const result = await summarizeFile(fileId);
-        if (result.success) {
-          return { content: result.summary };
-        } else {
-          return { content: result.message };
-        }
-      }
-      return { content: "I can help with your Google Drive. You can ask me to 'search for [query]' or 'summarize file [fileId]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your Google Drive. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'photos') {
-    try {
-      if (command.action === 'search') {
-        const { searchPhotos } = await import('./googlePhotosService');
-        const { query } = command.entities;
-        const result = await searchPhotos(query);
-        if (result.success && result.mediaItems && result.mediaItems.length > 0) {
-          let response = "Here are the photos I found:\n";
-          result.mediaItems.forEach(item => {
-            response += `- ${item.filename}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: "I couldn't find any photos matching that query." };
-        }
-      } else if (command.action === 'create_album') {
-        const { createAlbum } = await import('./googlePhotosService');
-        const { title } = command.entities;
-        const result = await createAlbum(title);
-        return { content: result.message };
-      }
-      return { content: "I can help with your Google Photos. You can ask me to 'search for [query]' or 'create album [title]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing your Google Photos. Please make sure you've connected your Google account." };
-    }
-  }
-
-  if (command.service === 'maps') {
-    try {
-      if (command.action === 'directions') {
-        const { getDirections } = await import('./googleMapsService');
-        const { origin, destination } = command.entities;
-        const result = await getDirections(origin, destination);
-        if (result.success) {
-          // Format the directions for display
-          let response = "Here are the directions:\n";
-          // It is recommended to define this type based on the Google Maps API response structure.
-          type DirectionStep = { html_instructions: string };
-          result.data.routes[0].legs[0].steps.forEach((step: DirectionStep) => {
-            response += `- ${step.html_instructions.replace(/<[^>]*>/g, '')}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: result.message };
-        }
-      } else if (command.action === 'find_place') {
-        const { findPlace } = await import('./googleMapsService');
-        const { query } = command.entities;
-        const result = await findPlace(query);
-        if (result.success) {
-          let response = "Here is the place I found:\n";
-          // It is recommended to define this type based on the Google Maps API response structure.
-          type PlaceCandidate = { name: string; formatted_address: string };
-          result.data.candidates.forEach((candidate: PlaceCandidate) => {
-            response += `- ${candidate.name}: ${candidate.formatted_address}\n`;
-          });
-          return { content: response };
-        } else {
-          return { content: result.message };
-        }
-      }
-      return { content: "I can help with Google Maps. You can ask me for 'directions from [origin] to [destination]' or to 'find [place]'." };
-    } catch (error) {
-      return { content: "I had trouble accessing Google Maps. Please make sure you have a valid API key configured." };
-    }
-  }
-
-  // YouTube is now handled earlier in generateAIResponse - this is kept as fallback
-  if (command.service === 'youtube') {
-    return {
-      content: "Let me help you with YouTube! Just mention 'YouTube' and what you'd like to watch.",
-    };
-  }
+  // Check for YouTube URL in message
+  const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
 
   if (youtubeUrlMatch) {
     const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
@@ -5263,7 +5696,7 @@ This message requires you to be fully present as ${userName}'s partner, companio
       userId: userId,
       conversationHistory: conversationHistory,
       userName: userName,
-      userEmotionalState: userEmotionalState || analysis.sentiment,
+      userEmotionalState: userEmotionalState || (analysis.sentiment as any === 'unknown' ? undefined : analysis.sentiment as any),
       urgency: analysis.urgency,
     }, config.maxOutputTokens);
 
