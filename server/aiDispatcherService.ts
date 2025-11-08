@@ -1,6 +1,7 @@
 import { generateXAIResponse, PersonalityContext as XAIPersonalityContext } from './xaiService';
 import { generateOpenRouterResponse, generateGrokResponse, OpenRouterContext } from './openrouterService';
 import { generateGeminiResponse } from './geminiService';
+import { generateAIResponse as generateOpenAIResponse } from './openaiService';
 import { storage } from './storage';
 import { config } from './config';
 
@@ -23,12 +24,18 @@ export async function dispatchAIResponse(
   context: DispatchContext,
   maxTokens?: number
 ): Promise<AIResponse> {
-  let preferredModel: string | undefined = 'xai'; // Default model (changed to xai since minimax has 404 errors)
+  console.log('--- dispatchAIResponse called ---');
+  let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
   if (context.userId) {
-    const userModelPreference = await storage.getUserAIModel(context.userId);
-    if (userModelPreference.success && userModelPreference.model) {
-      preferredModel = userModelPreference.model;
+    // Try to get user model preference (optional method)
+    try {
+      const userModelPreference = await (storage as any).getUserPreferredAIModel?.(context.userId);
+      if (userModelPreference?.model) {
+        preferredModel = userModelPreference.model;
+      }
+    } catch {
+      // Method doesn't exist, use default
     }
   }
 
@@ -38,41 +45,84 @@ export async function dispatchAIResponse(
 
   let modelToUse = preferredModel;
 
-  // Example contextual override: if message contains "code" or "repository", suggest Grok
-  if (userMessage.toLowerCase().includes('code') || userMessage.toLowerCase().includes('repository')) {
+  // Example contextual override: if message contains specific programming keywords, suggest Grok
+  const codeKeywords = ['github repository', 'pull request', 'git commit', 'code review', 'programming'];
+  const hasCodeContext = codeKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+  
+  if (hasCodeContext && config.openrouter?.grok1ApiKey) {
     modelToUse = 'grok';
+  }
+
+  // Agent command override
+  const agentMatch = userMessage.match(/^agent\s+(\w+)\s+(.*)/i);
+  if (agentMatch) {
+    const [, agentName, task] = agentMatch;
+    console.log(`Dispatching to agent: ${agentName} with task: ${task}`);
+    const { agentController } = await import('./agentController');
+    const result = await agentController.dispatch(agentName, task);
+    return { content: result, success: true };
   }
   // Add more sophisticated logic here based on intent, emotional state, etc.
 
   console.log(`Dispatching AI response using model: ${modelToUse} (preferred: ${preferredModel})`);
 
+  console.log(`--- Dispatching to model: ${modelToUse} ---`);
+  
+  let response: AIResponse;
+  
   switch (modelToUse) {
     case 'xai':
-      return generateXAIResponse(userMessage, {
+      response = await generateXAIResponse(userMessage, {
         conversationHistory: context.conversationHistory,
         userEmotionalState: context.userEmotionalState,
         urgency: context.urgency,
         userName: context.userName,
       } as XAIPersonalityContext, maxTokens);
+      break;
     case 'gemini':
-      return generateGeminiResponse(userMessage);
-    case 'grok':
-      return generateGrokResponse(userMessage, {
+      response = await generateGeminiResponse(userMessage);
+      break;
+
+    case 'openai':
+      response = await generateOpenAIResponse(userMessage, {
         conversationHistory: context.conversationHistory,
         userEmotionalState: context.userEmotionalState,
         urgency: context.urgency,
         userName: context.userName,
       } as OpenRouterContext, maxTokens);
+      break;
+    case 'grok':
+      response = await generateGrokResponse(userMessage, {
+        conversationHistory: context.conversationHistory,
+        userEmotionalState: context.userEmotionalState,
+        urgency: context.urgency,
+        userName: context.userName,
+      } as OpenRouterContext, maxTokens);
+      break;
     case 'minimax': // Minimax is handled by OpenRouterService
     case 'venice': // Venice is handled by OpenRouterService
     case 'deepseek': // Deepseek is handled by OpenRouterService
     default:
       // Default to OpenRouter (Minimax) if no specific model is chosen or if it's an unknown model
-      return generateOpenRouterResponse(userMessage, {
+      response = await generateOpenRouterResponse(userMessage, {
         conversationHistory: context.conversationHistory,
         userEmotionalState: context.userEmotionalState,
         urgency: context.urgency,
         userName: context.userName,
       } as OpenRouterContext, maxTokens);
+      break;
   }
+
+  // If the primary model failed, try fallback providers
+  if (!response.success && modelToUse === 'openai') {
+    console.log('OpenAI failed (possibly rate limited), falling back to OpenRouter...');
+    response = await generateOpenRouterResponse(userMessage, {
+      conversationHistory: context.conversationHistory,
+      userEmotionalState: context.userEmotionalState,
+      urgency: context.urgency,
+      userName: context.userName,
+    } as OpenRouterContext, maxTokens);
+  }
+  
+  return response;
 }

@@ -43,7 +43,7 @@ export default function InteractiveAvatar({
   const [isHovered, setIsHovered] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const avatarRef = useRef<HTMLDivElement>(null);
-  const gestureTimeoutRef = useRef<NodeJS.Timeout>();
+  const gestureTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Mouse tracking for eye movement
   const handleMouseMove = useCallback((e: MouseEvent) => {

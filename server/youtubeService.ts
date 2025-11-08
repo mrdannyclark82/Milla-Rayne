@@ -76,9 +76,22 @@ export async function handleYouTubeRequest(
   userMessage: string,
   userId: string = 'default-user'
 ): Promise<YouTubeResponse> {
-  const action = getYouTubeAction(userMessage);
-  
   try {
+    // First, check if message contains a direct YouTube URL/video ID
+    const urlMatch = userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const videoIdMatch = userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/);
+    const directVideoId = urlMatch?.[1] || (videoIdMatch?.[1] && !userMessage.includes(' ') ? videoIdMatch[1] : null);
+    
+    if (directVideoId) {
+      console.log('🎬 Direct video ID detected:', directVideoId);
+      return {
+        content: `*queues up the video* Playing your video now, love! 💜`,
+        videoId: directVideoId,
+      };
+    }
+    
+    const action = getYouTubeAction(userMessage);
+    
     // Handle recommendations
     if (action === 'recommend') {
       const suggestions = await getPersonalizedSuggestions();
@@ -102,7 +115,7 @@ export async function handleYouTubeRequest(
         }));
         
         let response = "*checking what's trending right now* Here are the hottest videos on YouTube:\n\n";
-        videos.forEach((video, index) => {
+        videos.forEach((video: any, index: number) => {
           response += `${index + 1}. **${video.title}** by ${video.channel}\n`;
         });
         response += "\nWhich one catches your eye, love?";
@@ -169,7 +182,7 @@ export async function handleYouTubeRequest(
       }));
       
       let response = `*browsing YouTube* I found ${videos.length} videos for "${query}":\n\n`;
-      videos.forEach((video, index) => {
+      videos.forEach((video: any, index: number) => {
         response += `${index + 1}. **${video.title}** by ${video.channel}\n`;
       });
       

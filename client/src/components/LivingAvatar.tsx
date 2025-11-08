@@ -64,8 +64,8 @@ export default function LivingAvatar({
   const [heartbeat, setHeartbeat] = useState(0);
 
   const avatarRef = useRef<HTMLDivElement>(null);
-  const blinkIntervalRef = useRef<NodeJS.Timeout>();
-  const speechAnimationRef = useRef<NodeJS.Timeout>();
+  const blinkIntervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const speechAnimationRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Mouse tracking for realistic eye movement
   const handleMouseMove = useCallback((e: MouseEvent) => {
