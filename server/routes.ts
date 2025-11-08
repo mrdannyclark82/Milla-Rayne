@@ -1181,12 +1181,6 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
-  // REMOVED - Personal Task Management endpoints (user rarely used them)
-  // app.get("/api/personal-tasks", async (req, res) => { ... });
-  // app.get("/api/task-summary", async (req, res) => { ... });
-  // app.post("/api/personal-tasks/:taskId/start", async (req, res) => { ... });
-  // app.post("/api/personal-tasks/:taskId/complete", async (req, res) => { ... });
-  // app.post("/api/generate-tasks", async (req, res) => { ... });
 
   // User Tasks API endpoints
   app.get('/api/user-tasks', async (req, res) => {
@@ -2661,6 +2655,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const { addEventToGoogleCalendar } = await import('./googleCalendarService');
       const { title, date, time, description } = req.body;
       const result = await addEventToGoogleCalendar(title, date, time, description);
+      if (result.success) {
+        await updateMemories(`User scheduled an event: "${title}" on ${date} at ${time}.`);
+      }
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to create calendar event' });
@@ -2727,6 +2724,43 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, message: 'Failed to fetch subscriptions' });
+    }
+  });
+
+  app.get('/api/youtube/search', async (req, res) => {
+    try {
+      const { searchVideos } = await import('./googleYoutubeService');
+      const { q, maxResults } = req.query;
+      const result = await searchVideos(
+        q as string,
+        'default-user',
+        maxResults ? parseInt(maxResults as string) : 10
+      );
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to search videos' });
+    }
+  });
+
+  app.get('/api/youtube/videos/:id', async (req, res) => {
+    try {
+      const { getVideoDetails } = await import('./googleYoutubeService');
+      const { id } = req.params;
+      const result = await getVideoDetails(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch video details' });
+    }
+  });
+
+  app.get('/api/youtube/channels/:id', async (req, res) => {
+    try {
+      const { getChannelDetails } = await import('./googleYoutubeService');
+      const { id } = req.params;
+      const result = await getChannelDetails(id);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch channel details' });
     }
   });
 
@@ -2821,7 +2855,9 @@ Project: Milla Rayne - AI Virtual Assistant
 
       const { addCalendarEvent } = await import('./browserIntegrationService');
       const result = await addCalendarEvent(title, date, time, description);
-
+      if (result.success) {
+        await updateMemories(`User scheduled an event using the browser extension: "${title}" on ${date} at ${time}.`);
+      }
       res.json(result);
     } catch (error) {
       console.error('Error adding calendar event:', error);
@@ -2931,23 +2967,10 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get('/api/ai-updates/recommendations', async (req, res) => {
     try {
-      console.log('DEBUG: /api/ai-updates/recommendations route hit');
-      // Temporary short-circuit for debugging: return a simple test response
-      // (revert this once we've confirmed the route is reachable)
-      res.json({ success: true, debug: true });
-      return;
-      let generateRecommendations: any, getRecommendationSummary: any;
-      try {
-        const mod = await import('./predictiveRecommendations');
-        generateRecommendations = mod.generateRecommendations;
-        getRecommendationSummary = mod.getRecommendationSummary;
-      } catch (impErr) {
-        console.error('Failed to import predictiveRecommendations module:', {
-          message: (impErr as any)?.message,
-          stack: (impErr as any)?.stack,
-        });
-        throw impErr;
-      }
+      const {
+        generateRecommendations,
+        getRecommendationSummary,
+      } = await import('./predictiveRecommendations');
       const { minRelevance, maxRecommendations, summary } = req.query;
 
       if (summary === 'true') {
@@ -2967,7 +2990,6 @@ Project: Milla Rayne - AI Virtual Assistant
         });
       }
     } catch (error) {
-      // Log detailed error for debugging
       console.error('Error generating recommendations:', {
         message: (error as any)?.message,
         stack: (error as any)?.stack,

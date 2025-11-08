@@ -1,10 +1,12 @@
+import { parseCalendarCommand } from './gemini';
+
 export interface ParsedCommand {
   service: 'calendar' | 'gmail' | 'youtube' | 'profile' | null;
   action: 'list' | 'add' | 'delete' | 'send' | 'check' | 'get' | 'update' | null;
   entities: { [key: string]: string };
 }
 
-export function parseCommand(message: string): ParsedCommand {
+export async function parseCommand(message: string): Promise<ParsedCommand> {
   const lowerMessage = message.toLowerCase();
   const result: ParsedCommand = {
     service: null,
@@ -19,12 +21,12 @@ export function parseCommand(message: string): ParsedCommand {
       result.action = 'list';
     } else if (lowerMessage.includes('add') || lowerMessage.includes('create')) {
       result.action = 'add';
-      const titleMatch = lowerMessage.match(/(?:add|create) event (.*?) (?:on|at)/);
-      if (titleMatch) result.entities.title = titleMatch[1];
-      const dateMatch = lowerMessage.match(/on ([\w\s\d]+?)(?:at|$)/);
-      if (dateMatch) result.entities.date = dateMatch[1].trim();
-      const timeMatch = lowerMessage.match(/at ([\w\s\d:]+)/);
-      if (timeMatch) result.entities.time = timeMatch[1].trim();
+      const calendarEntities = await parseCalendarCommand(message);
+      if (calendarEntities) {
+        result.entities.title = calendarEntities.title;
+        result.entities.date = calendarEntities.date;
+        result.entities.time = calendarEntities.time;
+      }
     } else if (lowerMessage.includes('delete') || lowerMessage.includes('remove')) {
       result.action = 'delete';
     }
