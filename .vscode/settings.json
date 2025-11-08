@@ -4,5 +4,7 @@
     "chat.mcp.autostart": "onlyNew",
     "css.lint.unknownAtRules": "ignore",
     "scss.lint.unknownAtRules": "ignore",
-    "less.lint.unknownAtRules": "ignore"
+    "less.lint.unknownAtRules": "ignore",
+    "geminicodeassist.agentDebugMode": true,
+    "geminicodeassist.codeGenerationPaneViewEnabled": true
 }

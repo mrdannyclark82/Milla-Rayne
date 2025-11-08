@@ -3,6 +3,7 @@ import { generateOpenRouterResponse, generateGrokResponse, OpenRouterContext } f
 import { generateGeminiResponse } from './geminiService';
 import { storage } from './storage';
 import { config } from './config';
+import { generateOpenAIResponse } from './openaiChatService';
 
 export interface AIResponse {
   content: string;
@@ -23,7 +24,37 @@ export async function dispatchAIResponse(
   context: DispatchContext,
   maxTokens?: number
 ): Promise<AIResponse> {
-  let preferredModel: string | undefined = 'xai'; // Default model (changed to xai since minimax has 404 errors)
+  // Default model selection. Respect CHAT_PROVIDER environment variable when present.
+  let preferredModel: string | undefined = 'xai'; // fallback default
+
+  const envProvider = (process.env.CHAT_PROVIDER || '').toLowerCase();
+  if (envProvider) {
+    // Map common env values to internal model keys
+    switch (envProvider) {
+      case 'openai':
+        // Only prefer OpenAI if API key configured
+        if (config.openai?.apiKey) {
+          preferredModel = 'openai';
+        } else if (process.env.OPENAI_API_KEY) {
+          preferredModel = 'openai';
+        } else {
+          console.warn('CHAT_PROVIDER set to OpenAI but OPENAI API key is missing. Falling back to defaults.');
+        }
+        break;
+      case 'openrouter':
+        preferredModel = 'openrouter';
+        break;
+      case 'gemini':
+        preferredModel = 'gemini';
+        break;
+      case 'xai':
+        preferredModel = 'xai';
+        break;
+      default:
+        // leave default as-is
+        break;
+    }
+  }
 
   if (context.userId) {
     const userModelPreference = await storage.getUserAIModel(context.userId);
@@ -39,7 +70,14 @@ export async function dispatchAIResponse(
   let modelToUse = preferredModel;
 
   // Example contextual override: if message contains "code" or "repository", suggest Grok
-  if (userMessage.toLowerCase().includes('code') || userMessage.toLowerCase().includes('repository')) {
+  // Contextual override: prefer Grok for code/repository-related requests, BUT do not override
+  // when an explicit provider preference is set to OpenAI (or another explicit provider).
+  const messageLower = userMessage.toLowerCase();
+  if (
+    (messageLower.includes('code') || messageLower.includes('repository')) &&
+    modelToUse !== 'openai' &&
+    preferredModel !== 'openai'
+  ) {
     modelToUse = 'grok';
   }
   // Add more sophisticated logic here based on intent, emotional state, etc.
@@ -47,6 +85,15 @@ export async function dispatchAIResponse(
   console.log(`Dispatching AI response using model: ${modelToUse} (preferred: ${preferredModel})`);
 
   switch (modelToUse) {
+    case 'openai':
+      // Use OpenAI chat wrapper
+      return generateOpenAIResponse(
+        userMessage,
+        context.conversationHistory,
+        context.userName,
+        maxTokens || 1024
+      ).then((r) => ({ content: r.content, success: r.success, error: r.error }));
+
     case 'xai':
       return generateXAIResponse(userMessage, {
         conversationHistory: context.conversationHistory,

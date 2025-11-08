@@ -43,13 +43,16 @@ export function VoicePickerDialog({
   );
   const [accentFilter, setAccentFilter] = useState<string>('all');
   const [selectedStyle, setSelectedStyle] = useState<string>('neutral');
-  const [availableVoices, setAvailableVoices] = useState<ElevenLabsVoice[]>([]);
+  // Use an internal voices state so we don't shadow the prop `availableVoices`.
+  const [internalVoices, setInternalVoices] = useState<ElevenLabsVoice[]>(
+    availableVoices || []
+  );
 
   useEffect(() => {
     if (open) {
       const fetchVoices = async () => {
         const voices = await voiceService.getAvailableVoices();
-        setAvailableVoices(voices);
+        setInternalVoices(voices);
       };
       fetchVoices();
     }
@@ -66,7 +69,10 @@ export function VoicePickerDialog({
   };
 
   // Filter voices based on search and filters
-  const filteredVoices = availableVoices.filter((voice) => {
+  // Prefer the provided prop list, fallback to internal fetched voices
+  const voiceList = availableVoices && availableVoices.length > 0 ? availableVoices : internalVoices;
+
+  const filteredVoices = voiceList.filter((voice) => {
     const labels = voice.labels || {};
     const matchesSearch = voice.name
       .toLowerCase()
@@ -85,7 +91,7 @@ export function VoicePickerDialog({
 
   // Get unique accents from available voices
   const availableAccents = Array.from(
-    new Set(availableVoices.map((v) => v.labels?.accent).filter(Boolean))
+    new Set(voiceList.map((v) => v.labels?.accent).filter(Boolean))
   ).sort();
 
   // Style presets
@@ -275,11 +281,10 @@ export function VoicePickerDialog({
                 filteredVoices.map((voice, index) => (
                   <div
                     key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      selectedVoice?.voice_id === voice.voice_id
+                    className={`flex items-center justify-between p-3 rounded-lg border ${selectedVoice?.voice_id === voice.voice_id
                         ? 'bg-green-600/20 border-green-400/50'
                         : 'bg-white/5 border-white/10 hover:bg-white/10'
-                    } cursor-pointer transition-colors`}
+                      } cursor-pointer transition-colors`}
                     onClick={() => onVoiceSelect(voice)}
                     role="button"
                     tabIndex={0}

@@ -25,6 +25,7 @@ import type {
 import { FloatingInput } from '@/components/FloatingInput';
 import { CentralDock } from '@/components/CentralDock';
 import { SharedNotepad } from '@/components/SharedNotepad';
+import { GuidedMeditation } from '@/components/GuidedMeditation';
 
 function App() {
   console.log('App render start');
@@ -44,6 +45,7 @@ function App() {
   const [voiceVolume, setVoiceVolume] = useState(0.8);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showVoicePicker, setShowVoicePicker] = useState(false);
+  const [showCaptions, setShowCaptions] = useState(false);
 
   const [lastMessage, setLastMessage] = useState('');
   const [isMobile, setIsMobile] = useState(false);
@@ -156,7 +158,7 @@ function App() {
         setYoutubeVideoId(data.youtube_play.videoId);
         setYoutubeVideos(null);
       }
-      
+
       if (data.youtube_videos) {
         console.log('🎬 YouTube videos received:', data.youtube_videos.length);
         setYoutubeVideos(data.youtube_videos);
@@ -256,12 +258,12 @@ function App() {
     >
       <div className="min-h-screen flex" style={{ backgroundColor: '#000' }}>
         {/* Left 2/3 - Background Image Container */}
-        <div 
+        <div
           className="w-2/3 h-screen"
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            left: 0, 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
             zIndex: 0,
             overflow: 'hidden'
           }}
@@ -286,13 +288,13 @@ function App() {
         )}
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
-          style={{ 
-            position: 'fixed', 
-            top: 0, 
-            right: 0, 
-            zIndex: 10, 
-            backgroundColor: '#1a1a2e', 
-            fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif" 
+          style={{
+            position: 'fixed',
+            top: 0,
+            right: 0,
+            zIndex: 10,
+            backgroundColor: '#1a1a2e',
+            fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
           }}
         >
           <div className="h-full flex flex-col space-y-4">
@@ -349,7 +351,7 @@ function App() {
                           size="icon"
                           className="w-6 h-6 text-white"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-cw"><path d="M21 2v6h-6"/><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-cw"><path d="M21 2v6h-6" /><path d="M21 13a9 9 0 1 1-3-7.7L21 8" /></svg>
                         </Button>
                       )}
                     </div>
@@ -358,129 +360,123 @@ function App() {
                 ))
               )}
             </div>
-            <FloatingInput
-              message={message}
-              setMessage={setMessage}
-              onSendMessage={handleSendMessage}
-              isLoading={isLoading}
-              isListening={isListening}
-              toggleListening={toggleListening}
-              onSendAudio={onSendAudio}
-              isMobile={isMobile}
-              getButtonSize={getButtonSize}
-            />
-      <div className="relative min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
-        {/* Centered, floating container */}
-        <div className="relative w-full max-w-2xl h-[90vh] sm:h-[75vh] flex flex-col bg-black/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-          {/* Top bar with controls */}
-          <div className="flex-shrink-0 p-2 sm:p-4 flex gap-2 justify-between items-center border-b border-white/10">
-            <Button
-              onClick={() => setVoiceEnabled(!voiceEnabled)}
-              variant={voiceEnabled ? 'default' : 'outline'}
-              size={getButtonSize()}
-              aria-pressed={voiceEnabled}
-              className="flex-1"
-            >
-              {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
-            </Button>
-
-            {!isMobile && (
-              <Button
-                onClick={toggleListening}
-                variant={isListening ? 'default' : 'outline'}
-                size={getButtonSize()}
-                disabled={isLoading}
-                className={`flex-1 ${isListening ? 'animate-pulse' : ''}`}
-                aria-pressed={isListening}
-              >
-                {isListening ? '🎤 Listening...' : '🎙️ Speak'}
-              </Button>
-            )}
-
-            <UnifiedSettingsMenu
-              getButtonSize={getButtonSize}
-              setShowVoicePicker={setShowVoicePicker}
-              selectedVoice={selectedVoice}
-              onVoiceSelect={setSelectedVoice}
-              speechRate={speechRate}
-              onSpeechRateChange={setSpeechRate}
-              voicePitch={voicePitch}
-              onVoicePitchChange={setVoicePitch}
-              voiceVolume={voiceVolume}
-              onVoiceVolumeChange={setVoiceVolume}
-            />
           </div>
-
-          <VoiceVisualizer
-            isListening={isListening}
-            isSpeaking={isSpeaking}
-            className="h-16 flex-shrink-0"
-          />
-
-          <VoiceControls
-            isSpeaking={isSpeaking}
-            onPause={() => window.speechSynthesis.pause()}
-            onResume={() => window.speechSynthesis.resume()}
-            onStop={() => window.speechSynthesis.cancel()}
-            onReplay={() => speakMessage(lastMessage)}
-            showCaptions={showCaptions}
-            onToggleCaptions={setShowCaptions}
-          />
-
-          {/* Add the GuidedMeditation component here */}
-          <GuidedMeditation />
-
-          {/* Chat message list */}
-          <div className="flex-1 overflow-y-auto space-y-4 p-4">
-            {messages.length === 0 ? (
-              <p className="text-gray-400 text-center">
-                Start a conversation with Milla...
-              </p>
-            ) : (
-              messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-lg shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600/90 ml-auto max-w-[85%]' : 'bg-gray-700/90 mr-auto max-w-[85%]'}`}
-                >
-                  <p className="text-sm font-semibold mb-1 text-gray-300">
-                    {msg.role === 'user' ? 'You' : 'Milla'}
-                  </p>
-                  <p className="text-sm">{msg.content}</p>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* FloatingInput will be positioned at the bottom of the viewport */}
         </div>
-        <CentralDock onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)} />
-        <SharedNotepad isOpen={showSharedNotepad} onClose={() => setShowSharedNotepad(false)} />
 
-        {/* FloatingInput is now outside the main container to be fixed at the bottom */}
-        <FloatingInput
-          message={message}
-          setMessage={setMessage}
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          isListening={isListening}
-          toggleListening={toggleListening}
-          isMobile={isMobile}
-          getButtonSize={getButtonSize}
-        />
+        <div className="relative min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
+          {/* Centered, floating container */}
+          <div className="relative w-full max-w-2xl h-[90vh] sm:h-[75vh] flex flex-col bg-black/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
+            {/* Top bar with controls */}
+            <div className="flex-shrink-0 p-2 sm:p-4 flex gap-2 justify-between items-center border-b border-white/10">
+              <Button
+                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                variant={voiceEnabled ? 'default' : 'outline'}
+                size={getButtonSize()}
+                aria-pressed={voiceEnabled}
+                className="flex-1"
+              >
+                {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
+              </Button>
 
-        <VoicePickerDialog
-          open={showVoicePicker}
-          onOpenChange={setShowVoicePicker}
-          selectedVoice={selectedVoice}
-          onVoiceSelect={setSelectedVoice}
-          speechRate={speechRate}
-          onSpeechRateChange={setSpeechRate}
-          voicePitch={voicePitch}
-          onVoicePitchChange={setVoicePitch}
-          voiceVolume={voiceVolume}
-          onVoiceVolumeChange={setVoiceVolume}
-          availableVoices={availableVoices}
-        />
+              {!isMobile && (
+                <Button
+                  onClick={toggleListening}
+                  variant={isListening ? 'default' : 'outline'}
+                  size={getButtonSize()}
+                  disabled={isLoading}
+                  className={`flex-1 ${isListening ? 'animate-pulse' : ''}`}
+                  aria-pressed={isListening}
+                >
+                  {isListening ? '🎤 Listening...' : '🎙️ Speak'}
+                </Button>
+              )}
+
+              <UnifiedSettingsMenu
+                getButtonSize={getButtonSize}
+                setShowVoicePicker={setShowVoicePicker}
+                selectedVoice={selectedVoice}
+                onVoiceSelect={setSelectedVoice}
+                speechRate={speechRate}
+                onSpeechRateChange={setSpeechRate}
+                voicePitch={voicePitch}
+                onVoicePitchChange={setVoicePitch}
+                voiceVolume={voiceVolume}
+                onVoiceVolumeChange={setVoiceVolume}
+              />
+            </div>
+
+            <VoiceVisualizer
+              isListening={isListening}
+              isSpeaking={isSpeaking}
+              className="h-16 flex-shrink-0"
+            />
+
+            <VoiceControls
+              isSpeaking={isSpeaking}
+              onPause={() => window.speechSynthesis.pause()}
+              onResume={() => window.speechSynthesis.resume()}
+              onStop={() => window.speechSynthesis.cancel()}
+              onReplay={() => speakMessage(lastMessage)}
+              showCaptions={showCaptions}
+              onToggleCaptions={setShowCaptions}
+            />
+
+            {/* Add the GuidedMeditation component here */}
+            <GuidedMeditation />
+
+            {/* Chat message list */}
+            <div className="flex-1 overflow-y-auto space-y-4 p-4">
+              {messages.length === 0 ? (
+                <p className="text-gray-400 text-center">
+                  Start a conversation with Milla...
+                </p>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-lg shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600/90 ml-auto max-w-[85%]' : 'bg-gray-700/90 mr-auto max-w-[85%]'}`}
+                  >
+                    <p className="text-sm font-semibold mb-1 text-gray-300">
+                      {msg.role === 'user' ? 'You' : 'Milla'}
+                    </p>
+                    <p className="text-sm">{msg.content}</p>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* FloatingInput will be positioned at the bottom of the viewport */}
+          </div>
+          <CentralDock onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)} />
+          <SharedNotepad isOpen={showSharedNotepad} onClose={() => setShowSharedNotepad(false)} />
+
+          {/* FloatingInput is now outside the main container to be fixed at the bottom */}
+          <FloatingInput
+            message={message}
+            setMessage={setMessage}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            isListening={isListening}
+            toggleListening={toggleListening}
+            isMobile={isMobile}
+            onSendAudio={onSendAudio}
+            getButtonSize={getButtonSize}
+          />
+
+          <VoicePickerDialog
+            open={showVoicePicker}
+            onOpenChange={setShowVoicePicker}
+            selectedVoice={selectedVoice}
+            onVoiceSelect={setSelectedVoice}
+            speechRate={speechRate}
+            onSpeechRateChange={setSpeechRate}
+            voicePitch={voicePitch}
+            onVoicePitchChange={setVoicePitch}
+            voiceVolume={voiceVolume}
+            onVoiceVolumeChange={setVoiceVolume}
+            availableVoices={availableVoices}
+          />
+        </div>
       </div>
     </SceneProvider>
   );

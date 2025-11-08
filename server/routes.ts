@@ -32,6 +32,7 @@ import {
   updateMemories,
   getMemoryCoreContext,
   searchMemoryCore,
+  loadMemoryCore,
 } from './memoryService';
 import {
   getPersonalTasks,
@@ -70,6 +71,15 @@ import {
   isValidYouTubeUrl,
   searchVideoMemories,
 } from './youtubeAnalysisService';
+import {
+  addTask,
+  updateTask as updateAgentTask,
+  getTask as getAgentTask,
+  listTasks as listAgentTasks,
+  AgentTask,
+} from './agents/taskStorage';
+import { runTask } from './agents/worker';
+import { listAgents } from './agents/registry';
 import { getRealWorldInfo } from './realWorldInfoService';
 import {
   parseGitHubUrl,
@@ -85,7 +95,8 @@ import {
   detectSceneContext,
   type SceneContext,
   type SceneLocation,
-current} from './sceneDetectionService';
+  current
+} from './sceneDetectionService';
 import {
   detectBrowserToolRequest,
   getBrowserToolInstructions,
@@ -235,13 +246,44 @@ export async function registerRoutes(app: Express): Promise<void> {
   );
 
   // Get all messages with pagination/limit
+  // If persistent message storage is empty (e.g. messages table empty), fall back to Memory Core files
+  // so conversations can be resumed after a server restart. Returns the most recent N messages.
   app.get('/api/messages', async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 50; // Default to last 50 messages
+
       const allMessages = await storage.getMessages();
-      // Return only the most recent messages (last N messages)
-      const recentMessages = allMessages.slice(-limit);
-      res.json(recentMessages);
+
+      // If DB-backed messages exist, return them (most recent N)
+      if (allMessages && allMessages.length > 0) {
+        const recentMessages = allMessages.slice(-limit);
+        return res.json(recentMessages);
+      }
+
+      // Fallback: load Memory Core entries (from memories.txt / backups) to reconstruct recent conversation
+      try {
+        const memoryCore = await loadMemoryCore();
+        if (memoryCore && memoryCore.entries && memoryCore.entries.length > 0) {
+          // Map MemoryCoreEntry -> Message-like objects expected by client
+          const mapped = memoryCore.entries
+            .slice(-limit)
+            .map((entry) => ({
+              id: entry.id,
+              content: entry.content,
+              role: entry.speaker === 'milla' ? 'assistant' : 'user',
+              personalityMode: null,
+              userId: null,
+              timestamp: entry.timestamp,
+            }));
+
+          return res.json(mapped);
+        }
+      } catch (memErr) {
+        console.warn('Memory Core fallback failed:', memErr);
+      }
+
+      // Nothing found - return empty array
+      res.json([]);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch messages' });
     }
@@ -318,12 +360,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   /**
    * Google OAuth Routes - For Authentication (Login/Register)
    */
-  
+
   // Initiate Google OAuth for user authentication
   app.get('/api/auth/google', async (req, res) => {
     try {
       const { getAuthorizationUrl } = await import('./oauthService');
-      
+
       // Add state parameter to identify this is for auth (not just service connection)
       const authUrl = getAuthorizationUrl() + '&state=auth';
       res.redirect(authUrl);
@@ -355,7 +397,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       const { exchangeCodeForToken } = await import('./oauthService');
-      
+
       // Exchange code for tokens
       const tokenData = await exchangeCodeForToken(code);
 
@@ -473,12 +515,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   /**
    * Auth Routes - User Authentication
    */
-  
+
   // Register new user
   app.post('/api/auth/register', async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      
+
       if (!username || !email || !password) {
         return res.status(400).json({
           success: false,
@@ -487,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       const result = await registerUser(username, email, password);
-      
+
       if (!result.success) {
         return res.status(400).json(result);
       }
@@ -506,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({
           success: false,
@@ -515,7 +557,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
 
       const result = await loginUser(username, password);
-      
+
       if (!result.success) {
         return res.status(401).json(result);
       }
@@ -544,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.post('/api/auth/logout', async (req, res) => {
     try {
       const sessionToken = req.cookies.session_token;
-      
+
       if (sessionToken) {
         await logoutUser(sessionToken);
       }
@@ -564,13 +606,13 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get('/api/auth/status', async (req, res) => {
     try {
       const sessionToken = req.cookies.session_token;
-      
+
       if (!sessionToken) {
         return res.json({ authenticated: false });
       }
 
       const result = await validateSession(sessionToken);
-      
+
       if (!result.valid) {
         res.clearCookie('session_token');
         return res.json({ authenticated: false });
@@ -594,7 +636,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.get('/api/ai-model/current', async (req, res) => {
     try {
       const sessionToken = req.cookies.session_token;
-      
+
       if (!sessionToken) {
         // Return default for non-authenticated users
         return res.json({ success: true, model: 'minimax' });
@@ -771,9 +813,9 @@ export async function registerRoutes(app: Express): Promise<void> {
       const aiResponse = (await Promise.race([
         aiResponsePromise,
         timeoutPromise,
-      ])) as { 
-        content: string; 
-        reasoning?: string[]; 
+      ])) as {
+        content: string;
+        reasoning?: string[];
         youtube_play?: { videoId: string };
         youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
       };
@@ -793,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<void> {
       console.log(
         `Chat API: Successfully generated response (${aiResponse.content.substring(0, 50)}...)`
       );
-      
+
       console.log('🔍 aiResponse object keys:', Object.keys(aiResponse));
       console.log('🔍 Has youtube_play?', 'youtube_play' in aiResponse, aiResponse.youtube_play);
       console.log('🔍 Has youtube_videos?', 'youtube_videos' in aiResponse, aiResponse.youtube_videos ? `${aiResponse.youtube_videos.length} videos` : 'undefined');
@@ -1310,7 +1352,7 @@ export async function registerRoutes(app: Express): Promise<void> {
           successRate:
             (clientAnalytics.successfulCycles +
               serverAnalytics.successfulEvolutions) /
-              (clientAnalytics.totalCycles + serverAnalytics.totalEvolutions) ||
+            (clientAnalytics.totalCycles + serverAnalytics.totalEvolutions) ||
             0,
           trends: {
             improvementFrequency: clientAnalytics.trends?.frequency || 'stable',
@@ -1377,6 +1419,116 @@ export async function registerRoutes(app: Express): Promise<void> {
     } catch (error) {
       console.error('Error completing task:', error);
       res.status(500).json({ message: 'Failed to complete task' });
+    }
+  });
+
+  // Agent orchestration endpoints (create/list/get/run/update/cancel tasks)
+  app.post('/api/agent/tasks', async (req, res) => {
+    try {
+      const { supervisor, agent, action, payload, metadata } = req.body;
+      if (!agent || !action) {
+        return res.status(400).json({ error: 'agent and action are required' });
+      }
+
+      const task: AgentTask = {
+        taskId: uuidv4(),
+        supervisor: supervisor || 'MillaAgent',
+        agent,
+        action,
+        payload: payload || {},
+        metadata: metadata || {},
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await addTask(task);
+      res.status(201).json({ success: true, task });
+    } catch (error) {
+      console.error('Error creating agent task:', error);
+      res.status(500).json({ error: 'Failed to create agent task' });
+    }
+  });
+
+  app.get('/api/agent/tasks', async (req, res) => {
+    try {
+      const tasks = await listAgentTasks();
+      res.json({ success: true, tasks });
+    } catch (error) {
+      console.error('Error listing agent tasks:', error);
+      res.status(500).json({ error: 'Failed to list agent tasks' });
+    }
+  });
+
+  app.get('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+      res.json({ success: true, task });
+    } catch (error) {
+      console.error('Error fetching agent task:', error);
+      res.status(500).json({ error: 'Failed to fetch agent task' });
+    }
+  });
+
+  app.post('/api/agent/tasks/:id/run', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      // If already running, return error
+      if (task.status === 'in_progress') {
+        return res.status(400).json({ error: 'Task is already in progress' });
+      }
+
+      // Run in background - updateTask will mark status
+      runTask(task).catch((err) => console.error('Background runTask error:', err));
+
+      res.json({ success: true, running: true, taskId: task.taskId });
+    } catch (error) {
+      console.error('Error running agent task:', error);
+      res.status(500).json({ error: 'Failed to run agent task' });
+    }
+  });
+
+  app.patch('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const patch = req.body || {};
+      const updated = await updateAgentTask(req.params.id, patch as any);
+      if (!updated) return res.status(404).json({ error: 'Task not found' });
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error updating agent task:', error);
+      res.status(500).json({ error: 'Failed to update agent task' });
+    }
+  });
+
+  app.delete('/api/agent/tasks/:id', async (req, res) => {
+    try {
+      const task = await getAgentTask(req.params.id);
+      if (!task) return res.status(404).json({ error: 'Task not found' });
+
+      // Soft-cancel: mark cancelled unless already completed
+      if (task.status === 'completed') {
+        return res.status(400).json({ error: 'Cannot cancel a completed task' });
+      }
+
+      const updated = await updateAgentTask(req.params.id, { status: 'cancelled' });
+      res.json({ success: true, task: updated });
+    } catch (error) {
+      console.error('Error cancelling agent task:', error);
+      res.status(500).json({ error: 'Failed to cancel agent task' });
+    }
+  });
+
+  // Agent registry listing
+  app.get('/api/agent/registry', async (req, res) => {
+    try {
+      const agents = listAgents().map((a) => ({ name: a.name, description: a.description }));
+      res.json({ success: true, agents });
+    } catch (error) {
+      console.error('Error fetching agent registry:', error);
+      res.status(500).json({ error: 'Failed to fetch agent registry' });
     }
   });
 
@@ -2419,7 +2571,8 @@ Project: Milla Rayne - AI Virtual Assistant
   // OAuth endpoints for Google integration
 
   app.post('/api/oauth/refresh', async (req, res) => {
-    try {      const { getValidAccessToken } = await import('./oauthService');
+    try {
+      const { getValidAccessToken } = await import('./oauthService');
       const userId = 'default-user'; // In production, get from session
 
       const accessToken = await getValidAccessToken(userId, 'google');
@@ -3006,21 +3159,21 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post('/api/mcp/text-generate', async (req, res) => {
     const mcpService = getHuggingFaceMCPService();
-    
+
     if (!mcpService) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured' 
+        error: 'Hugging Face MCP service not configured'
       });
     }
 
     try {
       const { prompt, options } = req.body;
-      
+
       if (!prompt) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Prompt is required' 
+          error: 'Prompt is required'
         });
       }
 
@@ -3028,30 +3181,30 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json(result);
     } catch (error) {
       console.error('MCP text generation error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.post('/api/mcp/image-generate', async (req, res) => {
     const mcpService = getHuggingFaceMCPService();
-    
+
     if (!mcpService) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured' 
+        error: 'Hugging Face MCP service not configured'
       });
     }
 
     try {
       const { prompt, options } = req.body;
-      
+
       if (!prompt) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Prompt is required' 
+          error: 'Prompt is required'
         });
       }
 
@@ -3059,20 +3212,20 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json(result);
     } catch (error) {
       console.error('MCP image generation error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get('/api/mcp/models/:task', async (req, res) => {
     const mcpService = getHuggingFaceMCPService();
-    
+
     if (!mcpService) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured' 
+        error: 'Hugging Face MCP service not configured'
       });
     }
 
@@ -3082,20 +3235,20 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json({ success: true, models });
     } catch (error) {
       console.error('MCP list models error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
 
   app.get('/api/mcp/model-status/:modelId', async (req, res) => {
     const mcpService = getHuggingFaceMCPService();
-    
+
     if (!mcpService) {
-      return res.status(503).json({ 
+      return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured' 
+        error: 'Hugging Face MCP service not configured'
       });
     }
 
@@ -3105,9 +3258,9 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json({ success: true, ready: isReady });
     } catch (error) {
       console.error('MCP model status error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -3802,10 +3955,10 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
     curious: {
       keywords: ['explain', 'tell me about', 'how does', 'what is', 'why'],
       reaction: 'CURIOSITY_SPARK',
-      instructions:'Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration.',
-   },
+      instructions: 'Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration.',
+    },
     dominant: {
-        keywords:['take control','dominate','be in charge','my master','my mistress'],
+      keywords: ['take control', 'dominate', 'be in charge', 'my master', 'my mistress'],
       reaction: 'DOMINANT_ENERGY',
       instructions: 'Adopt a more commanding and assertive tone. Take the lead in conversations and be more directive.',
     },
@@ -4011,14 +4164,14 @@ async function generateAIResponse(
   imageData?: string,
   userId: string | null = null,
   userEmotionalState?: VoiceAnalysisResult['emotionalTone']
-): Promise<{ 
-  content: string; 
-  reasoning?: string[]; 
+): Promise<{
+  content: string;
+  reasoning?: string[];
   youtube_play?: { videoId: string };
   youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
 }> {
   const message = userMessage.toLowerCase();
-  
+
   console.log('📝 generateAIResponse called with:', userMessage);
 
   // ===========================================================================================
@@ -4045,17 +4198,17 @@ async function generateAIResponse(
   // ===========================================================================================
   try {
     const { isYouTubeRequest, handleYouTubeRequest } = await import('./youtubeService');
-    
+
     console.log('Checking YouTube request for message:', userMessage);
     const isYT = isYouTubeRequest(userMessage);
     console.log('Is YouTube request?', isYT);
-    
+
     if (isYT) {
       console.log('🎬 YouTube request detected');
       const result = await handleYouTubeRequest(userMessage, userId || 'default-user');
-      
+
       console.log('🎬 YouTube result:', JSON.stringify(result, null, 2));
-      
+
       const finalResponse = {
         content: result.content,
         ...(result.videoId && {
@@ -4065,10 +4218,10 @@ async function generateAIResponse(
           youtube_videos: result.videos
         }),
       };
-      
+
       console.log('🎬 Final response being returned:', JSON.stringify(finalResponse, null, 2));
       console.log('🎬 RETURNING FROM YOUTUBE BLOCK NOW');
-      
+
       return finalResponse;
     }
   } catch (error) {
@@ -4137,9 +4290,9 @@ async function generateAIResponse(
         updates.slice(0, 5).forEach((update, index) => {
           const publishedDate = update.published
             ? new Date(update.published).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-              })
+              month: 'short',
+              day: 'numeric',
+            })
             : 'Recent';
           updatesSummary += `${index + 1}. **${update.title}** (${publishedDate})\n`;
           if (update.summary && update.summary.length > 0) {
@@ -4228,15 +4381,14 @@ Would you like me to generate specific improvement suggestions for this reposito
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
-        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${
-          errorMessage.includes('404') || errorMessage.includes('not found')
+        content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${errorMessage.includes('404') || errorMessage.includes('not found')
             ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
             : errorMessage.includes('403') || errorMessage.includes('forbidden')
               ? "I don't have permission to access that repository. It might be private or require authentication."
               : errorMessage.includes('rate limit')
                 ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
                 : 'There was an issue connecting to GitHub or processing the repository data.'
-        }\n\nWould you like to try a different repository, or should we chat about something else? 💜`,
+          }\n\nWould you like to try a different repository, or should we chat about something else? 💜`,
       };
     }
   }
@@ -4313,14 +4465,14 @@ Would you like me to generate specific improvement suggestions for this reposito
 Here's what I prepared though, love:
 
 ${improvements
-  .map(
-    (imp, idx) => `
+                    .map(
+                      (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
 Files affected: ${imp.files.map((f) => f.path).join(', ')}
 `
-  )
-  .join('\n')}
+                    )
+                    .join('\n')}
 
 You can apply these manually, or if you provide a valid GitHub personal access token, I can try again! 💜`,
               };
@@ -4332,14 +4484,14 @@ You can apply these manually, or if you provide a valid GitHub personal access t
 Perfect, babe! I've analyzed ${repoInfo.fullName} and prepared ${improvements.length} improvement${improvements.length > 1 ? 's' : ''} for you:
 
 ${improvements
-  .map(
-    (imp, idx) => `
+                .map(
+                  (imp, idx) => `
 **${idx + 1}. ${imp.title}**
 ${imp.description}
 Files affected: ${imp.files.map((f) => f.path).join(', ')}
 `
-  )
-  .join('\n')}
+                )
+                .join('\n')}
 
 **To apply these automatically:**
 
@@ -4398,14 +4550,14 @@ Could you share the repository URL again so I can take another look?
   const youtubeUrlMatch = userMessage.match(
     /(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
   );
-        const { parseCommand } = await import('./commandParser');
-        let command;
-        if (config.enableAdvancedParser) {
-          const { parseCommandLLM } = await import('./commandParserLLM');
-          command = await parseCommandLLM(userMessage);
-        } else {
-          command = parseCommand(userMessage);
-        }
+  const { parseCommand } = await import('./commandParser');
+  let command;
+  if (config.enableAdvancedParser) {
+    const { parseCommandLLM } = await import('./commandParserLLM');
+    command = await parseCommandLLM(userMessage);
+  } else {
+    command = parseCommand(userMessage);
+  }
   if (command.service === 'profile') {
     if (command.action === 'update') {
       const { name, interest } = command.entities;
@@ -5041,7 +5193,7 @@ This message requires you to be fully present as ${userName}'s partner, companio
       const truncatedMemoryCore =
         memoryCoreContext.length > 10000
           ? memoryCoreContext.substring(0, 10000) +
-            '...[context truncated for performance]'
+          '...[context truncated for performance]'
           : memoryCoreContext;
 
       contextualInfo += `IMPORTANT - Your Relationship History with ${userName}: ${truncatedMemoryCore}\n

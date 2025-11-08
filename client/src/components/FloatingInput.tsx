@@ -151,37 +151,9 @@ export function FloatingInput({
                 isListening={isListening}
                 onCancel={cancelListening}
               />
-            ) : (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSendMessage();
-                }}
-                disabled={isLoading || !message.trim()}
-                className="flex-1"
-                size={getButtonSize()}
-              >
-                {isLoading ? 'Sending...' : 'Send'}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex gap-2 flex-1 h-full">
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  onSendMessage();
-                }
-              }}
-              placeholder="Type your message or click the microphone to speak..."
-              className="flex-1 px-4 py-2 bg-gray-900 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400 resize-none"
-              disabled={isLoading}
-              onClick={(e) => e.stopPropagation()}
-            />
-            <div className="flex flex-col gap-2 justify-end">
+            ) : null}
+
+            <div className="ml-auto flex items-center gap-2">
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -196,11 +168,12 @@ export function FloatingInput({
                 aria-pressed={isListening}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                  <line x1="12" x2="12" y1="19" y2="22"/>
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" x2="12" y1="19" y2="22" />
                 </svg>
               </Button>
+
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -221,6 +194,7 @@ export function FloatingInput({
                   {isRecording && <circle cx="12" cy="12" r="4" fill="red" />}
                 </svg>
               </Button>
+
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -233,8 +207,8 @@ export function FloatingInput({
                   'Sending...'
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m22 2-7 20-4-9-9-4Z"/>
-                    <path d="M22 2 11 13"/>
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
                   </svg>
                 )}
               </Button>
@@ -253,14 +227,14 @@ export function FloatingInput({
         }}
         title="Drag to resize"
       >
-        <svg 
+        <svg
           className="absolute bottom-0.5 right-0.5 w-4 h-4 text-gray-400"
           fill="currentColor"
           viewBox="0 0 16 16"
         >
-          <path d="M15 14l-5-5m5 5l-5-5m5 5v-4m0 4h-4"/>
-          <path d="M11 10l-4-4m4 4l-4-4"/>
-          <path d="M7 6l-4-4m4 4l-4-4"/>
+          <path d="M15 14l-5-5m5 5l-5-5m5 5v-4m0 4h-4" />
+          <path d="M11 10l-4-4m4 4l-4-4" />
+          <path d="M7 6l-4-4m4 4l-4-4" />
         </svg>
       </div>
     </div>

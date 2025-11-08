@@ -162,7 +162,7 @@ export async function generateAIResponse(
 /**
  * Create personality-specific system prompts
  */
-function createSystemPrompt(context: PersonalityContext): string {
+export function createSystemPrompt(context: PersonalityContext): string {
   const currentTime = new Date().toLocaleString('en-US', {
     timeZone: 'America/Chicago',
   });

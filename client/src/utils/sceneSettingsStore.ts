@@ -31,7 +31,9 @@ export function getDefaultSettings(): SceneSettings {
     devDebug: false,
     sceneBackgroundFromRP: true, // Phase 3: Enabled by default
     sceneRoomOverlaysEnabled: true, // Room Overlays V1: Enabled by default
-    backgroundMode: 'auto', // Default to auto-detect (CSS animated with static image fallback)
+    // Default to static-image so developers see static backgrounds by default.
+    // Users can still change to 'auto' or 'css-animated' via settings UI.
+    backgroundMode: 'static-image', // Default to static-image (use static backgrounds when available)
   };
 }
 
@@ -145,7 +147,7 @@ export function onSettingsChange(
   callback: (settings: SceneSettings) => void
 ): () => void {
   if (typeof window === 'undefined') {
-    return () => {};
+    return () => { };
   }
 
   const handler = () => {

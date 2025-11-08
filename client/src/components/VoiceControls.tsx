@@ -8,6 +8,10 @@ interface VoiceControlsProps {
   onStop: () => void;
   onReplay: () => void;
 
+  // Optional caption controls
+  showCaptions?: boolean;
+  onToggleCaptions?: (next: boolean) => void;
+
   className?: string;
 }
 
@@ -19,6 +23,8 @@ export function VoiceControls({
   onReplay,
 
   className = '',
+  showCaptions = false,
+  onToggleCaptions,
 }: VoiceControlsProps) {
   const [isPaused, setIsPaused] = useState(false);
 
@@ -87,8 +93,18 @@ export function VoiceControls({
           Replay
         </Button>
       )}
-
-
+      {/* Captions toggle - always available */}
+      <Button
+        size="sm"
+        variant={showCaptions ? 'default' : 'outline'}
+        className="border-white/30 text-white/70 hover:text-white"
+        onClick={() => onToggleCaptions?.(!showCaptions)}
+        title={showCaptions ? 'Hide captions' : 'Show captions'}
+        aria-pressed={showCaptions}
+      >
+        <i className="fas fa-closed-captioning mr-1"></i>
+        CC
+      </Button>
     </div>
   );
 }
