@@ -6,16 +6,34 @@ vite.config.ts.*
 *.tar.gz
 .avatar-backup
 
+.venv
+.local
+.config
+.idx
+python/
+
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# Memory backups
+# Logs and debug files
+*.log
+*.pid
+debug*.html
+audit*.log
+
+# Memory backups and personal data
 memory/*.backup-*
 memory/milla.db
 memory/visual_memories.json
+memory/memories.txt
+memory/memories_encrypted.txt
+memory/merged_memories.txt
+memory/*.csv
+memory/audio_messages/
+memory/pr_memories/
 
 # SQLite database files (may contain sensitive data)
 *.db
@@ -34,6 +52,8 @@ memory/*.db-wal
 .env.development
 .env.*.local
 *.env
+.env.save*
+.env.backup*
 
 # Storage audit and cleanup temporary files
 audit_report.txt
