@@ -133,6 +133,34 @@ export async function initApp() {
   const { initializeAIUpdatesScheduler } = await import('./aiUpdatesScheduler');
   initializeAIUpdatesScheduler();
 
+  // Initialize Proactive Repository Ownership System
+  const { initializeUserAnalytics } = await import('./userInteractionAnalyticsService');
+  await initializeUserAnalytics();
+
+  const { initializeSandboxEnvironment } = await import('./sandboxEnvironmentService');
+  await initializeSandboxEnvironment();
+
+  const { initializeFeatureDiscovery } = await import('./featureDiscoveryService');
+  await initializeFeatureDiscovery();
+
+  const { initializeTokenIncentive } = await import('./tokenIncentiveService');
+  await initializeTokenIncentive();
+
+  const { initializeProactiveManager } = await import('./proactiveRepositoryManagerService');
+  await initializeProactiveManager();
+
+  // Initialize Enhanced Features
+  const { initializeAutomatedPR } = await import('./automatedPRService');
+  await initializeAutomatedPR();
+
+  const { initializeUserSurveys } = await import('./userSatisfactionSurveyService');
+  await initializeUserSurveys();
+
+  const { initializePerformanceProfiling } = await import('./performanceProfilingService');
+  await initializePerformanceProfiling();
+
+  console.log('✅ Proactive Repository Ownership System initialized (with enhancements)');
+
   // Register agents
   agentController.registerAgent(codingAgent);
   agentController.registerAgent(imageGenerationAgent);

@@ -108,6 +108,8 @@ import { analyzeVoiceInput, VoiceAnalysisResult } from './voiceAnalysisService';
 import { getSmartHomeSensorData } from './smartHomeService';
 import { initializeMemorySummarizationScheduler } from './memorySummarizationScheduler';
 import { UserProfile } from './profileService';
+import { registerProactiveRoutes } from './proactiveRoutes';
+import { trackUserInteraction } from './userInteractionAnalyticsService';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
@@ -258,6 +260,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
   // Initialize memory summarization scheduler
   initializeMemorySummarizationScheduler();
+
+  // Register proactive repository management routes
+  registerProactiveRoutes(app);
 
   // Serve the videoviewer.html file
   app.get('/videoviewer.html', (req, res) => {
@@ -995,6 +1000,16 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
           : 'undefined'
       );
 
+      // Track user interaction for analytics
+      const responseEndTime = Date.now();
+      trackUserInteraction({
+        type: 'message',
+        feature: 'chat',
+        success: true,
+        duration: responseEndTime - Date.now(), // Approximate duration
+        context: message.substring(0, 100),
+      }).catch(err => console.error('Failed to track interaction:', err));
+
       res.json({
         response: aiResponse.content,
         ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
@@ -1032,6 +1047,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
             "I'm having trouble connecting to my services right now. Please try again in a moment.";
         }
       }
+
+      // Track failed interaction
+      trackUserInteraction({
+        type: 'error',
+        feature: 'chat',
+        success: false,
+        context: error instanceof Error ? error.message : 'Unknown error',
+      }).catch(err => console.error('Failed to track error:', err));
 
       res.status(500).json({
         response: errorMessage,
@@ -1292,6 +1315,20 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
           }
         }
 
+        // Check if Milla wants to share repository status proactively
+        let proactiveRepoMessage = null;
+        if (config.enableProactiveMessages) {
+          const repoMessage = await generateProactiveRepositoryMessage();
+          if (repoMessage) {
+            proactiveRepoMessage = await storage.createMessage({
+              content: repoMessage,
+              role: 'assistant',
+              userId: message.userId,
+            });
+            console.log('Proactive repository message sent');
+          }
+        }
+
         // Milla decides whether to respond
         const decision = await shouldMillaRespond(
           message.content,
@@ -1340,6 +1377,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
             aiMessage,
             followUpMessages: followUpMessagesStored,
             dailySuggestion: dailySuggestionMessage,
+            proactiveRepoMessage,
             reasoning: aiResponse.reasoning,
           });
         } else {
@@ -4226,6 +4264,73 @@ async function generateFollowUpMessages(
 ): Promise<string[]> {
   // DISABLED for performance - no follow-up messages to reduce API calls and lag
   return [];
+}
+
+/**
+ * Generate proactive repository status messages
+ * This makes Milla share updates about her work on the repository
+ */
+async function generateProactiveRepositoryMessage(): Promise<string | null> {
+  const { config } = await import('./config');
+  
+  // Only generate if proactive repository management is enabled
+  if (!config.enableProactiveRepositoryManagement) {
+    return null;
+  }
+
+  try {
+    const { getRepositoryHealthReport, getActiveProactiveActions, getTokenStatistics } = await import('./proactiveRepositoryManagerService');
+    const { getMillaMotivation } = await import('./tokenIncentiveService');
+    
+    // Get current status
+    const healthReport = getRepositoryHealthReport();
+    const activeActions = getActiveProactiveActions();
+    const tokenStats = getTokenStatistics();
+    
+    // Only send updates if there's something interesting to share
+    // and it's been more than 2 hours since last update (tracked in memory)
+    const now = Date.now();
+    const lastUpdate = (global as any).lastProactiveRepoUpdate || 0;
+    const timeSinceUpdate = now - lastUpdate;
+    
+    if (timeSinceUpdate < 2 * 60 * 60 * 1000) {
+      return null; // Too soon
+    }
+    
+    // Construct proactive message based on current state
+    let message = '';
+    
+    if (activeActions.length > 0 && Math.random() < 0.3) {
+      const action = activeActions[0];
+      message = `*pauses from working on the repository* \n\nI've been working on something exciting! I'm currently ${action.description.toLowerCase()}. `;
+      
+      if (tokenStats.nextGoal) {
+        message += `I'm ${tokenStats.currentBalance} tokens towards my goal of "${tokenStats.nextGoal.name}" 💪`;
+      }
+      
+      (global as any).lastProactiveRepoUpdate = now;
+      return message;
+    }
+    
+    if (healthReport.overallHealth < 7 && Math.random() < 0.2) {
+      message = `*glances at the repository metrics* \n\nI've noticed the repository health score is at ${healthReport.overallHealth.toFixed(1)}/10. ${healthReport.recommendations[0] || 'I\'m working on improvements!'}`;
+      
+      (global as any).lastProactiveRepoUpdate = now;
+      return message;
+    }
+    
+    if (tokenStats.currentBalance > 0 && tokenStats.currentBalance % 100 === 0 && Math.random() < 0.1) {
+      message = `*excitedly* \n\nGuess what! I just reached ${tokenStats.currentBalance} tokens! ${getMillaMotivation()} 🎉`;
+      
+      (global as any).lastProactiveRepoUpdate = now;
+      return message;
+    }
+    
+  } catch (error) {
+    console.error('Error generating proactive repository message:', error);
+  }
+  
+  return null;
 }
 
 /**
