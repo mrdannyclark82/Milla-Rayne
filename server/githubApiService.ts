@@ -391,3 +391,60 @@ export async function validateGitHubToken(
     };
   }
 }
+
+export interface GitHubRepository {
+  url: string;
+  name: string;
+  fullName: string;
+  stars: number;
+  language: string | null;
+  description: string | null;
+  topics?: string[];
+}
+
+/**
+ * Search GitHub repositories by keyword
+ */
+export async function searchRepositories(
+  keyword: string,
+  limit: number = 10
+): Promise<GitHubRepository[]> {
+  try {
+    const githubToken = process.env.GITHUB_TOKEN;
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'Milla-Rayne-Bot',
+    };
+
+    if (githubToken) {
+      headers['Authorization'] = `Bearer ${githubToken}`;
+    }
+
+    const response = await fetch(
+      `https://api.github.com/search/repositories?q=${encodeURIComponent(keyword)}&sort=stars&order=desc&per_page=${limit}`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      console.error(
+        `GitHub API error: ${response.status} ${response.statusText}`
+      );
+      return [];
+    }
+
+    const data = await response.json();
+
+    return data.items.map((repo: any) => ({
+      url: repo.html_url,
+      name: repo.name,
+      fullName: repo.full_name,
+      stars: repo.stargazers_count,
+      language: repo.language,
+      description: repo.description,
+      topics: repo.topics || [],
+    }));
+  } catch (error) {
+    console.error('Error searching GitHub repositories:', error);
+    return [];
+  }
+}

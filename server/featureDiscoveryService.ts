@@ -7,7 +7,7 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { searchRepositories } from './searchService';
+import { searchRepositories } from './githubApiService';
 
 export interface DiscoveredFeature {
   id: string;
