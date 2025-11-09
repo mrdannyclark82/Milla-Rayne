@@ -1,6 +1,36 @@
 # Milla Rayne - AI Companion
 
-A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue)](https://www.typescriptlang.org/)
+[![CI](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CI/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mrdannyclark82/Milla-Rayne/branch/main/graph/badge.svg)](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
+
+> A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+
+## 📑 Table of Contents
+
+- [Latest Updates](#latest-updates-)
+- [Platforms](#available-platforms)
+  - [Web App](#-web-app)
+  - [CLI](#-cli)
+  - [Android](#-android-app)
+- [Key Features](#-key-features)
+- [Quick Start](#quick-start)
+  - [Web App](#web-app-default)
+  - [CLI](#cli-version)
+  - [Android](#android-app)
+  - [Docker Deployment](#-docker-deployment)
+- [Configuration](#ai-service-configuration)
+- [Development](#development)
+  - [CI/CD](#cicd-pipeline)
+  - [Testing](#testing)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
 
 **Available on multiple platforms:**
 
@@ -69,19 +99,36 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 **Quick Start**: Open `android/` in Android Studio  
 **Documentation**: [android/APP_README.md](android/APP_README.md)
 
-## Features
+## ✨ Key Features
 
-- **🔒 Data Encryption**: Optional field-level encryption for sensitive conversation data
-- **Modern UI**: Chat interface positioned to showcase full-screen background image
-- **🎨 Adaptive Scene Backgrounds**: Dynamic CSS animated gradients or static image backgrounds per room/location
-- **🎙️ Multi-Provider Voice**: Support for Google Cloud, Azure, ElevenLabs TTS with automatic fallback
-- **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
-- **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
-- **AI Enhancement Suggestions**: Powered by DeepSeek via OpenRouter
+### 🔐 Privacy & Security
+- **Field-Level Encryption**: AES-256-GCM encryption for sensitive conversation data
+- **Local Storage**: All data stored locally with SQLite database
+- **No Cloud Lock-in**: Works with multiple AI providers or self-hosted models
+
+### 🎨 User Experience
+- **Modern UI**: Beautiful chat interface with full-screen backgrounds
+- **Adaptive Scenes**: Dynamic CSS animated gradients that change with context
+- **Multi-Platform**: Web, CLI, and native Android app
 - **Real-time Chat**: Instant messaging with personality-aware responses
+
+### 🎙️ Voice Interaction
+- **Multi-Provider TTS**: Support for Google Cloud, Azure, ElevenLabs, and browser-native voices
+- **Speech-to-Text**: Use your microphone for voice input
+- **Low Latency**: Optimized for natural conversation flow
+- **Automatic Fallback**: Seamless provider switching
+
+### 🧠 Intelligence
+- **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
+- **Multiple AI Providers**: OpenRouter (DeepSeek, Qwen), xAI (Grok), Mistral, and more
 - **Visual Recognition**: Video analysis and face recognition capabilities
-- **Repository Analysis**: Analyze GitHub repositories to understand codebase structure and quality
-- **Repository Improvements**: Generate actionable improvement suggestions for GitHub repositories
+- **Code Generation**: Specialized Qwen Coder model for programming tasks
+
+### 🔧 Developer Features
+- **Repository Analysis**: Analyze GitHub repositories for structure and quality
+- **AI Suggestions**: Automated code improvement recommendations
+- **Extensible**: Easy to add new AI providers and features
+- **Well-Documented**: Comprehensive guides and API documentation
 
 ## AI Service Configuration
 
@@ -191,6 +238,27 @@ To build and run the Android app:
 3. Build and run on an emulator or device
 
 See [android/APP_README.md](android/APP_README.md) for complete setup instructions.
+
+### 🐳 Docker Deployment
+
+Run Milla Rayne with Docker for easy deployment:
+
+```bash
+# Using Docker Compose (recommended)
+cp .env.example .env  # Edit with your API keys
+docker-compose up
+
+# Or build and run manually
+docker build -t milla-rayne .
+docker run -p 5000:5000 --env-file .env milla-rayne
+```
+
+**Pre-built images available:**
+```bash
+docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
+```
+
+See [CICD_DOCUMENTATION.md](CICD_DOCUMENTATION.md) for detailed Docker documentation.
 
 ### First-Time Setup
 
@@ -899,3 +967,177 @@ Code style is enforced by ESLint and Prettier. Please run `npm run format` and `
 #### API
 
 The backend exposes a RESTful API under the `/api/` path. The routes are defined in `server/routes.ts`. The server is responsible for handling all AI service calls, database interactions, and business logic.
+
+## Development
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+#### Automated Workflows
+
+- **CI**: Runs on every push and PR
+  - Linting and formatting checks
+  - TypeScript type checking
+  - Unit tests with coverage
+  - Build verification
+  - Matrix testing on Node.js 18.x and 20.x
+
+- **PR Checks**: Comprehensive checks for pull requests
+  - Code quality analysis
+  - Security audits
+  - Bundle size reporting
+  - Test coverage reporting
+
+- **CodeQL**: Security vulnerability scanning
+  - Weekly automated scans
+  - JavaScript/TypeScript and Python analysis
+
+- **Release**: Automated release management
+  - Triggered by version tags (`v*.*.*`)
+  - Builds Docker images
+  - Creates GitHub releases with artifacts
+
+See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for complete CI/CD setup guide.
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+```
+
+**Coverage Goals:**
+- Lines: 80%+
+- Functions: 80%+
+- Branches: 80%+
+- Statements: 80%+
+
+View coverage reports:
+- Locally: `coverage/index.html`
+- Online: [Codecov Dashboard](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
+
+### Code Quality
+
+```bash
+# Run linter
+npm run lint
+
+# Check formatting
+npm run format -- --check
+
+# Auto-fix formatting
+npm run format
+
+# TypeScript type check
+npm run check
+```
+
+### Docker Development
+
+```bash
+# Build image locally
+docker build -t milla-rayne:dev .
+
+# Run with docker-compose
+docker-compose up
+
+# Run in development mode with volume mounting
+docker-compose -f docker-compose.dev.yml up  # (if available)
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
+
+## Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### Getting Started
+
+1. **Fork the repository** and clone it locally
+2. **Create a branch** for your feature: `git checkout -b feature/amazing-feature`
+3. **Make your changes** and test thoroughly
+4. **Commit your changes**: `git commit -m 'Add amazing feature'`
+5. **Push to your fork**: `git push origin feature/amazing-feature`
+6. **Open a Pull Request** with a clear description of your changes
+
+### Guidelines
+
+- Follow the existing code style (enforced by ESLint and Prettier)
+- Write clear commit messages
+- Add tests for new features
+- Update documentation as needed
+- Be respectful and constructive in discussions
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+### Good First Issues
+
+Looking for somewhere to start? Check out issues labeled `good-first-issue` in the issue tracker.
+
+## Security
+
+Security is a top priority for this project. If you discover a security vulnerability:
+
+1. **DO NOT** open a public issue
+2. Email the details to the repository maintainers
+3. Allow time for the issue to be addressed before public disclosure
+
+See [SECURITY.md](SECURITY.md) for more information about:
+- Security features (field-level encryption, memory security)
+- Best practices for API key management
+- How to report vulnerabilities
+- Security update policy
+
+**Before making this repository public**, please review:
+- [SECURITY_AUDIT_CHECKLIST.md](SECURITY_AUDIT_CHECKLIST.md) - Critical security items to address
+- Rotate all exposed API keys
+- Review git history for sensitive data
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ Commercial use
+- ✅ Modification
+- ✅ Distribution
+- ✅ Private use
+- ⚠️ Liability and warranty disclaimers apply
+
+## Acknowledgments
+
+- Built with [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), and [Express](https://expressjs.com/)
+- AI powered by multiple providers including OpenRouter, xAI, and Mistral
+- Voice synthesis via Google Cloud TTS, Azure TTS, and ElevenLabs
+- Memory system built on [SQLite](https://www.sqlite.org/) with [Drizzle ORM](https://orm.drizzle.team/)
+
+## Support
+
+- 📖 **Documentation**: Check the `/docs` directory for detailed guides
+- 💬 **Discussions**: Use GitHub Discussions for questions and community chat
+- 🐛 **Bug Reports**: Open an issue with the `bug` label
+- 💡 **Feature Requests**: Open an issue with the `enhancement` label
+
+## Roadmap
+
+See [REPOSITORY_ENHANCEMENT_GUIDE.md](REPOSITORY_ENHANCEMENT_GUIDE.md) for future plans and enhancement ideas.
+
+---
+
+**Made with ❤️ by the Milla Rayne community**
