@@ -1,9 +1,9 @@
 /**
  * YouTube News Monitor Service
- * 
+ *
  * Automates daily searches for AI, tech, and coding news on YouTube.
  * Integrates with knowledge base and daily suggestions system.
- * 
+ *
  * Sprint 3 Features:
  * - Automated daily news searches
  * - AI/coding news categorization
@@ -173,9 +173,11 @@ export const NEWS_CATEGORIES: NewsCategory[] = [
 /**
  * Run daily news search across all categories
  */
-export async function runDailyNewsSearch(userId: string = 'default-user'): Promise<DailyNewsDigest> {
+export async function runDailyNewsSearch(
+  userId: string = 'default-user'
+): Promise<DailyNewsDigest> {
   console.log('📰 Starting daily YouTube news search...');
-  
+
   const today = new Date().toISOString().split('T')[0];
   const digest: DailyNewsDigest = {
     date: today,
@@ -188,14 +190,14 @@ export async function runDailyNewsSearch(userId: string = 'default-user'): Promi
   // Search each category
   for (const category of NEWS_CATEGORIES) {
     console.log(`🔍 Searching: ${category.name}`);
-    
+
     try {
       const categoryNews = await searchCategoryNews(category, userId);
-      
+
       if (categoryNews.length > 0) {
         digest.categories[category.name] = categoryNews;
         digest.totalVideos += categoryNews.length;
-        
+
         // Add top story from high-priority categories to top stories
         if (category.priority >= 8 && categoryNews.length > 0) {
           digest.topStories.push(categoryNews[0]);
@@ -211,8 +213,10 @@ export async function runDailyNewsSearch(userId: string = 'default-user'): Promi
   digest.topStories.sort((a, b) => b.relevanceScore - a.relevanceScore);
   digest.topStories = digest.topStories.slice(0, 5);
 
-  console.log(`✅ Daily news search complete: ${digest.totalVideos} videos found`);
-  
+  console.log(
+    `✅ Daily news search complete: ${digest.totalVideos} videos found`
+  );
+
   return digest;
 }
 
@@ -224,11 +228,11 @@ async function searchCategoryNews(
   userId: string
 ): Promise<NewsItem[]> {
   const results: NewsItem[] = [];
-  
+
   // Build search query from top keywords
   const searchQuery = category.keywords.slice(0, 3).join(' OR ');
   const timeFilter = getTimeFilterQuery(); // Last 24 hours
-  
+
   try {
     const searchResult = await searchVideos(
       userId,
@@ -257,7 +261,9 @@ async function searchCategoryNews(
   }
 
   // Sort by relevance and return top 5
-  return results.sort((a, b) => b.relevanceScore - a.relevanceScore).slice(0, 5);
+  return results
+    .sort((a, b) => b.relevanceScore - a.relevanceScore)
+    .slice(0, 5);
 }
 
 /**
@@ -311,19 +317,19 @@ export async function analyzeTopNews(
   maxAnalyze: number = 3
 ): Promise<number> {
   console.log(`🔬 Auto-analyzing top ${maxAnalyze} news stories...`);
-  
+
   let analyzedCount = 0;
 
   for (const story of digest.topStories.slice(0, maxAnalyze)) {
     try {
       console.log(`📊 Analyzing: ${story.title}`);
-      
+
       // Run millAlyzer analysis
       const analysis = await analyzeVideoWithMillAlyzer(story.videoId);
-      
+
       // Save to knowledge base
       await saveToKnowledgeBase(analysis, userId);
-      
+
       analyzedCount++;
       console.log(`✅ Analyzed and saved: ${story.title}`);
     } catch (error) {
@@ -332,7 +338,9 @@ export async function analyzeTopNews(
     }
   }
 
-  console.log(`🎯 Auto-analysis complete: ${analyzedCount}/${maxAnalyze} stories analyzed`);
+  console.log(
+    `🎯 Auto-analysis complete: ${analyzedCount}/${maxAnalyze} stories analyzed`
+  );
   return analyzedCount;
 }
 
@@ -386,12 +394,12 @@ export async function createDailySuggestionFromNews(
   digest: DailyNewsDigest
 ): Promise<void> {
   const suggestionText = formatNewsDigestAsSuggestion(digest);
-  
+
   const metadata = {
     type: 'youtube_news_digest',
     totalVideos: digest.totalVideos,
     categories: Object.keys(digest.categories),
-    topStories: digest.topStories.map(s => s.videoId),
+    topStories: digest.topStories.map((s) => s.videoId),
     analyzedCount: digest.analysisCount,
   };
 
@@ -415,25 +423,27 @@ export async function createDailySuggestionFromNews(
 /**
  * Run complete daily news monitoring cycle
  */
-export async function runDailyNewsMonitoring(userId: string = 'default-user'): Promise<DailyNewsDigest> {
+export async function runDailyNewsMonitoring(
+  userId: string = 'default-user'
+): Promise<DailyNewsDigest> {
   console.log('🚀 Running daily news monitoring cycle...');
-  
+
   try {
     // 1. Search for news across all categories
     const digest = await runDailyNewsSearch(userId);
-    
+
     // 2. Auto-analyze top stories
     const analyzedCount = await analyzeTopNews(digest, userId, 3);
     digest.analysisCount = analyzedCount;
-    
+
     // 3. Create daily suggestion
     await createDailySuggestionFromNews(digest);
-    
+
     console.log('✅ Daily news monitoring complete!');
     console.log(`   📊 ${digest.totalVideos} videos found`);
     console.log(`   🔬 ${digest.analysisCount} stories analyzed`);
     console.log(`   📝 Daily suggestion created`);
-    
+
     return digest;
   } catch (error) {
     console.error('Error in daily news monitoring:', error);
@@ -454,7 +464,7 @@ export async function searchNewsByCategory(
   limit: number = 10
 ): Promise<NewsItem[]> {
   const category = NEWS_CATEGORIES.find(
-    c => c.name.toLowerCase() === categoryName.toLowerCase()
+    (c) => c.name.toLowerCase() === categoryName.toLowerCase()
   );
 
   if (!category) {
@@ -468,7 +478,7 @@ export async function searchNewsByCategory(
  * Get available news categories
  */
 export function getNewsCategories(): string[] {
-  return NEWS_CATEGORIES.map(c => c.name).sort();
+  return NEWS_CATEGORIES.map((c) => c.name).sort();
 }
 
 /**

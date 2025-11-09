@@ -63,9 +63,6 @@ export async function getMySubscriptions(
   }
 }
 
-
-
-
 export async function getVideoDetails(
   videoId: string,
   userId: string = 'default-user'
@@ -145,7 +142,8 @@ export async function searchVideos(
 
   try {
     // Try using Google API key first (doesn't require OAuth)
-    const apiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY;
+    const apiKey =
+      process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY;
 
     if (apiKey) {
       console.log('Using YouTube Data API with API key for search:', query);
@@ -164,7 +162,11 @@ export async function searchVideos(
 
       if (response.ok) {
         const data = await response.json();
-        console.log('YouTube search successful, found', data.items?.length || 0, 'results');
+        console.log(
+          'YouTube search successful, found',
+          data.items?.length || 0,
+          'results'
+        );
         return {
           success: true,
           message: 'Search successful',
@@ -182,7 +184,8 @@ export async function searchVideos(
     if (!accessToken) {
       return {
         success: false,
-        message: 'You need to connect your Google account first, or add a GOOGLE_API_KEY to your .env file.',
+        message:
+          'You need to connect your Google account first, or add a GOOGLE_API_KEY to your .env file.',
         error: 'NO_TOKEN',
       };
     }
@@ -284,7 +287,10 @@ export async function getChannelDetails(
       data: data.items[0],
     };
   } catch (error) {
-    console.error('[Google YouTube API] Error fetching channel details:', error);
+    console.error(
+      '[Google YouTube API] Error fetching channel details:',
+      error
+    );
     return {
       success: false,
       message: `An error occurred while fetching channel details: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -342,7 +348,10 @@ export async function getTrendingVideos(
       data: data.items,
     };
   } catch (error) {
-    console.error('[Google YouTube API] Error fetching trending videos:', error);
+    console.error(
+      '[Google YouTube API] Error fetching trending videos:',
+      error
+    );
     return {
       success: false,
       message: `An error occurred while fetching trending videos: ${error instanceof Error ? error.message : 'Unknown error'}`,

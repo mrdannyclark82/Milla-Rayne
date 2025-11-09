@@ -179,8 +179,8 @@ export const RealisticSceneBackground: React.FC<
       aria-hidden="true"
       role="presentation"
     >
-      <img 
-        src={imageUrl} 
+      <img
+        src={imageUrl}
         alt=""
         style={{
           width: '100%',

@@ -1,6 +1,6 @@
 /**
  * millAlyzer Tests - YouTube Video Analysis
- * 
+ *
  * Comprehensive tests for the YouTube intelligence system
  */
 
@@ -30,7 +30,11 @@ describe('millAlyzer - Video Analysis', () => {
       const { YoutubeTranscript } = await import('youtube-transcript');
       vi.mocked(YoutubeTranscript.fetchTranscript).mockResolvedValue([
         { text: 'Welcome to this Docker tutorial', offset: 0, duration: 5000 },
-        { text: 'We will install Docker using npm install docker', offset: 5000, duration: 5000 },
+        {
+          text: 'We will install Docker using npm install docker',
+          offset: 5000,
+          duration: 5000,
+        },
         { text: 'Then run docker run -d redis', offset: 10000, duration: 5000 },
       ]);
 
@@ -57,7 +61,9 @@ describe('millAlyzer - Video Analysis', () => {
 
     it('should handle videos without transcripts gracefully', async () => {
       const { YoutubeTranscript } = await import('youtube-transcript');
-      vi.mocked(YoutubeTranscript.fetchTranscript).mockRejectedValue(new Error('No transcript'));
+      vi.mocked(YoutubeTranscript.fetchTranscript).mockRejectedValue(
+        new Error('No transcript')
+      );
 
       const { getVideoInfo } = await import('../youtubeAnalysisService');
       vi.mocked(getVideoInfo).mockResolvedValue({
@@ -103,7 +109,11 @@ describe('millAlyzer - Video Analysis', () => {
   });
 
   describe('Video Type Detection', () => {
-    const testCases: Array<{ title: string; description: string; expected: VideoType }> = [
+    const testCases: Array<{
+      title: string;
+      description: string;
+      expected: VideoType;
+    }> = [
       {
         title: 'React Tutorial for Beginners',
         description: 'Learn React step by step',
@@ -129,11 +139,23 @@ describe('millAlyzer - Video Analysis', () => {
 
         let detected: VideoType = 'other';
 
-        if (titleLower.includes('tutorial') || titleLower.includes('how to') || descLower.includes('step by step')) {
+        if (
+          titleLower.includes('tutorial') ||
+          titleLower.includes('how to') ||
+          descLower.includes('step by step')
+        ) {
           detected = 'tutorial';
-        } else if (titleLower.includes('breaking') || titleLower.includes('news') || descLower.includes('latest')) {
+        } else if (
+          titleLower.includes('breaking') ||
+          titleLower.includes('news') ||
+          descLower.includes('latest')
+        ) {
           detected = 'news';
-        } else if (titleLower.includes('discussion') || titleLower.includes('panel') || descLower.includes('discuss')) {
+        } else if (
+          titleLower.includes('discussion') ||
+          titleLower.includes('panel') ||
+          descLower.includes('discuss')
+        ) {
           detected = 'discussion';
         }
 
@@ -171,10 +193,18 @@ describe('millAlyzer - Video Analysis', () => {
       testSnippets.forEach(({ code, expected }) => {
         let detected = 'unknown';
 
-        if (code.includes('const') || code.includes('let') || code.includes('var')) detected = 'javascript';
-        else if (code.includes('def ') || code.includes('import ')) detected = 'python';
-        else if (code.startsWith('FROM ') || code.includes('RUN ')) detected = 'dockerfile';
-        else if (code.includes('SELECT') || code.includes('INSERT')) detected = 'sql';
+        if (
+          code.includes('const') ||
+          code.includes('let') ||
+          code.includes('var')
+        )
+          detected = 'javascript';
+        else if (code.includes('def ') || code.includes('import '))
+          detected = 'python';
+        else if (code.startsWith('FROM ') || code.includes('RUN '))
+          detected = 'dockerfile';
+        else if (code.includes('SELECT') || code.includes('INSERT'))
+          detected = 'sql';
 
         expect(detected).toBe(expected);
       });
@@ -183,20 +213,26 @@ describe('millAlyzer - Video Analysis', () => {
 
   describe('CLI Command Extraction', () => {
     it('should extract npm commands', () => {
-      const transcript = 'First install express with npm install express then run npm start';
-      
-      const npmCommands = transcript.match(/npm\s+(install|start|run|build|test)\s+[\w-]*/g);
-      
+      const transcript =
+        'First install express with npm install express then run npm start';
+
+      const npmCommands = transcript.match(
+        /npm\s+(install|start|run|build|test)\s+[\w-]*/g
+      );
+
       expect(npmCommands).toBeDefined();
       expect(npmCommands).toContain('npm install express');
       expect(npmCommands).toContain('npm start');
     });
 
     it('should extract docker commands', () => {
-      const transcript = 'Run docker build -t myapp and then docker run -p 3000:3000 myapp';
-      
-      const dockerCommands = transcript.match(/docker\s+(build|run|pull|push)[\s\S]*?(?=\s+and|\s+then|$)/g);
-      
+      const transcript =
+        'Run docker build -t myapp and then docker run -p 3000:3000 myapp';
+
+      const dockerCommands = transcript.match(
+        /docker\s+(build|run|pull|push)[\s\S]*?(?=\s+and|\s+then|$)/g
+      );
+
       expect(dockerCommands).toBeDefined();
       expect(dockerCommands!.length).toBe(2);
     });
@@ -213,7 +249,8 @@ describe('millAlyzer - Video Analysis', () => {
         let detected = 'all';
 
         if (cmd.includes('brew')) detected = 'mac';
-        else if (cmd.includes('apt-get') || cmd.includes('apt ')) detected = 'linux';
+        else if (cmd.includes('apt-get') || cmd.includes('apt '))
+          detected = 'linux';
         else if (cmd.includes('choco')) detected = 'windows';
 
         expect(detected).toBe(platform);
@@ -231,7 +268,7 @@ describe('millAlyzer - Video Analysis', () => {
 
       const importantPhrases = ['important', 'key', 'critical', 'essential'];
       const keyPoints = transcript.filter((t: any) =>
-        importantPhrases.some(phrase => t.text.toLowerCase().includes(phrase))
+        importantPhrases.some((phrase) => t.text.toLowerCase().includes(phrase))
       );
 
       expect(keyPoints.length).toBeGreaterThan(0);
@@ -261,20 +298,22 @@ describe('millAlyzer - Video Analysis', () => {
 
       const isValidId = (id: string) => /^[a-zA-Z0-9_-]{11}$/.test(id);
 
-      validIds.forEach(id => expect(isValidId(id)).toBe(true));
-      invalidIds.forEach(id => expect(isValidId(id)).toBe(false));
+      validIds.forEach((id) => expect(isValidId(id)).toBe(true));
+      invalidIds.forEach((id) => expect(isValidId(id)).toBe(false));
     });
   });
 
   describe('Analysis Summary', () => {
     it('should generate concise summaries', () => {
-      const longText = 'This is a very long transcript that goes on and on about Docker containers and how to use them with various commands and configurations for production environments.';
-      
+      const longText =
+        'This is a very long transcript that goes on and on about Docker containers and how to use them with various commands and configurations for production environments.';
+
       // Summary should be shorter than original
       const maxLength = 100;
-      const summary = longText.length > maxLength 
-        ? longText.substring(0, maxLength) + '...'
-        : longText;
+      const summary =
+        longText.length > maxLength
+          ? longText.substring(0, maxLength) + '...'
+          : longText;
 
       expect(summary.length).toBeLessThanOrEqual(maxLength + 3);
     });

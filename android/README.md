@@ -40,14 +40,14 @@ See `example/MainScreenExample.kt` for a complete integration example.
 fun YourMainScreen() {
     val context = LocalContext.current
     val featureFlags = remember { AdaptiveSceneFeatureFlags(context) }
-    
+
     val sceneContext = SceneContext(
         timeOfDay = getCurrentTimeOfDay(),
         appState = AppState.IDLE,
         reducedMotion = prefersReducedMotion(context),
         performanceMode = featureFlags.getPerformanceMode()
     )
-    
+
     AdaptiveSceneDemo(
         enabled = featureFlags.isEnabled(),
         context = sceneContext
@@ -84,6 +84,7 @@ featureFlags.setPerformanceMode(PerformanceMode.BALANCED)
 ## Accessibility
 
 Automatically respects:
+
 - System animator duration scale
 - Transition animation scale
 - Power saver mode

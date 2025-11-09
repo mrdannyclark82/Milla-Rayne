@@ -11,8 +11,6 @@
  * - OAuth flow
  */
 
-
-
 vi.mock('dotenv');
 
 // Mock environment variables for testing
@@ -197,7 +195,7 @@ describe('Browser Integration Service', () => {
 
       expect(authUrl).toContain('https://accounts.google.com/o/oauth2/v2/auth');
       expect(authUrl).toContain('client_id=');
-      
+
       expect(authUrl).toContain('scope=');
       expect(authUrl).toContain('calendar');
       expect(authUrl).toContain('tasks');

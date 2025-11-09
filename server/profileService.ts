@@ -27,7 +27,11 @@ async function loadProfiles(): Promise<void> {
 
 async function saveProfiles(): Promise<void> {
   try {
-    await fs.writeFile(PROFILES_FILE, JSON.stringify(profiles, null, 2), 'utf-8');
+    await fs.writeFile(
+      PROFILES_FILE,
+      JSON.stringify(profiles, null, 2),
+      'utf-8'
+    );
   } catch (error) {
     console.error('Error saving profiles:', error);
     throw error;
@@ -36,12 +40,15 @@ async function saveProfiles(): Promise<void> {
 
 export async function getProfile(userId: string): Promise<UserProfile | null> {
   await loadProfiles();
-  return profiles.find(p => p.id === userId) || null;
+  return profiles.find((p) => p.id === userId) || null;
 }
 
-export async function updateProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
+export async function updateProfile(
+  userId: string,
+  updates: Partial<UserProfile>
+): Promise<UserProfile | null> {
   await loadProfiles();
-  const profileIndex = profiles.findIndex(p => p.id === userId);
+  const profileIndex = profiles.findIndex((p) => p.id === userId);
   if (profileIndex === -1) {
     const newProfile: UserProfile = {
       id: userId,

@@ -1,168 +1,199 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audio Tone Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body, html {
-            height: 100%;
-        }
+      body,
+      html {
+        height: 100%;
+      }
     </style>
-</head>
-<body class="bg-gray-900 text-white flex items-center justify-center p-4">
-    <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full text-center space-y-6">
-        <h1 class="text-3xl font-bold text-teal-300">Tone Analyzer (API Ready)</h1>
-        <p class="text-gray-400">
-            This application is controlled programmatically.
-        </p>
+  </head>
+  <body class="bg-gray-900 text-white flex items-center justify-center p-4">
+    <div
+      class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full text-center space-y-6"
+    >
+      <h1 class="text-3xl font-bold text-teal-300">
+        Tone Analyzer (API Ready)
+      </h1>
+      <p class="text-gray-400">
+        This application is controlled programmatically.
+      </p>
 
-        <div id="status-display" class="bg-gray-700 p-4 rounded-lg font-mono text-sm text-gray-300 transition-all duration-300 ease-in-out">
-            STATUS: Ready. Waiting for API call.
-        </div>
+      <div
+        id="status-display"
+        class="bg-gray-700 p-4 rounded-lg font-mono text-sm text-gray-300 transition-all duration-300 ease-in-out"
+      >
+        STATUS: Ready. Waiting for API call.
+      </div>
     </div>
 
     <script>
-        /**
-         * ---------------------------------------------------------------------
-         * Audio Tone Analyzer (Public API)
-         * ---------------------------------------------------------------------
-         * This script exposes a global `audioAnalyzer` object that can be
-         * used by an external program to control the audio analysis process.
-         */
-        (function() {
-            // --- Global state and DOM elements ---
-            let audioContext = null;
-            let mediaStream = null;
-            let mediaRecorder = null;
-            const statusDisplay = document.getElementById('status-display');
-            let audioChunks = [];
-            let analysisCallback = null;
+      /**
+       * ---------------------------------------------------------------------
+       * Audio Tone Analyzer (Public API)
+       * ---------------------------------------------------------------------
+       * This script exposes a global `audioAnalyzer` object that can be
+       * used by an external program to control the audio analysis process.
+       */
+      (function () {
+        // --- Global state and DOM elements ---
+        let audioContext = null;
+        let mediaStream = null;
+        let mediaRecorder = null;
+        const statusDisplay = document.getElementById('status-display');
+        let audioChunks = [];
+        let analysisCallback = null;
 
-            // TODO: Replace with your actual Gemini API key or load securely
-            const apiKey = typeof __gemini_api_key !== 'undefined' ? __gemini_api_key : "YOUR_GEMINI_API_KEY_HERE"; // API key for Gemini models
+        // TODO: Replace with your actual Gemini API key or load securely
+        const apiKey =
+          typeof __gemini_api_key !== 'undefined'
+            ? __gemini_api_key
+            : 'YOUR_GEMINI_API_KEY_HERE'; // API key for Gemini models
 
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-            if (!apiKey) {
-                updateStatus('Error: API key is missing. Please provide a valid API key via secure configuration.');
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+        if (!apiKey) {
+          updateStatus(
+            'Error: API key is missing. Please provide a valid API key via secure configuration.'
+          );
+        }
+        // --- Helper function to update status ---
+        const updateStatus = (message) => {
+          console.log(`[AudioAnalyzer] Status: ${message}`);
+          statusDisplay.textContent = `STATUS: ${message}`;
+        };
+
+        // --- Public API Definition ---
+        window.audioAnalyzer = {
+          /**
+           * Starts recording audio from the microphone.
+           * @param {function(string)} callback - A function that will be called
+           * with the final tone analysis result as a string.
+           */
+          start: async function (callback) {
+            analysisCallback = callback;
+            try {
+              updateStatus('Requesting microphone access...');
+              mediaStream = await navigator.mediaDevices.getUserMedia({
+                audio: true,
+              });
+
+              audioContext = new (window.AudioContext ||
+                window.webkitAudioContext)();
+              const source = audioContext.createMediaStreamSource(mediaStream);
+
+              mediaRecorder = new MediaRecorder(mediaStream, {
+                mimeType: 'audio/webm',
+              });
+              audioChunks = [];
+
+              mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+              };
+
+              mediaRecorder.onstop = async () => {
+                updateStatus('Processing audio...');
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async () => {
+                  const base64Audio = reader.result.split(',')[1];
+
+                  try {
+                    const payload = {
+                      contents: [
+                        {
+                          role: 'user',
+                          parts: [
+                            {
+                              inlineData: {
+                                mimeType: 'audio/webm',
+                                data: base64Audio,
+                              },
+                            },
+                            {
+                              text: "Analyze the tone of the speaker in this audio. Provide a short, concise description of the tone, such as 'The speaker sounds calm and reassuring' or 'The speaker sounds excited and upbeat.'",
+                            },
+                          ],
+                        },
+                      ],
+                      generationConfig: {
+                        responseModalities: ['TEXT'],
+                      },
+                      model: 'gemini-2.5-flash-preview-tts',
+                    };
+
+                    const response = await fetch(API_URL, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(payload),
+                    });
+
+                    const result = await response.json();
+                    const analysisText =
+                      result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    if (
+                      analysisCallback &&
+                      typeof analysisCallback === 'function'
+                    ) {
+                      analysisCallback(
+                        analysisText || 'Error: Could not get a valid analysis.'
+                      );
+                    }
+
+                    if (analysisText) {
+                      updateStatus(`Tone Analysis: ${analysisText}`);
+                    } else {
+                      updateStatus(
+                        'Error: Could not get a valid analysis from the model.'
+                      );
+                    }
+                  } catch (error) {
+                    console.error('API call error:', error);
+                    updateStatus(
+                      'Error: API call failed. See console for details.'
+                    );
+                  }
+                };
+              };
+
+              mediaRecorder.start();
+              updateStatus('Recording... Waiting for stop signal.');
+            } catch (error) {
+              console.error('Microphone access denied:', error);
+              updateStatus('Error: Microphone access denied.');
+              if (analysisCallback && typeof analysisCallback === 'function') {
+                analysisCallback('Error: Microphone access denied.');
+              }
             }
-            // --- Helper function to update status ---
-            const updateStatus = (message) => {
-                console.log(`[AudioAnalyzer] Status: ${message}`);
-                statusDisplay.textContent = `STATUS: ${message}`;
-            };
+          },
 
-            // --- Public API Definition ---
-            window.audioAnalyzer = {
-                /**
-                 * Starts recording audio from the microphone.
-                 * @param {function(string)} callback - A function that will be called
-                 * with the final tone analysis result as a string.
-                 */
-                start: async function(callback) {
-                    analysisCallback = callback;
-                    try {
-                        updateStatus('Requesting microphone access...');
-                        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          /**
+           * Stops the recording and triggers the analysis.
+           */
+          stop: function () {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+              mediaRecorder.stop();
+              mediaStream.getTracks().forEach((track) => track.stop());
+              updateStatus('Recording stopped. Analyzing...');
+            }
+          },
+        };
 
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                        const source = audioContext.createMediaStreamSource(mediaStream);
-                        
-                        mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
-                        audioChunks = [];
-
-                        mediaRecorder.ondataavailable = (event) => {
-                            audioChunks.push(event.data);
-                        };
-
-                        mediaRecorder.onstop = async () => {
-                            updateStatus('Processing audio...');
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-
-                            const reader = new FileReader();
-                            reader.readAsDataURL(audioBlob);
-                            reader.onloadend = async () => {
-                                const base64Audio = reader.result.split(',')[1];
-                                
-                                try {
-                                    const payload = {
-                                        contents: [
-                                            {
-                                                role: "user",
-                                                parts: [
-                                                    {
-                                                        inlineData: {
-                                                            mimeType: "audio/webm",
-                                                            data: base64Audio
-                                                        }
-                                                    },
-                                                    {
-                                                        text: "Analyze the tone of the speaker in this audio. Provide a short, concise description of the tone, such as 'The speaker sounds calm and reassuring' or 'The speaker sounds excited and upbeat.'"
-                                                    }
-                                                ]
-                                            }
-                                        ],
-                                        generationConfig: {
-                                            responseModalities: ["TEXT"]
-                                        },
-                                        model: "gemini-2.5-flash-preview-tts"
-                                    };
-
-                                    const response = await fetch(API_URL, {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(payload)
-                                    });
-
-                                    const result = await response.json();
-                                    const analysisText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                                    
-                                    if (analysisCallback && typeof analysisCallback === 'function') {
-                                        analysisCallback(analysisText || 'Error: Could not get a valid analysis.');
-                                    }
-                                    
-                                    if (analysisText) {
-                                        updateStatus(`Tone Analysis: ${analysisText}`);
-                                    } else {
-                                        updateStatus('Error: Could not get a valid analysis from the model.');
-                                    }
-
-                                } catch (error) {
-                                    console.error('API call error:', error);
-                                    updateStatus('Error: API call failed. See console for details.');
-                                }
-                            };
-                        };
-
-                        mediaRecorder.start();
-                        updateStatus('Recording... Waiting for stop signal.');
-                    } catch (error) {
-                        console.error('Microphone access denied:', error);
-                        updateStatus('Error: Microphone access denied.');
-                        if (analysisCallback && typeof analysisCallback === 'function') {
-                            analysisCallback('Error: Microphone access denied.');
-                        }
-                    }
-                },
-
-                /**
-                 * Stops the recording and triggers the analysis.
-                 */
-                stop: function() {
-                    if (mediaRecorder && mediaRecorder.state === 'recording') {
-                        mediaRecorder.stop();
-                        mediaStream.getTracks().forEach(track => track.stop());
-                        updateStatus('Recording stopped. Analyzing...');
-                    }
-                }
-            };
-
-            // --- Initial setup on window load ---
-                 // console.log("Firebase config and app id: ", firebaseConfig, appId);
-                 console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
-                 console.log("Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.");
-        })();
+        // --- Initial setup on window load ---
+        // console.log("Firebase config and app id: ", firebaseConfig, appId);
+        console.log(
+          'Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.'
+        );
+        console.log(
+          'Audio Analyzer API is ready. Call `window.audioAnalyzer.start()` to begin.'
+        );
+      })();
     </script>
-</body>
+  </body>
 </html>

@@ -1,6 +1,6 @@
 /**
  * YouTube News Monitor Scheduler
- * 
+ *
  * Schedules and manages automated daily news monitoring.
  * Runs at configurable times and handles retries.
  */
@@ -44,7 +44,9 @@ let config: SchedulerConfig = { ...DEFAULT_CONFIG };
 /**
  * Start the news monitoring scheduler
  */
-export function startNewsMonitorScheduler(customConfig?: Partial<SchedulerConfig>): void {
+export function startNewsMonitorScheduler(
+  customConfig?: Partial<SchedulerConfig>
+): void {
   if (schedulerInterval) {
     console.log('⚠️ News monitor scheduler already running');
     return;
@@ -88,12 +90,12 @@ export function stopNewsMonitorScheduler(): void {
  */
 async function checkAndRunNewsMonitoring(): Promise<void> {
   const now = new Date();
-  
+
   // Check if already ran today
   if (lastRun) {
     const lastRunDate = lastRun.toLocaleDateString();
     const todayDate = now.toLocaleDateString();
-    
+
     if (lastRunDate === todayDate) {
       // Already ran today
       return;
@@ -102,7 +104,7 @@ async function checkAndRunNewsMonitoring(): Promise<void> {
 
   // Check if current time matches schedule
   const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
+
   if (currentTime === config.runTime) {
     console.log('⏰ Time to run daily news monitoring!');
     await executeNewsMonitoring();
@@ -114,24 +116,31 @@ async function checkAndRunNewsMonitoring(): Promise<void> {
  */
 async function executeNewsMonitoring(attempt: number = 1): Promise<void> {
   try {
-    console.log(`📰 Running daily news monitoring (attempt ${attempt}/${config.retryAttempts})...`);
-    
+    console.log(
+      `📰 Running daily news monitoring (attempt ${attempt}/${config.retryAttempts})...`
+    );
+
     const digest = await runDailyNewsMonitoring();
-    
+
     lastRun = new Date();
     console.log('✅ Daily news monitoring completed successfully');
     console.log(`   📊 ${digest.totalVideos} videos found`);
     console.log(`   🔬 ${digest.analysisCount} stories analyzed`);
-    
   } catch (error) {
-    console.error(`❌ Daily news monitoring failed (attempt ${attempt}):`, error);
-    
+    console.error(
+      `❌ Daily news monitoring failed (attempt ${attempt}):`,
+      error
+    );
+
     if (attempt < config.retryAttempts) {
       console.log(`⏳ Retrying in ${config.retryDelayMinutes} minutes...`);
-      
-      setTimeout(() => {
-        executeNewsMonitoring(attempt + 1);
-      }, config.retryDelayMinutes * 60 * 1000);
+
+      setTimeout(
+        () => {
+          executeNewsMonitoring(attempt + 1);
+        },
+        config.retryDelayMinutes * 60 * 1000
+      );
     } else {
       console.error('❌ Daily news monitoring failed after all retry attempts');
     }
@@ -141,17 +150,19 @@ async function executeNewsMonitoring(attempt: number = 1): Promise<void> {
 /**
  * Run news monitoring immediately (manual trigger)
  */
-export async function runNewsMonitoringNow(userId: string = 'default-user'): Promise<void> {
+export async function runNewsMonitoringNow(
+  userId: string = 'default-user'
+): Promise<void> {
   console.log('▶️ Manually triggering news monitoring...');
-  
+
   try {
     const digest = await runDailyNewsMonitoring(userId);
     lastRun = new Date();
-    
+
     console.log('✅ Manual news monitoring completed');
     console.log(`   📊 ${digest.totalVideos} videos found`);
     console.log(`   🔬 ${digest.analysisCount} stories analyzed`);
-    
+
     return digest as any;
   } catch (error) {
     console.error('❌ Manual news monitoring failed:', error);
@@ -170,18 +181,18 @@ export function getSchedulerStatus(): {
   config: SchedulerConfig;
 } {
   let nextRun: string | null = null;
-  
+
   if (config.enabled) {
     const now = new Date();
     const [hours, minutes] = config.runTime.split(':').map(Number);
     const scheduledTime = new Date(now);
     scheduledTime.setHours(hours, minutes, 0, 0);
-    
+
     // If already passed today, show tomorrow
     if (scheduledTime <= now) {
       scheduledTime.setDate(scheduledTime.getDate() + 1);
     }
-    
+
     nextRun = scheduledTime.toISOString();
   }
 
@@ -199,17 +210,17 @@ export function getSchedulerStatus(): {
  */
 export function updateSchedulerConfig(updates: Partial<SchedulerConfig>): void {
   const wasRunning = schedulerInterval !== null;
-  
+
   // Stop if running
   if (wasRunning) {
     stopNewsMonitorScheduler();
   }
-  
+
   // Update config
   config = { ...config, ...updates };
-  
+
   console.log('✏️ Scheduler configuration updated:', updates);
-  
+
   // Restart if was running
   if (wasRunning && config.enabled) {
     startNewsMonitorScheduler();

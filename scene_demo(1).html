@@ -1,188 +1,248 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RP Scene Phase 3 - Demo</title>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transition: background 0.8s ease;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            text-align: center;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-        .demo-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        .example {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .example:hover {
-            background: rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-        .user-message {
-            color: #FFD700;
-            font-style: italic;
-            margin-bottom: 10px;
-        }
-        .scene-info {
-            display: flex;
-            gap: 15px;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .info-item {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-        .info-label {
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        
-        /* Scene-specific backgrounds */
-        .scene-living_room {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .scene-bedroom {
-            background: linear-gradient(135deg, #FE6B8B 0%, #FF8E53 100%);
-        }
-        .scene-kitchen {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .scene-outdoor {
-            background: linear-gradient(135deg, #FF6B9D 0%, #C471ED 50%, #12c2e9 100%);
-        }
-        .scene-front_door {
-            background: linear-gradient(135deg, #f093fb 0%, #FEC163 100%);
-        }
-        
-        #current-scene {
-            text-align: center;
-            font-size: 24px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transition: background 0.8s ease;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        text-align: center;
+        opacity: 0.9;
+        margin-bottom: 30px;
+      }
+      .demo-section {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .example {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .example:hover {
+        background: rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+      }
+      .user-message {
+        color: #ffd700;
+        font-style: italic;
+        margin-bottom: 10px;
+      }
+      .scene-info {
+        display: flex;
+        gap: 15px;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      .info-item {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+      .info-label {
+        font-weight: bold;
+        margin-right: 5px;
+      }
+
+      /* Scene-specific backgrounds */
+      .scene-living_room {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      .scene-bedroom {
+        background: linear-gradient(135deg, #fe6b8b 0%, #ff8e53 100%);
+      }
+      .scene-kitchen {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      }
+      .scene-outdoor {
+        background: linear-gradient(
+          135deg,
+          #ff6b9d 0%,
+          #c471ed 50%,
+          #12c2e9 100%
+        );
+      }
+      .scene-front_door {
+        background: linear-gradient(135deg, #f093fb 0%, #fec163 100%);
+      }
+
+      #current-scene {
+        text-align: center;
+        font-size: 24px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        margin-bottom: 30px;
+      }
     </style>
-</head>
-<body class="scene-living_room">
+  </head>
+  <body class="scene-living_room">
     <div class="container">
-        <h1>🎭 Role-Play Scene Phase 3 Demo</h1>
-        <p class="subtitle">Click examples to see background adaptation</p>
-        
-        <div id="current-scene">
-            <div>Current Scene: <strong id="location-display">Living Room</strong></div>
-            <div style="font-size: 16px; margin-top: 5px;">
-                Mood: <span id="mood-display">Calm</span> | Time: <span id="time-display">Night</span>
-            </div>
+      <h1>🎭 Role-Play Scene Phase 3 Demo</h1>
+      <p class="subtitle">Click examples to see background adaptation</p>
+
+      <div id="current-scene">
+        <div>
+          Current Scene: <strong id="location-display">Living Room</strong>
         </div>
-        
-        <div class="demo-section">
-            <h2>Scene Detection Examples</h2>
-            <p>Click any example to see the background change</p>
-            
-            <div class="example" onclick="changeScene('front_door', 'energetic', 'Front Door')">
-                <div class="user-message">"*walks in through the front door* Hey babe, I'm home!"</div>
-                <div class="scene-info">
-                    <div class="info-item"><span class="info-label">Location:</span>Front Door</div>
-                    <div class="info-item"><span class="info-label">Mood:</span>Energetic</div>
-                </div>
-            </div>
-            
-            <div class="example" onclick="changeScene('living_room', 'calm', 'Living Room')">
-                <div class="user-message">"*sits on the couch* What are you watching?"</div>
-                <div class="scene-info">
-                    <div class="info-item"><span class="info-label">Location:</span>Living Room</div>
-                    <div class="info-item"><span class="info-label">Mood:</span>Calm</div>
-                </div>
-            </div>
-            
-            <div class="example" onclick="changeScene('bedroom', 'romantic', 'Bedroom')">
-                <div class="user-message">"*gently takes your hand* Let's go to the bedroom"</div>
-                <div class="scene-info">
-                    <div class="info-item"><span class="info-label">Location:</span>Bedroom</div>
-                    <div class="info-item"><span class="info-label">Mood:</span>Romantic</div>
-                </div>
-            </div>
-            
-            <div class="example" onclick="changeScene('kitchen', 'energetic', 'Kitchen')">
-                <div class="user-message">"*walks to the kitchen* Want me to make us some coffee?"</div>
-                <div class="scene-info">
-                    <div class="info-item"><span class="info-label">Location:</span>Kitchen</div>
-                    <div class="info-item"><span class="info-label">Mood:</span>Energetic</div>
-                </div>
-            </div>
-            
-            <div class="example" onclick="changeScene('outdoor', 'playful', 'Outdoor')">
-                <div class="user-message">"*playfully runs outside* Come on, let's enjoy the sunshine!"</div>
-                <div class="scene-info">
-                    <div class="info-item"><span class="info-label">Location:</span>Outdoor</div>
-                    <div class="info-item"><span class="info-label">Mood:</span>Playful</div>
-                </div>
-            </div>
+        <div style="font-size: 16px; margin-top: 5px">
+          Mood: <span id="mood-display">Calm</span> | Time:
+          <span id="time-display">Night</span>
         </div>
-        
-        <div class="demo-section">
-            <h2>Key Features</h2>
-            <ul>
-                <li>✅ Server-first scene orchestration</li>
-                <li>✅ Automatic background adaptation</li>
-                <li>✅ Action marker detection (*walks in*)</li>
-                <li>✅ Location and mood tracking</li>
-                <li>✅ Smooth scene transitions</li>
-                <li>✅ Future-ready for avatar rendering</li>
-            </ul>
+      </div>
+
+      <div class="demo-section">
+        <h2>Scene Detection Examples</h2>
+        <p>Click any example to see the background change</p>
+
+        <div
+          class="example"
+          onclick="changeScene('front_door', 'energetic', 'Front Door')"
+        >
+          <div class="user-message">
+            "*walks in through the front door* Hey babe, I'm home!"
+          </div>
+          <div class="scene-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>Front Door
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mood:</span>Energetic
+            </div>
+          </div>
         </div>
+
+        <div
+          class="example"
+          onclick="changeScene('living_room', 'calm', 'Living Room')"
+        >
+          <div class="user-message">
+            "*sits on the couch* What are you watching?"
+          </div>
+          <div class="scene-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>Living Room
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mood:</span>Calm
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="example"
+          onclick="changeScene('bedroom', 'romantic', 'Bedroom')"
+        >
+          <div class="user-message">
+            "*gently takes your hand* Let's go to the bedroom"
+          </div>
+          <div class="scene-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>Bedroom
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mood:</span>Romantic
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="example"
+          onclick="changeScene('kitchen', 'energetic', 'Kitchen')"
+        >
+          <div class="user-message">
+            "*walks to the kitchen* Want me to make us some coffee?"
+          </div>
+          <div class="scene-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>Kitchen
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mood:</span>Energetic
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="example"
+          onclick="changeScene('outdoor', 'playful', 'Outdoor')"
+        >
+          <div class="user-message">
+            "*playfully runs outside* Come on, let's enjoy the sunshine!"
+          </div>
+          <div class="scene-info">
+            <div class="info-item">
+              <span class="info-label">Location:</span>Outdoor
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mood:</span>Playful
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-section">
+        <h2>Key Features</h2>
+        <ul>
+          <li>✅ Server-first scene orchestration</li>
+          <li>✅ Automatic background adaptation</li>
+          <li>✅ Action marker detection (*walks in*)</li>
+          <li>✅ Location and mood tracking</li>
+          <li>✅ Smooth scene transitions</li>
+          <li>✅ Future-ready for avatar rendering</li>
+        </ul>
+      </div>
     </div>
-    
+
     <script>
-        function changeScene(location, mood, locationName) {
-            // Remove all scene classes
-            document.body.classList.remove('scene-living_room', 'scene-bedroom', 'scene-kitchen', 'scene-outdoor', 'scene-front_door');
-            
-            // Add new scene class
-            document.body.classList.add('scene-' + location);
-            
-            // Update display
-            document.getElementById('location-display').textContent = locationName;
-            document.getElementById('mood-display').textContent = mood.charAt(0).toUpperCase() + mood.slice(1);
-            
-            // Update time (current time)
-            const hour = new Date().getHours();
-            let timeOfDay = 'Night';
-            if (hour >= 5 && hour < 8) timeOfDay = 'Dawn';
-            else if (hour >= 8 && hour < 17) timeOfDay = 'Day';
-            else if (hour >= 17 && hour < 20) timeOfDay = 'Dusk';
-            document.getElementById('time-display').textContent = timeOfDay;
-        }
+      function changeScene(location, mood, locationName) {
+        // Remove all scene classes
+        document.body.classList.remove(
+          'scene-living_room',
+          'scene-bedroom',
+          'scene-kitchen',
+          'scene-outdoor',
+          'scene-front_door'
+        );
+
+        // Add new scene class
+        document.body.classList.add('scene-' + location);
+
+        // Update display
+        document.getElementById('location-display').textContent = locationName;
+        document.getElementById('mood-display').textContent =
+          mood.charAt(0).toUpperCase() + mood.slice(1);
+
+        // Update time (current time)
+        const hour = new Date().getHours();
+        let timeOfDay = 'Night';
+        if (hour >= 5 && hour < 8) timeOfDay = 'Dawn';
+        else if (hour >= 8 && hour < 17) timeOfDay = 'Day';
+        else if (hour >= 17 && hour < 20) timeOfDay = 'Dusk';
+        document.getElementById('time-display').textContent = timeOfDay;
+      }
     </script>
-</body>
+  </body>
 </html>

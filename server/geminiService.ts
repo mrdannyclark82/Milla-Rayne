@@ -1,4 +1,3 @@
-
 /**
  * Gemini AI Service
  */
@@ -13,11 +12,15 @@ export interface GeminiResponse {
 }
 
 export async function generateGeminiResponse(
-  userMessage: string,
+  userMessage: string
 ): Promise<GeminiResponse> {
   try {
     if (!config.gemini || !config.gemini.apiKey) {
-      return { content: 'Gemini API key not configured', success: false, error: 'Missing GEMINI API key' };
+      return {
+        content: 'Gemini API key not configured',
+        success: false,
+        error: 'Missing GEMINI API key',
+      };
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
@@ -34,7 +37,8 @@ export async function generateGeminiResponse(
   } catch (error) {
     console.error('Gemini API error:', error);
     return {
-      content: "I'm having trouble connecting to the Gemini service right now. Please try again in a moment.",
+      content:
+        "I'm having trouble connecting to the Gemini service right now. Please try again in a moment.",
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };

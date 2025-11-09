@@ -1,4 +1,0 @@
-2025-11-08T17:37:12.031Z | test-task-2 | TestAgent | action | created | User approved task
-2025-11-08T17:37:12.032Z | test-task-3 | TestAgent | action | cancelled | User rejected: too risky
-2025-11-08T17:46:16.035Z | 603eef97-8082-40f8-bb4f-9919570e723c | CalendarAgent | list_events | created | User approved task
-2025-11-08T17:46:57.048Z | 98c91f4a-5284-494b-80fc-d0a9042bd8ac | EmailAgent | send | cancelled | Too risky for production

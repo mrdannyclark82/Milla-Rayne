@@ -8,7 +8,9 @@ import { useSceneContext } from '@/contexts/SceneContext';
  */
 export function BackgroundLayer() {
   const { location } = useSceneContext();
-  const [imageSrc, setImageSrc] = useState<string>('/assets/scenes/front_door.jpg');
+  const [imageSrc, setImageSrc] = useState<string>(
+    '/assets/scenes/front_door.jpg'
+  );
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
@@ -25,7 +27,8 @@ export function BackgroundLayer() {
       guest_room: '/assets/scenes/bedroom.jpg', // Fallback to bedroom
     };
 
-    const newImageSrc = locationImageMap[location] || '/assets/scenes/front_door.jpg';
+    const newImageSrc =
+      locationImageMap[location] || '/assets/scenes/front_door.jpg';
     setImageLoaded(false);
     setImageSrc(newImageSrc);
   }, [location]);

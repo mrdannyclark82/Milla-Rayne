@@ -39,10 +39,18 @@ async function getPredictionData(): Promise<PredictionData> {
       return {
         watchHistory: data.watchHistory || [],
         preferences: {
-          topQueries: new Map(Object.entries(data.preferences?.topQueries || {})),
-          topChannels: new Map(Object.entries(data.preferences?.topChannels || {})),
-          topCategories: new Map(Object.entries(data.preferences?.topCategories || {})),
-          timePreferences: new Map(Object.entries(data.preferences?.timePreferences || {})),
+          topQueries: new Map(
+            Object.entries(data.preferences?.topQueries || {})
+          ),
+          topChannels: new Map(
+            Object.entries(data.preferences?.topChannels || {})
+          ),
+          topCategories: new Map(
+            Object.entries(data.preferences?.topCategories || {})
+          ),
+          timePreferences: new Map(
+            Object.entries(data.preferences?.timePreferences || {})
+          ),
         },
       };
     }
@@ -75,14 +83,18 @@ async function savePredictionData(data: PredictionData): Promise<void> {
         timePreferences: Object.fromEntries(data.preferences.timePreferences),
       },
     };
-    
+
     // Ensure directory exists
     const dir = path.dirname(STORAGE_FILE);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
-    fs.writeFileSync(STORAGE_FILE, JSON.stringify(serialized, null, 2), 'utf-8');
+
+    fs.writeFileSync(
+      STORAGE_FILE,
+      JSON.stringify(serialized, null, 2),
+      'utf-8'
+    );
   } catch (error) {
     console.error('[YouTube Prediction] Error saving prediction data:', error);
   }
@@ -143,7 +155,9 @@ export async function trackYouTubeWatch(
   }
 
   await savePredictionData(data);
-  console.log(`[YouTube Prediction] Tracked watch: "${title}" from query "${query}"`);
+  console.log(
+    `[YouTube Prediction] Tracked watch: "${title}" from query "${query}"`
+  );
 }
 
 /**
@@ -269,7 +283,10 @@ export async function getPersonalizedSuggestions(): Promise<string> {
     suggestion += `\n\nRecently you've been into: ${recentQueries.slice(0, 3).join(', ')}. Want me to find more like that?`;
   }
 
-  return suggestion || "I'm learning your preferences, babe! Keep watching and I'll get better at suggestions. 💜";
+  return (
+    suggestion ||
+    "I'm learning your preferences, babe! Keep watching and I'll get better at suggestions. 💜"
+  );
 }
 
 /**
@@ -293,7 +310,10 @@ export async function getAutocompleteSuggestions(
 
   // Find queries that start with the partial query
   data.watchHistory.forEach((w) => {
-    if (w.query.toLowerCase().startsWith(lowerPartial) && !suggestions.includes(w.query)) {
+    if (
+      w.query.toLowerCase().startsWith(lowerPartial) &&
+      !suggestions.includes(w.query)
+    ) {
       suggestions.push(w.query);
     }
   });
@@ -325,14 +345,19 @@ export async function getWatchStatistics(): Promise<{
 }> {
   const data = await getPredictionData();
 
-  const topQuery = Array.from(data.preferences.topQueries.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const topQuery =
+    Array.from(data.preferences.topQueries.entries()).sort(
+      (a, b) => b[1] - a[1]
+    )[0]?.[0] || 'none';
 
-  const topChannel = Array.from(data.preferences.topChannels.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0] || 'none';
+  const topChannel =
+    Array.from(data.preferences.topChannels.entries()).sort(
+      (a, b) => b[1] - a[1]
+    )[0]?.[0] || 'none';
 
-  const favoriteHour = Array.from(data.preferences.timePreferences.entries())
-    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const favoriteHour = Array.from(
+    data.preferences.timePreferences.entries()
+  ).sort((a, b) => b[1] - a[1])[0]?.[0];
 
   const favoriteTime = favoriteHour
     ? `${favoriteHour}:00 - ${parseInt(favoriteHour) + 1}:00`

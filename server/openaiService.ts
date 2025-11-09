@@ -106,7 +106,16 @@ export async function generateAIResponse(
       }))
     );
 
-    console.log('--- OpenAI request body:', JSON.stringify({ model: 'gpt-4o', messages, max_tokens: 800, temperature: 0.8, stream: false }));
+    console.log(
+      '--- OpenAI request body:',
+      JSON.stringify({
+        model: 'gpt-4o',
+        messages,
+        max_tokens: 800,
+        temperature: 0.8,
+        stream: false,
+      })
+    );
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {

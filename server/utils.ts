@@ -67,7 +67,9 @@ export function extractTopics(content: string): string[] {
 /**
  * Detect emotional tone of content
  */
-export function detectEmotionalTone(content: string): 'positive' | 'negative' | 'neutral' {
+export function detectEmotionalTone(
+  content: string
+): 'positive' | 'negative' | 'neutral' {
   const text = content.toLowerCase();
 
   const positiveWords = [

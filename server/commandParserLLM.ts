@@ -1,8 +1,33 @@
 import { generateOpenRouterResponse } from './openrouterService';
 
 export interface ParsedCommand {
-  service: 'calendar' | 'gmail' | 'youtube' | 'tasks' | 'drive' | 'photos' | 'maps' | 'unknown';
-  action: 'list' | 'add' | 'delete' | 'send' | 'check' | 'get' | 'play' | 'complete' | 'search' | 'summarize' | 'create_album' | 'directions' | 'find_place' | 'get_video_details' | 'get_channel_details' | 'get_trending_videos' | 'unknown';
+  service:
+    | 'calendar'
+    | 'gmail'
+    | 'youtube'
+    | 'tasks'
+    | 'drive'
+    | 'photos'
+    | 'maps'
+    | 'unknown';
+  action:
+    | 'list'
+    | 'add'
+    | 'delete'
+    | 'send'
+    | 'check'
+    | 'get'
+    | 'play'
+    | 'complete'
+    | 'search'
+    | 'summarize'
+    | 'create_album'
+    | 'directions'
+    | 'find_place'
+    | 'get_video_details'
+    | 'get_channel_details'
+    | 'get_trending_videos'
+    | 'unknown';
   entities: { [key: string]: string };
 }
 
@@ -11,56 +36,67 @@ export interface ParsedCommand {
  */
 function preprocessIntent(message: string): Partial<ParsedCommand> | null {
   const lower = message.toLowerCase();
-  
+
   // YouTube video requests - very flexible matching
   const youtubePatterns = [
     /(?:play|watch|show|find|put on|queue up|i (?:want|wanna|need) (?:to )?(?:watch|see|hear)|search for|look up|display)\s+(?:some\s+)?(?:me\s+)?(.+?)(?:\s+(?:video|videos|on youtube|music|song|songs))?$/i,
     /(?:can you|could you|would you)\s+(?:play|show|find|put on)\s+(.+?)(?:\s+(?:for me|please))?$/i,
   ];
-  
+
   for (const pattern of youtubePatterns) {
     const match = lower.match(pattern);
     if (match && match[1]) {
       // Extract clean query
       let query = match[1].trim();
       // Remove common filler words
-      query = query.replace(/(?:some|a|the|for me|please|videos?|on youtube|music|song|songs)\s*/gi, '').trim();
-      
+      query = query
+        .replace(
+          /(?:some|a|the|for me|please|videos?|on youtube|music|song|songs)\s*/gi,
+          ''
+        )
+        .trim();
+
       if (query.length > 0) {
         return {
           service: 'youtube',
           action: 'get',
-          entities: { query, sortBy: 'relevance' }
+          entities: { query, sortBy: 'relevance' },
         };
       }
     }
   }
-  
+
   // Calendar patterns
-  if (/(what'?s|show|list|check)\s+(?:on\s+)?(?:my\s+)?(?:calendar|schedule|events?)/i.test(lower)) {
+  if (
+    /(what'?s|show|list|check)\s+(?:on\s+)?(?:my\s+)?(?:calendar|schedule|events?)/i.test(
+      lower
+    )
+  ) {
     return { service: 'calendar', action: 'list', entities: {} };
   }
-  
+
   // Email patterns
-  if (/(check|show|list|read|see)\s+(?:my\s+)?(?:email|inbox|mail)/i.test(lower)) {
+  if (
+    /(check|show|list|read|see)\s+(?:my\s+)?(?:email|inbox|mail)/i.test(lower)
+  ) {
     return { service: 'gmail', action: 'list', entities: {} };
   }
-  
+
   return null;
 }
 
 export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
   console.log('--- PARSE COMMAND LLM CALLED ---');
   console.log('User message:', message);
-  
+
   // Try quick pattern matching first for common requests
   const quickMatch = preprocessIntent(message);
   if (quickMatch && quickMatch.service !== 'unknown') {
     console.log('Quick pattern match successful:', quickMatch);
     return {
-      service: quickMatch.service as any || 'unknown',
-      action: quickMatch.action as any || 'unknown',
-      entities: quickMatch.entities || {}
+      service: (quickMatch.service as any) || 'unknown',
+      action: (quickMatch.action as any) || 'unknown',
+      entities: quickMatch.entities || {},
     };
   }
 
@@ -131,16 +167,19 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
           content = content.substring(firstBrace, lastBrace + 1);
         }
       }
-      
+
       const parsedResponse = JSON.parse(content);
-      
+
       return {
         service: parsedResponse.service || 'unknown',
         action: parsedResponse.action || 'unknown',
         entities: parsedResponse.entities || {},
       };
     } catch (error) {
-      console.error('Error parsing LLM JSON response. The response was not valid JSON.', error);
+      console.error(
+        'Error parsing LLM JSON response. The response was not valid JSON.',
+        error
+      );
       console.error('Original content from LLM:', aiResponse.content);
     }
   }

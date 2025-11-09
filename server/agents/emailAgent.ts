@@ -54,7 +54,9 @@ async function handleTask(task: AgentTask): Promise<any> {
       finalBody = mustache.render(parsed.template, parsed.templateData);
     }
 
-    return { draft: { to: parsed.to, subject: parsed.subject, body: finalBody } };
+    return {
+      draft: { to: parsed.to, subject: parsed.subject, body: finalBody },
+    };
   }
 
   if (action === 'enqueue' || action === 'send') {
@@ -103,7 +105,11 @@ async function handleTask(task: AgentTask): Promise<any> {
 }
 
 // Register the agent in the registry on module load
-registerAgent({ name: 'EmailAgent', description: 'Drafts and queues email messages', handleTask });
+registerAgent({
+  name: 'EmailAgent',
+  description: 'Drafts and queues email messages',
+  handleTask,
+});
 
 export { handleTask };
 export default { handleTask };

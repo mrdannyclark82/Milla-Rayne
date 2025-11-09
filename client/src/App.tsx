@@ -179,16 +179,19 @@ function App() {
 
   const speakMessage = (text: string) => {
     setIsSpeaking(true);
-    voiceService.speak(text, {
-      voiceName: selectedVoice?.voice_id,
-      rate: speechRate,
-      pitch: voicePitch,
-      volume: voiceVolume,
-    }).then(() => {
-      setIsSpeaking(false);
-    }).catch(() => {
-      setIsSpeaking(false);
-    });
+    voiceService
+      .speak(text, {
+        voiceName: selectedVoice?.voice_id,
+        rate: speechRate,
+        pitch: voicePitch,
+        volume: voiceVolume,
+      })
+      .then(() => {
+        setIsSpeaking(false);
+      })
+      .catch(() => {
+        setIsSpeaking(false);
+      });
     setLastMessage(text);
   };
 
@@ -265,7 +268,7 @@ function App() {
             top: 0,
             left: 0,
             zIndex: 0,
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
           <SceneManager />
@@ -294,7 +297,8 @@ function App() {
             right: 0,
             zIndex: 10,
             backgroundColor: '#1a1a2e',
-            fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif"
+            fontFamily:
+              "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
           }}
         >
           <div className="h-full flex flex-col space-y-4">
@@ -316,7 +320,10 @@ function App() {
             {/* Voice toggle centered above message thread */}
             <div className="flex justify-center items-center flex-shrink-0">
               <div className="flex items-center gap-2">
-                <Label htmlFor="voice-enabled" className="text-sm text-gray-300">
+                <Label
+                  htmlFor="voice-enabled"
+                  className="text-sm text-gray-300"
+                >
                   Voice
                 </Label>
                 <Switch
@@ -327,9 +334,10 @@ function App() {
               </div>
             </div>
 
-
-
-            <div className="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg border border-gray-700/60 shadow-inner" style={{ backgroundColor: '#4a90e2' }}>
+            <div
+              className="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg border border-gray-700/60 shadow-inner"
+              style={{ backgroundColor: '#4a90e2' }}
+            >
               {messages.length === 0 ? (
                 <p className="text-gray-400 text-center">
                   Start a conversation with Milla...
@@ -351,7 +359,21 @@ function App() {
                           size="icon"
                           className="w-6 h-6 text-white"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-rotate-cw"><path d="M21 2v6h-6" /><path d="M21 13a9 9 0 1 1-3-7.7L21 8" /></svg>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-rotate-cw"
+                          >
+                            <path d="M21 2v6h-6" />
+                            <path d="M21 13a9 9 0 1 1-3-7.7L21 8" />
+                          </svg>
                         </Button>
                       )}
                     </div>
@@ -447,8 +469,15 @@ function App() {
 
             {/* FloatingInput will be positioned at the bottom of the viewport */}
           </div>
-          <CentralDock onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)} />
-          <SharedNotepad isOpen={showSharedNotepad} onClose={() => setShowSharedNotepad(false)} />
+          <CentralDock
+            onToggleSharedNotepad={() =>
+              setShowSharedNotepad(!showSharedNotepad)
+            }
+          />
+          <SharedNotepad
+            isOpen={showSharedNotepad}
+            onClose={() => setShowSharedNotepad(false)}
+          />
 
           {/* FloatingInput is now outside the main container to be fixed at the bottom */}
           <FloatingInput

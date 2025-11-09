@@ -1,6 +1,6 @@
 /**
  * Authentication Service
- * 
+ *
  * Handles user registration, login, session management
  * Uses bcrypt for password hashing and secure session tokens
  */
@@ -229,8 +229,9 @@ export async function loginOrRegisterWithGoogle(
     if (!user) {
       // Create new user with Google account
       // Use email username part as username, or name if available
-      let username = name.replace(/\s+/g, '').toLowerCase() || email.split('@')[0];
-      
+      let username =
+        name.replace(/\s+/g, '').toLowerCase() || email.split('@')[0];
+
       // Check for username collision and append random numbers if needed
       let existingUser = await storage.getUserByUsername(username);
       let attempts = 0;
@@ -242,7 +243,10 @@ export async function loginOrRegisterWithGoogle(
 
       if (existingUser) {
         // Extremely unlikely, but handle it
-        return { success: false, error: 'Could not generate a unique username.' };
+        return {
+          success: false,
+          error: 'Could not generate a unique username.',
+        };
       }
 
       // Generate a random password (won't be used, but required by schema)

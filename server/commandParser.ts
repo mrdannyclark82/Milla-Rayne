@@ -2,7 +2,15 @@ import { parseCalendarCommand } from './gemini';
 
 export interface ParsedCommand {
   service: 'calendar' | 'gmail' | 'youtube' | 'profile' | null;
-  action: 'list' | 'add' | 'delete' | 'send' | 'check' | 'get' | 'update' | null;
+  action:
+    | 'list'
+    | 'add'
+    | 'delete'
+    | 'send'
+    | 'check'
+    | 'get'
+    | 'update'
+    | null;
   entities: { [key: string]: string };
 }
 
@@ -15,11 +23,22 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
   };
 
   // Calendar
-  if (lowerMessage.includes('calendar') || lowerMessage.includes('event') || lowerMessage.includes('schedule')) {
+  if (
+    lowerMessage.includes('calendar') ||
+    lowerMessage.includes('event') ||
+    lowerMessage.includes('schedule')
+  ) {
     result.service = 'calendar';
-    if (lowerMessage.includes('list') || lowerMessage.includes('show') || lowerMessage.includes('what is on')) {
+    if (
+      lowerMessage.includes('list') ||
+      lowerMessage.includes('show') ||
+      lowerMessage.includes('what is on')
+    ) {
       result.action = 'list';
-    } else if (lowerMessage.includes('add') || lowerMessage.includes('create')) {
+    } else if (
+      lowerMessage.includes('add') ||
+      lowerMessage.includes('create')
+    ) {
       result.action = 'add';
       const calendarEntities = await parseCalendarCommand(message);
       if (calendarEntities) {
@@ -27,15 +46,26 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
         result.entities.date = calendarEntities.date;
         result.entities.time = calendarEntities.time;
       }
-    } else if (lowerMessage.includes('delete') || lowerMessage.includes('remove')) {
+    } else if (
+      lowerMessage.includes('delete') ||
+      lowerMessage.includes('remove')
+    ) {
       result.action = 'delete';
     }
   }
 
   // Gmail
-  else if (lowerMessage.includes('email') || lowerMessage.includes('mail') || lowerMessage.includes('inbox')) {
+  else if (
+    lowerMessage.includes('email') ||
+    lowerMessage.includes('mail') ||
+    lowerMessage.includes('inbox')
+  ) {
     result.service = 'gmail';
-    if (lowerMessage.includes('list') || lowerMessage.includes('check') || lowerMessage.includes('show')) {
+    if (
+      lowerMessage.includes('list') ||
+      lowerMessage.includes('check') ||
+      lowerMessage.includes('show')
+    ) {
       result.action = 'list';
     } else if (lowerMessage.includes('send')) {
       result.action = 'send';
@@ -50,7 +80,7 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
 
   // YouTube - flexible natural language matching
   else if (
-    lowerMessage.includes('youtube') || 
+    lowerMessage.includes('youtube') ||
     lowerMessage.includes('subscriptions') ||
     lowerMessage.includes('play') ||
     lowerMessage.includes('watch') ||
@@ -60,11 +90,14 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
     lowerMessage.includes('search for')
   ) {
     result.service = 'youtube';
-    
-    if (lowerMessage.includes('list') || lowerMessage.includes('my subscriptions')) {
+
+    if (
+      lowerMessage.includes('list') ||
+      lowerMessage.includes('my subscriptions')
+    ) {
       result.action = 'list';
     } else if (
-      lowerMessage.includes('play') || 
+      lowerMessage.includes('play') ||
       lowerMessage.includes('watch') ||
       lowerMessage.includes('show me') ||
       lowerMessage.includes('find') ||
@@ -72,29 +105,41 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
       lowerMessage.includes('search')
     ) {
       result.action = 'get';
-      
+
       // Extract search query using flexible patterns
       let query = '';
-      
+
       // Try various patterns to extract the search query
       const patterns = [
         /(?:play|watch|show me|find|put on|search for)\s+(?:some\s+)?(?:me\s+)?(.+?)(?:\s+(?:video|videos|on youtube|music|song))?$/i,
         /(?:i want to|i wanna|i'd like to)\s+(?:watch|see|hear)\s+(.+)$/i,
       ];
-      
+
       for (const pattern of patterns) {
         const match = lowerMessage.match(pattern);
         if (match && match[1]) {
           query = match[1].trim();
           // Remove common filler words
-          query = query.replace(/(?:some|a|the|for me|please|video|videos|on youtube|music|song)\s*/gi, '').trim();
+          query = query
+            .replace(
+              /(?:some|a|the|for me|please|video|videos|on youtube|music|song)\s*/gi,
+              ''
+            )
+            .trim();
           break;
         }
       }
-      
+
       // If no pattern matched, use everything after the trigger word
       if (!query) {
-        const triggerWords = ['play', 'watch', 'show me', 'find', 'put on', 'search for'];
+        const triggerWords = [
+          'play',
+          'watch',
+          'show me',
+          'find',
+          'put on',
+          'search for',
+        ];
         for (const trigger of triggerWords) {
           if (lowerMessage.includes(trigger)) {
             const parts = lowerMessage.split(trigger);
@@ -105,15 +150,22 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
           }
         }
       }
-      
+
       if (query) {
         result.entities.query = query;
         result.entities.sortBy = 'relevance';
-        
+
         // Adjust sorting based on keywords
-        if (lowerMessage.includes('popular') || lowerMessage.includes('most viewed')) {
+        if (
+          lowerMessage.includes('popular') ||
+          lowerMessage.includes('most viewed')
+        ) {
           result.entities.sortBy = 'viewCount';
-        } else if (lowerMessage.includes('recent') || lowerMessage.includes('latest') || lowerMessage.includes('new')) {
+        } else if (
+          lowerMessage.includes('recent') ||
+          lowerMessage.includes('latest') ||
+          lowerMessage.includes('new')
+        ) {
           result.entities.sortBy = 'date';
         }
       }

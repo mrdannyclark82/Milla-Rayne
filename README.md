@@ -1,16 +1,54 @@
 # Milla Rayne - AI Companion
 
-A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue)](https://www.typescriptlang.org/)
+[![CI](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CI/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mrdannyclark82/Milla-Rayne/branch/main/graph/badge.svg)](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
+
+> A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+
+## 📑 Table of Contents
+
+- [Latest Updates](#latest-updates-)
+- [Platforms](#available-platforms)
+  - [Web App](#-web-app)
+  - [CLI](#-cli)
+  - [Android](#-android-app)
+- [Key Features](#-key-features)
+- [Quick Start](#quick-start)
+  - [Web App](#web-app-default)
+  - [CLI](#cli-version)
+  - [Android](#android-app)
+  - [Docker Deployment](#-docker-deployment)
+- [Configuration](#ai-service-configuration)
+- [Development](#development)
+  - [CI/CD](#cicd-pipeline)
+  - [Testing](#testing)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+**Available on multiple platforms:**
+
+- 🌐 **Web App**: Modern React-based web interface
+- 💻 **CLI**: Terminal-based chat interface
+- 📱 **Android**: Native Android app
 
 ## Latest Updates 🎉
 
 ### 🔒 Field-Level Encryption (NEW)
+
 - **Data Privacy**: Optional AES-256-GCM encryption for message content at rest
 - **Zero Impact**: No performance penalty, backward compatible with existing data
 - **Easy Setup**: Just add `MEMORY_KEY` to your `.env` file
 - See [SECURITY.md](SECURITY.md) for setup instructions
 
 ### Voice Features
+
 - **Multi-Provider TTS**: Support for Google Cloud, Azure, ElevenLabs, and browser-native voices
 - **US English (Southern) Accent**: Prioritized natural, expressive female voices
 - **Low Latency**: Optimized for conversational response times
@@ -19,32 +57,83 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - See [VOICE_FEATURES_GUIDE.md](docs/VOICE_FEATURES_GUIDE.md) and [VOICE_ENGINE_README.md](docs/VOICE_ENGINE_README.md) for details
 
 ### Enhanced Memory System
+
 - **SQLite Database**: Migrated from JSON to SQLite for better performance
 - **Session Tracking**: Automatic conversation session management
 - **Usage Patterns**: Tracks conversation patterns by day and time
 - See [MEMORY_MIGRATION_GUIDE.md](docs/MEMORY_MIGRATION_GUIDE.md) for migration instructions
 
 ### Persona Refinement
+
 - Removed tech support persona - Milla is now exclusively your devoted AI companion
 - All interactions maintain the warm, personal Milla Rayne personality
 
-## Features
+## Available Platforms
 
-- **🔒 Data Encryption**: Optional field-level encryption for sensitive conversation data
-- **Modern UI**: Chat interface positioned to showcase full-screen background image
-- **🎨 Adaptive Scene Backgrounds**: Dynamic CSS animated gradients or static image backgrounds per room/location
-- **🎙️ Multi-Provider Voice**: Support for Google Cloud, Azure, ElevenLabs TTS with automatic fallback
-- **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
-- **Multiple AI Services**: Primary OpenRouter integration with DeepSeek and Qwen, plus xAI fallbacks
-- **AI Enhancement Suggestions**: Powered by DeepSeek via OpenRouter
+### 🌐 Web App
+- Modern React-based web interface with full-screen backgrounds
+- Real-time chat with adaptive scenes
+- Voice interaction support (TTS & STT)
+- Visual memory and face recognition
+- GitHub repository analysis
+
+**Quick Start**: `npm run dev` → Open `http://localhost:5000`
+
+### 💻 CLI
+- Terminal-based chat interface
+- Colorful ANSI-formatted messages
+- Conversation history viewing
+- Interactive commands (/help, /history, /clear, /exit)
+- Connects to the same backend server
+
+**Quick Start**: `npm run cli` (requires server running)  
+**Documentation**: [cli/README.md](cli/README.md)
+
+### 📱 Android App
+- Native Android app with Material Design 3
+- Offline conversation storage with Room database
+- Beautiful gradient backgrounds
+- Smooth message animations
+- Retrofit-based API client
+
+**Quick Start**: Open `android/` in Android Studio  
+**Documentation**: [android/APP_README.md](android/APP_README.md)
+
+## ✨ Key Features
+
+### 🔐 Privacy & Security
+- **Field-Level Encryption**: AES-256-GCM encryption for sensitive conversation data
+- **Local Storage**: All data stored locally with SQLite database
+- **No Cloud Lock-in**: Works with multiple AI providers or self-hosted models
+
+### 🎨 User Experience
+- **Modern UI**: Beautiful chat interface with full-screen backgrounds
+- **Adaptive Scenes**: Dynamic CSS animated gradients that change with context
+- **Multi-Platform**: Web, CLI, and native Android app
 - **Real-time Chat**: Instant messaging with personality-aware responses
+
+### 🎙️ Voice Interaction
+- **Multi-Provider TTS**: Support for Google Cloud, Azure, ElevenLabs, and browser-native voices
+- **Speech-to-Text**: Use your microphone for voice input
+- **Low Latency**: Optimized for natural conversation flow
+- **Automatic Fallback**: Seamless provider switching
+
+### 🧠 Intelligence
+- **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
+- **Multiple AI Providers**: OpenRouter (DeepSeek, Qwen), xAI (Grok), Mistral, and more
 - **Visual Recognition**: Video analysis and face recognition capabilities
-- **Repository Analysis**: Analyze GitHub repositories to understand codebase structure and quality
-- **Repository Improvements**: Generate actionable improvement suggestions for GitHub repositories
+- **Code Generation**: Specialized Qwen Coder model for programming tasks
+
+### 🔧 Developer Features
+- **Repository Analysis**: Analyze GitHub repositories for structure and quality
+- **AI Suggestions**: Automated code improvement recommendations
+- **Extensible**: Easy to add new AI providers and features
+- **Well-Documented**: Comprehensive guides and API documentation
 
 ## AI Service Configuration
 
 ### Primary Chat Service: OpenRouter (DeepSeek)
+
 - **Model**: `deepseek/deepseek-chat-v3.1:free` (DeepSeek Chat)
 - **Endpoint**: `/api/chat` and `/api/openrouter-chat`
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
@@ -52,18 +141,21 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Use**: All message and chat requests
 
 ### Code Generation Service: OpenRouter (Qwen)
+
 - **Model**: `qwen/qwen-2.5-coder-32b-instruct` (Qwen Coder)
 - **Endpoint**: `/api/chat` (automatically detects code requests)
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Use**: All code generation requests
 
 ### Enhancement Suggestions: OpenRouter (DeepSeek)
+
 - **Model**: `deepseek/deepseek-chat-v3.1:free` (DeepSeek Chat)
 - **Endpoint**: `/api/suggest-enhancements`
 - **Setup**: Add `OPENROUTER_API_KEY=your_key_here` to `.env`
 - **Fallback**: Curated project enhancement suggestions
 
 ### Image Generation Service: OpenRouter (Gemini)
+
 - **Model**: `google/gemini-pro-vision` (Gemini Pro Vision)
 - **Endpoint**: `/api/chat` (automatically detects image generation requests)
 - **Setup**: Add `OPENROUTER_GEMINI_API_KEY=your_key_here` to `.env`
@@ -71,22 +163,26 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 - **Use**: Create images from text prompts (e.g., "create an image of a sunset")
 
 ### Additional Services Available
+
 - **xAI Grok**: `XAI_API_KEY` - Alternative AI service for specialized tasks
 - **OpenAI/Perplexity**: `PERPLEXITY_API_KEY` - Additional AI option
 
 ### API Key Setup
 
-🚨 **CRITICAL SECURITY WARNING**: 
+🚨 **CRITICAL SECURITY WARNING**:
+
 - **NEVER** commit actual API keys to version control!
 - If you accidentally commit API keys, they become publicly visible and will be automatically revoked by providers
 - Always use `.env` files for local development (they are git-ignored)
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
 
 2. Edit `.env` with your actual API keys:
+
    ```env
    OPENROUTER_API_KEY=your_actual_openrouter_key_here
    OPENROUTER_GEMINI_API_KEY=your_actual_openrouter_gemini_key_here
@@ -99,6 +195,7 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
    ```
 
 **🆘 If you already committed API keys by mistake:**
+
 1. Remove the file from git tracking: `git rm --cached .env`
 2. Replace real keys with placeholders in your local `.env`
 3. Get new API keys from your providers (old ones are likely revoked)
@@ -108,6 +205,8 @@ A virtual AI assistant with an adaptive personality, featuring a modern UI with 
 
 ## Quick Start
 
+### Web App (Default)
+
 ```bash
 npm install
 cp .env.example .env  # Copy and edit with your API keys
@@ -115,6 +214,51 @@ npm run dev
 ```
 
 Open `http://localhost:5000` to start chatting with Milla!
+
+### CLI Version
+
+For a terminal-based interface:
+
+```bash
+# Start the server in one terminal
+npm run dev
+
+# In another terminal, start the CLI
+npm run cli
+```
+
+See [cli/README.md](cli/README.md) for CLI documentation.
+
+### Android App
+
+To build and run the Android app:
+
+1. Open the `android` directory in Android Studio
+2. Configure the server URL in `app/src/main/res/values/strings.xml`
+3. Build and run on an emulator or device
+
+See [android/APP_README.md](android/APP_README.md) for complete setup instructions.
+
+### 🐳 Docker Deployment
+
+Run Milla Rayne with Docker for easy deployment:
+
+```bash
+# Using Docker Compose (recommended)
+cp .env.example .env  # Edit with your API keys
+docker-compose up
+
+# Or build and run manually
+docker build -t milla-rayne .
+docker run -p 5000:5000 --env-file .env milla-rayne
+```
+
+**Pre-built images available:**
+```bash
+docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
+```
+
+See [CICD_DOCUMENTATION.md](CICD_DOCUMENTATION.md) for detailed Docker documentation.
 
 ### First-Time Setup
 
@@ -126,6 +270,7 @@ npm run migrate:memory
 ```
 
 This will:
+
 - Convert your memories.txt to SQLite database
 - Create session tracking
 - Analyze usage patterns
@@ -138,12 +283,14 @@ See [MEMORY_MIGRATION_GUIDE.md](docs/MEMORY_MIGRATION_GUIDE.md) for details.
 Milla can share daily improvement suggestions when enabled:
 
 **Configuration** (in `.env`):
+
 - `ENABLE_PREDICTIVE_UPDATES=true` - Enable daily suggestions feature
 - `AI_UPDATES_CRON="0 9 * * *"` - Schedule (default: 9:00 AM daily)
 - `ENABLE_DEV_TALK=false` - Control automatic development/analysis talk
 - `ADMIN_TOKEN=your_token` - Optional token for accessing AI updates API
 
 **Behavior**:
+
 - **Daily Suggestion**: Milla shares one concise suggestion per day when you first chat
 - **Manual Control**: Ask "what's new?" to see today's suggestion anytime
 - **Dev Talk Gating**: When `ENABLE_DEV_TALK=false` (default):
@@ -157,6 +304,7 @@ This keeps Milla focused on her core companion personality while making developm
 ### Voice Features Setup
 
 Voice features work out of the box with supported browsers:
+
 - ✅ Chrome/Edge (full support)
 - ✅ Safari (full support)
 - ⚠️ Firefox (limited support)
@@ -181,6 +329,7 @@ The application supports dynamic backgrounds that adapt to the conversation cont
    - Optimize for web (target < 500KB per image)
 
 2. **Use the naming convention**:
+
    ```
    /client/public/assets/scenes/
    ├── living_room.jpg              # Base living room image
@@ -206,6 +355,7 @@ The application supports dynamic backgrounds that adapt to the conversation cont
 For complete documentation, see `/client/public/assets/scenes/README.md`
 
 **Example**: Adding a living room background:
+
 ```bash
 # Copy your image to the scenes directory
 cp my-living-room.jpg /client/public/assets/scenes/living_room.jpg
@@ -215,6 +365,7 @@ cp my-living-room-night.jpg /client/public/assets/scenes/living_room-night.jpg
 ```
 
 The system will automatically detect and use the images when:
+
 - Background mode is set to "Static Image" or "Auto"
 - User navigates to that location in roleplay (e.g., `*walks into the living room*`)
 - Time of day matches a variant (if available)
@@ -226,11 +377,13 @@ If no image exists, the system gracefully falls back to CSS animated backgrounds
 This project requires API keys for full functionality. **NEVER commit actual API keys to version control.**
 
 ### For Local Development:
+
 1. Use `.env` file (automatically ignored by git)
 2. Copy from `.env.example` template
 3. Replace placeholder values with your actual keys
 
 ### For Production/Deployment:
+
 - **Replit**: Use the Secrets tab in your repl
 - **Vercel**: Use Environment Variables in project settings
 - **Heroku**: Use Config Vars in app settings
@@ -242,11 +395,13 @@ This project requires API keys for full functionality. **NEVER commit actual API
 Protect your conversation data with field-level encryption:
 
 1. **Generate an encryption key:**
+
    ```bash
    openssl rand -base64 32
    ```
 
 2. **Add to your `.env` file:**
+
    ```env
    MEMORY_KEY=your_generated_key_here
    ```
@@ -254,6 +409,7 @@ Protect your conversation data with field-level encryption:
 3. **Restart the application** - all new messages will be encrypted automatically
 
 **Benefits:**
+
 - ✅ AES-256-GCM encryption with authentication
 - ✅ Protects personal data in SQLite database
 - ✅ No performance impact
@@ -265,6 +421,7 @@ Protect your conversation data with field-level encryption:
 See [SECURITY.md](SECURITY.md) for detailed security documentation.
 
 ### API Key Sources:
+
 - **OpenRouter**: [openrouter.ai](https://openrouter.ai) - Primary AI service (DeepSeek + Qwen + Gemini Image Generation)
 - **xAI**: [console.x.ai](https://console.x.ai) - Alternative AI service
 - **GitHub**: [github.com/settings/tokens](https://github.com/settings/tokens) - For repository analysis
@@ -276,11 +433,13 @@ Milla encrypts sensitive conversation data using AES-256-GCM encryption. You nee
 #### Initial Setup
 
 1. **Generate a secure key**:
+
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
    ```
 
 2. **Add to your `.env` file**:
+
    ```env
    MEMORY_KEY=your_generated_64_character_hex_key_here
    ```
@@ -302,7 +461,8 @@ If you need to change your encryption key:
 4. **Update `.env`**: Replace `MEMORY_KEY` with new key
 5. **Re-run migration**: `npx tsx server/encryptMigration.ts` to re-encrypt with new key
 
-⚠️ **Important**: 
+⚠️ **Important**:
+
 - Keep your `MEMORY_KEY` secure and backed up
 - Changing the key without proper migration will make existing data unreadable
 - The key must be at least 32 characters long
@@ -373,8 +533,8 @@ Milla can analyze GitHub repositories and suggest specific improvements to enhan
    ```
    https://github.com/username/repository
    ```
-   
 2. **Get Improvement Suggestions**: After analysis, ask Milla to suggest improvements
+
    ```
    suggest improvements
    improve this repo
@@ -403,19 +563,15 @@ Milla can analyze GitHub repositories and suggest specific improvements to enhan
 
 - `POST /api/analyze-repository` - Analyze a GitHub repository
   - Body: `{ "repositoryUrl": "https://github.com/owner/repo" }`
-  
 - `POST /api/repository/improvements` - Generate improvement suggestions
   - Body: `{ "repositoryUrl": "https://github.com/owner/repo", "focusArea": "optional" }`
   - Focus areas: `"security"`, `"performance"`, `"documentation"`, etc.
-  
 - `POST /api/repository/analyze-code` - Perform deep code analysis (New!)
   - Body: `{ "repositoryUrl": "https://github.com/owner/repo" }`
   - Returns: Security issues, performance issues, code quality issues, language-specific suggestions
-  
 - `POST /api/repository/test-improvements` - Test improvements before applying (New!)
   - Body: `{ "repositoryUrl": "...", "improvements": [...] }`
   - Returns: Validation results, test reports, risk assessment
-  
 - `POST /api/repository/apply-improvements` - Apply improvements via GitHub API (Enhanced!)
   - Body: `{ "repositoryUrl": "...", "improvements": [...], "githubToken": "optional" }`
   - With token: Creates pull request automatically
@@ -444,38 +600,38 @@ To enable automatic pull request creation, you need a GitHub Personal Access Tok
 
 ```
 User: https://github.com/myusername/myproject
-Milla: *analyzes the repository* 
+Milla: *analyzes the repository*
        I can see this is a TypeScript project with...
        [analysis details]
-       
+
        💡 Would you like me to suggest improvements?
 
 User: yes, suggest improvements
 Milla: *generates improvement suggestions*
-       
+
        1. Add comprehensive README
           - Create/update README.md with setup instructions
           - Files: README.md
           - Reason: Good documentation helps users understand the project
-          
+
        2. Add .gitignore file
           - Prevent committing sensitive files
           - Files: .gitignore
           - Reason: Protects API keys and prevents node_modules in git
-          
+
        3. Add CI/CD workflow with security scanning
           - Automate testing and security analysis
           - Files: .github/workflows/ci.yml
           - Reason: Catches bugs and vulnerabilities early
-       
+
        [more suggestions...]
 
 User: Apply these changes automatically
 Milla: *creates pull request via GitHub API*
-       
+
        🎉 Pull request created!
        🔗 https://github.com/myusername/myproject/pull/42
-       
+
        The PR includes:
        ✅ All syntax tests passed
        ⚠️ 2 warnings (review recommended)
@@ -485,6 +641,7 @@ Milla: *creates pull request via GitHub API*
 ### Code Analysis Features
 
 #### Security Scanning
+
 - Detects hardcoded passwords and API keys (CWE-798)
 - Identifies eval() usage and code injection risks (CWE-95)
 - Finds XSS vulnerabilities from innerHTML (CWE-79)
@@ -492,6 +649,7 @@ Milla: *creates pull request via GitHub API*
 - Language-specific security patterns for JS, TS, Python, Java, Go
 
 #### Performance Analysis
+
 - DOM queries inside loops
 - High-frequency intervals
 - Inefficient string concatenation
@@ -499,12 +657,14 @@ Milla: *creates pull request via GitHub API*
 - JSON.parse(JSON.stringify()) deep cloning
 
 #### Code Quality
+
 - Long functions (>100 lines)
 - Unresolved TODO/FIXME comments
 - Excessive commented-out code
 - Language-specific best practices
 
 #### Automated Testing
+
 - Syntax validation (JSON, YAML, Markdown, JS/TS)
 - File size checks
 - Risk assessment (low/medium/high)
@@ -518,6 +678,7 @@ Milla can automatically track AI industry updates from curated sources and gener
 ### Overview
 
 The predictive updates system:
+
 - **Fetches AI news**: Monitors RSS feeds from OpenAI, xAI, Perplexity, HuggingFace, GitHub Changelog, and more
 - **Computes relevance**: Analyzes updates based on project stack (OpenRouter, xAI, SQLite, voice features, etc.)
 - **Generates recommendations**: Converts relevant updates into concrete implementation suggestions
@@ -526,23 +687,26 @@ The predictive updates system:
 ### Setup
 
 1. **Enable the feature** in your `.env`:
+
    ```env
    ENABLE_PREDICTIVE_UPDATES=true
    ```
 
 2. **Configure sources** (optional - defaults to OpenAI, xAI, Perplexity, HuggingFace, GitHub):
+
    ```env
    AI_UPDATES_SOURCES=https://openai.com/blog/rss.xml,https://x.ai/blog/rss
    ```
 
 3. **Set up scheduling** (optional - leave empty to disable automatic fetching):
+
    ```env
    # Fetch daily at midnight
    AI_UPDATES_CRON=0 0 * * *
-   
+
    # Or every 6 hours
    AI_UPDATES_CRON=0 */6 * * *
-   
+
    # Or weekly on Monday at 9am
    AI_UPDATES_CRON=0 9 * * 1
    ```
@@ -555,12 +719,15 @@ The predictive updates system:
 ### API Endpoints
 
 #### Get AI Updates
+
 ```http
 GET /api/ai-updates?source=&minRelevance=0.3&limit=50
 ```
+
 List stored AI updates with optional filtering.
 
 Query parameters:
+
 - `source` (optional): Filter by source URL
 - `minRelevance` (optional): Minimum relevance score (0-1)
 - `limit` (optional): Max results (default: 50)
@@ -568,6 +735,7 @@ Query parameters:
 - `stats=true` (optional): Get statistics instead of updates
 
 Response:
+
 ```json
 {
   "success": true,
@@ -589,13 +757,16 @@ Response:
 ```
 
 #### Trigger Manual Fetch
+
 ```http
 POST /api/ai-updates/fetch
 Headers: X-Admin-Token: your_token (if ADMIN_TOKEN is set)
 ```
+
 Manually trigger a fetch of all configured sources.
 
 Response:
+
 ```json
 {
   "success": true,
@@ -605,17 +776,21 @@ Response:
 ```
 
 #### Get Recommendations
+
 ```http
 GET /api/ai-updates/recommendations?minRelevance=0.2&maxRecommendations=10
 ```
+
 Generate actionable recommendations from stored updates.
 
 Query parameters:
+
 - `minRelevance` (optional): Minimum relevance threshold (default: 0.2)
 - `maxRecommendations` (optional): Max recommendations (default: 10)
 - `summary=true` (optional): Get summary statistics instead
 
 Response:
+
 ```json
 {
   "success": true,
@@ -665,6 +840,7 @@ curl http://localhost:5000/api/ai-updates?stats=true
 ### Relevance Scoring
 
 Updates are scored based on keywords matching the project's technology stack:
+
 - **Keywords**: OpenRouter, xAI, Qwen, DeepSeek, SQLite, voice, TTS, STT, GitHub Actions, security, API, TypeScript, React, Express, WebSocket, LLM, GPT, Claude, Mistral, Grok
 
 Higher relevance scores indicate updates more likely to benefit this project.
@@ -685,22 +861,22 @@ Milla Rayne is a virtual AI companion with an adaptive personality. It features 
 
 ### Key Technologies
 
-*   **Backend:** Node.js, Express.js, TypeScript
-*   **Frontend:** React, Vite, Tailwind CSS
-*   **Database:** SQLite, managed with Drizzle ORM
-*   **AI/ML:** Integrations with multiple AI services including OpenRouter (DeepSeek, Qwen, Gemini), xAI, and OpenAI. It also uses TensorFlow.js for client-side visual recognition.
-*   **Testing:** Vitest for unit and integration tests.
-*   **Linting & Formatting:** ESLint and Prettier.
+- **Backend:** Node.js, Express.js, TypeScript
+- **Frontend:** React, Vite, Tailwind CSS
+- **Database:** SQLite, managed with Drizzle ORM
+- **AI/ML:** Integrations with multiple AI services including OpenRouter (DeepSeek, Qwen, Gemini), xAI, and OpenAI. It also uses TensorFlow.js for client-side visual recognition.
+- **Testing:** Vitest for unit and integration tests.
+- **Linting & Formatting:** ESLint and Prettier.
 
 ### Core Features
 
-*   **AI Companion:** A personality-driven AI assistant for conversation.
-*   **Persistent Memory:** Uses an SQLite database to remember past conversations and user details, with support for AES-256-GCM encryption.
-*   **Voice Interaction:** Supports Text-to-Speech (TTS) and Speech-to-Text (STT) using various providers.
-*   **Adaptive Scenes:** Dynamically changes UI backgrounds based on conversational context.
-*   **Repository Analysis:** Can analyze GitHub repositories to provide improvement suggestions and even create Pull Requests.
-*   **Predictive Updates:** Monitors AI news and suggests relevant feature updates for the project itself.
-*   **Self-Evolution:** Contains services for self-improvement and task management.
+- **AI Companion:** A personality-driven AI assistant for conversation.
+- **Persistent Memory:** Uses an SQLite database to remember past conversations and user details, with support for AES-256-GCM encryption.
+- **Voice Interaction:** Supports Text-to-Speech (TTS) and Speech-to-Text (STT) using various providers.
+- **Adaptive Scenes:** Dynamically changes UI backgrounds based on conversational context.
+- **Repository Analysis:** Can analyze GitHub repositories to provide improvement suggestions and even create Pull Requests.
+- **Predictive Updates:** Monitors AI news and suggests relevant feature updates for the project itself.
+- **Self-Evolution:** Contains services for self-improvement and task management.
 
 ### Building and Running
 
@@ -747,27 +923,27 @@ To build and run the application in production mode:
 
 #### Testing and Code Quality
 
-*   **Run tests:**
-    ```bash
-    npm test
-    ```
-*   **Lint files:**
-    ```bash
-    npm run lint
-    ```
-*   **Format files:**
-    ```bash
-    npm run format
-    ```
+- **Run tests:**
+  ```bash
+  npm test
+  ```
+- **Lint files:**
+  ```bash
+  npm run lint
+  ```
+- **Format files:**
+  ```bash
+  npm run format
+  ```
 
 #### Database
 
 The project uses Drizzle ORM for database management.
 
-*   To apply schema changes to the database:
-    ```bash
-    npm run db:push
-    ```
+- To apply schema changes to the database:
+  ```bash
+  npm run db:push
+  ```
 
 ### Development Conventions
 
@@ -777,17 +953,191 @@ Code style is enforced by ESLint and Prettier. Please run `npm run format` and `
 
 #### File Structure
 
-*   `server/`: Contains all backend source code.
-    *   `server/index.ts`: The main entry point for the server.
-    *   `server/routes.ts`: Defines the API routes.
-    *   `server/*Service.ts`: Core logic for different features (e.g., `memoryService.ts`, `voiceService.ts`).
-*   `client/`: Contains all frontend source code (React + Vite).
-    *   `client/src/main.tsx`: The main entry point for the React application.
-*   `shared/`: Contains code and types shared between the client and server.
-*   `memory/`: Contains the SQLite database (`milla.db`) and other memory-related files.
-*   `docs/`: Contains detailed documentation and specifications for various features.
-*   `.env`: Environment variables for configuration (API keys, feature flags). This file is ignored by git.
+- `server/`: Contains all backend source code.
+  - `server/index.ts`: The main entry point for the server.
+  - `server/routes.ts`: Defines the API routes.
+  - `server/*Service.ts`: Core logic for different features (e.g., `memoryService.ts`, `voiceService.ts`).
+- `client/`: Contains all frontend source code (React + Vite).
+  - `client/src/main.tsx`: The main entry point for the React application.
+- `shared/`: Contains code and types shared between the client and server.
+- `memory/`: Contains the SQLite database (`milla.db`) and other memory-related files.
+- `docs/`: Contains detailed documentation and specifications for various features.
+- `.env`: Environment variables for configuration (API keys, feature flags). This file is ignored by git.
 
 #### API
 
 The backend exposes a RESTful API under the `/api/` path. The routes are defined in `server/routes.ts`. The server is responsible for handling all AI service calls, database interactions, and business logic.
+
+## Development
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+#### Automated Workflows
+
+- **CI**: Runs on every push and PR
+  - Linting and formatting checks
+  - TypeScript type checking
+  - Unit tests with coverage
+  - Build verification
+  - Matrix testing on Node.js 18.x and 20.x
+
+- **PR Checks**: Comprehensive checks for pull requests
+  - Code quality analysis
+  - Security audits
+  - Bundle size reporting
+  - Test coverage reporting
+
+- **CodeQL**: Security vulnerability scanning
+  - Weekly automated scans
+  - JavaScript/TypeScript and Python analysis
+
+- **Release**: Automated release management
+  - Triggered by version tags (`v*.*.*`)
+  - Builds Docker images
+  - Creates GitHub releases with artifacts
+
+See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for complete CI/CD setup guide.
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+```
+
+**Coverage Goals:**
+- Lines: 80%+
+- Functions: 80%+
+- Branches: 80%+
+- Statements: 80%+
+
+View coverage reports:
+- Locally: `coverage/index.html`
+- Online: [Codecov Dashboard](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
+
+### Code Quality
+
+```bash
+# Run linter
+npm run lint
+
+# Check formatting
+npm run format -- --check
+
+# Auto-fix formatting
+npm run format
+
+# TypeScript type check
+npm run check
+```
+
+### Docker Development
+
+```bash
+# Build image locally
+docker build -t milla-rayne:dev .
+
+# Run with docker-compose
+docker-compose up
+
+# Run in development mode with volume mounting
+docker-compose -f docker-compose.dev.yml up  # (if available)
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
+
+## Contributing
+
+We welcome contributions from the community! Here's how you can help:
+
+### Getting Started
+
+1. **Fork the repository** and clone it locally
+2. **Create a branch** for your feature: `git checkout -b feature/amazing-feature`
+3. **Make your changes** and test thoroughly
+4. **Commit your changes**: `git commit -m 'Add amazing feature'`
+5. **Push to your fork**: `git push origin feature/amazing-feature`
+6. **Open a Pull Request** with a clear description of your changes
+
+### Guidelines
+
+- Follow the existing code style (enforced by ESLint and Prettier)
+- Write clear commit messages
+- Add tests for new features
+- Update documentation as needed
+- Be respectful and constructive in discussions
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+### Good First Issues
+
+Looking for somewhere to start? Check out issues labeled `good-first-issue` in the issue tracker.
+
+## Security
+
+Security is a top priority for this project. If you discover a security vulnerability:
+
+1. **DO NOT** open a public issue
+2. Email the details to the repository maintainers
+3. Allow time for the issue to be addressed before public disclosure
+
+See [SECURITY.md](SECURITY.md) for more information about:
+- Security features (field-level encryption, memory security)
+- Best practices for API key management
+- How to report vulnerabilities
+- Security update policy
+
+**Before making this repository public**, please review:
+- [SECURITY_AUDIT_CHECKLIST.md](SECURITY_AUDIT_CHECKLIST.md) - Critical security items to address
+- Rotate all exposed API keys
+- Review git history for sensitive data
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ Commercial use
+- ✅ Modification
+- ✅ Distribution
+- ✅ Private use
+- ⚠️ Liability and warranty disclaimers apply
+
+## Acknowledgments
+
+- Built with [React](https://reactjs.org/), [TypeScript](https://www.typescriptlang.org/), and [Express](https://expressjs.com/)
+- AI powered by multiple providers including OpenRouter, xAI, and Mistral
+- Voice synthesis via Google Cloud TTS, Azure TTS, and ElevenLabs
+- Memory system built on [SQLite](https://www.sqlite.org/) with [Drizzle ORM](https://orm.drizzle.team/)
+
+## Support
+
+- 📖 **Documentation**: Check the `/docs` directory for detailed guides
+- 💬 **Discussions**: Use GitHub Discussions for questions and community chat
+- 🐛 **Bug Reports**: Open an issue with the `bug` label
+- 💡 **Feature Requests**: Open an issue with the `enhancement` label
+
+## Roadmap
+
+See [REPOSITORY_ENHANCEMENT_GUIDE.md](REPOSITORY_ENHANCEMENT_GUIDE.md) for future plans and enhancement ideas.
+
+---
+
+**Made with ❤️ by the Milla Rayne community**

@@ -29,7 +29,7 @@ interface DailyNewsDigestProps {
 
 /**
  * DailyNewsDigest - Display daily tech news from YouTube
- * 
+ *
  * Features:
  * - Categorized news items
  * - Top stories section
@@ -42,7 +42,9 @@ export function DailyNewsDigest({
   onWatchVideo,
   className = '',
 }: DailyNewsDigestProps) {
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
 
   const toggleCategory = (category: string) => {
     const newExpanded = new Set(expandedCategories);
@@ -81,21 +83,29 @@ export function DailyNewsDigest({
   };
 
   return (
-    <Card className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}>
+    <Card
+      className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Newspaper className="w-5 h-5 text-blue-400" />
-            <CardTitle className="text-xl text-white">Daily Tech News</CardTitle>
+            <CardTitle className="text-xl text-white">
+              Daily Tech News
+            </CardTitle>
           </div>
           <Badge variant="outline" className="border-blue-500/30 text-blue-300">
             {digest.date}
           </Badge>
         </div>
         <p className="text-sm text-white/60 mt-2">
-          Found {digest.totalVideos} new videos across {Object.keys(digest.categories).length} categories
+          Found {digest.totalVideos} new videos across{' '}
+          {Object.keys(digest.categories).length} categories
           {digest.analysisCount > 0 && (
-            <span className="text-purple-300"> • {digest.analysisCount} auto-analyzed</span>
+            <span className="text-purple-300">
+              {' '}
+              • {digest.analysisCount} auto-analyzed
+            </span>
           )}
         </p>
       </CardHeader>
@@ -129,7 +139,10 @@ export function DailyNewsDigest({
         <ScrollArea className="h-[500px] pr-4">
           <div className="space-y-3">
             {Object.entries(digest.categories).map(([category, items]) => (
-              <div key={category} className={`rounded-lg border ${getCategoryColor(category)}`}>
+              <div
+                key={category}
+                className={`rounded-lg border ${getCategoryColor(category)}`}
+              >
                 <button
                   onClick={() => toggleCategory(category)}
                   className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
@@ -137,7 +150,10 @@ export function DailyNewsDigest({
                   <div className="flex items-center gap-2">
                     {getCategoryIcon(category)}
                     <span className="font-semibold text-white">{category}</span>
-                    <Badge variant="outline" className="border-white/20 text-white/60">
+                    <Badge
+                      variant="outline"
+                      className="border-white/20 text-white/60"
+                    >
                       {items.length}
                     </Badge>
                   </div>
@@ -181,7 +197,13 @@ interface NewsItemCardProps {
   isTopStory?: boolean;
 }
 
-function NewsItemCard({ item, index, onAnalyze, onWatch, isTopStory }: NewsItemCardProps) {
+function NewsItemCard({
+  item,
+  index,
+  onAnalyze,
+  onWatch,
+  isTopStory,
+}: NewsItemCardProps) {
   return (
     <div className="bg-black/40 rounded-lg p-3 border border-white/10 hover:border-white/20 transition-colors group">
       <div className="flex gap-3">
@@ -214,7 +236,9 @@ function NewsItemCard({ item, index, onAnalyze, onWatch, isTopStory }: NewsItemC
             {item.relevanceScore !== undefined && (
               <>
                 <span>•</span>
-                <span className="text-purple-300">Score: {item.relevanceScore}</span>
+                <span className="text-purple-300">
+                  Score: {item.relevanceScore}
+                </span>
               </>
             )}
           </div>

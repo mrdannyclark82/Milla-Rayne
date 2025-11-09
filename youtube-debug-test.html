@@ -1,182 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>YouTube Player Debug Test</title>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #1a1a2e;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: white;
-        }
-        .test-player {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 9999;
-            backdrop-filter: blur(4px);
-        }
-        .player-container {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 16px;
-        }
-        .close-btn {
-            position: absolute;
-            top: -48px;
-            right: 0;
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-            background: none;
-            border: none;
-            cursor: pointer;
-            z-index: 10000;
-            transition: color 0.3s;
-        }
-        .close-btn:hover {
-            color: #aaa;
-        }
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%;
-            background: black;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-        }
-        iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .info {
-            background: rgba(255, 107, 157, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #ff6b9d;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            background: #ff6b9d;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 10px;
-        }
-        button:hover {
-            background: #ff4d7f;
-        }
-        .hidden {
-            display: none;
-        }
+      body {
+        margin: 0;
+        padding: 20px;
+        background: #1a1a2e;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        color: white;
+      }
+      .test-player {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+      }
+      .player-container {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 16px;
+      }
+      .close-btn {
+        position: absolute;
+        top: -48px;
+        right: 0;
+        color: white;
+        font-size: 30px;
+        font-weight: bold;
+        background: none;
+        border: none;
+        cursor: pointer;
+        z-index: 10000;
+        transition: color 0.3s;
+      }
+      .close-btn:hover {
+        color: #aaa;
+      }
+      .video-wrapper {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        background: black;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      }
+      iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .info {
+        background: rgba(255, 107, 157, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #ff6b9d;
+      }
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        background: #ff6b9d;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 10px;
+      }
+      button:hover {
+        background: #ff4d7f;
+      }
+      .hidden {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>YouTube Embedded Player Debug Test</h1>
-    
+
     <div class="info">
-        <strong>Test Purpose:</strong> Verify YouTube iframe embedding works correctly
-        <br><strong>Common Issues:</strong>
-        <ul>
-            <li>iframe not loading (CSP issues)</li>
-            <li>Z-index conflicts</li>
-            <li>Aspect ratio problems</li>
-            <li>Autoplay not working</li>
-        </ul>
+      <strong>Test Purpose:</strong> Verify YouTube iframe embedding works
+      correctly <br /><strong>Common Issues:</strong>
+      <ul>
+        <li>iframe not loading (CSP issues)</li>
+        <li>Z-index conflicts</li>
+        <li>Aspect ratio problems</li>
+        <li>Autoplay not working</li>
+      </ul>
     </div>
 
-    <button onclick="showPlayer('dQw4w9WgXcQ')">Test Video 1 (Rick Astley)</button>
-    <button onclick="showPlayer('jNQXAC9IVRw')">Test Video 2 (Me at the zoo)</button>
-    <button onclick="showPlayer('9bZkp7q19f0')">Test Video 3 (Gangnam Style)</button>
+    <button onclick="showPlayer('dQw4w9WgXcQ')">
+      Test Video 1 (Rick Astley)
+    </button>
+    <button onclick="showPlayer('jNQXAC9IVRw')">
+      Test Video 2 (Me at the zoo)
+    </button>
+    <button onclick="showPlayer('9bZkp7q19f0')">
+      Test Video 3 (Gangnam Style)
+    </button>
 
     <div id="player" class="test-player hidden">
-        <div class="player-container">
-            <button class="close-btn" onclick="hidePlayer()">✕ Close</button>
-            <div class="video-wrapper">
-                <iframe
-                    id="youtube-iframe"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="YouTube video player"
-                ></iframe>
-            </div>
+      <div class="player-container">
+        <button class="close-btn" onclick="hidePlayer()">✕ Close</button>
+        <div class="video-wrapper">
+          <iframe
+            id="youtube-iframe"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            title="YouTube video player"
+          ></iframe>
         </div>
+      </div>
     </div>
 
     <div class="info">
-        <strong>Expected Behavior:</strong>
-        <ol>
-            <li>Click a test button</li>
-            <li>Dark overlay appears</li>
-            <li>YouTube player shows in center</li>
-            <li>Video autoplays</li>
-            <li>Click "✕ Close" to dismiss</li>
-        </ol>
+      <strong>Expected Behavior:</strong>
+      <ol>
+        <li>Click a test button</li>
+        <li>Dark overlay appears</li>
+        <li>YouTube player shows in center</li>
+        <li>Video autoplays</li>
+        <li>Click "✕ Close" to dismiss</li>
+      </ol>
     </div>
 
-    <div id="debug-info" class="info" style="margin-top: 20px;">
-        <strong>Debug Info:</strong>
-        <div id="debug-output" style="font-family: monospace; margin-top: 10px;"></div>
+    <div id="debug-info" class="info" style="margin-top: 20px">
+      <strong>Debug Info:</strong>
+      <div
+        id="debug-output"
+        style="font-family: monospace; margin-top: 10px"
+      ></div>
     </div>
 
     <script>
-        function log(message) {
-            const output = document.getElementById('debug-output');
-            const time = new Date().toLocaleTimeString();
-            output.innerHTML += `[${time}] ${message}<br>`;
-            console.log(message);
-        }
+      function log(message) {
+        const output = document.getElementById('debug-output');
+        const time = new Date().toLocaleTimeString();
+        output.innerHTML += `[${time}] ${message}<br>`;
+        console.log(message);
+      }
 
-        function showPlayer(videoId) {
-            log(`showPlayer called with videoId: ${videoId}`);
-            const player = document.getElementById('player');
-            const iframe = document.getElementById('youtube-iframe');
-            
-            const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-            log(`Setting iframe src: ${embedUrl}`);
-            
-            iframe.src = embedUrl;
-            player.classList.remove('hidden');
-            
-            log('Player should now be visible');
-        }
+      function showPlayer(videoId) {
+        log(`showPlayer called with videoId: ${videoId}`);
+        const player = document.getElementById('player');
+        const iframe = document.getElementById('youtube-iframe');
 
-        function hidePlayer() {
-            log('hidePlayer called');
-            const player = document.getElementById('player');
-            const iframe = document.getElementById('youtube-iframe');
-            
-            iframe.src = '';
-            player.classList.add('hidden');
-            
-            log('Player hidden');
-        }
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+        log(`Setting iframe src: ${embedUrl}`);
 
-        // Check for iframe load
-        document.getElementById('youtube-iframe').addEventListener('load', function() {
-            log('✅ iframe loaded successfully');
+        iframe.src = embedUrl;
+        player.classList.remove('hidden');
+
+        log('Player should now be visible');
+      }
+
+      function hidePlayer() {
+        log('hidePlayer called');
+        const player = document.getElementById('player');
+        const iframe = document.getElementById('youtube-iframe');
+
+        iframe.src = '';
+        player.classList.add('hidden');
+
+        log('Player hidden');
+      }
+
+      // Check for iframe load
+      document
+        .getElementById('youtube-iframe')
+        .addEventListener('load', function () {
+          log('✅ iframe loaded successfully');
         });
 
-        document.getElementById('youtube-iframe').addEventListener('error', function(e) {
-            log('❌ iframe error: ' + e.message);
+      document
+        .getElementById('youtube-iframe')
+        .addEventListener('error', function (e) {
+          log('❌ iframe error: ' + e.message);
         });
 
-        log('Debug test page initialized');
+      log('Debug test page initialized');
     </script>
-</body>
+  </body>
 </html>

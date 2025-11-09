@@ -10,7 +10,8 @@ import { runTask } from './worker';
  */
 class MillaAgent implements Agent {
   name = 'milla';
-  description = 'Supervisor agent that orchestrates domain agents and task creation.';
+  description =
+    'Supervisor agent that orchestrates domain agents and task creation.';
 
   async execute(task: string): Promise<string> {
     // Task may be a JSON string describing a domain task. Try to parse it.
@@ -40,9 +41,14 @@ class MillaAgent implements Agent {
       await addTask(agentTask);
 
       // Optionally auto-run low-safety tasks immediately
-      if ((agentTask.metadata && agentTask.metadata.autoRun) || agentTask.metadata.safety_level === 'low') {
+      if (
+        (agentTask.metadata && agentTask.metadata.autoRun) ||
+        agentTask.metadata.safety_level === 'low'
+      ) {
         // Fire-and-forget
-        runTask(agentTask).catch((err) => console.error('MillaAgent runTask error:', err));
+        runTask(agentTask).catch((err) =>
+          console.error('MillaAgent runTask error:', err)
+        );
       }
 
       return `Created task ${agentTask.taskId} for agent ${agentTask.agent}`;
@@ -62,7 +68,9 @@ class MillaAgent implements Agent {
     } as any;
 
     await addTask(fallback);
-    runTask(fallback).catch((err) => console.error('MillaAgent runTask error:', err));
+    runTask(fallback).catch((err) =>
+      console.error('MillaAgent runTask error:', err)
+    );
 
     return `Created fallback enhancement search task ${fallback.taskId}`;
   }

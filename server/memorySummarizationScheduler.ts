@@ -19,17 +19,23 @@ export function initializeMemorySummarizationScheduler(): void {
   }
 
   if (!cronExpression) {
-    console.log('Memory summarization scheduling disabled (MEMORY_SUMMARIZATION_CRON not set)');
+    console.log(
+      'Memory summarization scheduling disabled (MEMORY_SUMMARIZATION_CRON not set)'
+    );
     return;
   }
 
   // Validate cron expression
   if (!cron.validate(cronExpression)) {
-    console.error(`Invalid cron expression for memory summarization: ${cronExpression}`);
+    console.error(
+      `Invalid cron expression for memory summarization: ${cronExpression}`
+    );
     return;
   }
 
-  console.log(`Scheduling memory summarization with cron expression: ${cronExpression}`);
+  console.log(
+    `Scheduling memory summarization with cron expression: ${cronExpression}`
+  );
 
   // Schedule the task
   scheduledTask = cron.schedule(cronExpression, async () => {
@@ -38,7 +44,9 @@ export function initializeMemorySummarizationScheduler(): void {
       // TODO: Replace 'default-user' with actual userId from active sessions or iterate through users
       // For now, we'll summarize for a default user or the primary user.
       const summaries = await generateMemorySummaries('default-user');
-      console.log(`Scheduled memory summarization complete: ${summaries.length} new summaries generated`);
+      console.log(
+        `Scheduled memory summarization complete: ${summaries.length} new summaries generated`
+      );
     } catch (error) {
       console.error('Error in scheduled memory summarization:', error);
     }

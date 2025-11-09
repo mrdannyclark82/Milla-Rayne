@@ -13,7 +13,10 @@ describe('Google Photos Service', () => {
       vi.mocked(oauth.getValidAccessToken).mockResolvedValue('test_token');
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({ mediaItems: [{ id: '1', filename: 'Test Photo' }] }),
+        json: () =>
+          Promise.resolve({
+            mediaItems: [{ id: '1', filename: 'Test Photo' }],
+          }),
       });
 
       const result = await searchPhotos('test query');

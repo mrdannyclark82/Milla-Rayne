@@ -164,10 +164,17 @@ export function SceneContextProvider({
   weatherEffect = 'none',
   location = 'front_door',
 }: SceneContextProviderProps) {
-  const [internalTimeOfDay, setInternalTimeOfDay] = useState(getCurrentTimeOfDay());
+  const [internalTimeOfDay, setInternalTimeOfDay] = useState(
+    getCurrentTimeOfDay()
+  );
 
   const derivedTheme = useMemo(() => {
-    return getSceneTheme(internalTimeOfDay, location, weatherEffect, performanceMode);
+    return getSceneTheme(
+      internalTimeOfDay,
+      location,
+      weatherEffect,
+      performanceMode
+    );
   }, [internalTimeOfDay, location, weatherEffect, performanceMode]);
 
   const [context, setContext] = useState<SceneContextType>(() => ({
