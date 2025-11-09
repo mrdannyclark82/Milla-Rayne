@@ -331,6 +331,191 @@ class FeatureDiscoveryService {
   }
 
   /**
+   * Discover features from web search results
+   */
+  async discoverFromWeb(searchTerms: string[] = ['AI assistant features', 'chatbot capabilities']): Promise<DiscoveredFeature[]> {
+    const newFeatures: DiscoveredFeature[] = [];
+
+    try {
+      const { performWebSearch } = await import('./searchService');
+      
+      for (const term of searchTerms) {
+        const results = await performWebSearch(term);
+        
+        for (const result of results.slice(0, 5)) {
+          // Extract features from web search results
+          const feature: DiscoveredFeature = {
+            id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: this.extractFeatureNameFromText(result.title),
+            description: result.snippet || result.title,
+            source: 'web',
+            sourceUrl: result.url,
+            popularity: 5, // Base popularity for web sources
+            relevance: this.calculateWebResultRelevance(result.title, result.snippet),
+            implementationComplexity: 'medium',
+            estimatedValue: 6,
+            discoveredAt: Date.now(),
+            status: 'discovered',
+            tags: this.extractTagsFromText(result.title + ' ' + result.snippet),
+          };
+
+          const existing = this.discoveredFeatures.find(f => 
+            f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+          );
+          
+          if (!existing) {
+            this.discoveredFeatures.push(feature);
+            newFeatures.push(feature);
+          }
+        }
+      }
+
+      await this.saveDiscoveryData();
+      console.log(`Discovered ${newFeatures.length} features from web search`);
+    } catch (error) {
+      console.error('Error discovering features from web:', error);
+    }
+
+    return newFeatures;
+  }
+
+  /**
+   * Discover features from YouTube videos
+   */
+  async discoverFromYouTube(searchTerms: string[] = ['AI assistant tutorial', 'chatbot features']): Promise<DiscoveredFeature[]> {
+    const newFeatures: DiscoveredFeature[] = [];
+
+    try {
+      const { searchYouTubeVideos } = await import('./youtubeService');
+      
+      for (const term of searchTerms) {
+        const videos = await searchYouTubeVideos(term, 5);
+        
+        for (const video of videos) {
+          // Extract features from YouTube video titles and descriptions
+          const feature: DiscoveredFeature = {
+            id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: this.extractFeatureNameFromText(video.title),
+            description: `Feature inspired by YouTube video: ${video.title}`,
+            source: 'youtube',
+            sourceUrl: `https://youtube.com/watch?v=${video.videoId}`,
+            popularity: Math.min(10, Math.floor(Math.log10((video.views || 1000) / 100))),
+            relevance: this.calculateYouTubeRelevance(video.title, video.description),
+            implementationComplexity: 'medium',
+            estimatedValue: 7,
+            discoveredAt: Date.now(),
+            status: 'discovered',
+            tags: this.extractTagsFromText(video.title + ' ' + (video.description || '')),
+          };
+
+          const existing = this.discoveredFeatures.find(f => 
+            f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+          );
+          
+          if (!existing) {
+            this.discoveredFeatures.push(feature);
+            newFeatures.push(feature);
+          }
+        }
+      }
+
+      await this.saveDiscoveryData();
+      console.log(`Discovered ${newFeatures.length} features from YouTube`);
+    } catch (error) {
+      console.error('Error discovering features from YouTube:', error);
+    }
+
+    return newFeatures;
+  }
+
+  /**
+   * Extract feature name from text
+   */
+  private extractFeatureNameFromText(text: string): string {
+    // Remove common words and extract meaningful feature name
+    const cleaned = text
+      .replace(/how to|tutorial|guide|top \d+|best|ultimate/gi, '')
+      .trim();
+    
+    // Look for feature keywords
+    const featureKeywords = [
+      'voice', 'speech', 'chat', 'message', 'notification', 'search',
+      'analytics', 'dashboard', 'integration', 'authentication', 'calendar',
+      'reminder', 'task', 'note', 'export', 'import', 'sync', 'backup'
+    ];
+
+    for (const keyword of featureKeywords) {
+      if (cleaned.toLowerCase().includes(keyword)) {
+        return `${keyword.charAt(0).toUpperCase() + keyword.slice(1)} Feature Enhancement`;
+      }
+    }
+
+    // Default: use first 50 characters
+    return cleaned.substring(0, 50).trim() || 'New Feature Suggestion';
+  }
+
+  /**
+   * Calculate relevance for web search results
+   */
+  private calculateWebResultRelevance(title: string, snippet: string): number {
+    let relevance = 5;
+    const text = (title + ' ' + snippet).toLowerCase();
+
+    if (text.includes('ai') || text.includes('assistant')) relevance += 2;
+    if (text.includes('typescript') || text.includes('react')) relevance += 1;
+    if (text.includes('chat') || text.includes('conversation')) relevance += 1;
+    if (text.includes('feature') || text.includes('capability')) relevance += 1;
+
+    return Math.min(10, relevance);
+  }
+
+  /**
+   * Calculate relevance for YouTube videos
+   */
+  private calculateYouTubeRelevance(title: string, description: string): number {
+    let relevance = 5;
+    const text = (title + ' ' + description).toLowerCase();
+
+    if (text.includes('ai') || text.includes('assistant')) relevance += 2;
+    if (text.includes('tutorial') || text.includes('implementation')) relevance += 1;
+    if (text.includes('typescript') || text.includes('react')) relevance += 1;
+    if (text.includes('chat') || text.includes('bot')) relevance += 1;
+
+    return Math.min(10, relevance);
+  }
+
+  /**
+   * Extract tags from text
+   */
+  private extractTagsFromText(text: string): string[] {
+    const tags: string[] = [];
+    const textLower = text.toLowerCase();
+
+    const tagMappings: Record<string, string> = {
+      'ai': 'ai',
+      'voice': 'voice',
+      'chat': 'chat',
+      'analytics': 'analytics',
+      'mobile': 'mobile',
+      'real-time': 'realtime',
+      'auth': 'auth',
+      'dashboard': 'dashboard',
+      'notification': 'notifications',
+      'calendar': 'productivity',
+      'integration': 'integration',
+      'performance': 'performance',
+    };
+
+    for (const [keyword, tag] of Object.entries(tagMappings)) {
+      if (textLower.includes(keyword)) {
+        tags.push(tag);
+      }
+    }
+
+    return tags.slice(0, 3);
+  }
+
+  /**
    * Get all discovered features
    */
   getDiscoveredFeatures(filters?: {
@@ -460,6 +645,14 @@ export function discoverFromGitHub(limit?: number): Promise<DiscoveredFeature[]>
 
 export function discoverFromUserPatterns(patterns: any[]): Promise<DiscoveredFeature[]> {
   return discoveryService.discoverFromUserPatterns(patterns);
+}
+
+export function discoverFromWeb(searchTerms?: string[]): Promise<DiscoveredFeature[]> {
+  return discoveryService.discoverFromWeb(searchTerms);
+}
+
+export function discoverFromYouTube(searchTerms?: string[]): Promise<DiscoveredFeature[]> {
+  return discoveryService.discoverFromYouTube(searchTerms);
 }
 
 export function getDiscoveredFeatures(filters?: {

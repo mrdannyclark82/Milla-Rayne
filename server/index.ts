@@ -149,7 +149,17 @@ export async function initApp() {
   const { initializeProactiveManager } = await import('./proactiveRepositoryManagerService');
   await initializeProactiveManager();
 
-  console.log('✅ Proactive Repository Ownership System initialized');
+  // Initialize Enhanced Features
+  const { initializeAutomatedPR } = await import('./automatedPRService');
+  await initializeAutomatedPR();
+
+  const { initializeUserSurveys } = await import('./userSatisfactionSurveyService');
+  await initializeUserSurveys();
+
+  const { initializePerformanceProfiling } = await import('./performanceProfilingService');
+  await initializePerformanceProfiling();
+
+  console.log('✅ Proactive Repository Ownership System initialized (with enhancements)');
 
   // Register agents
   agentController.registerAgent(codingAgent);

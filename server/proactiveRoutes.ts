@@ -28,6 +28,8 @@ import {
   getDiscoveredFeatures,
   getTopFeatureRecommendations,
   discoverFromGitHub,
+  discoverFromWeb,
+  discoverFromYouTube,
   updateFeatureStatus,
   getDiscoveryStatistics,
 } from './featureDiscoveryService';
@@ -241,12 +243,39 @@ export function registerProactiveRoutes(router: Router): void {
 
   router.post('/api/milla/features/discover', async (req, res) => {
     try {
-      const { limit } = req.body;
-      const features = await discoverFromGitHub(limit);
+      const { limit, source } = req.body;
+      let features: any[] = [];
+      
+      if (source === 'github' || !source) {
+        features = await discoverFromGitHub(limit);
+      }
+      
       res.json({ success: true, features, count: features.length });
     } catch (error) {
       console.error('Error discovering features:', error);
       res.status(500).json({ success: false, error: 'Failed to discover features' });
+    }
+  });
+
+  router.post('/api/milla/features/discover/web', async (req, res) => {
+    try {
+      const { searchTerms } = req.body;
+      const features = await discoverFromWeb(searchTerms);
+      res.json({ success: true, features, count: features.length });
+    } catch (error) {
+      console.error('Error discovering features from web:', error);
+      res.status(500).json({ success: false, error: 'Failed to discover features from web' });
+    }
+  });
+
+  router.post('/api/milla/features/discover/youtube', async (req, res) => {
+    try {
+      const { searchTerms } = req.body;
+      const features = await discoverFromYouTube(searchTerms);
+      res.json({ success: true, features, count: features.length });
+    } catch (error) {
+      console.error('Error discovering features from YouTube:', error);
+      res.status(500).json({ success: false, error: 'Failed to discover features from YouTube' });
     }
   });
 
@@ -399,5 +428,134 @@ export function registerProactiveRoutes(router: Router): void {
     }
   });
 
-  console.log('✅ Proactive Repository Management routes registered');
+  // Automated PR Routes
+  router.get('/api/milla/prs', async (req, res) => {
+    try {
+      const { getAllPRRequests } = await import('./automatedPRService');
+      const prs = getAllPRRequests();
+      res.json({ success: true, prs });
+    } catch (error) {
+      console.error('Error getting PRs:', error);
+      res.status(500).json({ success: false, error: 'Failed to get PRs' });
+    }
+  });
+
+  router.get('/api/milla/prs/stats', async (req, res) => {
+    try {
+      const { getPRStatistics } = await import('./automatedPRService');
+      const stats = getPRStatistics();
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error getting PR stats:', error);
+      res.status(500).json({ success: false, error: 'Failed to get stats' });
+    }
+  });
+
+  router.post('/api/milla/prs/create', async (req, res) => {
+    try {
+      const { createPRForSandbox } = await import('./automatedPRService');
+      const { sandboxId, title, description, branch, files } = req.body;
+      const pr = await createPRForSandbox({ sandboxId, title, description, branch, files });
+      res.json({ success: true, pr });
+    } catch (error) {
+      console.error('Error creating PR:', error);
+      res.status(500).json({ success: false, error: 'Failed to create PR' });
+    }
+  });
+
+  // User Survey Routes
+  router.get('/api/milla/surveys/active', async (req, res) => {
+    try {
+      const { getActiveSurvey } = await import('./userSatisfactionSurveyService');
+      const survey = getActiveSurvey();
+      res.json({ success: true, survey });
+    } catch (error) {
+      console.error('Error getting active survey:', error);
+      res.status(500).json({ success: false, error: 'Failed to get survey' });
+    }
+  });
+
+  router.post('/api/milla/surveys/respond', async (req, res) => {
+    try {
+      const { submitCompleteSurvey } = await import('./userSatisfactionSurveyService');
+      const { surveyId, userId, responses, context } = req.body;
+      const result = await submitCompleteSurvey({ surveyId, userId, responses, context });
+      res.json({ success: true, responses: result });
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      res.status(500).json({ success: false, error: 'Failed to submit survey' });
+    }
+  });
+
+  router.get('/api/milla/surveys/:surveyId/analytics', async (req, res) => {
+    try {
+      const { getSurveyAnalytics } = await import('./userSatisfactionSurveyService');
+      const { surveyId } = req.params;
+      const analytics = getSurveyAnalytics(surveyId);
+      res.json({ success: true, analytics });
+    } catch (error) {
+      console.error('Error getting survey analytics:', error);
+      res.status(500).json({ success: false, error: 'Failed to get analytics' });
+    }
+  });
+
+  // Performance Profiling Routes
+  router.get('/api/milla/performance/profiles', async (req, res) => {
+    try {
+      const { getAllPerformanceProfiles } = await import('./performanceProfilingService');
+      const profiles = getAllPerformanceProfiles();
+      res.json({ success: true, profiles });
+    } catch (error) {
+      console.error('Error getting performance profiles:', error);
+      res.status(500).json({ success: false, error: 'Failed to get profiles' });
+    }
+  });
+
+  router.get('/api/milla/performance/slow', async (req, res) => {
+    try {
+      const { getSlowOperations } = await import('./performanceProfilingService');
+      const threshold = req.query.threshold ? parseInt(req.query.threshold as string) : 3000;
+      const slowOps = getSlowOperations(threshold);
+      res.json({ success: true, operations: slowOps });
+    } catch (error) {
+      console.error('Error getting slow operations:', error);
+      res.status(500).json({ success: false, error: 'Failed to get slow operations' });
+    }
+  });
+
+  router.get('/api/milla/performance/alerts', async (req, res) => {
+    try {
+      const { getUnacknowledgedPerformanceAlerts } = await import('./performanceProfilingService');
+      const alerts = getUnacknowledgedPerformanceAlerts();
+      res.json({ success: true, alerts });
+    } catch (error) {
+      console.error('Error getting performance alerts:', error);
+      res.status(500).json({ success: false, error: 'Failed to get alerts' });
+    }
+  });
+
+  router.get('/api/milla/performance/stats', async (req, res) => {
+    try {
+      const { getPerformanceStatistics } = await import('./performanceProfilingService');
+      const stats = getPerformanceStatistics();
+      res.json({ success: true, stats });
+    } catch (error) {
+      console.error('Error getting performance stats:', error);
+      res.status(500).json({ success: false, error: 'Failed to get stats' });
+    }
+  });
+
+  router.post('/api/milla/performance/alerts/:id/acknowledge', async (req, res) => {
+    try {
+      const { acknowledgePerformanceAlert } = await import('./performanceProfilingService');
+      const { id } = req.params;
+      const acknowledged = await acknowledgePerformanceAlert(id);
+      res.json({ success: acknowledged });
+    } catch (error) {
+      console.error('Error acknowledging alert:', error);
+      res.status(500).json({ success: false, error: 'Failed to acknowledge alert' });
+    }
+  });
+
+  console.log('✅ Proactive Repository Management routes registered (with enhancements)');
 }

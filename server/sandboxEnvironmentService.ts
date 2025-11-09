@@ -63,6 +63,7 @@ class SandboxEnvironmentService {
     name: string;
     description: string;
     createdBy: 'milla' | 'user';
+    createGitBranch?: boolean;
   }): Promise<SandboxEnvironment> {
     const sandboxId = `sandbox_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const branchName = `${this.SANDBOX_PREFIX}${params.name.toLowerCase().replace(/\s+/g, '-')}_${Date.now()}`;
@@ -82,11 +83,42 @@ class SandboxEnvironmentService {
     this.sandboxes.set(sandboxId, sandbox);
     await this.saveSandboxes();
 
-    // Note: Actual git branch creation would happen in a real implementation
-    // For now, we track it in memory
+    // Create actual git branch if requested
+    if (params.createGitBranch !== false) {
+      try {
+        await this.createGitBranch(branchName);
+        console.log(`✓ Created git branch: ${branchName}`);
+      } catch (error) {
+        console.warn(`Could not create git branch (continuing with memory-only sandbox): ${error}`);
+      }
+    }
+
     console.log(`Created sandbox environment: ${sandbox.name} (${branchName})`);
 
     return sandbox;
+  }
+
+  /**
+   * Create a git branch for the sandbox
+   */
+  private async createGitBranch(branchName: string): Promise<void> {
+    const execAsync = promisify(exec);
+    
+    try {
+      // Get current branch
+      const { stdout: currentBranch } = await execAsync('git rev-parse --abbrev-ref HEAD');
+      
+      // Create and checkout new branch
+      await execAsync(`git checkout -b ${branchName}`);
+      
+      // Push to remote
+      await execAsync(`git push -u origin ${branchName}`);
+      
+      // Switch back to original branch
+      await execAsync(`git checkout ${currentBranch.trim()}`);
+    } catch (error) {
+      throw new Error(`Failed to create git branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   /**
