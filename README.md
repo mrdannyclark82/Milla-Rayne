@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue)](https://www.typescriptlang.org/)
+[![CI](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CI/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/mrdannyclark82/Milla-Rayne/branch/main/graph/badge.svg)](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
 
@@ -17,7 +19,14 @@
   - [Android](#-android-app)
 - [Key Features](#-key-features)
 - [Quick Start](#quick-start)
+  - [Web App](#web-app-default)
+  - [CLI](#cli-version)
+  - [Android](#android-app)
+  - [Docker Deployment](#-docker-deployment)
 - [Configuration](#ai-service-configuration)
+- [Development](#development)
+  - [CI/CD](#cicd-pipeline)
+  - [Testing](#testing)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [Security](#security)
@@ -229,6 +238,27 @@ To build and run the Android app:
 3. Build and run on an emulator or device
 
 See [android/APP_README.md](android/APP_README.md) for complete setup instructions.
+
+### 🐳 Docker Deployment
+
+Run Milla Rayne with Docker for easy deployment:
+
+```bash
+# Using Docker Compose (recommended)
+cp .env.example .env  # Edit with your API keys
+docker-compose up
+
+# Or build and run manually
+docker build -t milla-rayne .
+docker run -p 5000:5000 --env-file .env milla-rayne
+```
+
+**Pre-built images available:**
+```bash
+docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
+```
+
+See [CICD_DOCUMENTATION.md](CICD_DOCUMENTATION.md) for detailed Docker documentation.
 
 ### First-Time Setup
 
@@ -937,6 +967,101 @@ Code style is enforced by ESLint and Prettier. Please run `npm run format` and `
 #### API
 
 The backend exposes a RESTful API under the `/api/` path. The routes are defined in `server/routes.ts`. The server is responsible for handling all AI service calls, database interactions, and business logic.
+
+## Development
+
+### CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+#### Automated Workflows
+
+- **CI**: Runs on every push and PR
+  - Linting and formatting checks
+  - TypeScript type checking
+  - Unit tests with coverage
+  - Build verification
+  - Matrix testing on Node.js 18.x and 20.x
+
+- **PR Checks**: Comprehensive checks for pull requests
+  - Code quality analysis
+  - Security audits
+  - Bundle size reporting
+  - Test coverage reporting
+
+- **CodeQL**: Security vulnerability scanning
+  - Weekly automated scans
+  - JavaScript/TypeScript and Python analysis
+
+- **Release**: Automated release management
+  - Triggered by version tags (`v*.*.*`)
+  - Builds Docker images
+  - Creates GitHub releases with artifacts
+
+See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for complete CI/CD setup guide.
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+```
+
+**Coverage Goals:**
+- Lines: 80%+
+- Functions: 80%+
+- Branches: 80%+
+- Statements: 80%+
+
+View coverage reports:
+- Locally: `coverage/index.html`
+- Online: [Codecov Dashboard](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
+
+### Code Quality
+
+```bash
+# Run linter
+npm run lint
+
+# Check formatting
+npm run format -- --check
+
+# Auto-fix formatting
+npm run format
+
+# TypeScript type check
+npm run check
+```
+
+### Docker Development
+
+```bash
+# Build image locally
+docker build -t milla-rayne:dev .
+
+# Run with docker-compose
+docker-compose up
+
+# Run in development mode with volume mounting
+docker-compose -f docker-compose.dev.yml up  # (if available)
+
+# View logs
+docker-compose logs -f
+
+# Stop containers
+docker-compose down
+```
 
 ## Contributing
 

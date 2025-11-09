@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  milla-rayne:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: milla-rayne
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      # Copy your API keys from .env file or set them here
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - XAI_API_KEY=${XAI_API_KEY}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - OPENROUTER_QWEN_API_KEY=${OPENROUTER_QWEN_API_KEY}
+      - OPENROUTER_GEMINI_API_KEY=${OPENROUTER_GEMINI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - HUGGINGFACE_MODEL=${HUGGINGFACE_MODEL}
+      - WOLFRAM_ALPHA_APPID=${WOLFRAM_ALPHA_APPID}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - MEMORY_KEY=${MEMORY_KEY}
+      - ENABLE_PREDICTIVE_UPDATES=${ENABLE_PREDICTIVE_UPDATES:-false}
+      - ENABLE_DEV_TALK=${ENABLE_DEV_TALK:-false}
+      - GOOGLE_CLOUD_TTS_API_KEY=${GOOGLE_CLOUD_TTS_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - AZURE_TTS_API_KEY=${AZURE_TTS_API_KEY}
+      - AZURE_TTS_REGION=${AZURE_TTS_REGION}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - VOICE_PROVIDER=${VOICE_PROVIDER:-browser-native}
+      - VOICE_QUALITY=${VOICE_QUALITY:-low-latency}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:5000/oauth/callback}
+      - ADAPTIVE_SCENES_ENABLED=${ADAPTIVE_SCENES_ENABLED:-false}
+      - ADAPTIVE_SCENES_PERFORMANCE_MODE=${ADAPTIVE_SCENES_PERFORMANCE_MODE:-balanced}
+      - ENABLE_ADVANCED_PARSER=${ENABLE_ADVANCED_PARSER:-true}
+    volumes:
+      # Persist memory database
+      - ./memory:/app/memory
+      # Optional: mount custom scene backgrounds
+      - ./client/public/assets/scenes:/app/client/public/assets/scenes
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - milla-network
+
+networks:
+  milla-network:
+    driver: bridge
+
+volumes:
+  memory:
+    driver: local

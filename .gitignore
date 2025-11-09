@@ -6,6 +6,11 @@ vite.config.ts.*
 *.tar.gz
 .avatar-backup
 
+# Test coverage
+coverage
+.nyc_output
+*.lcov
+
 .venv
 .local
 .config
