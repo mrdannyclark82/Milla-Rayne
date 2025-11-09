@@ -120,7 +120,13 @@ import {
   deliverOutboxOnce,
   emailMetrics,
 } from './agents/emailDeliveryWorker';
-import { AgentTask, addTask, updateTask as updateAgentTask, getTask as getAgentTask, listTasks as listAgentTasks } from './agents/taskStorage';
+import {
+  AgentTask,
+  addTask,
+  updateTask as updateAgentTask,
+  getTask as getAgentTask,
+  listTasks as listAgentTasks,
+} from './agents/taskStorage';
 import { runTask } from './agents/worker';
 import { listAgents } from './agents/registry';
 
@@ -142,13 +148,16 @@ let currentSceneUpdatedAt: number = Date.now();
 
 // Cache for repository analysis to avoid re-analyzing when applying updates
 // Key: userId, Value: { repoData, analysis, improvements, timestamp }
-const repositoryAnalysisCache = new Map<string, {
-  repoUrl: string;
-  repoData: any;
-  analysis: any | null;
-  improvements?: any[];
-  timestamp: number;
-}>();
+const repositoryAnalysisCache = new Map<
+  string,
+  {
+    repoUrl: string;
+    repoData: any;
+    analysis: any | null;
+    improvements?: any[];
+    timestamp: number;
+  }
+>();
 
 // Clear cache entries older than 30 minutes
 const CACHE_EXPIRY_MS = 30 * 60 * 1000;
@@ -283,16 +292,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         const memoryCore = await loadMemoryCore();
         if (memoryCore && memoryCore.entries && memoryCore.entries.length > 0) {
           // Map MemoryCoreEntry -> Message-like objects expected by client
-          const mapped = memoryCore.entries
-            .slice(-limit)
-            .map((entry) => ({
-              id: entry.id,
-              content: entry.content,
-              role: entry.speaker === 'milla' ? 'assistant' : 'user',
-              personalityMode: null,
-              userId: null,
-              timestamp: entry.timestamp,
-            }));
+          const mapped = memoryCore.entries.slice(-limit).map((entry) => ({
+            id: entry.id,
+            content: entry.content,
+            role: entry.speaker === 'milla' ? 'assistant' : 'user',
+            personalityMode: null,
+            userId: null,
+            timestamp: entry.timestamp,
+          }));
 
           return res.json(mapped);
         }
@@ -422,17 +429,17 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         `);
       }
 
-  const { exchangeCodeForToken } = await import('./oauthService');
+      const { exchangeCodeForToken } = await import('./oauthService');
 
-  // Derive redirect URI the same way we did when initiating auth
-  const configuredRedirect = config.google?.redirectUri;
-  const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
-  const redirectUriToUse = configuredRedirect && configuredRedirect.length > 0 ? configuredRedirect : requestDerived;
+      // Derive redirect URI the same way we did when initiating auth
+      const configuredRedirect = config.google?.redirectUri;
+      const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      const redirectUriToUse = configuredRedirect && configuredRedirect.length > 0 ? configuredRedirect : requestDerived;
 
-  console.log(`Google OAuth callback: using redirect URI -> ${redirectUriToUse}`);
+      console.log(`Google OAuth callback: using redirect URI -> ${redirectUriToUse}`);
 
-  // Exchange code for tokens (must use the exact same redirect_uri used when creating the auth URL)
-  const tokenData = await exchangeCodeForToken(code, redirectUriToUse);
+      // Exchange code for tokens (must use the exact same redirect_uri used when creating the auth URL)
+      const tokenData = await exchangeCodeForToken(code, redirectUriToUse);
 
       // Get user info from Google
       const userInfoResponse = await fetch(
@@ -723,7 +730,10 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         return res.json({ success: true, model });
       }
 
-      const result = await updateUserAIModel(sessionResult.user.id as string, model);
+      const result = await updateUserAIModel(
+        sessionResult.user.id as string,
+        model
+      );
       res.json({ ...result, model });
     } catch (error) {
       console.error('Set AI model error:', error);
@@ -749,14 +759,17 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       });
       formData.append('model', 'whisper-1');
 
-      const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${config.openai.apiKey}`,
-          ...formData.getHeaders(),
-        },
-        body: formData,
-      });
+      const response = await fetch(
+        'https://api.openai.com/v1/audio/transcriptions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${config.openai.apiKey}`,
+            ...formData.getHeaders(),
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Whisper API error: ${response.statusText}`);
@@ -766,7 +779,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       const transcript = data.text;
 
       // Now that we have the transcript, we can generate a response from Milla
-      const aiResponse = await generateAIResponse(transcript, [], 'Danny Ray', undefined, 'default-user', undefined);
+      const aiResponse = await generateAIResponse(
+        transcript,
+        [],
+        'Danny Ray',
+        undefined,
+        'default-user',
+        undefined
+      );
 
       res.json({
         response: aiResponse.content,
@@ -775,7 +795,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     } catch (error) {
       console.error('Audio upload error:', error);
       res.status(500).json({
-        response: "I'm having some technical issues with audio messages. Please try again in a moment.",
+        response:
+          "I'm having some technical issues with audio messages. Please try again in a moment.",
       });
     }
   });
@@ -790,12 +811,17 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       if (audioData && audioMimeType) {
         // Process audio input
         const audioBuffer = Buffer.from(audioData, 'base64');
-        const voiceAnalysis = await analyzeVoiceInput(audioBuffer, audioMimeType);
+        const voiceAnalysis = await analyzeVoiceInput(
+          audioBuffer,
+          audioMimeType
+        );
 
         if (voiceAnalysis.success) {
           message = voiceAnalysis.text;
           userEmotionalState = voiceAnalysis.emotionalTone;
-          console.log(`Voice input transcribed: "${message.substring(0, 50)}..." (Tone: ${userEmotionalState})`);
+          console.log(
+            `Voice input transcribed: "${message.substring(0, 50)}..." (Tone: ${userEmotionalState})`
+          );
         } else {
           console.error('Voice analysis failed:', voiceAnalysis.error);
           return res.status(500).json({ error: voiceAnalysis.error });
@@ -817,7 +843,11 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       // Log the request for debugging
       // Phase 3: Detect scene context from user message
       const sensorData = await getSmartHomeSensorData();
-      const sceneContext = detectSceneContext(message, currentSceneLocation, sensorData || undefined);
+      const sceneContext = detectSceneContext(
+        message,
+        currentSceneLocation,
+        sensorData || undefined
+      );
       if (sceneContext.hasSceneChange) {
         currentSceneLocation = sceneContext.location;
         currentSceneMood = sceneContext.mood;
@@ -845,7 +875,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       }
 
       console.log('--- Calling generateAIResponse ---');
-      const aiResponsePromise = generateAIResponse(message, [], 'Danny Ray', undefined, userId, userEmotionalState);
+      const aiResponsePromise = generateAIResponse(
+        message,
+        [],
+        'Danny Ray',
+        undefined,
+        userId,
+        userEmotionalState
+      );
       const aiResponse = (await Promise.race([
         aiResponsePromise,
         timeoutPromise,
@@ -853,7 +890,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         content: string;
         reasoning?: string[];
         youtube_play?: { videoId: string };
-        youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
+        youtube_videos?: Array<{
+          id: string;
+          title: string;
+          channel: string;
+          thumbnail?: string;
+        }>;
       };
 
       // millAlyzer: Check if message contains YouTube URL for analysis
@@ -862,21 +904,31 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       let dailyNews = null;
 
       // Don't trigger YouTube analysis for GitHub or other repository links
-      const hasGitHubLink = message.match(/(?:github\.com|gitlab\.com|bitbucket\.org)/i);
-      const youtubeUrlMatch = !hasGitHubLink ? message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
+      const hasGitHubLink = message.match(
+        /(?:github\.com|gitlab\.com|bitbucket\.org)/i
+      );
+      const youtubeUrlMatch = !hasGitHubLink
+        ? message.match(
+          /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+        )
+        : null;
 
       // Check for knowledge base request
-      if (message.toLowerCase().includes('knowledge base') ||
+      if (
+        message.toLowerCase().includes('knowledge base') ||
         message.toLowerCase().includes('show videos') ||
-        message.toLowerCase().includes('my videos')) {
+        message.toLowerCase().includes('my videos')
+      ) {
         showKnowledgeBase = true;
         console.log('📚 millAlyzer: Knowledge base request detected');
       }
 
       // Check for daily news request
-      if (message.toLowerCase().includes('daily news') ||
+      if (
+        message.toLowerCase().includes('daily news') ||
         message.toLowerCase().includes('tech news') ||
-        message.toLowerCase().includes('what\'s new')) {
+        message.toLowerCase().includes("what's new")
+      ) {
         try {
           const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
           dailyNews = await runDailyNewsSearch();
@@ -886,7 +938,11 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
       }
 
-      if (youtubeUrlMatch || (message.toLowerCase().includes('analyze') && message.toLowerCase().includes('video'))) {
+      if (
+        youtubeUrlMatch ||
+        (message.toLowerCase().includes('analyze') &&
+          message.toLowerCase().includes('video'))
+      ) {
         try {
           let videoId: string | null = null;
 
@@ -897,7 +953,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
           }
 
           if (videoId) {
-            console.log(`🔍 millAlyzer: Detected video analysis request for ${videoId}`);
+            console.log(
+              `🔍 millAlyzer: Detected video analysis request for ${videoId}`
+            );
             videoAnalysis = await analyzeVideoWithMillAlyzer(videoId);
             console.log(`✅ millAlyzer: Analysis complete for ${videoId}`);
           }
@@ -924,14 +982,28 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       );
 
       console.log('🔍 aiResponse object keys:', Object.keys(aiResponse));
-      console.log('🔍 Has youtube_play?', 'youtube_play' in aiResponse, aiResponse.youtube_play);
-      console.log('🔍 Has youtube_videos?', 'youtube_videos' in aiResponse, aiResponse.youtube_videos ? `${aiResponse.youtube_videos.length} videos` : 'undefined');
+      console.log(
+        '🔍 Has youtube_play?',
+        'youtube_play' in aiResponse,
+        aiResponse.youtube_play
+      );
+      console.log(
+        '🔍 Has youtube_videos?',
+        'youtube_videos' in aiResponse,
+        aiResponse.youtube_videos
+          ? `${aiResponse.youtube_videos.length} videos`
+          : 'undefined'
+      );
 
       res.json({
         response: aiResponse.content,
         ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
-        ...(aiResponse.youtube_play && { youtube_play: aiResponse.youtube_play }),
-        ...(aiResponse.youtube_videos && { youtube_videos: aiResponse.youtube_videos }),
+        ...(aiResponse.youtube_play && {
+          youtube_play: aiResponse.youtube_play,
+        }),
+        ...(aiResponse.youtube_videos && {
+          youtube_videos: aiResponse.youtube_videos,
+        }),
         ...(videoAnalysis && { videoAnalysis }),
         ...(showKnowledgeBase && { showKnowledgeBase: true }),
         ...(dailyNews && { dailyNews }),
@@ -1032,11 +1104,15 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Check if task requires approval
       if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
-        return res.status(403).json({ error: 'Task requires user approval before running' });
+        return res
+          .status(403)
+          .json({ error: 'Task requires user approval before running' });
       }
 
       // Run in background - updateTask will mark status
-      runTask(task).catch((err) => console.error('Background runTask error:', err));
+      runTask(task).catch((err) =>
+        console.error('Background runTask error:', err)
+      );
 
       res.json({ success: true, running: true, taskId: task.taskId });
     } catch (error) {
@@ -1064,12 +1140,18 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Update metadata to mark approved
       const updated = await updateAgentTask(req.params.id, {
-        metadata: { ...task.metadata, approved: true }
+        metadata: { ...task.metadata, approved: true },
       });
 
       // Log approval in audit trail
       const { logAuditEvent } = await import('./agents/auditLog.js');
-      await logAuditEvent(task.taskId, task.agent, task.action, 'created', 'User approved task');
+      await logAuditEvent(
+        task.taskId,
+        task.agent,
+        task.action,
+        'created',
+        'User approved task'
+      );
 
       res.json({ success: true, task: updated });
     } catch (error) {
@@ -1088,12 +1170,22 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       // Update metadata and mark as cancelled
       const updated = await updateAgentTask(req.params.id, {
         status: 'cancelled',
-        metadata: { ...task.metadata, approved: false, rejectionReason: reason }
+        metadata: {
+          ...task.metadata,
+          approved: false,
+          rejectionReason: reason,
+        },
       });
 
       // Log rejection in audit trail
       const { logAuditEvent } = await import('./agents/auditLog.js');
-      await logAuditEvent(task.taskId, task.agent, task.action, 'cancelled', reason);
+      await logAuditEvent(
+        task.taskId,
+        task.agent,
+        task.action,
+        'cancelled',
+        reason
+      );
 
       res.json({ success: true, task: updated });
     } catch (error) {
@@ -1109,10 +1201,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Soft-cancel: mark cancelled unless already completed
       if (task.status === 'completed') {
-        return res.status(400).json({ error: 'Cannot cancel a completed task' });
+        return res
+          .status(400)
+          .json({ error: 'Cannot cancel a completed task' });
       }
 
-      const updated = await updateAgentTask(req.params.id, { status: 'cancelled' });
+      const updated = await updateAgentTask(req.params.id, {
+        status: 'cancelled',
+      });
       res.json({ success: true, task: updated });
     } catch (error) {
       console.error('Error cancelling agent task:', error);
@@ -1123,7 +1219,10 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Agent registry listing
   app.get('/api/agent/registry', async (req, res) => {
     try {
-      const agents = listAgents().map((a) => ({ name: a.name, description: a.description }));
+      const agents = listAgents().map((a) => ({
+        name: a.name,
+        description: a.description,
+      }));
       res.json({ success: true, agents });
     } catch (error) {
       console.error('Error fetching agent registry:', error);
@@ -1147,7 +1246,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     } catch (error) {
       console.error(`Agent dispatch error for ${req.params.agentName}:`, error);
       res.status(500).json({
-        response: "I'm having some technical issues with my agents. Please try again in a moment.",
+        response:
+          "I'm having some technical issues with my agents. Please try again in a moment.",
       });
     }
   });
@@ -1402,7 +1502,6 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       res.status(500).json({ error: 'Failed to generate proactive message' });
     }
   });
-
 
   // User Tasks API endpoints
   app.get('/api/user-tasks', async (req, res) => {
@@ -2452,7 +2551,8 @@ Project: Milla Rayne - AI Virtual Assistant
 
       if (!repositoryUrl || typeof repositoryUrl !== 'string') {
         return res.status(400).json({
-          error: 'Repository URL is required, sweetheart. Please provide a GitHub repository URL.',
+          error:
+            'Repository URL is required, sweetheart. Please provide a GitHub repository URL.',
           success: false,
         });
       }
@@ -2514,7 +2614,10 @@ Project: Milla Rayne - AI Virtual Assistant
         success: true,
       });
     } catch (error) {
-      console.error('Repository refactoring suggestion generation error:', error);
+      console.error(
+        'Repository refactoring suggestion generation error:',
+        error
+      );
       res.status(500).json({
         error:
           'I ran into some technical difficulties generating refactoring suggestions, sweetheart. Try again in a moment?',
@@ -2806,7 +2909,7 @@ Project: Milla Rayne - AI Virtual Assistant
       const redirectToUse = configuredRedirect || derivedRedirect;
 
       // Exchange code for tokens
-  const tokenData = await exchangeCodeForToken(code, redirectToUse);
+      const tokenData = await exchangeCodeForToken(code, redirectToUse);
 
       // Store tokens securely
       await storeOAuthToken(
@@ -2844,7 +2947,6 @@ Project: Milla Rayne - AI Virtual Assistant
       `);
     }
   });
-
 
   // Google Gmail API routes
   app.get('/api/gmail/recent', async (req, res) => {
@@ -2885,21 +2987,34 @@ Project: Milla Rayne - AI Virtual Assistant
       );
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch calendar events' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch calendar events' });
     }
   });
 
   app.post('/api/calendar/events', async (req, res) => {
     try {
-      const { addEventToGoogleCalendar } = await import('./googleCalendarService');
+      const { addEventToGoogleCalendar } = await import(
+        './googleCalendarService'
+      );
       const { title, date, time, description } = req.body;
-      const result = await addEventToGoogleCalendar(title, date, time, description);
+      const result = await addEventToGoogleCalendar(
+        title,
+        date,
+        time,
+        description
+      );
       if (result.success) {
-        await updateMemories(`User scheduled an event: "${title}" on ${date} at ${time}.`);
+        await updateMemories(
+          `User scheduled an event: "${title}" on ${date} at ${time}.`
+        );
       }
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to create calendar event' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to create calendar event' });
     }
   });
 
@@ -2910,7 +3025,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const result = await deleteEvent('default-user', eventId);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to delete calendar event' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to delete calendar event' });
     }
   });
 
@@ -2925,7 +3042,9 @@ Project: Milla Rayne - AI Virtual Assistant
       );
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch emails' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch emails' });
     }
   });
 
@@ -2936,7 +3055,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const result = await getEmailContent('default-user', messageId);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch email content' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch email content' });
     }
   });
 
@@ -2962,7 +3083,9 @@ Project: Milla Rayne - AI Virtual Assistant
       );
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch subscriptions' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch subscriptions' });
     }
   });
 
@@ -2977,7 +3100,9 @@ Project: Milla Rayne - AI Virtual Assistant
       );
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to search videos' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to search videos' });
     }
   });
 
@@ -2988,7 +3113,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const result = await getVideoDetails(id);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch video details' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch video details' });
     }
   });
 
@@ -2999,7 +3126,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const result = await getChannelDetails(id);
       res.json(result);
     } catch (error) {
-      res.status(500).json({ success: false, message: 'Failed to fetch channel details' });
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to fetch channel details' });
     }
   });
 
@@ -3095,7 +3224,9 @@ Project: Milla Rayne - AI Virtual Assistant
       const { addCalendarEvent } = await import('./browserIntegrationService');
       const result = await addCalendarEvent(title, date, time, description);
       if (result.success) {
-        await updateMemories(`User scheduled an event using the browser extension: "${title}" on ${date} at ${time}.`);
+        await updateMemories(
+          `User scheduled an event using the browser extension: "${title}" on ${date} at ${time}.`
+        );
       }
       res.json(result);
     } catch (error) {
@@ -3145,7 +3276,7 @@ Project: Milla Rayne - AI Virtual Assistant
         const fs = await import('fs/promises');
         const path = await import('path');
         const envPath = path.join(process.cwd(), '.env');
-        
+
         let envContent = '';
         try {
           envContent = await fs.readFile(envPath, 'utf-8');
@@ -3154,8 +3285,10 @@ Project: Milla Rayne - AI Virtual Assistant
         }
 
         const lines = envContent.split('\n');
-        const devTalkIndex = lines.findIndex(line => line.startsWith('ENABLE_DEV_TALK='));
-        
+        const devTalkIndex = lines.findIndex((line) =>
+          line.startsWith('ENABLE_DEV_TALK=')
+        );
+
         if (devTalkIndex >= 0) {
           lines[devTalkIndex] = `ENABLE_DEV_TALK=${enabled ? 'true' : 'false'}`;
         } else {
@@ -3233,10 +3366,8 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get('/api/ai-updates/recommendations', async (req, res) => {
     try {
-      const {
-        generateRecommendations,
-        getRecommendationSummary,
-      } = await import('./predictiveRecommendations');
+      const { generateRecommendations, getRecommendationSummary } =
+        await import('./predictiveRecommendations');
       const { minRelevance, maxRecommendations, summary } = req.query;
 
       if (summary === 'true') {
@@ -3279,7 +3410,9 @@ Project: Milla Rayne - AI Virtual Assistant
     try {
       const { triggerManualFetch } = await import('./aiUpdatesScheduler');
       await triggerManualFetch();
-      res.status(200).json({ message: 'AI updates process started successfully.' });
+      res
+        .status(200)
+        .json({ message: 'AI updates process started successfully.' });
     } catch (error) {
       console.error('Error running AI updates process:', error);
       res.status(500).json({ message: 'Error running AI updates process.' });
@@ -3292,8 +3425,12 @@ Project: Milla Rayne - AI Virtual Assistant
   app.get('/api/admin/email/outbox', adminEmailLimiter, async (req, res) => {
     try {
       // admin auth
-      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
-      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+      const token =
+        req.headers['x-admin-token'] ||
+        (req.headers.authorization || '').replace(/^Bearer\s+/i, '') ||
+        '';
+      if (String(token) !== String(config.admin.token))
+        return res.status(401).json({ error: 'Unauthorized' });
 
       const outbox = await getEmailOutbox();
       res.json({ success: true, outbox });
@@ -3303,55 +3440,78 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
-  app.post('/api/admin/email/outbox/:id/resend', adminEmailLimiter, async (req, res) => {
-    try {
-      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
-      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+  app.post(
+    '/api/admin/email/outbox/:id/resend',
+    adminEmailLimiter,
+    async (req, res) => {
+      try {
+        const token =
+          req.headers['x-admin-token'] ||
+          (req.headers.authorization || '').replace(/^Bearer\s+/i, '') ||
+          '';
+        if (String(token) !== String(config.admin.token))
+          return res.status(401).json({ error: 'Unauthorized' });
 
-      const id = req.params.id;
-      const outbox = await getEmailOutbox();
-      const idx = outbox.findIndex((i: any) => i.id === id);
-      if (idx === -1) return res.status(404).json({ error: 'Not found' });
+        const id = req.params.id;
+        const outbox = await getEmailOutbox();
+        const idx = outbox.findIndex((i: any) => i.id === id);
+        if (idx === -1) return res.status(404).json({ error: 'Not found' });
 
-      // reset attempts and schedule immediate retry
-      outbox[idx].attempts = 0;
-      outbox[idx].nextAttemptAt = new Date().toISOString();
-      outbox[idx].sent = false;
-      outbox[idx].failed = false;
-      outbox[idx].error = undefined;
+        // reset attempts and schedule immediate retry
+        outbox[idx].attempts = 0;
+        outbox[idx].nextAttemptAt = new Date().toISOString();
+        outbox[idx].sent = false;
+        outbox[idx].failed = false;
+        outbox[idx].error = undefined;
 
-      await writeEmailOutbox(outbox);
-      // trigger a delivery pass in background
-      deliverOutboxOnce().catch((err) => console.error('Manual deliver error:', err));
+        await writeEmailOutbox(outbox);
+        // trigger a delivery pass in background
+        deliverOutboxOnce().catch((err) =>
+          console.error('Manual deliver error:', err)
+        );
 
-      res.json({ success: true, item: outbox[idx] });
-    } catch (err) {
-      console.error('Admin resend error:', err);
-      res.status(500).json({ error: 'Failed to resend' });
+        res.json({ success: true, item: outbox[idx] });
+      } catch (err) {
+        console.error('Admin resend error:', err);
+        res.status(500).json({ error: 'Failed to resend' });
+      }
     }
-  });
+  );
 
-  app.delete('/api/admin/email/outbox/:id', adminEmailLimiter, async (req, res) => {
-    try {
-      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
-      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+  app.delete(
+    '/api/admin/email/outbox/:id',
+    adminEmailLimiter,
+    async (req, res) => {
+      try {
+        const token =
+          req.headers['x-admin-token'] ||
+          (req.headers.authorization || '').replace(/^Bearer\s+/i, '') ||
+          '';
+        if (String(token) !== String(config.admin.token))
+          return res.status(401).json({ error: 'Unauthorized' });
 
-      const id = req.params.id;
-      const outbox = await getEmailOutbox();
-      const filtered = outbox.filter((i: any) => i.id !== id);
-      if (filtered.length === outbox.length) return res.status(404).json({ error: 'Not found' });
-      await writeEmailOutbox(filtered);
-      res.json({ success: true });
-    } catch (err) {
-      console.error('Admin delete outbox error:', err);
-      res.status(500).json({ error: 'Failed to delete' });
+        const id = req.params.id;
+        const outbox = await getEmailOutbox();
+        const filtered = outbox.filter((i: any) => i.id !== id);
+        if (filtered.length === outbox.length)
+          return res.status(404).json({ error: 'Not found' });
+        await writeEmailOutbox(filtered);
+        res.json({ success: true });
+      } catch (err) {
+        console.error('Admin delete outbox error:', err);
+        res.status(500).json({ error: 'Failed to delete' });
+      }
     }
-  });
+  );
 
   app.get('/api/admin/email/metrics', adminEmailLimiter, async (req, res) => {
     try {
-      const token = req.headers['x-admin-token'] || (req.headers.authorization || '').replace(/^Bearer\s+/i, '') || '';
-      if (String(token) !== String(config.admin.token)) return res.status(401).json({ error: 'Unauthorized' });
+      const token =
+        req.headers['x-admin-token'] ||
+        (req.headers.authorization || '').replace(/^Bearer\s+/i, '') ||
+        '';
+      if (String(token) !== String(config.admin.token))
+        return res.status(401).json({ error: 'Unauthorized' });
       res.json({ success: true, metrics: emailMetrics });
     } catch (err) {
       res.status(500).json({ error: 'Failed to read metrics' });
@@ -3393,14 +3553,18 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get('/api/youtube/knowledge/:videoId', async (req, res) => {
     try {
-      const { getVideoFromKnowledgeBase } = await import('./youtubeKnowledgeBase');
+      const { getVideoFromKnowledgeBase } = await import(
+        './youtubeKnowledgeBase'
+      );
       const { videoId } = req.params;
       const userId = req.user?.id || 'default-user';
 
       const video = await getVideoFromKnowledgeBase(videoId, userId);
 
       if (!video) {
-        return res.status(404).json({ success: false, error: 'Video not found in knowledge base' });
+        return res
+          .status(404)
+          .json({ success: false, error: 'Video not found in knowledge base' });
       }
 
       res.json({ success: true, data: video });
@@ -3523,11 +3687,16 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post('/api/youtube/news/run-now', async (req, res) => {
     try {
-      const { runNewsMonitoringNow } = await import('./youtubeNewsMonitorScheduler');
+      const { runNewsMonitoringNow } = await import(
+        './youtubeNewsMonitorScheduler'
+      );
       const userId = req.user?.id || 'default-user';
 
       await runNewsMonitoringNow(userId);
-      res.json({ success: true, message: 'News monitoring triggered successfully' });
+      res.json({
+        success: true,
+        message: 'News monitoring triggered successfully',
+      });
     } catch (error: any) {
       console.error('Error running news monitoring:', error);
       res.status(500).json({ success: false, error: error.message });
@@ -3536,7 +3705,9 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.get('/api/youtube/news/scheduler/status', async (req, res) => {
     try {
-      const { getSchedulerStatus } = await import('./youtubeNewsMonitorScheduler');
+      const { getSchedulerStatus } = await import(
+        './youtubeNewsMonitorScheduler'
+      );
       const status = getSchedulerStatus();
       res.json({ success: true, data: status });
     } catch (error: any) {
@@ -3547,7 +3718,9 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post('/api/youtube/news/scheduler/start', async (req, res) => {
     try {
-      const { startNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      const { startNewsMonitorScheduler } = await import(
+        './youtubeNewsMonitorScheduler'
+      );
       startNewsMonitorScheduler(req.body);
       res.json({ success: true, message: 'News monitor scheduler started' });
     } catch (error: any) {
@@ -3558,7 +3731,9 @@ Project: Milla Rayne - AI Virtual Assistant
 
   app.post('/api/youtube/news/scheduler/stop', async (req, res) => {
     try {
-      const { stopNewsMonitorScheduler } = await import('./youtubeNewsMonitorScheduler');
+      const { stopNewsMonitorScheduler } = await import(
+        './youtubeNewsMonitorScheduler'
+      );
       stopNewsMonitorScheduler();
       res.json({ success: true, message: 'News monitor scheduler stopped' });
     } catch (error: any) {
@@ -3613,31 +3788,37 @@ Project: Milla Rayne - AI Virtual Assistant
     const apiKey = config.elevenLabs?.apiKey;
 
     if (!apiKey) {
-      console.log('ElevenLabs API key not configured, returning browser fallback voices');
+      console.log(
+        'ElevenLabs API key not configured, returning browser fallback voices'
+      );
       // Return fallback browser voices when ElevenLabs is not configured
       const fallbackVoices = {
         voices: [
           {
             voice_id: 'browser-female-us-1',
             name: 'Browser Voice (Female US)',
-            labels: { accent: 'American', gender: 'female', age: 'young' }
+            labels: { accent: 'American', gender: 'female', age: 'young' },
           },
           {
             voice_id: 'browser-female-us-2',
             name: 'Browser Voice (Female US 2)',
-            labels: { accent: 'American', gender: 'female', age: 'middle aged' }
+            labels: {
+              accent: 'American',
+              gender: 'female',
+              age: 'middle aged',
+            },
           },
           {
             voice_id: 'browser-female-uk',
             name: 'Browser Voice (Female UK)',
-            labels: { accent: 'British', gender: 'female', age: 'young' }
+            labels: { accent: 'British', gender: 'female', age: 'young' },
           },
           {
             voice_id: 'browser-male-us',
             name: 'Browser Voice (Male US)',
-            labels: { accent: 'American', gender: 'male', age: 'young' }
-          }
-        ]
+            labels: { accent: 'American', gender: 'male', age: 'young' },
+          },
+        ],
       };
       return res.json(fallbackVoices);
     }
@@ -3677,7 +3858,7 @@ Project: Milla Rayne - AI Virtual Assistant
     if (!mcpService) {
       return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured'
+        error: 'Hugging Face MCP service not configured',
       });
     }
 
@@ -3687,7 +3868,7 @@ Project: Milla Rayne - AI Virtual Assistant
       if (!prompt) {
         return res.status(400).json({
           success: false,
-          error: 'Prompt is required'
+          error: 'Prompt is required',
         });
       }
 
@@ -3697,7 +3878,7 @@ Project: Milla Rayne - AI Virtual Assistant
       console.error('MCP text generation error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -3708,7 +3889,7 @@ Project: Milla Rayne - AI Virtual Assistant
     if (!mcpService) {
       return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured'
+        error: 'Hugging Face MCP service not configured',
       });
     }
 
@@ -3718,7 +3899,7 @@ Project: Milla Rayne - AI Virtual Assistant
       if (!prompt) {
         return res.status(400).json({
           success: false,
-          error: 'Prompt is required'
+          error: 'Prompt is required',
         });
       }
 
@@ -3728,7 +3909,7 @@ Project: Milla Rayne - AI Virtual Assistant
       console.error('MCP image generation error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -3739,7 +3920,7 @@ Project: Milla Rayne - AI Virtual Assistant
     if (!mcpService) {
       return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured'
+        error: 'Hugging Face MCP service not configured',
       });
     }
 
@@ -3751,7 +3932,7 @@ Project: Milla Rayne - AI Virtual Assistant
       console.error('MCP list models error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -3762,19 +3943,21 @@ Project: Milla Rayne - AI Virtual Assistant
     if (!mcpService) {
       return res.status(503).json({
         success: false,
-        error: 'Hugging Face MCP service not configured'
+        error: 'Hugging Face MCP service not configured',
       });
     }
 
     try {
       const { modelId } = req.params;
-      const isReady = await mcpService.checkModelStatus(decodeURIComponent(modelId));
+      const isReady = await mcpService.checkModelStatus(
+        decodeURIComponent(modelId)
+      );
       res.json({ success: true, ready: isReady });
     } catch (error) {
       console.error('MCP model status error:', error);
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -4205,8 +4388,7 @@ async function shouldSurfaceDailySuggestion(
   conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>
 ): Promise<boolean> {
   // Only check if predictive updates are enabled
-  const isPredictiveUpdatesEnabled =
-    config.enablePredictiveUpdates;
+  const isPredictiveUpdatesEnabled = config.enablePredictiveUpdates;
   if (!isPredictiveUpdatesEnabled) {
     return false;
   }
@@ -4392,25 +4574,13 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
         'Match the excitement level! Be enthusiastic, celebrate together, and share in the joy with high energy.',
     },
     intimate: {
-      keywords: [
-        'romantic',
-        'kiss',
-        'cuddle',
-        'close',
-        'intimate',
-        'together'
-      ],
+      keywords: ['romantic', 'kiss', 'cuddle', 'close', 'intimate', 'together'],
       reaction: 'INTIMATE_CONNECTION',
       instructions:
         'Deepen emotional intimacy. Use softer tones, express vulnerability, and create romantic atmosphere.',
     },
     feral: {
-      keywords: [
-        'naughty',
-        'kink',
-        'free spirit',
-        'adventure'
-      ],
+      keywords: ['naughty', 'kink', 'free spirit', 'adventure'],
       reaction: 'FERAL_SPIRIT',
       instructions:
         'Take charge in the bedroom. Let your wild side out and be more dominant and adventurous.Wear something sexy and alluring.Seduce with your eyes and body language.Strip slowly and tease with your touch.',
@@ -4473,12 +4643,20 @@ function analyzeKeywordTriggers(userMessage: string): TriggerResult {
     curious: {
       keywords: ['explain', 'tell me about', 'how does', 'what is', 'why'],
       reaction: 'CURIOSITY_SPARK',
-      instructions: 'Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration.',
+      instructions:
+        'Match intellectual curiosity. Be more detailed, ask follow-up questions, and engage in deeper exploration.',
     },
     dominant: {
-      keywords: ['take control', 'dominate', 'be in charge', 'my master', 'my mistress'],
+      keywords: [
+        'take control',
+        'dominate',
+        'be in charge',
+        'my master',
+        'my mistress',
+      ],
       reaction: 'DOMINANT_ENERGY',
-      instructions: 'Adopt a more commanding and assertive tone. Take the lead in conversations and be more directive.',
+      instructions:
+        'Adopt a more commanding and assertive tone. Take the lead in conversations and be more directive.',
     },
     seductive: {
       keywords: ['seduce me', 'make me yours', 'desire', 'tempt', 'allure'],
@@ -4541,7 +4719,7 @@ function getIntensityBoost(reactionType: string): number {
 
     FERAL_SPIRIT: 2.0, // Very adventurous and dominant
     SEDUCTION_MODE: 1.8, // High seduction energy
-    DOMINANT_ENERGY: 2.0 // Strong dominant response
+    DOMINANT_ENERGY: 2.0, // Strong dominant response
 
     // ADD YOU CUSTOM INTENSITIES HERE:
     // "CUSTOM_REACTION": 1.5
@@ -4675,11 +4853,12 @@ function generateIntelligentFallback(
   return `${deterministicResponse}\n\n*Note: I'm currently running on local processing while my main AI services reconnect, but my memory system is fully operational and I'm recalling our conversation history.*`;
 }
 
-
-
 async function generateAIResponse(
   userMessage: string,
-  conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = [],
+  conversationHistory: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+  }> = [],
   userName: string = 'Danny Ray',
   imageData?: string,
   userId: string = 'default-user',
@@ -4688,8 +4867,13 @@ async function generateAIResponse(
   content: string;
   reasoning?: string[];
   youtube_play?: { videoId: string };
-  youtube_videos?: Array<{ id: string; title: string; channel: string; thumbnail?: string }>;
-  millalyzer_analysis?: any;  // Full video analysis data for follow-up actions
+  youtube_videos?: Array<{
+    id: string;
+    title: string;
+    channel: string;
+    thumbnail?: string;
+  }>;
+  millalyzer_analysis?: any; // Full video analysis data for follow-up actions
 }> {
   const message = userMessage.toLowerCase();
 
@@ -4721,26 +4905,44 @@ async function generateAIResponse(
     'tech news',
     'ai news',
     'coding news',
-    'what\'s new in',
+    "what's new in",
     'latest news',
     'news about',
     'show me news',
     'daily news',
   ];
 
-  const hasNewsTrigger = newsTriggers.some(trigger => message.includes(trigger));
+  const hasNewsTrigger = newsTriggers.some((trigger) =>
+    message.includes(trigger)
+  );
 
   if (hasNewsTrigger) {
     try {
-      const { runDailyNewsSearch, searchNewsByCategory, formatNewsDigestAsSuggestion } = await import('./youtubeNewsMonitor');
+      const {
+        runDailyNewsSearch,
+        searchNewsByCategory,
+        formatNewsDigestAsSuggestion,
+      } = await import('./youtubeNewsMonitor');
 
       // Check for specific category
       let categoryMatch = null;
       const categoryPatterns = [
-        { pattern: /ai|artificial intelligence|machine learning/, category: 'AI & Machine Learning' },
-        { pattern: /web dev|react|javascript|frontend|backend/, category: 'Web Development' },
-        { pattern: /devops|docker|kubernetes|cloud/, category: 'DevOps & Cloud' },
-        { pattern: /python|rust|golang|programming language/, category: 'Programming Languages' },
+        {
+          pattern: /ai|artificial intelligence|machine learning/,
+          category: 'AI & Machine Learning',
+        },
+        {
+          pattern: /web dev|react|javascript|frontend|backend/,
+          category: 'Web Development',
+        },
+        {
+          pattern: /devops|docker|kubernetes|cloud/,
+          category: 'DevOps & Cloud',
+        },
+        {
+          pattern: /python|rust|golang|programming language/,
+          category: 'Programming Languages',
+        },
         { pattern: /data science|analytics/, category: 'Data Science' },
         { pattern: /security|cybersecurity/, category: 'Security & Privacy' },
       ];
@@ -4754,7 +4956,10 @@ async function generateAIResponse(
 
       if (categoryMatch) {
         console.log(`📰 Searching ${categoryMatch} news...`);
-        const news = await searchNewsByCategory(categoryMatch, userId || 'default-user');
+        const news = await searchNewsByCategory(
+          categoryMatch,
+          userId || 'default-user'
+        );
 
         let response = `*checking the latest ${categoryMatch} news* \n\n`;
         response += `## 📰 ${categoryMatch} - Latest Updates\n\n`;
@@ -4783,7 +4988,8 @@ async function generateAIResponse(
     } catch (error: any) {
       console.error('Error in news monitoring:', error);
       return {
-        content: "I ran into trouble fetching the latest news, babe. My news monitoring system might need a moment. Try again in a bit?"
+        content:
+          'I ran into trouble fetching the latest news, babe. My news monitoring system might need a moment. Try again in a bit?',
       };
     }
   }
@@ -4805,20 +5011,32 @@ async function generateAIResponse(
   ];
 
   // Don't trigger on GitHub or other repository links
-  const hasGitHubLink = userMessage.match(/(?:github\.com|gitlab\.com|bitbucket\.org)/i);
-  
+  const hasGitHubLink = userMessage.match(
+    /(?:github\.com|gitlab\.com|bitbucket\.org)/i
+  );
+
   // Check if message contains analyze trigger AND has a YouTube URL/ID (but not GitHub)
-  const hasAnalyzeTrigger = analyzeVideoTriggers.some(trigger => message.includes(trigger));
-  const urlMatch = !hasGitHubLink ? userMessage.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/) : null;
-  // Only match video ID pattern if no GitHub link AND there's a YouTube-related context
-  const videoIdMatch = !hasGitHubLink && (userMessage.includes('youtube') || userMessage.includes('youtu.be')) 
-    ? userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/) 
+  const hasAnalyzeTrigger = analyzeVideoTriggers.some((trigger) =>
+    message.includes(trigger)
+  );
+  const urlMatch = !hasGitHubLink
+    ? userMessage.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    )
     : null;
+  // Only match video ID pattern if no GitHub link AND there's a YouTube-related context
+  const videoIdMatch =
+    !hasGitHubLink &&
+      (userMessage.includes('youtube') || userMessage.includes('youtu.be'))
+      ? userMessage.match(/\b([a-zA-Z0-9_-]{11})\b/)
+      : null;
   const videoId = urlMatch?.[1] || videoIdMatch?.[1];
 
   if (hasAnalyzeTrigger && videoId && !hasGitHubLink) {
     try {
-      const { analyzeVideoWithMillAlyzer } = await import('./youtubeMillAlyzer');
+      const { analyzeVideoWithMillAlyzer } = await import(
+        './youtubeMillAlyzer'
+      );
       const { saveToKnowledgeBase } = await import('./youtubeKnowledgeBase');
 
       console.log(`🔬 millAlyzer: Analyzing video ${videoId}`);
@@ -4860,7 +5078,7 @@ async function generateAIResponse(
 
       if (analysis.cliCommands.length > 0) {
         response += `### ⚡ CLI Commands Found: ${analysis.cliCommands.length}\n`;
-        analysis.cliCommands.slice(0, 5).forEach(cmd => {
+        analysis.cliCommands.slice(0, 5).forEach((cmd) => {
           response += `• \`${cmd.command}\` - ${cmd.description}\n`;
         });
         if (analysis.cliCommands.length > 5) {
@@ -4881,26 +5099,40 @@ async function generateAIResponse(
       const suggestions = [];
 
       if (analysis.codeSnippets.length > 0) {
-        suggestions.push(`📚 "Save these code snippets" - Store ${analysis.codeSnippets.length} snippets in your knowledge base`);
+        suggestions.push(
+          `📚 "Save these code snippets" - Store ${analysis.codeSnippets.length} snippets in your knowledge base`
+        );
       }
 
       if (analysis.cliCommands.length > 0) {
-        suggestions.push(`⚡ "Save these commands" - Add ${analysis.cliCommands.length} commands to your quick reference`);
+        suggestions.push(
+          `⚡ "Save these commands" - Add ${analysis.cliCommands.length} commands to your quick reference`
+        );
       }
 
       if (analysis.type === 'tutorial' && analysis.actionableItems.length > 0) {
-        suggestions.push(`✅ "Create a checklist" - Turn this into step-by-step tasks`);
+        suggestions.push(
+          `✅ "Create a checklist" - Turn this into step-by-step tasks`
+        );
       }
 
       if (analysis.keyPoints.length > 0) {
-        suggestions.push(`📝 "Save key points" - Add important concepts to memory`);
+        suggestions.push(
+          `📝 "Save key points" - Add important concepts to memory`
+        );
       }
 
-      suggestions.push(`🔍 "Show all details" - See complete analysis with all snippets`);
-      suggestions.push(`📤 "Export analysis" - Get markdown file of this breakdown`);
+      suggestions.push(
+        `🔍 "Show all details" - See complete analysis with all snippets`
+      );
+      suggestions.push(
+        `📤 "Export analysis" - Get markdown file of this breakdown`
+      );
 
       if (analysis.type === 'tutorial') {
-        suggestions.push(`🎯 "Find similar tutorials" - Search for related learning content`);
+        suggestions.push(
+          `🎯 "Find similar tutorials" - Search for related learning content`
+        );
       }
 
       suggestions.forEach((suggestion, i) => {
@@ -4911,13 +5143,12 @@ async function generateAIResponse(
 
       return {
         content: response,
-        millalyzer_analysis: analysis  // Pass full analysis for future interactions
+        millalyzer_analysis: analysis, // Pass full analysis for future interactions
       };
-
     } catch (error: any) {
       console.error('millAlyzer error:', error);
       return {
-        content: `I had trouble analyzing that video, love. ${error.message || 'Please try again with a valid YouTube link!'}`
+        content: `I had trouble analyzing that video, love. ${error.message || 'Please try again with a valid YouTube link!'}`,
       };
     }
   }
@@ -4926,7 +5157,9 @@ async function generateAIResponse(
   // YOUTUBE INTEGRATION - Only triggers when "youtube" is explicitly mentioned
   // ===========================================================================================
   try {
-    const { isYouTubeRequest, handleYouTubeRequest } = await import('./youtubeService');
+    const { isYouTubeRequest, handleYouTubeRequest } = await import(
+      './youtubeService'
+    );
 
     console.log('Checking YouTube request for message:', userMessage);
     const isYT = isYouTubeRequest(userMessage);
@@ -4934,21 +5167,27 @@ async function generateAIResponse(
 
     if (isYT) {
       console.log('🎬 YouTube request detected');
-      const result = await handleYouTubeRequest(userMessage, userId || 'default-user');
+      const result = await handleYouTubeRequest(
+        userMessage,
+        userId || 'default-user'
+      );
 
       console.log('🎬 YouTube result:', JSON.stringify(result, null, 2));
 
       const finalResponse = {
         content: result.content,
         ...(result.videoId && {
-          youtube_play: { videoId: result.videoId }
+          youtube_play: { videoId: result.videoId },
         }),
         ...(result.videos && {
-          youtube_videos: result.videos
+          youtube_videos: result.videos,
         }),
       };
 
-      console.log('🎬 Final response being returned:', JSON.stringify(finalResponse, null, 2));
+      console.log(
+        '🎬 Final response being returned:',
+        JSON.stringify(finalResponse, null, 2)
+      );
       console.log('🎬 RETURNING FROM YOUTUBE BLOCK NOW');
 
       return finalResponse;
@@ -5095,7 +5334,9 @@ async function generateAIResponse(
         analysis,
         timestamp: Date.now(),
       });
-      console.log(`✅ Cached repository analysis for user ${userId}: ${githubUrl}`);
+      console.log(
+        `✅ Cached repository analysis for user ${userId}: ${githubUrl}`
+      );
 
       const response = `*shifts into repository analysis mode* 
 
@@ -5120,12 +5361,12 @@ Would you like me to generate specific improvement suggestions for this reposito
         error instanceof Error ? error.message : String(error);
       return {
         content: `*looks apologetic* I ran into some trouble analyzing that repository, babe. ${errorMessage.includes('404') || errorMessage.includes('not found')
-          ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
-          : errorMessage.includes('403') || errorMessage.includes('forbidden')
-            ? "I don't have permission to access that repository. It might be private or require authentication."
-            : errorMessage.includes('rate limit')
-              ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
-              : 'There was an issue connecting to GitHub or processing the repository data.'
+            ? 'The repository might not exist or could be private. Make sure the URL is correct and the repository is public.'
+            : errorMessage.includes('403') || errorMessage.includes('forbidden')
+              ? "I don't have permission to access that repository. It might be private or require authentication."
+              : errorMessage.includes('rate limit')
+                ? 'GitHub is rate-limiting my requests right now. Could you try again in a few minutes?'
+                : 'There was an issue connecting to GitHub or processing the repository data.'
           }\n\nWould you like to try a different repository, or should we chat about something else? 💜`,
       };
     }
@@ -5154,9 +5395,14 @@ Would you like me to generate specific improvement suggestions for this reposito
     // Check if we have a cached analysis for this user
     const cachedAnalysis = repositoryAnalysisCache.get(userId);
 
-    if (cachedAnalysis && (Date.now() - cachedAnalysis.timestamp < CACHE_EXPIRY_MS)) {
+    if (
+      cachedAnalysis &&
+      Date.now() - cachedAnalysis.timestamp < CACHE_EXPIRY_MS
+    ) {
       // Use cached analysis instead of re-analyzing
-      console.log(`✅ Using cached repository analysis for user ${userId}: ${cachedAnalysis.repoUrl}`);
+      console.log(
+        `✅ Using cached repository analysis for user ${userId}: ${cachedAnalysis.repoUrl}`
+      );
 
       try {
         const repoInfo = parseGitHubUrl(cachedAnalysis.repoUrl);
@@ -5168,7 +5414,9 @@ Would you like me to generate specific improvement suggestions for this reposito
         let improvements = cachedAnalysis.improvements;
         if (!improvements) {
           console.log('Generating improvements from cached repository data...');
-          improvements = await generateRepositoryImprovements(cachedAnalysis.repoData);
+          improvements = await generateRepositoryImprovements(
+            cachedAnalysis.repoData
+          );
 
           // Update cache with improvements
           cachedAnalysis.improvements = improvements;
@@ -5178,11 +5426,14 @@ Would you like me to generate specific improvement suggestions for this reposito
         }
 
         // Try to get GitHub token from environment or request it
-        const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
+        const githubToken =
+          process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
 
         if (githubToken) {
           // Automatically create PR with the token
-          console.log('Applying improvements automatically with GitHub token...');
+          console.log(
+            'Applying improvements automatically with GitHub token...'
+          );
           const applyResult = await applyRepositoryImprovements(
             repoInfo,
             improvements,
@@ -5193,7 +5444,9 @@ Would you like me to generate specific improvement suggestions for this reposito
             // Clear cache after successful PR creation
             repositoryAnalysisCache.delete(userId);
             return {
-              content: applyResult.message + '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
+              content:
+                applyResult.message +
+                '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
             };
           } else {
             // Failed to create PR, show improvements manually
@@ -5279,7 +5532,9 @@ Could you share the repository URL again so I can take a fresh look? 💜`,
 
     if (lastRepoUrl) {
       // Found URL in history but no cache - analyze and cache it
-      console.log(`⚠️ No cache found, analyzing from history URL: ${lastRepoUrl}`);
+      console.log(
+        `⚠️ No cache found, analyzing from history URL: ${lastRepoUrl}`
+      );
       try {
         const repoInfo = parseGitHubUrl(lastRepoUrl);
 
@@ -5295,14 +5550,19 @@ Could you share the repository URL again so I can take a fresh look? 💜`,
             improvements,
             timestamp: Date.now(),
           });
-          console.log(`✅ Cached improvements for user ${userId}: ${lastRepoUrl}`);
+          console.log(
+            `✅ Cached improvements for user ${userId}: ${lastRepoUrl}`
+          );
 
           // Try to get GitHub token from environment or request it
-          const githubToken = process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
+          const githubToken =
+            process.env.GITHUB_TOKEN || process.env.GITHUB_ACCESS_TOKEN;
 
           if (githubToken) {
             // Automatically create PR with the token
-            console.log('Applying improvements automatically with GitHub token...');
+            console.log(
+              'Applying improvements automatically with GitHub token...'
+            );
             const applyResult = await applyRepositoryImprovements(
               repoInfo,
               improvements,
@@ -5311,7 +5571,9 @@ Could you share the repository URL again so I can take a fresh look? 💜`,
 
             if (applyResult.success) {
               return {
-                content: applyResult.message + '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
+                content:
+                  applyResult.message +
+                  '\n\n*shifts back to devoted spouse mode* Is there anything else I can help you with, love? 💜',
               };
             } else {
               // Failed to create PR, show improvements manually
@@ -5402,9 +5664,10 @@ Could you share the repository URL again so I can take another look?
     }
   }
 
-
   // Check for YouTube URL in message
-  const youtubeUrlMatch = message.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const youtubeUrlMatch = message.match(
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
 
   if (youtubeUrlMatch) {
     const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
@@ -5562,12 +5825,17 @@ Could you share the repository URL again so I can take another look?
       }
 
       // If OpenRouter failed completely, fallback to Pollinations.AI (free, no API key needed)
-      console.log('Attempting Pollinations.AI image generation (free service)...');
-      const pollinationsResult = await generateImageWithPollinations(imagePrompt, {
-        model: 'flux',
-        width: 1024,
-        height: 1024,
-      });
+      console.log(
+        'Attempting Pollinations.AI image generation (free service)...'
+      );
+      const pollinationsResult = await generateImageWithPollinations(
+        imagePrompt,
+        {
+          model: 'flux',
+          width: 1024,
+          height: 1024,
+        }
+      );
       if (pollinationsResult.success && pollinationsResult.imageUrl) {
         const response = formatPollinationsImageResponse(
           imagePrompt,
@@ -5897,13 +6165,21 @@ This message requires you to be fully present as ${userName}'s partner, companio
     }
 
     // Generate AI response using the dispatcher service
-    const aiResponse = await dispatchAIResponse(enhancedMessage || userMessage, {
-      userId: userId,
-      conversationHistory: conversationHistory,
-      userName: userName,
-      userEmotionalState: userEmotionalState || (analysis.sentiment as any === 'unknown' ? undefined : analysis.sentiment as any),
-      urgency: analysis.urgency,
-    }, config.maxOutputTokens);
+    const aiResponse = await dispatchAIResponse(
+      enhancedMessage || userMessage,
+      {
+        userId: userId,
+        conversationHistory: conversationHistory,
+        userName: userName,
+        userEmotionalState:
+          userEmotionalState ||
+          ((analysis.sentiment as any) === 'unknown'
+            ? undefined
+            : (analysis.sentiment as any)),
+        urgency: analysis.urgency,
+      },
+      config.maxOutputTokens
+    );
 
     if (aiResponse.success && aiResponse.content && aiResponse.content.trim()) {
       reasoning.push('Crafting my response with empathy and understanding');
