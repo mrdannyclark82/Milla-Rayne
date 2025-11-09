@@ -85,5 +85,7 @@ export const config = {
   // Feature flags and global settings
   enableDevTalk: process.env.ENABLE_DEV_TALK === 'true',
   enablePredictiveUpdates: process.env.ENABLE_PREDICTIVE_UPDATES === 'true',
+  enableProactiveRepositoryManagement: process.env.ENABLE_PROACTIVE_REPOSITORY_MANAGEMENT !== 'false', // default true
+  enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
 };

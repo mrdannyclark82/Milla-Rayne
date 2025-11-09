@@ -108,6 +108,8 @@ import { analyzeVoiceInput, VoiceAnalysisResult } from './voiceAnalysisService';
 import { getSmartHomeSensorData } from './smartHomeService';
 import { initializeMemorySummarizationScheduler } from './memorySummarizationScheduler';
 import { UserProfile } from './profileService';
+import { registerProactiveRoutes } from './proactiveRoutes';
+import { trackUserInteraction } from './userInteractionAnalyticsService';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
@@ -258,6 +260,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
   // Initialize memory summarization scheduler
   initializeMemorySummarizationScheduler();
+
+  // Register proactive repository management routes
+  registerProactiveRoutes(app);
 
   // Serve the videoviewer.html file
   app.get('/videoviewer.html', (req, res) => {
