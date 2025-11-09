@@ -77,6 +77,30 @@ Coordinates all proactive activities:
 - Manages sandbox workflows
 - Generates repository health reports
 
+### 6. Automated PR Service (`automatedPRService.ts`) ✨ NEW
+
+Automatically creates pull requests:
+- GitHub API integration for PR creation
+- Automatic branch management
+- PR status tracking
+- Seamless workflow from sandbox to production
+
+### 7. User Satisfaction Surveys (`userSatisfactionSurveyService.ts`) ✨ NEW
+
+Collects user feedback:
+- 7-question default survey
+- Rating, yes/no, and text questions
+- Analytics with trends and insights
+- Automatic satisfaction scoring
+
+### 8. Performance Profiling (`performanceProfilingService.ts`) ✨ NEW
+
+Monitors system performance:
+- Automatic metric collection
+- Slow operation detection
+- Performance alerts with recommendations
+- P95/P99 percentile tracking
+
 ## API Endpoints
 
 ### Analytics
@@ -96,6 +120,8 @@ Coordinates all proactive activities:
 - `GET /api/milla/features/discovered` - List discovered features
 - `GET /api/milla/features/recommendations` - Get top recommendations
 - `POST /api/milla/features/discover` - Trigger discovery from GitHub
+- `POST /api/milla/features/discover/web` - Discover from web search
+- `POST /api/milla/features/discover/youtube` - Discover from YouTube
 
 ### Tokens & Goals
 - `GET /api/milla/tokens/balance` - Get current token balance
@@ -110,6 +136,23 @@ Coordinates all proactive activities:
 - `GET /api/milla/actions/completed` - Get completed actions
 - `POST /api/milla/proactive/run` - Manually trigger proactive cycle
 
+### Automated PRs
+- `GET /api/milla/prs` - List all PR requests
+- `GET /api/milla/prs/stats` - Get PR statistics
+- `POST /api/milla/prs/create` - Create new PR for sandbox
+
+### User Surveys
+- `GET /api/milla/surveys/active` - Get active survey
+- `POST /api/milla/surveys/respond` - Submit survey responses
+- `GET /api/milla/surveys/:id/analytics` - Get survey analytics
+
+### Performance Profiling
+- `GET /api/milla/performance/profiles` - Get all performance profiles
+- `GET /api/milla/performance/slow` - Get slow operations
+- `GET /api/milla/performance/alerts` - Get performance alerts
+- `GET /api/milla/performance/stats` - Get performance statistics
+- `POST /api/milla/performance/alerts/:id/acknowledge` - Acknowledge alert
+
 ## Configuration
 
 Add to `.env`:
@@ -120,6 +163,9 @@ ENABLE_PROACTIVE_REPOSITORY_MANAGEMENT=true
 
 # Enable proactive messages (includes repository updates)
 ENABLE_PROACTIVE_MESSAGES=true
+
+# Optional: GitHub token for automated PR creation
+GITHUB_TOKEN=your_github_token_here
 ```
 
 ## How It Works
@@ -128,11 +174,19 @@ ENABLE_PROACTIVE_MESSAGES=true
 
 1. **Analyze** user interaction patterns
 2. **Identify** high-priority improvements
-3. **Discover** new features from GitHub
-4. **Create** sandboxes for promising features
-5. **Test** features in active sandboxes
+3. **Discover** new features from GitHub, web, and YouTube
+4. **Create** sandboxes with real git branches for promising features
+5. **Test** features automatically in active sandboxes
 6. **Evaluate** sandbox readiness for production
-7. **Generate** PR preparation actions when ready
+7. **Generate** automated PRs when features are ready
+
+### Enhanced Discovery
+
+Feature discovery now includes:
+- **GitHub**: Scans similar repositories for relevant features
+- **Web**: Searches for trending capabilities and best practices
+- **YouTube**: Analyzes tutorial videos for implementation ideas
+- **User Patterns**: Identifies needs from actual usage
 
 ### User Interaction Tracking
 
@@ -214,17 +268,21 @@ Messages are:
 - Automated quality assurance
 - Active maintenance
 
+## Implemented Enhancements ✅
+
+Successfully implemented enhancements:
+- ✅ **Web and YouTube feature discovery** - Discover features from web search and YouTube videos
+- ✅ **Automated PR creation** - Automatically create GitHub pull requests for approved features
+- ✅ **Real-time branch creation in sandboxes** - Create actual git branches for sandbox environments
+- ✅ **Advanced user satisfaction surveys** - 7-question surveys with analytics and trends
+- ✅ **Performance profiling integration** - Automatic performance monitoring with alerts
+
 ## Future Enhancements
 
-Planned improvements:
-- Web and YouTube feature discovery
-- Automated PR creation
-- Real-time branch creation in sandboxes
+Additional improvements (optional):
 - Machine learning for pattern recognition
-- Advanced user satisfaction surveys
 - Integration with CI/CD pipelines
 - Automated documentation updates
-- Performance profiling integration
 
 ## Monitoring
 
