@@ -46,6 +46,7 @@ export const messages = pgTable('messages', {
   personalityMode: varchar('personality_mode', {
     enum: ['coach', 'empathetic', 'strategic', 'creative', 'roleplay'],
   }),
+  displayRole: text('display_role'),
   timestamp: timestamp('timestamp').defaultNow().notNull(),
   userId: varchar('user_id'),
 });
@@ -133,6 +134,7 @@ export const insertMessageSchema = createInsertSchema(messages).pick({
   content: true,
   role: true,
   personalityMode: true,
+  displayRole: true,
   userId: true,
 });
 

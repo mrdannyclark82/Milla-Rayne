@@ -38,7 +38,8 @@ export const config = {
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: process.env.GOOGLE_REDIRECT_URI,
+    // Accept either GOOGLE_REDIRECT_URI (preferred) or the older GOOGLE_OAUTH_REDIRECT_URI
+    redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URI,
   },
   smartHome: {
     enableIntegration: process.env.ENABLE_SMART_HOME === 'true',

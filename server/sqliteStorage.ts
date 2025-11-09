@@ -174,6 +174,7 @@ export class SqliteStorage implements IStorage {
         content TEXT NOT NULL,
         role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
         personality_mode TEXT CHECK(personality_mode IN ('coach', 'empathetic', 'strategic', 'creative', 'roleplay')),
+        display_role TEXT,
         timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         user_id TEXT,
         session_id TEXT,
@@ -181,6 +182,20 @@ export class SqliteStorage implements IStorage {
         FOREIGN KEY (session_id) REFERENCES sessions(id)
       )
     `);
+
+    // If the messages table exists from an older schema, ensure the display_role
+    // column is present. SQLite doesn't support DROP COLUMN easily, but ADD COLUMN
+    // is supported and harmless if the column already exists.
+    try {
+      const msgCols = this.db.prepare("PRAGMA table_info('messages')").all() as { name: string }[];
+      const hasDisplayRole = msgCols.some((c) => c.name === 'display_role');
+      if (!hasDisplayRole) {
+        console.log('sqlite: migrating messages table to add display_role column');
+        this.db.exec(`ALTER TABLE messages ADD COLUMN display_role TEXT`);
+      }
+    } catch (err) {
+      console.warn('sqlite: warning while ensuring messages.display_role column', err);
+    }
 
     // Create sessions table for tracking conversation sessions
     console.debug('sqlite: creating sessions table');
@@ -546,8 +561,8 @@ export class SqliteStorage implements IStorage {
       : message.content;
 
     const stmt = this.db.prepare(`
-      INSERT INTO messages (id, content, role, personality_mode, timestamp, user_id, session_id) 
-      VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM sessions WHERE user_id = ? AND end_time IS NULL ORDER BY start_time DESC LIMIT 1))
+      INSERT INTO messages (id, content, role, personality_mode, display_role, timestamp, user_id, session_id) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, (SELECT id FROM sessions WHERE user_id = ? AND end_time IS NULL ORDER BY start_time DESC LIMIT 1))
     `);
 
     stmt.run(
@@ -555,6 +570,7 @@ export class SqliteStorage implements IStorage {
       encryptedContent,
       message.role,
       message.personalityMode || null,
+      message.displayRole || null,
       timestamp.toISOString(),
       message.userId || null,
       message.userId || null
@@ -574,6 +590,7 @@ export class SqliteStorage implements IStorage {
       id,
       content: message.content, // Return original plaintext
       role: message.role,
+      displayRole: message.displayRole || null,
       personalityMode: message.personalityMode || null,
       timestamp,
       userId: message.userId || null,
@@ -600,6 +617,7 @@ export class SqliteStorage implements IStorage {
         : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
+      displayRole: msg.display_role || null,
       userId: msg.user_id,
     }));
   }
@@ -617,6 +635,7 @@ export class SqliteStorage implements IStorage {
         : msg.content, // Decrypt content on read
       timestamp: new Date(msg.timestamp),
       personalityMode: msg.personality_mode,
+      displayRole: msg.display_role || null,
       userId: msg.user_id,
     };
   }

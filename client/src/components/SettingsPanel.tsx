@@ -132,6 +132,22 @@ export default function SettingsPanel({
     }
   }, [isOpen]);
 
+  // Listen for OAuth popup success postMessage
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'google-auth-success') {
+        // Update connected state and user if provided
+        setOauthStatus({ connected: true });
+        if (event.data.user) {
+          setCurrentUser(event.data.user);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -969,7 +985,19 @@ export default function SettingsPanel({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => (window.location.href = '/api/oauth/google')}
+                      onClick={() => {
+                        // Open Google OAuth in a centered popup so callback can postMessage
+                        const width = 600;
+                        const height = 700;
+                        const left = window.screen.width / 2 - width / 2;
+                        const top = window.screen.height / 2 - height / 2;
+
+                        window.open(
+                          '/api/auth/google',
+                          'Connect to Google',
+                          `width=${width},height=${height},left=${left},top=${top}`
+                        );
+                      }}
                       className="border-white/30 text-white/70 hover:text-white"
                     >
                       Connect to Google

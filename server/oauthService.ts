@@ -47,11 +47,13 @@ export function getGoogleOAuthConfig(): GoogleOAuthConfig {
 /**
  * Generate OAuth authorization URL
  */
-export function getAuthorizationUrl(): string {
+export function getAuthorizationUrl(redirectUriOverride?: string): string {
   const config = getGoogleOAuthConfig();
+  const redirectUri = redirectUriOverride || config.redirectUri;
+
   const params = new URLSearchParams({
     client_id: config.clientId,
-    redirect_uri: config.redirectUri,
+    redirect_uri: redirectUri,
     response_type: 'code',
     scope: config.scope.join(' '),
     access_type: 'offline',
@@ -64,13 +66,17 @@ export function getAuthorizationUrl(): string {
 /**
  * Exchange authorization code for access token
  */
-export async function exchangeCodeForToken(code: string): Promise<{
+export async function exchangeCodeForToken(
+  code: string,
+  redirectUriOverride?: string
+): Promise<{
   accessToken: string;
   refreshToken?: string;
   expiresIn: number;
   scope: string;
 }> {
   const config = getGoogleOAuthConfig();
+  const redirectUri = redirectUriOverride || config.redirectUri;
 
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -81,7 +87,7 @@ export async function exchangeCodeForToken(code: string): Promise<{
       code,
       client_id: config.clientId,
       client_secret: config.clientSecret,
-      redirect_uri: config.redirectUri,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }).toString(),
   });

@@ -384,8 +384,16 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     try {
       const { getAuthorizationUrl } = await import('./oauthService');
 
+      // Derive redirect URI: prefer configured value but fall back to request-derived
+      const configuredRedirect = config.google?.redirectUri;
+      const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      const redirectUriToUse = configuredRedirect && configuredRedirect.length > 0 ? configuredRedirect : requestDerived;
+
+      // Log which redirect URI we're using to help debugging
+      console.log(`Google OAuth: using redirect URI -> ${redirectUriToUse}`);
+
       // Add state parameter to identify this is for auth (not just service connection)
-      const authUrl = getAuthorizationUrl() + '&state=auth';
+      const authUrl = getAuthorizationUrl(redirectUriToUse) + '&state=auth';
       res.redirect(authUrl);
     } catch (error) {
       console.error('Error initiating Google auth:', error);
@@ -414,10 +422,17 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         `);
       }
 
-      const { exchangeCodeForToken } = await import('./oauthService');
+  const { exchangeCodeForToken } = await import('./oauthService');
 
-      // Exchange code for tokens
-      const tokenData = await exchangeCodeForToken(code);
+  // Derive redirect URI the same way we did when initiating auth
+  const configuredRedirect = config.google?.redirectUri;
+  const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+  const redirectUriToUse = configuredRedirect && configuredRedirect.length > 0 ? configuredRedirect : requestDerived;
+
+  console.log(`Google OAuth callback: using redirect URI -> ${redirectUriToUse}`);
+
+  // Exchange code for tokens (must use the exact same redirect_uri used when creating the auth URL)
+  const tokenData = await exchangeCodeForToken(code, redirectUriToUse);
 
       // Get user info from Google
       const userInfoResponse = await fetch(
@@ -2749,7 +2764,14 @@ Project: Milla Rayne - AI Virtual Assistant
   app.get('/oauth/google', async (req, res) => {
     try {
       const { getAuthorizationUrl } = await import('./oauthService');
-      const authUrl = getAuthorizationUrl();
+      // Prefer configured redirect URI, but fall back to constructing from request
+      const configuredRedirect = (await import('./config')).config.google.redirectUri;
+      const host = req.headers.host;
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const derivedRedirect = `${proto}://${host}/oauth/callback`;
+      const redirectToUse = configuredRedirect || derivedRedirect;
+
+      const authUrl = getAuthorizationUrl(redirectToUse);
       res.redirect(authUrl);
     } catch (error) {
       console.error('Error initiating OAuth:', error);
@@ -2776,8 +2798,15 @@ Project: Milla Rayne - AI Virtual Assistant
         './oauthService'
       );
 
+      // Determine redirect_uri to use for token exchange. Must match the one sent in the auth request.
+      const configuredRedirect = (await import('./config')).config.google.redirectUri;
+      const host = req.headers.host;
+      const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+      const derivedRedirect = `${proto}://${host}/oauth/callback`;
+      const redirectToUse = configuredRedirect || derivedRedirect;
+
       // Exchange code for tokens
-      const tokenData = await exchangeCodeForToken(code);
+  const tokenData = await exchangeCodeForToken(code, redirectToUse);
 
       // Store tokens securely
       await storeOAuthToken(

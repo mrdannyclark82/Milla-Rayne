@@ -87,13 +87,25 @@ export const UnifiedSettingsMenu: React.FC<UnifiedSettingsMenuProps> = ({
         </DeveloperModeToggle>
 
         <DropdownMenuItem
-          asChild
           className="cursor-pointer hover:bg-white/10 focus:bg-white/10"
+          onClick={() => {
+            // Open Google OAuth in a centered popup so the callback can postMessage to window.opener
+            const width = 600;
+            const height = 700;
+            const left = window.screen.width / 2 - width / 2;
+            const top = window.screen.height / 2 - height / 2;
+
+            window.open(
+              '/api/auth/google',
+              'Connect Google Services',
+              `width=${width},height=${height},left=${left},top=${top}`
+            );
+          }}
         >
-          <a href="/oauth/google" target="_blank" rel="noopener noreferrer">
+          <div>
             <i className="fab fa-google mr-2 text-red-400"></i>
             Connect Google Services
-          </a>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

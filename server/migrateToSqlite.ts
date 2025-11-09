@@ -30,11 +30,59 @@ async function migrateMemories() {
 
   try {
     const fileContent = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
-    const messages = JSON.parse(fileContent);
 
-    if (!Array.isArray(messages)) {
-      console.error('memories.txt does not contain a valid array');
-      return;
+    let messages: Array<any> | null = null;
+
+    // Try to parse as JSON array (new format). If that fails, attempt
+    // to parse legacy plain-text memories and convert them into an
+    // array of message objects. If parsing still fails, wrap the
+    // entire file as a single message so migration can proceed.
+    try {
+      messages = JSON.parse(fileContent);
+      if (!Array.isArray(messages)) {
+        console.warn('memories.txt parsed as JSON but is not an array — falling back to legacy parsing');
+        messages = null;
+      }
+    } catch (jsonErr) {
+      console.log('memories.txt is not valid JSON; attempting legacy parse...');
+      messages = null;
+    }
+
+    if (!messages) {
+      // Try to extract timestamped entries like: [2025-08-31] ...
+      const legacyMessages: Array<any> = [];
+      const timestampLineRe = /^\s*\[(\d{4}-\d{2}-\d{2})\]\s*(.*)$/gm;
+      let match: RegExpExecArray | null;
+
+      // Collect per-line timestamped entries
+      while ((match = timestampLineRe.exec(fileContent)) !== null) {
+        const date = match[1];
+        const rest = match[2].trim();
+        legacyMessages.push({
+          content: rest || '(no content)',
+          role: 'user',
+          timestamp: date,
+        });
+      }
+
+      if (legacyMessages.length > 0) {
+        messages = legacyMessages;
+        console.log(`Legacy parse: extracted ${legacyMessages.length} timestamped messages`);
+      } else {
+        // As a last resort, split into chunks separated by two newlines and
+        // treat each chunk as a message. This preserves as much content as possible.
+        const chunks = fileContent.split(/\n\s*\n+/).map((c) => c.trim()).filter(Boolean);
+        if (chunks.length === 0) {
+          console.error('memories.txt appears empty after trimming — nothing to migrate');
+          return;
+        }
+        messages = chunks.map((chunk) => ({
+          content: chunk,
+          role: 'user',
+          timestamp: new Date().toISOString(),
+        }));
+        console.log(`Legacy parse: converted ${chunks.length} text chunks into messages`);
+      }
     }
 
     console.log(`Found ${messages.length} messages to migrate`);
@@ -90,13 +138,32 @@ async function migrateMemories() {
           }
         }
 
-        // Create the message
+        // Map legacy roles to human-friendly names during migration.
+        // Store as 'Milla' for assistant messages and 'Danny Ray' for user messages
+        // to preserve conversational context in the new DB.
+        // Keep DB-level role values compatible with existing schema constraints
+        // ('assistant'|'user'), but store a human-friendly display role in
+        // `display_role` so UI/analytics can show 'Milla'/'Danny Ray'.
+        const roleForDb = (() => {
+          if (!msg.role) return 'user';
+          const r = String(msg.role).toLowerCase();
+          return r === 'assistant' ? 'assistant' : 'user';
+        })();
+
+        const displayRole = (() => {
+          if (!msg.role) return 'Danny Ray';
+          const r = String(msg.role).toLowerCase();
+          if (r === 'assistant') return 'Milla';
+          if (r === 'user') return 'Danny Ray';
+          if (r.includes('milla') || r.includes('danny') || r.includes('ray')) return msg.role;
+          return 'Danny Ray';
+        })();
+
+        // Create the message (role uses DB-safe value; displayRole preserves human name)
         await storage.createMessage({
           content: msg.content,
-          role:
-            msg.role === 'user' || msg.role === 'assistant'
-              ? msg.role
-              : 'assistant',
+          role: roleForDb,
+          displayRole,
           personalityMode: msg.personalityMode || undefined,
           userId: DEFAULT_USER_ID,
         });
