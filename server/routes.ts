@@ -28,7 +28,6 @@ import {
   formatCodeResponse,
 } from './openrouterCodeService';
 import {
-  getMemoriesFromTxt,
   searchKnowledge,
   updateMemories,
   getMemoryCoreContext,
@@ -244,6 +243,63 @@ async function analyzeImageWithOpenAI(
   ];
 
   return imageResponses[Math.floor(Math.random() * imageResponses.length)];
+}
+
+/**
+ * Input validation and sanitization for user inputs
+ * Prevents injection attacks and ensures data integrity
+ */
+const MAX_INPUT_LENGTH = 10000; // Maximum allowed input length
+const MAX_PROMPT_LENGTH = 5000; // Maximum allowed prompt length
+
+function sanitizeUserInput(input: string, maxLength: number = MAX_INPUT_LENGTH): string {
+  if (!input || typeof input !== 'string') {
+    throw new Error('Invalid input: must be a non-empty string');
+  }
+  
+  // Check length
+  if (input.length > maxLength) {
+    throw new Error(`Input too long: maximum ${maxLength} characters allowed`);
+  }
+  
+  // Remove potential XSS patterns
+  const sanitized = input
+    .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script tags
+    .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '') // Remove iframe tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, ''); // Remove event handlers like onclick=
+  
+  return sanitized.trim();
+}
+
+function validateAndSanitizePrompt(prompt: string): string {
+  if (!prompt || typeof prompt !== 'string') {
+    throw new Error('Prompt must be a non-empty string');
+  }
+  
+  // Check for excessive length
+  if (prompt.length > MAX_PROMPT_LENGTH) {
+    throw new Error(`Prompt too long: maximum ${MAX_PROMPT_LENGTH} characters allowed`);
+  }
+  
+  // Check for suspicious patterns that might indicate prompt injection
+  const suspiciousPatterns = [
+    /ignore\s+previous\s+instructions/i,
+    /disregard\s+all\s+prior/i,
+    /forget\s+everything/i,
+    /system\s*:\s*/i,
+    /assistant\s*:\s*/i,
+  ];
+  
+  for (const pattern of suspiciousPatterns) {
+    if (pattern.test(prompt)) {
+      console.warn('Suspicious pattern detected in prompt, sanitizing...');
+      // Don't reject entirely, but log for monitoring
+      break;
+    }
+  }
+  
+  return sanitizeUserInput(prompt, MAX_PROMPT_LENGTH);
 }
 
 export async function registerRoutes(app: Express): Promise<HttpServer> {
@@ -843,6 +899,16 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       if (message.trim().length === 0) {
         console.warn('Chat API: Empty message received');
         return res.status(400).json({ error: 'Message cannot be empty' });
+      }
+
+      // Sanitize and validate user input
+      try {
+        message = validateAndSanitizePrompt(message);
+      } catch (error) {
+        console.error('Input validation failed:', error);
+        return res.status(400).json({ 
+          error: error instanceof Error ? error.message : 'Invalid input' 
+        });
       }
 
       // Log the request for debugging
@@ -1579,10 +1645,25 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Memory management endpoints
   app.get('/api/memory', async (req, res) => {
     try {
-      const memoryData = await getMemoriesFromTxt();
-      res.json(memoryData);
+      const userId = (req.session as any)?.userId || 'default-user';
+      const messages = await storage.getMessages(userId);
+      
+      // Format messages as memory content for backward compatibility
+      const content = messages
+        .map(msg => `[${msg.timestamp.toISOString()}] ${msg.role}: ${msg.content}`)
+        .join('\n');
+      
+      res.json({
+        content,
+        success: true,
+      });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch memories' });
+      console.error('Error fetching memories from database:', error);
+      res.status(500).json({ 
+        content: '',
+        success: false,
+        error: 'Failed to fetch memories from database'
+      });
     }
   });
 
@@ -6265,14 +6346,22 @@ Could you share the repository URL again so I can take another look?
     );
   }
 
-  // SECONDARY: Retrieve personal memories for additional context
+  // SECONDARY: Retrieve personal memories from database for additional context
   try {
-    const memoryData = await getMemoriesFromTxt();
-    if (memoryData.success && memoryData.content) {
-      memoryContext = `\nPersonal Memory Context:\n${memoryData.content}`;
+    const userId = (req.session as any)?.userId || 'default-user';
+    const recentMessages = await storage.getMessages(userId);
+    
+    if (recentMessages.length > 0) {
+      // Get last 10 messages for context
+      const contextMessages = recentMessages.slice(-10);
+      const formattedContext = contextMessages
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n');
+      
+      memoryContext = `\nPersonal Memory Context (recent conversation):\n${formattedContext}`;
     }
   } catch (error) {
-    console.error('Error accessing personal memories:', error);
+    console.error('Error accessing personal memories from database:', error);
   }
 
   // ENHANCED: Add emotional, environmental, and visual context

@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 700,
+  "tokenBalance": 850,
   "transactions": [
     {
       "id": "txn_1762783949186_xel82vfkz",
@@ -104,6 +104,22 @@
       "category": "goal_achievement",
       "description": "Completed goal: Code Optimizer",
       "relatedId": "goal_1762726225392_ac5r0dqb2"
+    },
+    {
+      "id": "txn_1762787225020_y0wlmphdz",
+      "timestamp": 1762787225020,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1762787225022_igptdueno",
+      "timestamp": 1762787225022,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
     }
   ],
   "goals": [
@@ -156,5 +172,5 @@
       "completedAt": 1762786915064
     }
   ],
-  "lastUpdated": 1762786915064
+  "lastUpdated": 1762787225022
 }
