@@ -235,3 +235,86 @@ export async function enhanceSearchWithRealWorldInfo(
     summary: enhancedSummary,
   };
 }
+
+/**
+ * Mobile Sensor Data Interfaces
+ */
+export interface SensorData {
+  userId: string;
+  timestamp: number;
+  userMotionState: 'stationary' | 'walking' | 'running' | 'driving' | 'unknown';
+  ambientLightLevel: number;
+  nearbyBluetoothDevices: string[];
+  batteryLevel?: number;
+  isCharging?: boolean;
+  location?: {
+    latitude: number;
+    longitude: number;
+    accuracy: number;
+  };
+  networkType?: 'wifi' | 'cellular' | 'none';
+}
+
+export interface AmbientContext {
+  userId: string;
+  lastUpdated: number;
+  motionState: string;
+  lightLevel: number;
+  deviceContext: {
+    battery: number | null;
+    charging: boolean;
+    network: string | null;
+  };
+  location: {
+    latitude: number | null;
+    longitude: number | null;
+  } | null;
+  nearbyDevices: string[];
+}
+
+// In-memory store for ambient context (could be moved to database for persistence)
+const ambientContextStore = new Map<string, AmbientContext>();
+
+/**
+ * Update ambient context from mobile sensor data
+ */
+export function updateAmbientContext(userId: string, data: SensorData): void {
+  const context: AmbientContext = {
+    userId,
+    lastUpdated: Date.now(),
+    motionState: data.userMotionState,
+    lightLevel: data.ambientLightLevel,
+    deviceContext: {
+      battery: data.batteryLevel ?? null,
+      charging: data.isCharging ?? false,
+      network: data.networkType ?? null,
+    },
+    location: data.location ? {
+      latitude: data.location.latitude,
+      longitude: data.location.longitude,
+    } : null,
+    nearbyDevices: data.nearbyBluetoothDevices,
+  };
+  
+  ambientContextStore.set(userId, context);
+  console.log(`📱 Updated ambient context for user ${userId}:`, {
+    motion: context.motionState,
+    light: context.lightLevel,
+    battery: context.deviceContext.battery,
+  });
+}
+
+/**
+ * Get current ambient context for a user
+ */
+export function getAmbientContext(userId: string): AmbientContext | null {
+  const context = ambientContextStore.get(userId);
+  
+  // Return null if context is older than 5 minutes
+  if (context && Date.now() - context.lastUpdated > 5 * 60 * 1000) {
+    ambientContextStore.delete(userId);
+    return null;
+  }
+  
+  return context ?? null;
+}

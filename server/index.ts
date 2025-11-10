@@ -223,6 +223,11 @@ export async function initApp() {
   // registerRoutes will return an http.Server instance that we should use
   httpServer = await registerRoutes(app);
 
+  // Setup sensor data WebSocket for mobile clients
+  const { setupSensorDataWebSocket } = await import('./websocketService');
+  await setupSensorDataWebSocket(httpServer);
+  console.log('✅ Mobile sensor data WebSocket initialized');
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes

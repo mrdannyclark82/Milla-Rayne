@@ -4262,6 +4262,36 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // Mobile Sensor Data Endpoint
+  app.post('/api/sensor-data', async (req, res) => {
+    try {
+      const { updateAmbientContext } = await import('./realWorldInfoService');
+      const sensorData = req.body;
+      
+      // Validate required fields
+      if (!sensorData.userId || !sensorData.timestamp) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: userId and timestamp',
+        });
+      }
+      
+      // Update ambient context
+      updateAmbientContext(sensorData.userId, sensorData);
+      
+      res.json({
+        success: true,
+        message: 'Sensor data received',
+      });
+    } catch (error) {
+      console.error('Error processing sensor data:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process sensor data',
+      });
+    }
+  });
+
   // Return the http server so callers (tests) receive a proper Server instance they can close
   // In test environments, start the server on an ephemeral port so tests can use it and close it.
   if (process.env.NODE_ENV === 'test') {

@@ -215,4 +215,77 @@ function generatePlayerId(): string {
   return `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+/**
+ * Setup dedicated WebSocket server for mobile sensor data streaming
+ * This is optimized for high-frequency, low-latency updates
+ */
+export async function setupSensorDataWebSocket(
+  httpServer: Server
+): Promise<WebSocketServer> {
+  console.log('Setting up dedicated WebSocket server for sensor data...');
+  
+  const { updateAmbientContext } = await import('./realWorldInfoService');
+  
+  const sensorWss = new WebSocketServer({
+    server: httpServer,
+    path: '/ws/sensor',
+  });
+
+  sensorWss.on('connection', (ws: WebSocket, req: any) => {
+    console.log('Mobile sensor client connected');
+
+    ws.send(
+      JSON.stringify({
+        type: 'connected',
+        message: 'Sensor data WebSocket ready',
+      })
+    );
+
+    ws.on('message', (data: Buffer) => {
+      try {
+        const sensorData = JSON.parse(data.toString());
+        
+        // Validate basic structure
+        if (sensorData.userId && sensorData.timestamp) {
+          updateAmbientContext(sensorData.userId, sensorData);
+          
+          // Send acknowledgment
+          ws.send(
+            JSON.stringify({
+              type: 'ack',
+              timestamp: sensorData.timestamp,
+            })
+          );
+        } else {
+          ws.send(
+            JSON.stringify({
+              type: 'error',
+              message: 'Invalid sensor data format',
+            })
+          );
+        }
+      } catch (error) {
+        console.error('Sensor data parsing error:', error);
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            message: 'Failed to parse sensor data',
+          })
+        );
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('Mobile sensor client disconnected');
+    });
+
+    ws.on('error', (error: any) => {
+      console.error('Sensor WebSocket error:', error);
+    });
+  });
+
+  console.log('Sensor data WebSocket server setup complete on /ws/sensor');
+  return sensorWss;
+}
+
 export { connections, gameStates, gardenPositions };
