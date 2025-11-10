@@ -6348,7 +6348,6 @@ Could you share the repository URL again so I can take another look?
 
   // SECONDARY: Retrieve personal memories from database for additional context
   try {
-    const userId = (req.session as any)?.userId || 'default-user';
     const recentMessages = await storage.getMessages(userId);
     
     if (recentMessages.length > 0) {
