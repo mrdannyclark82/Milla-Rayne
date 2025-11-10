@@ -11,6 +11,16 @@ import { generateGeminiResponse } from './geminiService';
 import { storage } from './storage';
 import { config } from './config';
 import { generateOpenAIResponse } from './openaiChatService';
+import { getSemanticMemoryContext } from './memoryService';
+import { semanticSearchVideos } from './youtubeKnowledgeBase';
+import { 
+  type AVRagContext, 
+  enrichMessageWithAVContext,
+  validateSceneContext,
+  validateVoiceContext,
+  createAVContext 
+} from './avRagService';
+import type { VoiceAnalysisResult } from './voiceAnalysisService';
 
 export interface AIResponse {
   content: string;
@@ -24,6 +34,68 @@ export interface DispatchContext {
   userName: string;
   userEmotionalState?: 'positive' | 'negative' | 'neutral';
   urgency?: 'low' | 'medium' | 'high';
+  // A/V-RAG context
+  sceneContext?: any;
+  voiceContext?: VoiceAnalysisResult;
+}
+
+/**
+ * Enrich context with semantic retrieval from vector database
+ */
+async function enrichContextWithSemanticRetrieval(
+  userMessage: string,
+  context: DispatchContext
+): Promise<string> {
+  const userId = context.userId || 'default-user';
+  
+  try {
+    // Get semantic memory context
+    const memoryContext = await getSemanticMemoryContext(userMessage, userId);
+    
+    // Search for relevant YouTube knowledge
+    const youtubeResults = await semanticSearchVideos(userMessage, {
+      userId,
+      topK: 2,
+      minSimilarity: 0.7,
+    });
+    
+    let enrichedContext = '';
+    
+    if (memoryContext) {
+      enrichedContext += memoryContext;
+    }
+    
+    if (youtubeResults.length > 0) {
+      const youtubeParts = youtubeResults.map((result, index) => 
+        `YouTube Knowledge ${index + 1} (${result.video.title}, relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.video.summary}`
+      );
+      enrichedContext += `\n\nRelevant YouTube knowledge:\n${youtubeParts.join('\n\n')}`;
+    }
+    
+    return enrichedContext;
+  } catch (error) {
+    console.error('Error enriching context with semantic retrieval:', error);
+    return '';
+  }
+}
+
+/**
+ * Build A/V-RAG context from scene and voice data
+ */
+function buildAVRagContext(context: DispatchContext): AVRagContext | null {
+  try {
+    const scene = validateSceneContext(context.sceneContext);
+    const voice = validateVoiceContext(context.voiceContext);
+    
+    if (!scene && !voice) {
+      return null;
+    }
+    
+    return createAVContext(scene || undefined, voice || undefined);
+  } catch (error) {
+    console.error('Error building A/V-RAG context:', error);
+    return null;
+  }
 }
 
 export async function dispatchAIResponse(
@@ -87,13 +159,33 @@ export async function dispatchAIResponse(
 
   console.log(`--- Dispatching to model: ${modelToUse} ---`);
 
+  // Enrich context with semantic retrieval (V-RAG)
+  const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
+  
+  // Build A/V-RAG context from scene and voice data
+  const avContext = buildAVRagContext(context);
+  
+  // Augment user message with all context layers
+  let augmentedMessage = userMessage;
+  
+  // Add semantic context
+  if (semanticContext) {
+    augmentedMessage += `\n\n---\nContext from knowledge base:${semanticContext}`;
+  }
+  
+  // Add A/V context
+  if (avContext) {
+    augmentedMessage = enrichMessageWithAVContext(augmentedMessage, avContext);
+    console.log('✅ Enhanced with A/V-RAG context (scene + voice)');
+  }
+
   let response: AIResponse;
 
   switch (modelToUse) {
     case 'openai':
       // Use OpenAI chat wrapper (supports both conversation array or full PersonalityContext)
       response = await generateOpenAIResponse(
-        userMessage,
+        augmentedMessage,
         {
           conversationHistory: context.conversationHistory,
           userName: context.userName,
@@ -106,7 +198,7 @@ export async function dispatchAIResponse(
 
     case 'xai':
       response = await generateXAIResponse(
-        userMessage,
+        augmentedMessage,
         {
           conversationHistory: context.conversationHistory,
           userEmotionalState: context.userEmotionalState,
@@ -117,12 +209,12 @@ export async function dispatchAIResponse(
       );
       break;
     case 'gemini':
-      response = await generateGeminiResponse(userMessage);
+      response = await generateGeminiResponse(augmentedMessage);
       break;
 
     case 'grok':
       response = await generateGrokResponse(
-        userMessage,
+        augmentedMessage,
         {
           conversationHistory: context.conversationHistory,
           userEmotionalState: context.userEmotionalState,
@@ -138,7 +230,7 @@ export async function dispatchAIResponse(
     default:
       // Default to OpenRouter (Minimax) if no specific model is chosen or if it's an unknown model
       response = await generateOpenRouterResponse(
-        userMessage,
+        augmentedMessage,
         {
           conversationHistory: context.conversationHistory,
           userEmotionalState: context.userEmotionalState,
@@ -156,7 +248,7 @@ export async function dispatchAIResponse(
       'OpenAI failed (possibly rate limited), falling back to OpenRouter...'
     );
     response = await generateOpenRouterResponse(
-      userMessage,
+      augmentedMessage,
       {
         conversationHistory: context.conversationHistory,
         userEmotionalState: context.userEmotionalState,
