@@ -1,4 +1,5 @@
 import { parseCalendarCommand } from './gemini';
+import { sanitizePromptInput, sanitizeEmail, sanitizeUrl } from './sanitization';
 
 export interface ParsedCommand {
   service: 'calendar' | 'gmail' | 'youtube' | 'profile' | null;
@@ -15,7 +16,9 @@ export interface ParsedCommand {
 }
 
 export async function parseCommand(message: string): Promise<ParsedCommand> {
-  const lowerMessage = message.toLowerCase();
+  // Sanitize input to prevent prompt injection
+  const sanitizedMessage = sanitizePromptInput(message);
+  const lowerMessage = sanitizedMessage.toLowerCase();
   const result: ParsedCommand = {
     service: null,
     action: null,
@@ -70,11 +73,14 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
     } else if (lowerMessage.includes('send')) {
       result.action = 'send';
       const toMatch = lowerMessage.match(/to ([\w\s\d@.]+)/);
-      if (toMatch) result.entities.to = toMatch[1].trim();
+      if (toMatch) {
+        const email = sanitizeEmail(toMatch[1].trim());
+        if (email) result.entities.to = email;
+      }
       const subjectMatch = lowerMessage.match(/subject (.*?)(?:and body|$)/);
-      if (subjectMatch) result.entities.subject = subjectMatch[1].trim();
+      if (subjectMatch) result.entities.subject = sanitizePromptInput(subjectMatch[1].trim());
       const bodyMatch = lowerMessage.match(/body (.*)/);
-      if (bodyMatch) result.entities.body = bodyMatch[1].trim();
+      if (bodyMatch) result.entities.body = sanitizePromptInput(bodyMatch[1].trim());
     }
   }
 
@@ -152,7 +158,7 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
       }
 
       if (query) {
-        result.entities.query = query;
+        result.entities.query = sanitizePromptInput(query);
         result.entities.sortBy = 'relevance';
 
         // Adjust sorting based on keywords
@@ -176,11 +182,11 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
   else if (lowerMessage.startsWith('my name is')) {
     result.service = 'profile';
     result.action = 'update';
-    result.entities.name = message.substring('my name is'.length).trim();
+    result.entities.name = sanitizePromptInput(sanitizedMessage.substring('my name is'.length).trim());
   } else if (lowerMessage.startsWith('i like')) {
     result.service = 'profile';
     result.action = 'update';
-    result.entities.interest = message.substring('i like'.length).trim();
+    result.entities.interest = sanitizePromptInput(sanitizedMessage.substring('i like'.length).trim());
   }
 
   return result;
