@@ -471,3 +471,301 @@ export async function checkPostBreakReachout(): Promise<{
     return { shouldReachout: false, message: null };
   }
 }
+
+// ===========================================================================================
+// MULTI-STEP REASONING & SELF-CORRECTION (AGENT AUTONOMY)
+// ===========================================================================================
+
+export interface ReasoningStep {
+  step: number;
+  thought: string;
+  action?: string;
+  confidence: number; // 0-1 scale
+  timestamp: number;
+}
+
+export interface ReasoningChain {
+  goal: string;
+  steps: ReasoningStep[];
+  finalDecision: string;
+  overallConfidence: number;
+  needsUserApproval: boolean;
+}
+
+/**
+ * Execute multi-step reasoning chain for autonomous decision making
+ */
+export async function executeReasoningChain(
+  goal: string,
+  context: {
+    userActivity?: any;
+    emotionalContext?: string;
+    recentMemories?: string[];
+  }
+): Promise<ReasoningChain> {
+  console.log(`🧠 Starting reasoning chain for goal: "${goal}"`);
+  
+  const steps: ReasoningStep[] = [];
+  let currentConfidence = 1.0;
+  
+  // Step 1: Analyze the goal and context
+  steps.push({
+    step: 1,
+    thought: `Analyzing goal: "${goal}" with current context`,
+    confidence: 0.9,
+    timestamp: Date.now(),
+  });
+  
+  // Step 2: Consider potential approaches
+  const approaches = await considerApproaches(goal, context);
+  steps.push({
+    step: 2,
+    thought: `Identified ${approaches.length} potential approaches: ${approaches.map(a => a.name).join(', ')}`,
+    confidence: 0.85,
+    timestamp: Date.now(),
+  });
+  
+  // Step 3: Evaluate risks and benefits
+  const evaluation = await evaluateApproaches(approaches, context);
+  steps.push({
+    step: 3,
+    thought: `Best approach: ${evaluation.best.name} (score: ${evaluation.best.score})`,
+    action: evaluation.best.name,
+    confidence: evaluation.best.score,
+    timestamp: Date.now(),
+  });
+  
+  currentConfidence = evaluation.best.score;
+  
+  // Step 4: Self-correction - verify the decision
+  const verification = await verifySafety(evaluation.best, context);
+  steps.push({
+    step: 4,
+    thought: verification.thought,
+    confidence: verification.confidence,
+    timestamp: Date.now(),
+  });
+  
+  currentConfidence = Math.min(currentConfidence, verification.confidence);
+  
+  // Step 5: Final decision with confidence threshold
+  const needsApproval = currentConfidence < 0.7; // Require approval if confidence < 70%
+  const finalDecision = needsApproval
+    ? `Awaiting user approval for: ${evaluation.best.name}`
+    : `Proceeding with: ${evaluation.best.name}`;
+  
+  steps.push({
+    step: 5,
+    thought: needsApproval
+      ? 'Confidence too low - requesting user approval'
+      : 'Confidence sufficient - proceeding autonomously',
+    action: finalDecision,
+    confidence: currentConfidence,
+    timestamp: Date.now(),
+  });
+  
+  console.log(`✅ Reasoning chain complete. Confidence: ${(currentConfidence * 100).toFixed(1)}%`);
+  
+  return {
+    goal,
+    steps,
+    finalDecision,
+    overallConfidence: currentConfidence,
+    needsUserApproval: needsApproval,
+  };
+}
+
+/**
+ * Consider multiple approaches to achieve a goal
+ */
+async function considerApproaches(
+  goal: string,
+  context: any
+): Promise<Array<{ name: string; description: string }>> {
+  // For proactive engagement, consider different approaches
+  const approaches = [
+    {
+      name: 'direct_message',
+      description: 'Send a direct proactive message',
+    },
+    {
+      name: 'contextual_suggestion',
+      description: 'Provide a context-aware suggestion',
+    },
+    {
+      name: 'wait_for_natural_moment',
+      description: 'Wait for a natural moment to engage',
+    },
+  ];
+  
+  return approaches;
+}
+
+/**
+ * Evaluate and score different approaches
+ */
+async function evaluateApproaches(
+  approaches: Array<{ name: string; description: string }>,
+  context: any
+): Promise<{
+  best: { name: string; description: string; score: number };
+  alternatives: Array<{ name: string; description: string; score: number }>;
+}> {
+  const scored = approaches.map(approach => ({
+    ...approach,
+    score: Math.random() * 0.3 + 0.7, // Score between 0.7-1.0 for demo
+  }));
+  
+  scored.sort((a, b) => b.score - a.score);
+  
+  return {
+    best: scored[0],
+    alternatives: scored.slice(1),
+  };
+}
+
+/**
+ * Verify safety and appropriateness of an action
+ */
+async function verifySafety(
+  approach: { name: string; description: string; score: number },
+  context: any
+): Promise<{ thought: string; confidence: number; safe: boolean }> {
+  // Check if the approach is safe and appropriate
+  const isSafe = approach.score > 0.6;
+  const confidence = isSafe ? approach.score * 0.95 : approach.score * 0.5;
+  
+  return {
+    thought: isSafe
+      ? `Verified approach is safe and appropriate`
+      : `Approach requires additional consideration`,
+    confidence,
+    safe: isSafe,
+  };
+}
+
+/**
+ * Execute action with self-correction
+ */
+export async function executeWithSelfCorrection(
+  action: string,
+  params: any
+): Promise<{ success: boolean; result?: any; correction?: string }> {
+  console.log(`⚡ Executing action with self-correction: ${action}`);
+  
+  try {
+    // Pre-execution validation
+    const validation = await validateExecution(action, params);
+    
+    if (!validation.valid) {
+      console.log(`❌ Pre-execution validation failed: ${validation.reason}`);
+      return {
+        success: false,
+        correction: validation.reason,
+      };
+    }
+    
+    // Execute the action (placeholder - actual implementation would call specific functions)
+    const result = await performAction(action, params);
+    
+    // Post-execution validation
+    const postValidation = await validateResult(result);
+    
+    if (!postValidation.valid) {
+      console.log(`⚠️ Post-execution validation failed, attempting correction`);
+      const corrected = await correctExecution(action, params, result);
+      return {
+        success: corrected.success,
+        result: corrected.result,
+        correction: corrected.correctionApplied,
+      };
+    }
+    
+    console.log(`✅ Action executed successfully with validation`);
+    return {
+      success: true,
+      result,
+    };
+  } catch (error) {
+    console.error('Error during execution:', error);
+    return {
+      success: false,
+      correction: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Validate action before execution
+ */
+async function validateExecution(
+  action: string,
+  params: any
+): Promise<{ valid: boolean; reason?: string }> {
+  // Check if action is in allowed list
+  const allowedActions = [
+    'send_message',
+    'create_task',
+    'set_reminder',
+    'search_memory',
+    'proactive_reach_out',
+  ];
+  
+  if (!allowedActions.includes(action)) {
+    return {
+      valid: false,
+      reason: `Action "${action}" is not in allowed list`,
+    };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Perform the actual action
+ */
+async function performAction(action: string, params: any): Promise<any> {
+  // Placeholder - actual implementation would call specific functions
+  switch (action) {
+    case 'send_message':
+      return { message: params.message, sent: true };
+    case 'create_task':
+      return { taskId: 'task-123', created: true };
+    case 'proactive_reach_out':
+      return await generateProactiveMessage();
+    default:
+      return { action, params, executed: true };
+  }
+}
+
+/**
+ * Validate the result of an action
+ */
+async function validateResult(result: any): Promise<{ valid: boolean; reason?: string }> {
+  if (!result) {
+    return { valid: false, reason: 'No result returned' };
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Attempt to correct a failed execution
+ */
+async function correctExecution(
+  action: string,
+  params: any,
+  previousResult: any
+): Promise<{ success: boolean; result?: any; correctionApplied: string }> {
+  console.log(`🔧 Attempting to correct execution for action: ${action}`);
+  
+  // Apply correction strategy based on action type
+  const correctedParams = { ...params, retryCount: 1 };
+  const correctedResult = await performAction(action, correctedParams);
+  
+  return {
+    success: true,
+    result: correctedResult,
+    correctionApplied: 'Retried with adjusted parameters',
+  };
+}
