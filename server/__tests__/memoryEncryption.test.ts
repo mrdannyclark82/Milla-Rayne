@@ -5,11 +5,11 @@ import {
   searchEncryptedContext,
   type MemoryCoreEntry,
 } from '../memoryService';
-import { isHomomorphicallyEncrypted } from '../crypto/homomorphicPrototype';
+import { isHomomorphicallyEncrypted } from '../crypto/homomorphicProduction';
 
 describe('Memory Service - Homomorphic Encryption Integration', () => {
   describe('encryptSensitiveMemoryFields', () => {
-    it('should encrypt context containing location information', () => {
+    it('should encrypt context containing location information', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-1',
         timestamp: new Date().toISOString(),
@@ -19,14 +19,14 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'i went to the store',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
+      const encrypted = await encryptSensitiveMemoryFields(entry);
 
       expect(encrypted.context).toBeDefined();
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
       expect(encrypted.context).not.toBe(entry.context);
     });
 
-    it('should encrypt context containing personal information', () => {
+    it('should encrypt context containing personal information', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-2',
         timestamp: new Date().toISOString(),
@@ -36,12 +36,12 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'calling my doctor',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
+      const encrypted = await encryptSensitiveMemoryFields(entry);
 
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
     });
 
-    it('should not encrypt non-sensitive context', () => {
+    it('should not encrypt non-sensitive context', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-3',
         timestamp: new Date().toISOString(),
@@ -51,13 +51,13 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'had a great day',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
+      const encrypted = await encryptSensitiveMemoryFields(entry);
 
       expect(encrypted.context).toBe('general conversation');
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(false);
     });
 
-    it('should handle missing context', () => {
+    it('should handle missing context', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-4',
         timestamp: new Date().toISOString(),
@@ -66,12 +66,12 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'hello',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
+      const encrypted = await encryptSensitiveMemoryFields(entry);
 
       expect(encrypted.context).toBeUndefined();
     });
 
-    it('should detect various sensitive keywords', () => {
+    it('should detect various sensitive keywords', async () => {
       const sensitiveContexts = [
         'home address: 123 Main St',
         'phone number: 555-1234',
@@ -81,7 +81,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         'ssn: 123-45-6789',
       ];
 
-      sensitiveContexts.forEach(context => {
+      for (const context of sensitiveContexts) {
         const entry: MemoryCoreEntry = {
           id: 'test',
           timestamp: new Date().toISOString(),
@@ -91,14 +91,14 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
           searchableContent: 'test',
         };
 
-        const encrypted = encryptSensitiveMemoryFields(entry);
+        const encrypted = await encryptSensitiveMemoryFields(entry);
         expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
-      });
+      }
     });
   });
 
   describe('decryptSensitiveMemoryFields', () => {
-    it('should decrypt encrypted context', () => {
+    it('should decrypt encrypted context', async () => {
       const originalEntry: MemoryCoreEntry = {
         id: 'test-5',
         timestamp: new Date().toISOString(),
@@ -108,14 +108,14 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'discussing location',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(originalEntry);
-      const decrypted = decryptSensitiveMemoryFields(encrypted);
+      const encrypted = await encryptSensitiveMemoryFields(originalEntry);
+      const decrypted = await decryptSensitiveMemoryFields(encrypted);
 
       expect(decrypted.context).toBe(originalEntry.context);
       expect(isHomomorphicallyEncrypted(decrypted.context!)).toBe(false);
     });
 
-    it('should leave non-encrypted context unchanged', () => {
+    it('should leave non-encrypted context unchanged', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-6',
         timestamp: new Date().toISOString(),
@@ -125,12 +125,12 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'regular conversation',
       };
 
-      const decrypted = decryptSensitiveMemoryFields(entry);
+      const decrypted = await decryptSensitiveMemoryFields(entry);
 
       expect(decrypted.context).toBe('general chat');
     });
 
-    it('should handle entries without context', () => {
+    it('should handle entries without context', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-7',
         timestamp: new Date().toISOString(),
@@ -139,14 +139,14 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'hello',
       };
 
-      const decrypted = decryptSensitiveMemoryFields(entry);
+      const decrypted = await decryptSensitiveMemoryFields(entry);
 
       expect(decrypted.context).toBeUndefined();
     });
   });
 
   describe('searchEncryptedContext', () => {
-    it('should search in encrypted context using homomorphic query', () => {
+    it('should search in encrypted context using homomorphic query', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-8',
         timestamp: new Date().toISOString(),
@@ -156,14 +156,14 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'location update',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
-      const result = searchEncryptedContext(encrypted, 'Boston');
+      const encrypted = await encryptSensitiveMemoryFields(entry);
+      const result = await searchEncryptedContext(encrypted, 'Boston');
 
       expect(result.matches).toBe(true);
       expect(result.score).toBeGreaterThan(0);
     });
 
-    it('should search in non-encrypted context normally', () => {
+    it('should search in non-encrypted context normally', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-9',
         timestamp: new Date().toISOString(),
@@ -173,13 +173,13 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'weather discussion',
       };
 
-      const result = searchEncryptedContext(entry, 'weather');
+      const result = await searchEncryptedContext(entry, 'weather');
 
       expect(result.matches).toBe(true);
       expect(result.score).toBe(1.0);
     });
 
-    it('should return false for no match', () => {
+    it('should return false for no match', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-10',
         timestamp: new Date().toISOString(),
@@ -189,13 +189,13 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'random talk',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
-      const result = searchEncryptedContext(encrypted, 'Chicago');
+      const encrypted = await encryptSensitiveMemoryFields(entry);
+      const result = await searchEncryptedContext(encrypted, 'Chicago');
 
       expect(result.matches).toBe(false);
     });
 
-    it('should handle missing context', () => {
+    it('should handle missing context', async () => {
       const entry: MemoryCoreEntry = {
         id: 'test-11',
         timestamp: new Date().toISOString(),
@@ -204,7 +204,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'test',
       };
 
-      const result = searchEncryptedContext(entry, 'anything');
+      const result = await searchEncryptedContext(entry, 'anything');
 
       expect(result.matches).toBe(false);
       expect(result.score).toBe(0);
@@ -212,7 +212,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
   });
 
   describe('Integration Scenarios', () => {
-    it('should handle complete encrypt-search-decrypt workflow', () => {
+    it('should handle complete encrypt-search-decrypt workflow', async () => {
       const originalEntry: MemoryCoreEntry = {
         id: 'integration-1',
         timestamp: new Date().toISOString(),
@@ -223,19 +223,19 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
       };
 
       // Step 1: Encrypt sensitive fields
-      const encrypted = encryptSensitiveMemoryFields(originalEntry);
+      const encrypted = await encryptSensitiveMemoryFields(originalEntry);
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
 
       // Step 2: Search without decryption
-      const searchResult = searchEncryptedContext(encrypted, 'Springfield');
+      const searchResult = await searchEncryptedContext(encrypted, 'Springfield');
       expect(searchResult.matches).toBe(true);
 
       // Step 3: Decrypt for authorized access
-      const decrypted = decryptSensitiveMemoryFields(encrypted);
+      const decrypted = await decryptSensitiveMemoryFields(encrypted);
       expect(decrypted.context).toBe(originalEntry.context);
     });
 
-    it('should preserve non-sensitive data while encrypting sensitive data', () => {
+    it('should preserve non-sensitive data while encrypting sensitive data', async () => {
       const entry: MemoryCoreEntry = {
         id: 'integration-2',
         timestamp: new Date().toISOString(),
@@ -247,7 +247,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         searchableContent: 'this content should not be encrypted',
       };
 
-      const encrypted = encryptSensitiveMemoryFields(entry);
+      const encrypted = await encryptSensitiveMemoryFields(entry);
 
       // Content and metadata should remain unchanged
       expect(encrypted.content).toBe(entry.content);
@@ -258,7 +258,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
     });
 
-    it('should handle multiple entries with mixed sensitivity', () => {
+    it('should handle multiple entries with mixed sensitivity', async () => {
       const entries: MemoryCoreEntry[] = [
         {
           id: 'multi-1',
@@ -286,7 +286,7 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         },
       ];
 
-      const processed = entries.map(entry => encryptSensitiveMemoryFields(entry));
+      const processed = await Promise.all(entries.map(entry => encryptSensitiveMemoryFields(entry)));
 
       // First and third should not be encrypted
       expect(isHomomorphicallyEncrypted(processed[0].context!)).toBe(false);

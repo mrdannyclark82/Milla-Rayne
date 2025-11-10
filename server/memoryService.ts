@@ -8,7 +8,7 @@ import {
   decryptHomomorphic,
   queryHomomorphic,
   isHomomorphicallyEncrypted,
-} from './crypto/homomorphicPrototype';
+} from './crypto/homomorphicProduction';
 
 export interface MemoryData {
   content: string;
@@ -106,13 +106,13 @@ function isSensitiveContext(context?: string): boolean {
  * Encrypt sensitive memory fields using homomorphic encryption
  * This allows querying without decryption while maintaining privacy
  */
-export function encryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCoreEntry {
+export async function encryptSensitiveMemoryFields(entry: MemoryCoreEntry): Promise<MemoryCoreEntry> {
   const encryptedEntry = { ...entry };
   
   // Encrypt context if it contains sensitive information
   if (entry.context && isSensitiveContext(entry.context)) {
     try {
-      encryptedEntry.context = encryptHomomorphic(entry.context);
+      encryptedEntry.context = await encryptHomomorphic(entry.context);
       console.log(`[Memory] Encrypted sensitive context for entry ${entry.id}`);
     } catch (error) {
       console.error(`[Memory] Failed to encrypt context for entry ${entry.id}:`, error);
@@ -126,13 +126,13 @@ export function encryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCore
 /**
  * Decrypt sensitive memory fields when authorized access is needed
  */
-export function decryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCoreEntry {
+export async function decryptSensitiveMemoryFields(entry: MemoryCoreEntry): Promise<MemoryCoreEntry> {
   const decryptedEntry = { ...entry };
   
   // Decrypt context if it's encrypted
   if (entry.context && isHomomorphicallyEncrypted(entry.context)) {
     try {
-      decryptedEntry.context = decryptHomomorphic(entry.context);
+      decryptedEntry.context = await decryptHomomorphic(entry.context);
     } catch (error) {
       console.error(`[Memory] Failed to decrypt context for entry ${entry.id}:`, error);
       // Keep encrypted if decryption fails
@@ -145,10 +145,10 @@ export function decryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCore
 /**
  * Search encrypted context fields using homomorphic query
  */
-export function searchEncryptedContext(entry: MemoryCoreEntry, query: string): {
+export async function searchEncryptedContext(entry: MemoryCoreEntry, query: string): Promise<{
   matches: boolean;
   score: number;
-} {
+}> {
   if (!entry.context) {
     return { matches: false, score: 0 };
   }
@@ -156,7 +156,7 @@ export function searchEncryptedContext(entry: MemoryCoreEntry, query: string): {
   // If context is encrypted, use homomorphic query
   if (isHomomorphicallyEncrypted(entry.context)) {
     try {
-      const result = queryHomomorphic(entry.context, query);
+      const result = await queryHomomorphic(entry.context, query);
       return { matches: result.matches, score: result.score };
     } catch (error) {
       console.error(`[Memory] Failed to query encrypted context for entry ${entry.id}:`, error);

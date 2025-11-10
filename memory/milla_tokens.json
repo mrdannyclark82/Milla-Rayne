@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 1600,
+  "tokenBalance": 1750,
   "transactions": [
     {
       "id": "txn_1762783949186_xel82vfkz",
@@ -200,6 +200,22 @@
       "type": "earn",
       "category": "feature_development",
       "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1762804260646_hfrpkn4do",
+      "timestamp": 1762804260646,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1762804260647_cx3c8zg0r",
+      "timestamp": 1762804260647,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
     }
   ],
   "goals": [
@@ -252,5 +268,5 @@
       "completedAt": 1762786915064
     }
   ],
-  "lastUpdated": 1762801959512
+  "lastUpdated": 1762804260647
 }
