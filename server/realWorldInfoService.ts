@@ -297,7 +297,8 @@ export function updateAmbientContext(userId: string, data: SensorData): void {
   };
   
   ambientContextStore.set(userId, context);
-  console.log(`📱 Updated ambient context for user ${userId}:`, {
+  // Use parameterized logging to avoid format string injection
+  console.log('📱 Updated ambient context for user:', userId, {
     motion: context.motionState,
     light: context.lightLevel,
     battery: context.deviceContext.battery,

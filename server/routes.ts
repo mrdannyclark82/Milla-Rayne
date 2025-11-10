@@ -262,12 +262,15 @@ function sanitizeUserInput(input: string, maxLength: number = MAX_INPUT_LENGTH):
     throw new Error(`Input too long: maximum ${maxLength} characters allowed`);
   }
   
-  // Remove potential XSS patterns
+  // Use a more robust approach: encode HTML entities instead of trying to remove patterns
+  // This prevents XSS while preserving the original content
   const sanitized = input
-    .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script tags
-    .replace(/<iframe[^>]*>.*?<\/iframe>/gi, '') // Remove iframe tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+\s*=/gi, ''); // Remove event handlers like onclick=
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
   
   return sanitized.trim();
 }
