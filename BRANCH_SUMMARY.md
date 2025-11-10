@@ -49,6 +49,14 @@
 - ⚠️ Modified memory files (minor changes)
 - ⚠️ Reverted knowledge CSV changes (no impact)
 
+### Virtual Games Features 🎮🌱📖:
+The feature branch includes virtual games that were added via PR #37 and #38:
+- ✅ **Virtual Garden** - Interactive plant lifecycle with health monitoring
+- ✅ **Interactive Story** - Voice-enabled branching narratives  
+- ✅ **Chess Game** - Complete multiplayer chess with move validation
+
+**Important**: These virtual games were merged to main on September 19, 2025, so they exist on BOTH branches (main has them too). They are NOT unique to the feature branch.
+
 **Merge Difficulty**: 🔴 Very High (not recommended)
 
 ---

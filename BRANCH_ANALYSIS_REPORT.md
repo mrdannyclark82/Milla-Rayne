@@ -84,6 +84,14 @@ Based on the name, this branch was intended to set up a notification service fea
 9. `d73c105` (Sep 19) - Implement enchanted garden bird's eye view
 10. `f0fd5fc` (Sep 19) - Initial plan
 
+**Notable: Virtual Games Features** 🎮🌱📖  
+The feature branch includes commits related to PR #37 and #38 which added:
+- **Virtual Garden**: Interactive 10x10 grid-based garden with plant lifecycle, health monitoring, growth stages, and 2D overview
+- **Interactive Story**: Voice-enabled branching narrative with 15+ story nodes and romantic content
+- **Chess Game**: Complete chess logic with move validation, hints system, and real-time multiplayer
+
+These features were merged to main on September 19, 2025, and are part of the feature branch history through the September 21 merge.
+
 #### Comparison to Main
 
 **Files Behind Main**: This branch is based on main as of September 20-21, 2025, meaning it's missing:
@@ -98,10 +106,18 @@ Based on the name, this branch was intended to set up a notification service fea
 - ❌ Security audit fixes
 - ❌ Multiple bug fixes and UI improvements
 
-**Unique Changes**: 
-- Added/modified files in `Agent/` directory
+**Unique Changes on Feature Branch**: 
+- Added/modified files in `Agent/` directory (purpose unclear, not integrated with main)
 - Memory file updates (`memory/memories.txt`, `memory/user_activity.json`)
 - Knowledge CSV modifications (later reverted)
+
+**Virtual Games (Now on Main)**: 🎮
+The feature branch history includes the virtual games features from PR #37 and #38:
+- **Virtual Garden** with plant lifecycle system, health monitoring, and 2D overview
+- **Interactive Storytelling** with voice narration and branching narratives
+- **Chess Game** with complete move validation and multiplayer support
+
+**Important Note**: These virtual games were merged to main on September 19, 2025, so they're available on BOTH the feature branch (through Sep 21 merge) AND the main branch. They are NOT unique to the feature branch.
 
 **Merge Conflicts**: 
 Given the 50-day gap and massive changes on main, merging this branch would likely result in:
@@ -145,7 +161,55 @@ This branch was created to analyze the different branches in the repository and 
 | **Proactive System** | ✅ Implemented | ❌ Not present | ✅ Inherited from main |
 | **Memory Files** | Standard | ⚠️ Modified | Standard |
 | **Agent Directory** | Not present | ⚠️ Added | Not present |
+| **Virtual Garden** | ✅ Yes | ✅ Yes (from Sep 19) | ✅ Inherited from main |
+| **Interactive Story** | ✅ Yes | ✅ Yes (from Sep 19) | ✅ Inherited from main |
+| **Chess Game** | ✅ Yes | ✅ Yes (from Sep 19) | ✅ Inherited from main |
 | **Merge Difficulty** | N/A | 🔴 Very High | N/A |
+
+---
+
+## Virtual Games Features Deep Dive 🎮
+
+The repository includes comprehensive virtual games features that were added on **September 19, 2025** via PR #37 and #38. These features exist on BOTH main and the feature branch:
+
+### 1. Virtual Garden 🌱
+**Added**: PR #37 (Sep 19, 2025)  
+**Enhanced**: PR #38 (Sep 19, 2025)
+
+A shared digital garden where users can interact:
+- 10x10 grid-based exploration with coordinate system
+- Plant lifecycle system with 5 plant types (flowers, vegetables, herbs, fruits, trees)
+- Plant health monitoring (0-100 score) with visual indicators
+- 4-stage growth progression system
+- Real-time position sharing via WebSocket
+- 2D garden overview with statistics
+- Click-to-move and directional controls
+
+### 2. Interactive Storytelling 📖
+**Added**: PR #37 (Sep 19, 2025)  
+**Enhanced**: PR #38 (Sep 19, 2025)
+
+Collaborative storytelling with immersive features:
+- Voice narration using Web Speech API (no external calls)
+- 15+ branching story nodes with romantic narrative
+- Shared decision tracking via WebSocket
+- Story navigation (go back, restart)
+- Auto-narration and manual "Narrate This" button
+- Optimized voice settings (rate: 0.9, pitch: 1.1)
+
+### 3. Chess Game ♟️
+**Added**: PR #37 (Sep 19, 2025)  
+**Enhanced**: PR #38 (Sep 19, 2025)
+
+Professional multiplayer chess experience:
+- Complete move validation for all pieces
+- Visual move hints with quality ratings (good, better, best, blunder)
+- Real-time move broadcasting between players
+- In-game chat system
+- Move history tracking
+- Interactive board with piece selection feedback
+
+**Status**: All three virtual games are **active on main** and were included in the feature branch through the September 21 merge from main. They are NOT unique to the feature branch.
 
 ---
 

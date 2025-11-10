@@ -63,6 +63,14 @@
 │  ⚠️ Memory file modifications (minor)                                       │
 │  ⚠️ Knowledge CSV changes (reverted)                                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
+│  VIRTUAL GAMES FEATURES: 🎮🌱📖                                              │
+│  ✅ Virtual Garden (plant lifecycle, health monitoring, 2D overview)        │
+│  ✅ Interactive Story (voice narration, branching narratives)               │
+│  ✅ Chess Game (move validation, multiplayer)                               │
+│                                                                             │
+│  ⚠️ NOTE: Virtual games were merged to main on Sep 19, so they exist on    │
+│  BOTH branches. They're NOT unique to feature/notification-service-setup.   │
+├─────────────────────────────────────────────────────────────────────────────┤
 │  HEALTH METRICS:                                                            │
 │  • Technical Debt:  CRITICAL 🔴                                             │
 │  • Test Coverage:   NONE 🔴                                                 │
