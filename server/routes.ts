@@ -1257,11 +1257,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       res.json({
         response: aiResponse.content,
         ...(aiResponse.reasoning && { reasoning: aiResponse.reasoning }),
-        ...(aiResponse.youtube_play && {
-          youtube_play: aiResponse.youtube_play,
+        ...((aiResponse as any).youtube_play && {
+          youtube_play: (aiResponse as any).youtube_play,
         }),
-        ...(aiResponse.youtube_videos && {
-          youtube_videos: aiResponse.youtube_videos,
+        ...((aiResponse as any).youtube_videos && {
+          youtube_videos: (aiResponse as any).youtube_videos,
+        }),
+        ...((aiResponse as any).uiCommand && {
+          uiCommand: (aiResponse as any).uiCommand,
         }),
         ...(videoAnalysis && { videoAnalysis }),
         ...(showKnowledgeBase && { showKnowledgeBase: true }),

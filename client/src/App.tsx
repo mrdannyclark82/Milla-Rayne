@@ -28,6 +28,8 @@ import { SharedNotepad } from '@/components/SharedNotepad';
 import { GuidedMeditation } from '@/components/GuidedMeditation';
 import { XAIOverlay, type XAIData } from '@/components/XAIOverlay';
 import { getDeveloperMode } from '@/lib/scene/featureFlags';
+import { DynamicFeatureRenderer } from '@/components/DynamicFeatureRenderer';
+import type { UICommand } from '@shared/schema';
 
 function App() {
   console.log('App render start');
@@ -72,6 +74,9 @@ function App() {
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
   const [showXAIOverlay, setShowXAIOverlay] = useState(false);
   const [developerMode, setDeveloperMode] = useState(getDeveloperMode());
+  
+  // Agent-Driven UI state
+  const [uiCommand, setUiCommand] = useState<UICommand | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -172,6 +177,12 @@ function App() {
         if (data.youtube_videos.length === 1) {
           setYoutubeVideoId(data.youtube_videos[0].id);
         }
+      }
+
+      // Handle UI commands from agent
+      if (data.uiCommand) {
+        console.log('✨ UI Command received:', data.uiCommand);
+        setUiCommand(data.uiCommand);
       }
 
       if (voiceEnabled && selectedVoice) {
@@ -518,6 +529,14 @@ function App() {
             <XAIOverlay
               data={xaiData}
               onClose={() => setShowXAIOverlay(false)}
+            />
+          )}
+
+          {/* Agent-Driven UI Renderer */}
+          {uiCommand && (
+            <DynamicFeatureRenderer
+              uiCommand={uiCommand}
+              onClose={() => setUiCommand(null)}
             />
           )}
         </div>
