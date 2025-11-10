@@ -146,13 +146,21 @@ export function analyzeVideoContent(
  * Extracts key topics from video content
  */
 function extractKeyTopics(content: string, title: string): string[] {
-  const topics: Set<string> = new Set();
+  // Pre-compiled stopwords as a Set for O(1) lookup
+  const STOPWORDS = new Set([
+    'this', 'that', 'with', 'from', 'they', 'been', 'have',
+    'were', 'will', 'what', 'when', 'where', 'would', 'could',
+    'should', 'video', 'youtube'
+  ]);
 
-  // Add title words as potential topics
+  const topics = new Set<string>();
+
+  // Add title words as potential topics - O(t) where t = title words
   const titleWords = title
     .toLowerCase()
     .split(/\s+/)
-    .filter((word) => word.length > 3 && !['video', 'youtube'].includes(word));
+    .filter((word) => word.length > 3 && !STOPWORDS.has(word));
+  
   titleWords.forEach((word) => topics.add(word));
 
   // If we have actual content, analyze it
@@ -163,37 +171,17 @@ function extractKeyTopics(content: string, title: string): string[] {
   ) {
     // Simple keyword extraction from content
     const words = content.toLowerCase().match(/\b\w{4,}\b/g) || [];
-    const wordFreq: { [key: string]: number } = {};
+    const wordFreq = new Map<string, number>();
 
-    words.forEach((word) => {
-      // Skip common words
-      if (
-        ![
-          'this',
-          'that',
-          'with',
-          'from',
-          'they',
-          'been',
-          'have',
-          'were',
-          'will',
-          'what',
-          'when',
-          'where',
-          'would',
-          'could',
-          'should',
-          'video',
-          'youtube',
-        ].includes(word)
-      ) {
-        wordFreq[word] = (wordFreq[word] || 0) + 1;
+    // Count frequencies - O(n) with O(1) Set lookups instead of O(n×m) array includes
+    for (const word of words) {
+      if (!STOPWORDS.has(word)) {  // O(1) Set lookup instead of O(m) array scan!
+        wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
       }
-    });
+    }
 
-    // Get top keywords
-    const topWords = Object.entries(wordFreq)
+    // Get top keywords - O(n log n) for sorting (acceptable)
+    const topWords = Array.from(wordFreq.entries())
       .sort(([, a], [, b]) => b - a)
       .slice(0, 8)
       .map(([word]) => word);

@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { detectEmotionalTone, extractTopics } from './utils';
+import { LRUCache } from 'lru-cache';
 
 export interface MemoryData {
   content: string;
@@ -44,6 +45,33 @@ export interface MemorySearchResult {
   entry: MemoryCoreEntry;
   relevanceScore: number;
   matchedTerms: string[];
+}
+
+// Indexed entry for faster searching
+interface IndexedEntry {
+  entry: MemoryCoreEntry;
+  termSet: Set<string>;
+  contextSet: Set<string>;
+  topicSet: Set<string>;
+}
+
+// Cache for search results
+const searchCache = new LRUCache<string, MemorySearchResult[]>({
+  max: 100,
+  ttl: 1000 * 60 * 5, // 5 minutes
+});
+
+// Indexed entries cache
+let indexedEntries: IndexedEntry[] | null = null;
+let lastIndexedLength = 0;
+
+function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
+  return entries.map(entry => ({
+    entry,
+    termSet: new Set(entry.searchableContent.toLowerCase().split(/\s+/).filter(w => w.length > 2)),
+    contextSet: new Set(entry.context?.toLowerCase().split(/\s+/).filter(w => w.length > 2) || []),
+    topicSet: new Set(entry.topics?.map(t => t.toLowerCase()) || []),
+  }));
 }
 
 /**
@@ -501,53 +529,75 @@ export async function searchMemoryCore(
   query: string,
   limit: number = 10
 ): Promise<MemorySearchResult[]> {
+  // Check cache first
+  const cacheKey = `${query}:${limit}`;
+  const cached = searchCache.get(cacheKey);
+  if (cached) {
+    console.log(`Memory search cache hit for: "${query}"`);
+    return cached;
+  }
+
+  console.log(`Memory search cache miss for: "${query}"`);
+
   // Ensure Memory Core is loaded
   const memoryCore = await loadMemoryCore();
   if (!memoryCore.success || memoryCore.entries.length === 0) {
     return [];
   }
 
+  // Build or update index if needed
+  if (!indexedEntries || indexedEntries.length !== memoryCore.entries.length) {
+    console.log(`Building search index for ${memoryCore.entries.length} entries...`);
+    indexedEntries = buildSearchIndex(memoryCore.entries);
+    lastIndexedLength = memoryCore.entries.length;
+  }
+
   const searchTerms = query
     .toLowerCase()
     .split(' ')
     .filter((term) => term.length > 2);
+  
   const results: MemorySearchResult[] = [];
 
-  for (const entry of memoryCore.entries) {
+  // O(n × m) iteration with O(1) Set lookups instead of O(n × m × p)
+  for (const indexed of indexedEntries) {
     let relevanceScore = 0;
     const matchedTerms: string[] = [];
 
-    // Score based on exact matches
+    // Score based on exact matches - O(m) where m = search terms
     for (const term of searchTerms) {
-      if (entry.searchableContent.includes(term)) {
+      // O(1) Set lookup instead of O(p) string search
+      if (indexed.termSet.has(term)) {
         relevanceScore += 3;
-        matchedTerms.push(term);
+        if (!matchedTerms.includes(term)) {
+          matchedTerms.push(term);
+        }
       }
 
-      // Boost score for topic matches
-      if (entry.topics?.some((topic) => topic.toLowerCase().includes(term))) {
+      // Boost score for topic matches - O(k) where k = topics (small)
+      if ([...indexed.topicSet].some(topic => topic.includes(term))) {
         relevanceScore += 2;
       }
 
-      // Boost score for context matches
-      if (entry.context?.toLowerCase().includes(term)) {
+      // Boost score for context matches - O(1) Set lookup
+      if (indexed.contextSet.has(term)) {
         relevanceScore += 1;
       }
     }
 
-    // Add partial word matches
+    // Add partial word matches - O(m × w) where w = words in term set
     for (const term of searchTerms) {
-      const words = entry.searchableContent.split(' ');
-      for (const word of words) {
+      for (const word of indexed.termSet) {
         if (word.includes(term) && !matchedTerms.includes(term)) {
           relevanceScore += 1;
           matchedTerms.push(term);
+          break; // Only count once per term
         }
       }
     }
 
     // Boost recent entries slightly
-    const entryAge = Date.now() - new Date(entry.timestamp).getTime();
+    const entryAge = Date.now() - new Date(indexed.entry.timestamp).getTime();
     const daysSinceEntry = entryAge / (1000 * 60 * 60 * 24);
     if (daysSinceEntry < 30) {
       relevanceScore += 0.5;
@@ -555,7 +605,7 @@ export async function searchMemoryCore(
 
     if (relevanceScore > 0) {
       results.push({
-        entry,
+        entry: indexed.entry,
         relevanceScore,
         matchedTerms,
       });
@@ -563,9 +613,14 @@ export async function searchMemoryCore(
   }
 
   // Sort by relevance and return top results
-  return results
+  const sorted = results
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, limit);
+
+  // Cache the result
+  searchCache.set(cacheKey, sorted);
+
+  return sorted;
 }
 
 /**
