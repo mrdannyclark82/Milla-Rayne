@@ -1,3 +1,5 @@
+import { LRUCache } from 'lru-cache';
+
 export interface SearchResult {
   title: string;
   url: string;
@@ -15,11 +17,29 @@ export interface SearchResponse {
   summary: string;
 }
 
+// Cache for search results with 15-minute TTL
+const searchCache = new LRUCache<string, SearchResponse>({
+  max: 1000,
+  ttl: 1000 * 60 * 15, // 15 minutes
+});
+
 export async function performWebSearch(
   query: string
 ): Promise<SearchResponse | null> {
+  // Normalize query for better cache hits
+  const normalizedQuery = query.toLowerCase().trim();
+  
+  // Check cache first
+  const cached = searchCache.get(normalizedQuery);
+  if (cached) {
+    console.log(`Search cache hit for: "${query}"`);
+    return cached;
+  }
+
+  console.log(`Search cache miss for: "${query}"`);
+
   // Try real-world information first for current/contextual queries
-  const realWorldQuery = query.toLowerCase();
+  const realWorldQuery = normalizedQuery;
   if (
     realWorldQuery.includes('current') ||
     realWorldQuery.includes('today') ||
@@ -30,6 +50,7 @@ export async function performWebSearch(
   ) {
     const realWorldResponse = await getRealWorldInfo(query);
     if (realWorldResponse.results.length > 0) {
+      searchCache.set(normalizedQuery, realWorldResponse);
       return realWorldResponse;
     }
   }
@@ -52,7 +73,9 @@ export async function performWebSearch(
       };
 
       // Enhance with real-world info
-      return await enhanceSearchWithRealWorldInfo(baseResponse);
+      const enhancedResponse = await enhanceSearchWithRealWorldInfo(baseResponse);
+      searchCache.set(normalizedQuery, enhancedResponse);
+      return enhancedResponse;
     }
   }
 
@@ -116,30 +139,39 @@ export async function performWebSearch(
             description: 'Information source from Perplexity search',
           }));
 
-        return {
+        const response = {
           query,
           results,
           summary: content,
         };
+        
+        searchCache.set(normalizedQuery, response);
+        return response;
       } else {
         console.log(
           'No results from Perplexity, falling back to knowledge base'
         );
         const fallbackResponse = generateKnowledgeBasedResponse(query);
-        return await enhanceSearchWithRealWorldInfo(fallbackResponse);
+        const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+        searchCache.set(normalizedQuery, enhancedResponse);
+        return enhancedResponse;
       }
     } catch (error) {
       console.error('Search error:', error);
       console.log('Falling back to knowledge-based search');
       const fallbackResponse = generateKnowledgeBasedResponse(query);
-      return await enhanceSearchWithRealWorldInfo(fallbackResponse);
+      const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+      searchCache.set(normalizedQuery, enhancedResponse);
+      return enhancedResponse;
     }
   }
 
   // Fallback to knowledge base
   console.warn('No search API keys found, using knowledge base fallback');
   const fallbackResponse = generateKnowledgeBasedResponse(query);
-  return await enhanceSearchWithRealWorldInfo(fallbackResponse);
+  const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+  searchCache.set(normalizedQuery, enhancedResponse);
+  return enhancedResponse;
 }
 
 function generateKnowledgeBasedResponse(query: string): SearchResponse {
