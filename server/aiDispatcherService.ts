@@ -32,6 +32,7 @@ import {
   addReasoningStep,
   type XAIData,
 } from './xaiTracker';
+import { getAmbientContext, type AmbientContext } from './realWorldInfoService';
 
 export interface AIResponse {
   content: string;
@@ -50,6 +51,8 @@ export interface DispatchContext {
   // A/V-RAG context
   sceneContext?: any;
   voiceContext?: VoiceAnalysisResult;
+  // Real-time ambient context
+  ambientContext?: AmbientContext;
 }
 
 /**
@@ -139,6 +142,46 @@ function detectIntent(message: string): string {
   return 'General conversation';
 }
 
+/**
+ * Build ambient context string from mobile sensor data
+ */
+function buildAmbientContextString(ambient: AmbientContext): string {
+  const parts: string[] = [];
+  
+  // Motion state
+  if (ambient.motionState && ambient.motionState !== 'unknown') {
+    parts.push(`User is currently ${ambient.motionState}`);
+  }
+  
+  // Light level
+  if (ambient.lightLevel !== undefined) {
+    const lightDescription = ambient.lightLevel > 70 ? 'bright' : 
+                             ambient.lightLevel > 30 ? 'moderate' : 'low';
+    parts.push(`ambient light is ${lightDescription} (${ambient.lightLevel}%)`);
+  }
+  
+  // Battery and charging
+  if (ambient.deviceContext.battery !== null) {
+    parts.push(`device battery at ${ambient.deviceContext.battery}%${ambient.deviceContext.charging ? ' (charging)' : ''}`);
+  }
+  
+  // Network
+  if (ambient.deviceContext.network) {
+    parts.push(`connected via ${ambient.deviceContext.network}`);
+  }
+  
+  // Location (general info without revealing specific coordinates)
+  if (ambient.location) {
+    parts.push(`location available`);
+  }
+  
+  if (parts.length === 0) {
+    return '';
+  }
+  
+  return `\n\n[Real-time Context: ${parts.join(', ')}]`;
+}
+
 export async function dispatchAIResponse(
   userMessage: string,
   context: DispatchContext,
@@ -214,6 +257,26 @@ export async function dispatchAIResponse(
 
   console.log(`--- Dispatching to model: ${modelToUse} ---`);
 
+  // Fetch real-time ambient context from mobile sensors
+  let ambientContext: AmbientContext | null = null;
+  if (context.userId) {
+    ambientContext = getAmbientContext(context.userId);
+    if (ambientContext) {
+      context.ambientContext = ambientContext;
+      addReasoningStep(
+        xaiSessionId,
+        'tools',
+        'Ambient Context Retrieved',
+        `Motion: ${ambientContext.motionState}, Light: ${ambientContext.lightLevel}%`,
+        { ambientContext }
+      );
+      console.log('📱 Using real-time ambient context:', {
+        motion: ambientContext.motionState,
+        light: ambientContext.lightLevel,
+      });
+    }
+  }
+
   // Enrich context with semantic retrieval (V-RAG)
   const semanticStartTime = Date.now();
   const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
@@ -253,6 +316,12 @@ export async function dispatchAIResponse(
   if (avContext) {
     augmentedMessage = enrichMessageWithAVContext(augmentedMessage, avContext);
     console.log('✅ Enhanced with A/V-RAG context (scene + voice)');
+  }
+  
+  // Add real-time ambient context from mobile sensors
+  if (ambientContext) {
+    augmentedMessage += buildAmbientContextString(ambientContext);
+    console.log('✅ Enhanced with real-time ambient context');
   }
 
   let response: AIResponse;
@@ -340,7 +409,7 @@ export async function dispatchAIResponse(
   trackResponseGeneration(xaiSessionId, modelToUse, undefined, undefined);
 
   // Generate UI commands based on user message and response content
-  const uiCommand = detectUICommand(userMessage, response.content);
+  const uiCommand = detectUICommand(userMessage, response.content || '');
   if (uiCommand) {
     response.uiCommand = uiCommand;
     addReasoningStep(xaiSessionId, 'response', 'UI Command Detected', JSON.stringify(uiCommand));

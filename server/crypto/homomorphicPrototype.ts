@@ -9,20 +9,89 @@
  * =========================
  * This is a PROTOTYPE implementation for demonstration and architectural planning.
  * 
- * For production deployment, consider:
- * 1. Replace with a true HE library (e.g., Microsoft SEAL, HElib, PALISADE)
+ * For production deployment, you MUST:
+ * 1. Replace with a true HE library (e.g., Microsoft SEAL, HElib, PALISADE, or Concrete)
+ *    - Microsoft SEAL: https://github.com/microsoft/SEAL - Best for general-purpose HE
+ *    - HElib: https://github.com/homenc/HElib - Mature BGV implementation
+ *    - PALISADE: https://palisade-crypto.org/ - Full-featured lattice crypto library
+ *    - Concrete: https://github.com/zama-ai/concrete - Modern TFHE implementation
+ * 
  * 2. Implement proper key management and rotation
- * 3. Add secure key storage (Hardware Security Modules, KMS)
+ *    - Use Hardware Security Modules (HSM) or AWS KMS/Azure Key Vault
+ *    - Implement key rotation policies (recommended: quarterly)
+ *    - Separate public/private key pairs for different data domains
+ *    - Consider threshold cryptography for key recovery
+ * 
+ * 3. Add secure key storage
+ *    - Never store keys in environment variables in production
+ *    - Use dedicated key management services
+ *    - Implement key access auditing
+ *    - Use key derivation functions (KDF) with strong parameters
+ * 
  * 4. Implement proper error handling and validation
+ *    - Validate ciphertext integrity before operations
+ *    - Implement proper exception handling for crypto operations
+ *    - Add input sanitization and bounds checking
+ *    - Log security events without exposing sensitive data
+ * 
  * 5. Add performance optimizations for large-scale operations
+ *    - Batch encryption/decryption operations
+ *    - Use GPU acceleration where available
+ *    - Implement ciphertext compression
+ *    - Consider approximate HE schemes for numeric data
+ * 
  * 6. Consider Format-Preserving Encryption (FPE) as an alternative for certain use cases
+ *    - FPE maintains data format (e.g., SSN stays 9 digits)
+ *    - Better for legacy systems requiring format compatibility
+ *    - See NIST SP 800-38G for FPE standards
+ * 
  * 7. Implement comprehensive audit logging for all encryption/decryption operations
+ *    - Log all key access attempts
+ *    - Track data access patterns
+ *    - Implement alerting for anomalous behavior
+ *    - Comply with regulatory requirements (GDPR, HIPAA, etc.)
+ * 
  * 8. Add rate limiting and access controls
+ *    - Prevent brute-force attacks on encrypted data
+ *    - Implement per-user/per-service rate limits
+ *    - Add circuit breakers for crypto operations
+ *    - Monitor for crypto timing attacks
  * 
  * Current Implementation:
  * ----------------------
- * This prototype uses a simple tagging mechanism to simulate homomorphic encryption behavior.
- * In production, actual HE schemes like Paillier, BGV, or BFV would be used.
+ * This prototype uses AES-256-CBC encryption with a special marker to simulate 
+ * homomorphic encryption behavior. In production, actual HE schemes like Paillier, 
+ * BGV, BFV, or CKKS would be used.
+ * 
+ * Homomorphic Encryption Schemes Overview:
+ * - Paillier: Supports additive operations, best for simple aggregations
+ * - BGV/BFV: Supports both addition and multiplication, good for general computation
+ * - CKKS: Supports approximate arithmetic on real/complex numbers, ideal for ML
+ * - TFHE: Supports arbitrary boolean circuits, best for conditional logic
+ * 
+ * Expected Production Integration:
+ * -------------------------------
+ * When integrating a real HE library, the following functions should be updated:
+ * 
+ * - encryptHomomorphic(data: string): HECiphertext
+ *   Input: Plaintext string to encrypt
+ *   Output: HE ciphertext object (not base64 string)
+ *   Process: Use HE library's encrypt() with public key
+ * 
+ * - decryptHomomorphic(ciphertext: HECiphertext): string
+ *   Input: HE ciphertext object
+ *   Output: Decrypted plaintext string
+ *   Process: Use HE library's decrypt() with private key
+ * 
+ * - queryHomomorphic(ciphertext: HECiphertext, query: string): QueryResult
+ *   Input: HE ciphertext and search query
+ *   Output: Search results computed on encrypted data
+ *   Process: Encrypt query, perform HE operations, return encrypted result
+ * 
+ * - computeOnEncrypted(ciphertext: HECiphertext, operation: string, params: any): HECiphertext
+ *   Input: HE ciphertext and operation specification
+ *   Output: Result ciphertext after computation
+ *   Process: Perform HE arithmetic/comparison operations without decryption
  */
 
 import * as crypto from 'crypto';
