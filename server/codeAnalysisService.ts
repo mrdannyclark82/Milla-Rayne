@@ -530,3 +530,34 @@ export function generatePerformanceImprovements(
 
   return improvements;
 }
+
+/**
+ * Wrapper function for analyzing code issues from a repository path
+ * Used by CodingAgent for automated fix lifecycle
+ */
+export async function analyzeCodeForIssues(params: {
+  repositoryPath: string;
+  focusAreas?: Array<'security' | 'performance' | 'quality'>;
+}): Promise<CodeAnalysisResult> {
+  const { repositoryPath, focusAreas = ['security', 'performance', 'quality'] } = params;
+  
+  // For now, we'll create a mock RepositoryData object
+  // In a production system, this would analyze actual files in the repository
+  const mockRepoData: RepositoryData = {
+    name: repositoryPath.split('/').pop() || 'unknown',
+    description: 'Repository for code analysis',
+    language: 'typescript',
+    stars: 0,
+    forks: 0,
+    openIssues: 0,
+    readme: '// Sample code for analysis',
+    hasLicense: false,
+    hasReadme: false,
+    hasDocs: false,
+    hasTests: false,
+    hasCI: false,
+    files: [],
+  };
+  
+  return await analyzeRepositoryCode(mockRepoData);
+}

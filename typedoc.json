@@ -1,0 +1,44 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./server", "./shared"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "exclude": [
+    "**/*+(.test|.spec).ts",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/__tests__/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "readme": "README.md",
+  "name": "Milla Rayne API Documentation",
+  "includeVersion": true,
+  "sort": ["source-order"],
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Services",
+    "Agents",
+    "Utilities",
+    "*"
+  ],
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "plugin": [],
+  "lightHighlightTheme": "light-plus",
+  "darkHighlightTheme": "dark-plus",
+  "customCss": "",
+  "markedOptions": {},
+  "githubPages": true,
+  "hideGenerator": false,
+  "searchInComments": true,
+  "cleanOutputDir": true,
+  "sidebarLinks": {
+    "GitHub Repository": "https://github.com/mrdannyclark82/Milla-Rayne",
+    "Main Documentation": "https://github.com/mrdannyclark82/Milla-Rayne/blob/main/README.md"
+  }
+}

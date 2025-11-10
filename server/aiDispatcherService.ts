@@ -33,6 +33,7 @@ import {
   type XAIData,
 } from './xaiTracker';
 import { getAmbientContext, type AmbientContext } from './realWorldInfoService';
+import { generateActivePersona, formatPersonaForPrompt, type ActiveUserPersona } from './personaFusionService';
 
 export interface AIResponse {
   content: string;
@@ -277,6 +278,24 @@ export async function dispatchAIResponse(
     }
   }
 
+  // Generate Active User Persona (Phase III/IV Bridge)
+  let activePersona: ActiveUserPersona | null = null;
+  if (context.userId) {
+    try {
+      activePersona = await generateActivePersona(context.userId, userMessage);
+      addReasoningStep(
+        xaiSessionId,
+        'tools',
+        'Active Persona Generated',
+        `Synthesized persona for ${activePersona.profile.name}`,
+        { personaSummary: activePersona.personaSummary }
+      );
+      console.log('🎭 Active User Persona generated:', activePersona.personaSummary);
+    } catch (error) {
+      console.error('Error generating active persona:', error);
+    }
+  }
+
   // Enrich context with semantic retrieval (V-RAG)
   const semanticStartTime = Date.now();
   const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
@@ -306,6 +325,13 @@ export async function dispatchAIResponse(
   
   // Augment user message with all context layers
   let augmentedMessage = userMessage;
+  
+  // Add Active User Persona (if available)
+  if (activePersona) {
+    const personaPrompt = formatPersonaForPrompt(activePersona);
+    augmentedMessage = personaPrompt + '\n\n' + augmentedMessage;
+    console.log('✅ Enhanced with Active User Persona');
+  }
   
   // Add semantic context
   if (semanticContext) {
@@ -406,7 +432,7 @@ export async function dispatchAIResponse(
   }
 
   // Track response generation
-  trackResponseGeneration(xaiSessionId, modelToUse, undefined, undefined);
+  trackResponseGeneration(xaiSessionId, modelToUse || 'openai', undefined, undefined);
 
   // Generate UI commands based on user message and response content
   const uiCommand = detectUICommand(userMessage, response.content || '');
