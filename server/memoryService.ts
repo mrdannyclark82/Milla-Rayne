@@ -3,6 +3,12 @@ import { join } from 'path';
 import { detectEmotionalTone, extractTopics } from './utils';
 import { LRUCache } from 'lru-cache';
 import { vectorDB } from './vectorDBService';
+import {
+  encryptHomomorphic,
+  decryptHomomorphic,
+  queryHomomorphic,
+  isHomomorphicallyEncrypted,
+} from './crypto/homomorphicPrototype';
 
 export interface MemoryData {
   content: string;
@@ -73,6 +79,98 @@ function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
     contextSet: new Set(entry.context?.toLowerCase().split(/\s+/).filter(w => w.length > 2) || []),
     topicSet: new Set(entry.topics?.map(t => t.toLowerCase()) || []),
   }));
+}
+
+// ========================================
+// HOMOMORPHIC ENCRYPTION FOR SENSITIVE FIELDS
+// ========================================
+
+/**
+ * Determines if a memory entry contains sensitive information that should be encrypted
+ * Sensitive information includes: location data, personal identifiers, private notes
+ */
+function isSensitiveContext(context?: string): boolean {
+  if (!context) return false;
+  
+  const sensitiveKeywords = [
+    'location', 'address', 'home', 'live', 'phone', 'ssn', 'social security',
+    'credit card', 'password', 'private', 'confidential', 'secret', 'personal',
+    'medical', 'health', 'diagnosis', 'financial', 'bank', 'account'
+  ];
+  
+  const lowerContext = context.toLowerCase();
+  return sensitiveKeywords.some(keyword => lowerContext.includes(keyword));
+}
+
+/**
+ * Encrypt sensitive memory fields using homomorphic encryption
+ * This allows querying without decryption while maintaining privacy
+ */
+export function encryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCoreEntry {
+  const encryptedEntry = { ...entry };
+  
+  // Encrypt context if it contains sensitive information
+  if (entry.context && isSensitiveContext(entry.context)) {
+    try {
+      encryptedEntry.context = encryptHomomorphic(entry.context);
+      console.log(`[Memory] Encrypted sensitive context for entry ${entry.id}`);
+    } catch (error) {
+      console.error(`[Memory] Failed to encrypt context for entry ${entry.id}:`, error);
+      // Keep original if encryption fails
+    }
+  }
+  
+  return encryptedEntry;
+}
+
+/**
+ * Decrypt sensitive memory fields when authorized access is needed
+ */
+export function decryptSensitiveMemoryFields(entry: MemoryCoreEntry): MemoryCoreEntry {
+  const decryptedEntry = { ...entry };
+  
+  // Decrypt context if it's encrypted
+  if (entry.context && isHomomorphicallyEncrypted(entry.context)) {
+    try {
+      decryptedEntry.context = decryptHomomorphic(entry.context);
+    } catch (error) {
+      console.error(`[Memory] Failed to decrypt context for entry ${entry.id}:`, error);
+      // Keep encrypted if decryption fails
+    }
+  }
+  
+  return decryptedEntry;
+}
+
+/**
+ * Search encrypted context fields using homomorphic query
+ */
+export function searchEncryptedContext(entry: MemoryCoreEntry, query: string): {
+  matches: boolean;
+  score: number;
+} {
+  if (!entry.context) {
+    return { matches: false, score: 0 };
+  }
+  
+  // If context is encrypted, use homomorphic query
+  if (isHomomorphicallyEncrypted(entry.context)) {
+    try {
+      const result = queryHomomorphic(entry.context, query);
+      return { matches: result.matches, score: result.score };
+    } catch (error) {
+      console.error(`[Memory] Failed to query encrypted context for entry ${entry.id}:`, error);
+      return { matches: false, score: 0 };
+    }
+  }
+  
+  // If not encrypted, use regular search
+  const lowerContext = entry.context.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const matches = lowerContext.includes(lowerQuery);
+  const score = matches ? 1.0 : 0;
+  
+  return { matches, score };
 }
 
 /**
@@ -442,6 +540,7 @@ function parseBackupContent(content: string): MemoryCoreEntry[] {
 
 /**
  * Create a complete Memory Core entry from partial data
+ * Encrypts sensitive fields as needed
  */
 function createMemoryEntry(
   partial: Partial<MemoryCoreEntry>,
@@ -459,7 +558,8 @@ function createMemoryEntry(
   entry.topics = extractTopics(entry.content);
   entry.emotionalTone = detectEmotionalTone(entry.content);
 
-  return entry;
+  // Apply homomorphic encryption to sensitive fields
+  return encryptSensitiveMemoryFields(entry);
 }
 
 /**
