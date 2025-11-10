@@ -130,6 +130,7 @@ import {
 } from './agents/taskStorage';
 import { runTask } from './agents/worker';
 import { listAgents } from './agents/registry';
+import { sanitizePromptInput, validateInput } from './sanitization';
 
 const audioStorage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -248,9 +249,17 @@ async function analyzeImageWithOpenAI(
 /**
  * Input validation and sanitization for user inputs
  * Prevents injection attacks and ensures data integrity
+ * Enhanced with sanitization module
  */
 const MAX_INPUT_LENGTH = 10000; // Maximum allowed input length
 const MAX_PROMPT_LENGTH = 5000; // Maximum allowed prompt length
+
+// Validation schemas for common inputs
+const messageSchema = z.object({
+  message: z.string().min(1).max(MAX_INPUT_LENGTH),
+  userId: z.string().optional(),
+  personalityMode: z.enum(['coach', 'empathetic', 'strategic', 'creative', 'roleplay']).optional(),
+});
 
 function sanitizeUserInput(input: string, maxLength: number = MAX_INPUT_LENGTH): string {
   if (!input || typeof input !== 'string') {
@@ -262,17 +271,8 @@ function sanitizeUserInput(input: string, maxLength: number = MAX_INPUT_LENGTH):
     throw new Error(`Input too long: maximum ${maxLength} characters allowed`);
   }
   
-  // Use a more robust approach: encode HTML entities instead of trying to remove patterns
-  // This prevents XSS while preserving the original content
-  const sanitized = input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
-  
-  return sanitized.trim();
+  // Use the new sanitization module for more robust protection
+  return sanitizePromptInput(input);
 }
 
 function validateAndSanitizePrompt(prompt: string): string {
@@ -285,24 +285,8 @@ function validateAndSanitizePrompt(prompt: string): string {
     throw new Error(`Prompt too long: maximum ${MAX_PROMPT_LENGTH} characters allowed`);
   }
   
-  // Check for suspicious patterns that might indicate prompt injection
-  const suspiciousPatterns = [
-    /ignore\s+previous\s+instructions/i,
-    /disregard\s+all\s+prior/i,
-    /forget\s+everything/i,
-    /system\s*:\s*/i,
-    /assistant\s*:\s*/i,
-  ];
-  
-  for (const pattern of suspiciousPatterns) {
-    if (pattern.test(prompt)) {
-      console.warn('Suspicious pattern detected in prompt, sanitizing...');
-      // Don't reject entirely, but log for monitoring
-      break;
-    }
-  }
-  
-  return sanitizeUserInput(prompt, MAX_PROMPT_LENGTH);
+  // Use the enhanced sanitization module
+  return sanitizePromptInput(prompt);
 }
 
 export async function registerRoutes(app: Express): Promise<HttpServer> {
@@ -375,6 +359,40 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       res.json([]);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+  });
+
+  // Get XAI reasoning data for a session
+  app.get('/api/xai/session/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { getReasoningData } = await import('./xaiTracker');
+      
+      const xaiData = getReasoningData(sessionId);
+      
+      if (!xaiData) {
+        return res.status(404).json({ error: 'XAI session not found' });
+      }
+      
+      res.json({ success: true, data: xaiData });
+    } catch (error) {
+      console.error('Error fetching XAI data:', error);
+      res.status(500).json({ error: 'Failed to fetch XAI data' });
+    }
+  });
+
+  // Get user's recent XAI sessions
+  app.get('/api/xai/sessions', async (req, res) => {
+    try {
+      const userId = req.query.userId as string || 'anonymous';
+      const { getUserReasoningSessions } = await import('./xaiTracker');
+      
+      const sessions = getUserReasoningSessions(userId);
+      
+      res.json({ success: true, sessions: sessions.slice(0, 10) }); // Return last 10 sessions
+    } catch (error) {
+      console.error('Error fetching XAI sessions:', error);
+      res.status(500).json({ error: 'Failed to fetch XAI sessions' });
     }
   });
 

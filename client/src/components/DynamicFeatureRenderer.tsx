@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import type { UICommand } from '@shared/schema';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { X, Video, Heart, Search, FileText } from 'lucide-react';
+import { VideoAnalysisPanel } from './VideoAnalysisPanel';
+import { GuidedMeditation } from './GuidedMeditation';
+import { KnowledgeBaseSearch } from './KnowledgeBaseSearch';
+import { SharedNotepad } from './SharedNotepad';
 
 interface DynamicFeatureRendererProps {
   uiCommand?: UICommand | null;
@@ -30,91 +31,74 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
     return null;
   }
 
-  const getIcon = () => {
+  // Render the appropriate component based on the command
+  const renderComponent = () => {
     switch (activeCommand.componentName) {
       case 'VideoAnalysisPanel':
-        return <Video className="w-6 h-6" />;
+        // This would typically fetch analysis data first, but for now use placeholder
+        return (
+          <VideoAnalysisPanel
+            analysis={{
+              videoId: activeCommand.data?.videoId || '',
+              title: 'Video Analysis',
+              type: 'tutorial',
+              summary: 'Loading analysis...',
+              keyPoints: [],
+              codeSnippets: [],
+              cliCommands: [],
+              actionableItems: [],
+              transcriptAvailable: false,
+            }}
+            onClose={handleClose}
+          />
+        );
+      
       case 'GuidedMeditation':
-        return <Heart className="w-6 h-6" />;
+        return (
+          <GuidedMeditation
+            duration={activeCommand.data?.duration || 10}
+            onClose={handleClose}
+          />
+        );
+      
       case 'KnowledgeBaseSearch':
-        return <Search className="w-6 h-6" />;
+        return (
+          <KnowledgeBaseSearch
+            initialQuery={activeCommand.data?.query || ''}
+            onClose={handleClose}
+          />
+        );
+      
       case 'SharedNotepad':
-        return <FileText className="w-6 h-6" />;
-      default:
+        return (
+          <SharedNotepad onClose={handleClose} />
+        );
+      
+      case 'CodeSnippetCard':
+        // Code snippet would be rendered inline in chat, not as a full modal
         return null;
-    }
-  };
-
-  const getTitle = () => {
-    switch (activeCommand.componentName) {
-      case 'VideoAnalysisPanel':
-        return 'Video Analysis';
-      case 'GuidedMeditation':
-        return 'Guided Meditation';
-      case 'KnowledgeBaseSearch':
-        return 'Knowledge Base Search';
-      case 'SharedNotepad':
-        return 'Shared Notepad';
+      
       default:
-        return 'Feature';
+        return (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-gray-900 text-gray-100 border border-gray-700 rounded-lg p-6 max-w-lg">
+              <h2 className="text-xl font-bold mb-4">Unknown Component</h2>
+              <p className="text-gray-300">
+                Component "{activeCommand.componentName}" is not yet implemented.
+              </p>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={handleClose}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
     }
   };
 
-  const getDescription = () => {
-    const reason = activeCommand.metadata?.reason || 'No reason provided';
-    const data = activeCommand.data || {};
-    
-    return (
-      <div className="space-y-2">
-        <p className="text-gray-300">{reason}</p>
-        {Object.keys(data).length > 0 && (
-          <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-400 mb-2">Command Data:</p>
-            <pre className="text-xs text-gray-300 overflow-auto">
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg bg-gray-900 text-gray-100 border-gray-700">
-        <CardHeader className="border-b border-gray-700 flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-xl font-bold flex items-center gap-2">
-            {getIcon()}
-            {getTitle()}
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClose}
-            className="h-8 w-8 text-gray-400 hover:text-gray-100"
-          >
-            <X className="w-5 h-5" />
-          </Button>
-        </CardHeader>
-        
-        <CardContent className="p-6">
-          {getDescription()}
-          
-          <div className="mt-6 p-4 bg-blue-600/10 border border-blue-500/30 rounded-lg">
-            <p className="text-sm text-blue-300">
-              <strong>Agent-Driven UI Activated!</strong> This demonstrates that the agent has 
-              detected your intent and triggered the appropriate UI component. In a full implementation, 
-              the actual component would be rendered here.
-            </p>
-          </div>
-          
-          <div className="mt-4 flex justify-end">
-            <Button onClick={handleClose} variant="outline">
-              Close
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return renderComponent();
 };
