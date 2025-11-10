@@ -59,27 +59,40 @@ export function sanitizePromptInput(input: string): string {
 /**
  * Sanitize HTML content to prevent XSS
  * Removes dangerous HTML tags and attributes
+ * Uses a more robust approach to handle edge cases
  */
 export function sanitizeHtml(html: string): string {
   if (typeof html !== 'string') {
     return '';
   }
 
-  // Remove script tags and their contents
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  // Remove script tags and their contents with proper end tag matching
+  // Match both </script> and </script > (with optional whitespace)
+  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script\s*>)<[^<]*)*<\/script\s*>/gi, '');
   
-  // Remove on* event handlers
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '');
+  // Remove on* event handlers - use iterative approach to handle nested cases
+  let previousLength = -1;
+  while (sanitized.length !== previousLength) {
+    previousLength = sanitized.length;
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '');
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '');
+  }
   
   // Remove javascript: protocol
   sanitized = sanitized.replace(/javascript:/gi, '');
   
-  // Remove data: protocol (can be used for XSS)
+  // Remove data: protocol (can be used for XSS) and vbscript:
   sanitized = sanitized.replace(/data:text\/html/gi, '');
+  sanitized = sanitized.replace(/vbscript:/gi, '');
   
-  // Remove iframe, object, embed tags
-  sanitized = sanitized.replace(/<(iframe|object|embed|applet)[^>]*>.*?<\/\1>/gi, '');
+  // Remove iframe, object, embed tags with proper end tag matching
+  // Use iterative approach to handle all instances
+  previousLength = -1;
+  while (sanitized.length !== previousLength) {
+    previousLength = sanitized.length;
+    sanitized = sanitized.replace(/<(iframe|object|embed|applet)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
+    sanitized = sanitized.replace(/<(iframe|object|embed|applet)\b[^>]*\/>/gi, '');
+  }
   
   return sanitized;
 }

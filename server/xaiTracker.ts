@@ -24,7 +24,9 @@ const SESSION_TTL = 60 * 60 * 1000;
  * Create a new reasoning session
  */
 export function startReasoningSession(userId: string): string {
-  const sessionId = `xai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Use crypto.randomUUID() for cryptographically secure random IDs
+  const crypto = require('crypto');
+  const sessionId = `xai-${Date.now()}-${crypto.randomUUID().slice(0, 9)}`;
   
   reasoningSessions.set(sessionId, {
     sessionId,
