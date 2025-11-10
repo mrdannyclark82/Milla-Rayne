@@ -30,19 +30,19 @@ async function handleTask(task: AgentTask): Promise<any> {
       // If user is jogging/running, prioritize high-tempo or spoken word content
       if (ambientContext.motionState === 'running' || ambientContext.motionState === 'walking') {
         adaptedQuery = `${query} energetic upbeat high-tempo`;
-        console.log(`🏃 Adapted YouTube search for ${ambientContext.motionState} context:`, adaptedQuery);
+        console.log('🏃 Adapted YouTube search for motion context:', ambientContext.motionState, adaptedQuery);
       }
       
       // If in low light, might prefer audio-focused content
       if (ambientContext.lightLevel < 20) {
         adaptedQuery = `${query} audio podcast spoken word`;
-        console.log(`🌙 Adapted YouTube search for low light context:`, adaptedQuery);
+        console.log('🌙 Adapted YouTube search for low light context:', adaptedQuery);
       }
       
       // If driving, prioritize safe audio content
       if (ambientContext.motionState === 'driving') {
         adaptedQuery = `${query} audio podcast hands-free`;
-        console.log(`🚗 Adapted YouTube search for driving context:`, adaptedQuery);
+        console.log('🚗 Adapted YouTube search for driving context:', adaptedQuery);
       }
     }
     
