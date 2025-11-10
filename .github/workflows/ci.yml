@@ -72,6 +72,13 @@ jobs:
           flags: unittests
           name: codecov-node-${{ matrix.node-version }}
           fail_ci_if_error: false
+      
+      - name: Performance Tests
+        if: matrix.node-version == '20.x'
+        run: npm run test -- --testPathPattern=performance.test.ts --maxWorkers=1
+        env:
+          NODE_ENV: test
+        continue-on-error: true
 
   python:
     name: Python Lint and Test
