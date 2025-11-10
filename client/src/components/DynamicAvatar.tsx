@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 interface AvatarSettings {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -19,98 +19,122 @@ interface DynamicAvatarProps {
   fallbackImage?: string;
 }
 
-export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
+// Helper functions moved outside component to avoid recreation
+const getBackgroundStyle = (background: string) => {
+  switch (background) {
+    case 'gradient':
+      return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    case 'nature':
+      return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+    case 'abstract':
+      return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+    default:
+      return '#1a1a2e';
+  }
+};
+
+const getFilterStyle = (lighting: number, glow: number, avatarState: string) => {
+  const brightness = (lighting / 100) * 1.5 + 0.5; // 0.5 to 2.0
+  const glowValue = glow / 100;
+
+  let filter = `brightness(${brightness}) saturate(1.2)`;
+
+  // Add state-based filters
+  switch (avatarState) {
+    case 'thinking':
+      filter += ' hue-rotate(240deg) contrast(1.1)';
+      break;
+    case 'responding':
+      filter += ' hue-rotate(120deg) contrast(1.2)';
+      break;
+    case 'listening':
+      filter += ' hue-rotate(60deg) contrast(1.1)';
+      break;
+  }
+
+  if (glowValue > 0.3) {
+    filter += ` drop-shadow(0 0 ${glowValue * 20}px rgba(255, 255, 255, ${glowValue * 0.3}))`;
+  }
+
+  return filter;
+};
+
+const getTransformStyle = (avatarState: string) => {
+  switch (avatarState) {
+    case 'thinking':
+      return 'scale(1.02) rotate(-0.5deg)';
+    case 'responding':
+      return 'scale(1.05) rotate(0.5deg)';
+    case 'listening':
+      return 'scale(1.03)';
+    default:
+      return 'scale(1)';
+  }
+};
+
+const getAnimationStyle = (expression: string) => {
+  const baseAnimation = 'gentle-breathing 4s ease-in-out infinite';
+
+  switch (expression) {
+    case 'playful':
+      return `${baseAnimation}, playful-bounce 6s ease-in-out infinite`;
+    case 'mysterious':
+      return `${baseAnimation}, mysterious-sway 8s ease-in-out infinite`;
+    case 'gentle':
+      return `${baseAnimation}, gentle-glow 5s ease-in-out infinite`;
+    default:
+      return baseAnimation;
+  }
+};
+
+export const DynamicAvatar = React.memo<DynamicAvatarProps>(({
   avatarState,
   settings,
   useVideo = false,
   fallbackImage,
 }) => {
-  // Generate CSS-based avatar representation
-  const getAvatarStyles = () => {
-    const baseStyles = {
-      background: getBackgroundStyle(),
-      filter: getFilterStyle(),
-      transform: getTransformStyle(),
-      animation: getAnimationStyle(),
-    };
+  // Memoize expensive style calculations
+  const avatarStyles = useMemo(() => ({
+    background: getBackgroundStyle(settings.background),
+    filter: getFilterStyle(settings.lighting, settings.glow, avatarState),
+    transform: getTransformStyle(avatarState),
+    animation: getAnimationStyle(settings.expression),
+  }), [avatarState, settings.background, settings.lighting, settings.glow, settings.expression]);
 
-    return baseStyles;
-  };
+  // Memoize skin tone gradient
+  const skinToneGradient = useMemo(() => 
+    `radial-gradient(circle, ${
+      settings.skinTone === 'fair' ? '#f4c2a1' : 
+      settings.skinTone === 'medium' ? '#deb887' : '#8d5524'
+    } 0%, rgba(255,255,255,0.1) 100%)`
+  , [settings.skinTone]);
 
-  const getBackgroundStyle = () => {
-    switch (settings.background) {
-      case 'gradient':
-        return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-      case 'nature':
-        return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
-      case 'abstract':
-        return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-      default:
-        return '#1a1a2e';
+  // Memoize eye color
+  const eyeColor = useMemo(() => {
+    switch (settings.eyeColor) {
+      case 'blue': return '#4169e1';
+      case 'green': return '#228b22';
+      default: return '#8b4513';
     }
-  };
+  }, [settings.eyeColor]);
 
-  const getFilterStyle = () => {
-    const brightness = (settings.lighting / 100) * 1.5 + 0.5; // 0.5 to 2.0
-    const glow = settings.glow / 100;
-
-    let filter = `brightness(${brightness}) saturate(1.2)`;
-
-    // Add state-based filters
-    switch (avatarState) {
-      case 'thinking':
-        filter += ' hue-rotate(240deg) contrast(1.1)';
-        break;
-      case 'responding':
-        filter += ' hue-rotate(120deg) contrast(1.2)';
-        break;
-      case 'listening':
-        filter += ' hue-rotate(60deg) contrast(1.1)';
-        break;
+  // Memoize hair color
+  const hairColor = useMemo(() => {
+    switch (settings.hairColor) {
+      case 'blonde': return '#ffd700';
+      case 'brunette': return '#8b4513';
+      case 'auburn': return '#a52a2a';
+      default: return '#2f2f2f';
     }
-
-    if (glow > 0.3) {
-      filter += ` drop-shadow(0 0 ${glow * 20}px rgba(255, 255, 255, ${glow * 0.3}))`;
-    }
-
-    return filter;
-  };
-
-  const getTransformStyle = () => {
-    switch (avatarState) {
-      case 'thinking':
-        return 'scale(1.02) rotate(-0.5deg)';
-      case 'responding':
-        return 'scale(1.05) rotate(0.5deg)';
-      case 'listening':
-        return 'scale(1.03)';
-      default:
-        return 'scale(1)';
-    }
-  };
-
-  const getAnimationStyle = () => {
-    const baseAnimation = 'gentle-breathing 4s ease-in-out infinite';
-
-    switch (settings.expression) {
-      case 'playful':
-        return `${baseAnimation}, playful-bounce 6s ease-in-out infinite`;
-      case 'mysterious':
-        return `${baseAnimation}, mysterious-sway 8s ease-in-out infinite`;
-      case 'gentle':
-        return `${baseAnimation}, gentle-glow 5s ease-in-out infinite`;
-      default:
-        return baseAnimation;
-    }
-  };
+  }, [settings.hairColor]);
 
   // Generate a CSS-based avatar when no image/video is available
-  const renderGeneratedAvatar = () => (
+  const renderGeneratedAvatar = useMemo(() => (
     <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div
         className="absolute inset-0"
-        style={{ background: getBackgroundStyle() }}
+        style={{ background: avatarStyles.background }}
       />
 
       {/* Avatar representation */}
@@ -118,50 +142,19 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
         {/* Face area */}
         <div
           className="w-32 h-32 rounded-full mb-6 border-4 border-white/20 flex items-center justify-center"
-          style={{
-            background: `radial-gradient(circle, ${settings.skinTone === 'fair' ? '#f4c2a1' : settings.skinTone === 'medium' ? '#deb887' : '#8d5524'} 0%, rgba(255,255,255,0.1) 100%)`,
-          }}
+          style={{ background: skinToneGradient }}
         >
           {/* Eyes */}
           <div className="flex space-x-4">
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{
-                backgroundColor:
-                  settings.eyeColor === 'blue'
-                    ? '#4169e1'
-                    : settings.eyeColor === 'green'
-                      ? '#228b22'
-                      : '#8b4513',
-              }}
-            />
-            <div
-              className="w-3 h-3 rounded-full"
-              style={{
-                backgroundColor:
-                  settings.eyeColor === 'blue'
-                    ? '#4169e1'
-                    : settings.eyeColor === 'green'
-                      ? '#228b22'
-                      : '#8b4513',
-              }}
-            />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: eyeColor }} />
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: eyeColor }} />
           </div>
         </div>
 
         {/* Hair representation */}
         <div
           className="absolute top-4 w-36 h-20 rounded-t-full"
-          style={{
-            backgroundColor:
-              settings.hairColor === 'blonde'
-                ? '#ffd700'
-                : settings.hairColor === 'brunette'
-                  ? '#8b4513'
-                  : settings.hairColor === 'auburn'
-                    ? '#a52a2a'
-                    : '#2f2f2f',
-          }}
+          style={{ backgroundColor: hairColor }}
         />
 
         {/* Name and style info */}
@@ -185,12 +178,12 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
         />
       )}
     </div>
-  );
+  ), [avatarStyles.background, skinToneGradient, eyeColor, hairColor, settings.style, settings.expression, settings.outfit, settings.glow]);
 
   return (
     <div
       className="w-full h-full relative transition-all duration-1000 ease-in-out"
-      style={getAvatarStyles()}
+      style={avatarStyles}
       data-testid="dynamic-avatar"
     >
       {useVideo && fallbackImage ? (
@@ -198,10 +191,10 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
           src={fallbackImage}
           alt="Milla AI Assistant"
           className="w-full h-full object-cover"
-          style={getAvatarStyles()}
+          style={avatarStyles}
         />
       ) : (
-        renderGeneratedAvatar()
+        renderGeneratedAvatar
       )}
 
       {/* State indicator */}
@@ -222,7 +215,23 @@ export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if these actually changed
+  return (
+    prevProps.avatarState === nextProps.avatarState &&
+    prevProps.useVideo === nextProps.useVideo &&
+    prevProps.fallbackImage === nextProps.fallbackImage &&
+    prevProps.settings.background === nextProps.settings.background &&
+    prevProps.settings.lighting === nextProps.settings.lighting &&
+    prevProps.settings.glow === nextProps.settings.glow &&
+    prevProps.settings.expression === nextProps.settings.expression &&
+    prevProps.settings.style === nextProps.settings.style &&
+    prevProps.settings.hairColor === nextProps.settings.hairColor &&
+    prevProps.settings.eyeColor === nextProps.settings.eyeColor &&
+    prevProps.settings.skinTone === nextProps.settings.skinTone &&
+    prevProps.settings.outfit === nextProps.settings.outfit
+  );
+});
 
 // CSS animations to add to the global styles
 export const avatarAnimations = `
