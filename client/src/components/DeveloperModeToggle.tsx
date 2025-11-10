@@ -16,6 +16,10 @@ import {
   fetchDailySuggestion,
   manualFetchAIUpdates,
 } from '@/utils/predictiveUpdatesClient';
+import {
+  getDeveloperMode as getXAIDeveloperMode,
+  setDeveloperMode as setXAIDeveloperMode,
+} from '@/lib/scene/featureFlags';
 
 interface DeveloperModeToggleProps {
   children?: React.ReactNode;
@@ -27,6 +31,9 @@ export default function DeveloperModeToggle({
   const [isOpen, setIsOpen] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const [isDeveloperModeLoading, setIsDeveloperModeLoading] = useState(false);
+  
+  // XAI Transparency state
+  const [xaiTransparencyEnabled, setXaiTransparencyEnabled] = useState(false);
 
   // Predictive Updates state
   const [predictiveUpdatesEnabled, setPredictiveUpdatesEnabledState] =
@@ -42,6 +49,8 @@ export default function DeveloperModeToggle({
       // Load predictive updates settings
       setPredictiveUpdatesEnabledState(getPredictiveUpdatesEnabled());
       setDailySuggestionsEnabledState(getDailySuggestionsEnabled());
+      // Load XAI transparency setting
+      setXaiTransparencyEnabled(getXAIDeveloperMode());
     }
   }, [isOpen]);
 
@@ -97,6 +106,13 @@ export default function DeveloperModeToggle({
     const newState = !dailySuggestionsEnabled;
     setDailySuggestionsEnabled(newState);
     setDailySuggestionsEnabledState(newState);
+  };
+
+  const handleXAITransparencyToggle = () => {
+    const newState = !xaiTransparencyEnabled;
+    setXAIDeveloperMode(newState);
+    setXaiTransparencyEnabled(newState);
+    console.log(`XAI Transparency ${newState ? 'enabled' : 'disabled'}`);
   };
 
   const handleManualFetch = async () => {
@@ -177,6 +193,52 @@ export default function DeveloperModeToggle({
                     : developerMode
                       ? 'On'
                       : 'Off'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* XAI Transparency Section */}
+          <Card className="bg-[#2d3e50] backdrop-blur-sm border border-gray-600">
+            <CardHeader>
+              <CardTitle className="text-base font-bold text-white flex items-center">
+                <i className="fas fa-eye mr-2 text-purple-400"></i>
+                XAI Transparency
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between bg-white/5 p-4 rounded-lg border border-white/10">
+                <div className="flex-1">
+                  <h4 className="text-base font-semibold text-white flex items-center gap-2 mb-1">
+                    Agent Reasoning Overlay
+                    {xaiTransparencyEnabled ? (
+                      <span className="text-xs bg-purple-600/20 text-purple-400 px-2 py-0.5 rounded-full border border-purple-500/50">
+                        Enabled
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-0.5 rounded-full border border-gray-500/50">
+                        Disabled
+                      </span>
+                    )}
+                  </h4>
+                  <p className="text-sm text-white/60">
+                    View detailed reasoning steps, tool selections, memory retrieval, and decision-making process.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleXAITransparencyToggle}
+                  className={`ml-4 border-white/30 text-white/70 hover:text-white ${
+                    xaiTransparencyEnabled
+                      ? 'bg-purple-600/20 border-purple-400/50 text-purple-300'
+                      : ''
+                  }`}
+                >
+                  <i
+                    className={`fas ${xaiTransparencyEnabled ? 'fa-toggle-on' : 'fa-toggle-off'} mr-2 text-xl`}
+                  ></i>
+                  {xaiTransparencyEnabled ? 'On' : 'Off'}
                 </Button>
               </div>
             </CardContent>

@@ -6,6 +6,35 @@
 import type { AdaptiveSceneConfig, PerformanceMode } from '@shared/sceneTypes';
 
 /**
+ * Get developer mode state
+ */
+export function getDeveloperMode(): boolean {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('developerMode.enabled');
+      return stored === 'true';
+    } catch (error) {
+      console.warn('Error reading developer mode from localStorage:', error);
+    }
+  }
+  return false;
+}
+
+/**
+ * Set developer mode state
+ */
+export function setDeveloperMode(enabled: boolean): void {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem('developerMode.enabled', String(enabled));
+      window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.warn('Error saving developer mode to localStorage:', error);
+    }
+  }
+}
+
+/**
  * Get adaptive scene configuration from environment/settings
  */
 export function getAdaptiveSceneConfig(): AdaptiveSceneConfig {

@@ -228,3 +228,27 @@ export type InsertYoutubeKnowledge = z.infer<
   typeof insertYoutubeKnowledgeSchema
 >;
 export type YoutubeKnowledge = typeof youtubeKnowledgeBase.$inferSelect;
+
+// UI Command Schema for Agent-Driven UI
+export const uiCommandSchema = z.object({
+  action: z.enum([
+    'SHOW_COMPONENT',
+    'HIDE_COMPONENT',
+    'UPDATE_COMPONENT',
+    'NAVIGATE',
+  ]),
+  componentName: z.enum([
+    'VideoAnalysisPanel',
+    'GuidedMeditation',
+    'KnowledgeBaseSearch',
+    'SharedNotepad',
+    'CodeSnippetCard',
+  ]).optional(),
+  data: z.record(z.string(), z.any()).optional(),
+  metadata: z.object({
+    reason: z.string().optional(),
+    priority: z.enum(['low', 'medium', 'high']).optional(),
+  }).optional(),
+});
+
+export type UICommand = z.infer<typeof uiCommandSchema>;

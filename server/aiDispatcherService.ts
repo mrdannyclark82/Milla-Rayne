@@ -21,11 +21,13 @@ import {
   createAVContext 
 } from './avRagService';
 import type { VoiceAnalysisResult } from './voiceAnalysisService';
+import type { UICommand } from '../shared/schema';
 
 export interface AIResponse {
   content: string;
   success: boolean;
   error?: string;
+  uiCommand?: UICommand;
 }
 
 export interface DispatchContext {
@@ -259,5 +261,101 @@ export async function dispatchAIResponse(
     );
   }
 
+  // Generate UI commands based on user message and response content
+  const uiCommand = detectUICommand(userMessage, response.content);
+  if (uiCommand) {
+    response.uiCommand = uiCommand;
+    console.log('✨ Generated UI command:', uiCommand);
+  }
+
   return response;
+}
+
+/**
+ * Detect if the user message or AI response should trigger a UI command
+ */
+function detectUICommand(userMessage: string, responseContent: string): UICommand | undefined {
+  const lowerMessage = userMessage.toLowerCase();
+  const lowerResponse = responseContent.toLowerCase();
+  
+  // Detect YouTube video analysis requests
+  if (
+    lowerMessage.includes('youtube') && 
+    (lowerMessage.includes('analyze') || lowerMessage.includes('video') || lowerMessage.includes('watch'))
+  ) {
+    // Extract video ID if present in the message
+    const videoIdMatch = userMessage.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (videoIdMatch) {
+      return {
+        action: 'SHOW_COMPONENT',
+        componentName: 'VideoAnalysisPanel',
+        data: {
+          videoId: videoIdMatch[1],
+        },
+        metadata: {
+          reason: 'User requested YouTube video analysis',
+          priority: 'high',
+        },
+      };
+    }
+  }
+  
+  // Detect meditation/relaxation requests
+  if (
+    lowerMessage.includes('meditat') ||
+    lowerMessage.includes('relax') ||
+    lowerMessage.includes('calm') ||
+    lowerMessage.includes('breathing')
+  ) {
+    return {
+      action: 'SHOW_COMPONENT',
+      componentName: 'GuidedMeditation',
+      data: {
+        duration: lowerMessage.includes('quick') ? 5 : 10,
+      },
+      metadata: {
+        reason: 'User requested meditation or relaxation',
+        priority: 'medium',
+      },
+    };
+  }
+  
+  // Detect knowledge base search requests
+  if (
+    lowerMessage.includes('search') ||
+    lowerMessage.includes('find') ||
+    lowerMessage.includes('look up') ||
+    lowerMessage.includes('what do you know about')
+  ) {
+    return {
+      action: 'SHOW_COMPONENT',
+      componentName: 'KnowledgeBaseSearch',
+      data: {
+        query: userMessage,
+      },
+      metadata: {
+        reason: 'User requested knowledge base search',
+        priority: 'medium',
+      },
+    };
+  }
+  
+  // Detect note-taking requests
+  if (
+    lowerMessage.includes('note') ||
+    lowerMessage.includes('write down') ||
+    lowerMessage.includes('remember this')
+  ) {
+    return {
+      action: 'SHOW_COMPONENT',
+      componentName: 'SharedNotepad',
+      data: {},
+      metadata: {
+        reason: 'User wants to take notes',
+        priority: 'low',
+      },
+    };
+  }
+  
+  return undefined;
 }
