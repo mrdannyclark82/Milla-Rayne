@@ -1076,6 +1076,48 @@ docker-compose logs -f
 docker-compose down
 ```
 
+## Documentation
+
+### Living API Documentation
+
+Comprehensive API documentation is automatically generated from the TypeScript source code using TypeDoc and deployed to GitHub Pages with every push to the main branch.
+
+**📚 View the API Documentation:**
+- **Live Docs:** [https://mrdannyclark82.github.io/Milla-Rayne/api-docs/](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
+- **Status:** [![Documentation](https://img.shields.io/badge/docs-live-brightgreen)](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
+
+The documentation includes:
+- ✅ Full API reference for all services and agents
+- ✅ Type definitions and interfaces
+- ✅ Function signatures and parameters
+- ✅ Usage examples and descriptions
+- ✅ Automatically updated on every deployment
+
+### Generating Documentation Locally
+
+To generate and view the documentation on your local machine:
+
+```bash
+# Generate documentation
+npm run docs:generate
+
+# Watch mode (auto-regenerates on file changes)
+npm run docs:watch
+
+# Open the generated docs in your browser
+open docs/api/index.html
+```
+
+The documentation is generated from TypeScript source files in:
+- `server/` - Backend services, agents, and APIs
+- `shared/` - Shared types and utilities
+
+### Additional Documentation
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[SECURITY.md](SECURITY.md)** - Security policies and reporting
+- **[docs/](docs/)** - Detailed feature documentation and guides
+
 ## Contributing
 
 We welcome contributions from the community! Here's how you can help:

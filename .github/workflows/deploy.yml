@@ -186,3 +186,50 @@ jobs:
           echo "Deployment completed"
           echo "Status: ${{ needs.deploy-staging.result }}"
           # Add actual notification logic here (Slack, Discord, email, etc.)
+
+  # Documentation Generation and Deployment
+  deploy-docs:
+    name: Build and Deploy Documentation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+      - uses: actions/checkout@v5
+      
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20.x'
+          cache: npm
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install -D typedoc
+      
+      - name: Generate TypeDoc documentation
+        run: npm run docs:generate
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/api
+          destination_dir: api-docs
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'docs: update API documentation'
+      
+      - name: Add deployment summary
+        run: |
+          echo "## 📚 Documentation Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "API documentation has been generated and deployed to GitHub Pages." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **Documentation URL:** https://mrdannyclark82.github.io/Milla-Rayne/api-docs/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The documentation is automatically updated on every push to the main branch." >> $GITHUB_STEP_SUMMARY
