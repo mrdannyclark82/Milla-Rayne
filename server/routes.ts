@@ -362,6 +362,40 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // Get XAI reasoning data for a session
+  app.get('/api/xai/session/:sessionId', async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { getReasoningData } = await import('./xaiTracker');
+      
+      const xaiData = getReasoningData(sessionId);
+      
+      if (!xaiData) {
+        return res.status(404).json({ error: 'XAI session not found' });
+      }
+      
+      res.json({ success: true, data: xaiData });
+    } catch (error) {
+      console.error('Error fetching XAI data:', error);
+      res.status(500).json({ error: 'Failed to fetch XAI data' });
+    }
+  });
+
+  // Get user's recent XAI sessions
+  app.get('/api/xai/sessions', async (req, res) => {
+    try {
+      const userId = req.query.userId as string || 'anonymous';
+      const { getUserReasoningSessions } = await import('./xaiTracker');
+      
+      const sessions = getUserReasoningSessions(userId);
+      
+      res.json({ success: true, sessions: sessions.slice(0, 10) }); // Return last 10 sessions
+    } catch (error) {
+      console.error('Error fetching XAI sessions:', error);
+      res.status(500).json({ error: 'Failed to fetch XAI sessions' });
+    }
+  });
+
   // Simple OpenRouter chat endpoint
   app.post('/api/openrouter-chat', async (req, res) => {
     try {
