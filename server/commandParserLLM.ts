@@ -75,11 +75,89 @@ function preprocessIntent(message: string): Partial<ParsedCommand> | null {
     return { service: 'calendar', action: 'list', entities: {} };
   }
 
+  // Calendar add patterns - match common scheduling phrases
+  const calendarAddPatterns = [
+    /(?:add|create|schedule|set up|make)\s+(?:a\s+|an\s+)?(.+?)\s+(?:on|for|at)\s+(.+)/i,
+    /(?:remind me about|don't let me forget)\s+(.+?)(?:\s+on\s+(.+))?/i,
+  ];
+  
+  for (const pattern of calendarAddPatterns) {
+    const match = lower.match(pattern);
+    if (match) {
+      const title = match[1]?.trim();
+      const dateTime = match[2]?.trim();
+      
+      if (title) {
+        const entities: any = { title };
+        
+        // Try to extract time from datetime string
+        if (dateTime) {
+          const timeMatch = dateTime.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
+          if (timeMatch) {
+            entities.time = timeMatch[1];
+            entities.date = dateTime.replace(timeMatch[1], '').trim();
+          } else {
+            entities.date = dateTime;
+          }
+        }
+        
+        return { 
+          service: 'calendar', 
+          action: 'add', 
+          entities 
+        };
+      }
+    }
+  }
+
   // Email patterns
   if (
     /(check|show|list|read|see)\s+(?:my\s+)?(?:email|inbox|mail)/i.test(lower)
   ) {
     return { service: 'gmail', action: 'list', entities: {} };
+  }
+  
+  // Email send patterns
+  const emailSendPatterns = [
+    /(?:send|write|compose)\s+(?:an?\s+)?email\s+to\s+(.+?)\s+(?:about|saying|with subject)\s+(.+)/i,
+    /(?:email|message)\s+(.+?)\s+(?:about|to say|saying)\s+(.+)/i,
+  ];
+  
+  for (const pattern of emailSendPatterns) {
+    const match = lower.match(pattern);
+    if (match) {
+      const to = match[1]?.trim();
+      const subject = match[2]?.trim();
+      
+      if (to && subject) {
+        return { 
+          service: 'gmail', 
+          action: 'send', 
+          entities: { to, subject } 
+        };
+      }
+    }
+  }
+  
+  // Tasks/notes patterns
+  const taskAddPatterns = [
+    /(?:add|create|make)\s+(?:a\s+)?(?:note|task|reminder|todo)\s+(?:to\s+)?(?:remember\s+)?(?:to\s+)?(.+)/i,
+    /(?:remind me to|don't forget to)\s+(.+)/i,
+  ];
+  
+  for (const pattern of taskAddPatterns) {
+    const match = lower.match(pattern);
+    if (match) {
+      const title = match[1]?.trim();
+      
+      if (title) {
+        return { 
+          service: 'tasks', 
+          action: 'add', 
+          entities: { title } 
+        };
+      }
+    }
   }
 
   return null;
@@ -124,7 +202,15 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
     - "put on some jazz" → youtube/get with query "jazz"
     - "what's on my calendar" → calendar/list
     - "check my email" → gmail/list
-    - "add event tomorrow at 3pm" → calendar/add with entities
+    - "add dentist appointment tomorrow at 3pm" → calendar/add with entities: {title: "dentist appointment", date: "tomorrow", time: "3pm"}
+    - "schedule a meeting with John on Friday at 2pm" → calendar/add with entities: {title: "meeting with John", date: "Friday", time: "2pm"}
+    - "remind me about the birthday party next Saturday" → calendar/add with entities: {title: "birthday party", date: "next Saturday"}
+
+    For Calendar Add:
+    - Extract title/event name from the message
+    - Extract date: "today", "tomorrow", "next Monday", specific dates, etc.
+    - Extract time if mentioned: "3pm", "10:30am", "14:00", etc.
+    - Extract description if provided
 
     For YouTube:
     - ANY request to play, watch, show, find, put on, or see videos → action: "get"
@@ -138,7 +224,11 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
       "service": "...",
       "action": "...",
       "entities": {
-        "query": "extracted search terms",
+        "title": "event title (for calendar add)",
+        "date": "date string (for calendar)",
+        "time": "time string (for calendar)",
+        "description": "optional description",
+        "query": "search query (for youtube/etc)",
         "sortBy": "relevance|viewCount|date"
       }
     }

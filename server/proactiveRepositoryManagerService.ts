@@ -71,7 +71,7 @@ export interface RepositoryHealthReport {
 class ProactiveRepositoryManagerService {
   private actions: ProactiveAction[] = [];
   private readonly ACTIONS_FILE = path.join(process.cwd(), 'memory', 'proactive_actions.json');
-  private readonly CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes
+  private readonly CHECK_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours (when inactive)
   private lastCheck: number = 0;
   private isProcessing: boolean = false;
 

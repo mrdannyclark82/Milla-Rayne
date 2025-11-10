@@ -324,3 +324,73 @@ export async function completeTask(
     };
   }
 }
+
+/**
+ * Delete a task from Google Tasks
+ */
+export async function deleteTask(
+  userId: string = 'default-user',
+  taskId: string
+): Promise<TasksAPIResult> {
+  if (!taskId) {
+    return {
+      success: false,
+      message: 'Task ID cannot be empty.',
+      error: 'INVALID_INPUT',
+    };
+  }
+
+  try {
+    const accessToken = await getValidAccessToken(userId, 'google');
+
+    if (!accessToken) {
+      return {
+        success: false,
+        message: 'You need to connect your Google account first.',
+        error: 'NO_TOKEN',
+      };
+    }
+
+    const taskListId = await getDefaultTaskList(accessToken);
+
+    if (!taskListId) {
+      return {
+        success: false,
+        message: "I couldn't access your Google Tasks.",
+        error: 'NO_TASK_LIST',
+      };
+    }
+
+    const response = await fetch(
+      `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks/${taskId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (response.status === 204) {
+      return {
+        success: true,
+        message: 'Task deleted successfully.',
+      };
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.error?.message || 'Unknown error';
+      return {
+        success: false,
+        message: `Failed to delete task: ${errorMessage}`,
+        error: `API_ERROR: ${errorMessage}`,
+      };
+    }
+  } catch (error) {
+    console.error('[Google Tasks API] Error deleting task:', error);
+    return {
+      success: false,
+      message: `An error occurred while deleting the task: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      error: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+    };
+  }
+}

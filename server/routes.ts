@@ -846,6 +846,16 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       }
 
       // Log the request for debugging
+      // Get user ID first for agent tasks
+      const sessionToken = req.cookies.session_token;
+      let userId: string = 'default-user'; // Default user ID
+      if (sessionToken) {
+        const sessionResult = await validateSession(sessionToken);
+        if (sessionResult.valid && sessionResult.user) {
+          userId = sessionResult.user.id || 'default-user';
+        }
+      }
+      
       // Phase 3: Detect scene context from user message
       const sensorData = await getSmartHomeSensorData();
       const sceneContext = detectSceneContext(
@@ -862,6 +872,172 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         );
       }
 
+      // Phase 3.5: Parse commands and execute agent tasks if needed
+      let agentTaskResult = null;
+      try {
+        const { parseCommandLLM } = await import('./commandParserLLM');
+        const parsedCommand = await parseCommandLLM(message);
+        
+        console.log('📋 Parsed command:', parsedCommand);
+        
+        // Handle calendar commands through CalendarAgent
+        if (parsedCommand.service === 'calendar' && parsedCommand.action === 'add') {
+          const { addTask, runTask } = await import('./agents/taskStorage');
+          const { runTask: executeTask } = await import('./agents/worker');
+          const { v4: uuidv4 } = await import('uuid');
+          
+          const task = {
+            taskId: uuidv4(),
+            supervisor: 'ChatSystem',
+            agent: 'CalendarAgent',
+            action: 'create_event',
+            payload: {
+              title: parsedCommand.entities.title || parsedCommand.entities.query || 'Untitled Event',
+              date: parsedCommand.entities.date || parsedCommand.entities.when || 'today',
+              time: parsedCommand.entities.time,
+              description: parsedCommand.entities.description,
+              userId: userId
+            },
+            status: 'pending' as const,
+            createdAt: new Date().toISOString()
+          };
+          
+          await addTask(task);
+          console.log('📅 Calendar agent task created:', task.taskId);
+          
+          try {
+            await executeTask(task);
+            const { getTask } = await import('./agents/taskStorage');
+            const completedTask = await getTask(task.taskId);
+            agentTaskResult = completedTask?.result;
+            console.log('✅ Calendar agent task completed:', agentTaskResult);
+          } catch (error) {
+            console.error('❌ Calendar agent task failed:', error);
+            agentTaskResult = { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Unknown error' 
+            };
+          }
+        }
+        
+        // Handle calendar list commands
+        if (parsedCommand.service === 'calendar' && parsedCommand.action === 'list') {
+          const { addTask, runTask } = await import('./agents/taskStorage');
+          const { runTask: executeTask } = await import('./agents/worker');
+          const { v4: uuidv4 } = await import('uuid');
+          
+          const task = {
+            taskId: uuidv4(),
+            supervisor: 'ChatSystem',
+            agent: 'CalendarAgent',
+            action: 'list_events',
+            payload: {
+              userId: userId,
+              maxResults: 10
+            },
+            status: 'pending' as const,
+            createdAt: new Date().toISOString()
+          };
+          
+          await addTask(task);
+          console.log('📅 Calendar list task created:', task.taskId);
+          
+          try {
+            await executeTask(task);
+            const { getTask } = await import('./agents/taskStorage');
+            const completedTask = await getTask(task.taskId);
+            agentTaskResult = completedTask?.result;
+            console.log('✅ Calendar list task completed:', agentTaskResult);
+          } catch (error) {
+            console.error('❌ Calendar list task failed:', error);
+            agentTaskResult = { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Unknown error' 
+            };
+          }
+        }
+        
+        // Handle tasks commands (Google Tasks / Keep alternative)
+        if (parsedCommand.service === 'tasks' && parsedCommand.action === 'add') {
+          const { addTask, runTask } = await import('./agents/taskStorage');
+          const { runTask: executeTask } = await import('./agents/worker');
+          const { v4: uuidv4 } = await import('uuid');
+          
+          const task = {
+            taskId: uuidv4(),
+            supervisor: 'ChatSystem',
+            agent: 'TasksAgent',
+            action: 'add_task',
+            payload: {
+              title: parsedCommand.entities.title || parsedCommand.entities.query || 'Untitled Task',
+              content: parsedCommand.entities.content || parsedCommand.entities.description || '',
+              userId: userId
+            },
+            status: 'pending' as const,
+            createdAt: new Date().toISOString()
+          };
+          
+          await addTask(task);
+          console.log('📝 Tasks agent task created:', task.taskId);
+          
+          try {
+            await executeTask(task);
+            const { getTask } = await import('./agents/taskStorage');
+            const completedTask = await getTask(task.taskId);
+            agentTaskResult = completedTask?.result;
+            console.log('✅ Tasks agent task completed:', agentTaskResult);
+          } catch (error) {
+            console.error('❌ Tasks agent task failed:', error);
+            agentTaskResult = { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Unknown error' 
+            };
+          }
+        }
+        
+        // Handle email commands
+        if (parsedCommand.service === 'gmail' && parsedCommand.action === 'send') {
+          const { addTask, runTask } = await import('./agents/taskStorage');
+          const { runTask: executeTask } = await import('./agents/worker');
+          const { v4: uuidv4 } = await import('uuid');
+          
+          const task = {
+            taskId: uuidv4(),
+            supervisor: 'ChatSystem',
+            agent: 'EmailAgent',
+            action: 'enqueue',
+            payload: {
+              to: parsedCommand.entities.to || parsedCommand.entities.recipient,
+              subject: parsedCommand.entities.subject || 'Message from Milla',
+              body: parsedCommand.entities.body || parsedCommand.entities.message || '',
+              userId: userId
+            },
+            status: 'pending' as const,
+            createdAt: new Date().toISOString()
+          };
+          
+          await addTask(task);
+          console.log('📧 Email agent task created:', task.taskId);
+          
+          try {
+            await executeTask(task);
+            const { getTask } = await import('./agents/taskStorage');
+            const completedTask = await getTask(task.taskId);
+            agentTaskResult = completedTask?.result;
+            console.log('✅ Email agent task completed:', agentTaskResult);
+          } catch (error) {
+            console.error('❌ Email agent task failed:', error);
+            agentTaskResult = { 
+              success: false, 
+              error: error instanceof Error ? error.message : 'Unknown error' 
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Command parsing error:', error);
+        // Continue with normal chat flow if command parsing fails
+      }
+
       // Generate AI response using existing logic with timeout
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
@@ -870,18 +1046,20 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         )
       );
 
-      const sessionToken = req.cookies.session_token;
-      let userId: string = 'default-user'; // Default user ID
-      if (sessionToken) {
-        const sessionResult = await validateSession(sessionToken);
-        if (sessionResult.valid && sessionResult.user) {
-          userId = sessionResult.user.id || 'default-user';
+      console.log('--- Calling generateAIResponse ---');
+      
+      // Enhance message with agent task context if available
+      let enhancedMessage = message;
+      if (agentTaskResult) {
+        if (agentTaskResult.success) {
+          enhancedMessage = `${message}\n\n[System Note: Calendar operation completed successfully. ${agentTaskResult.message || 'Event was created.'}]`;
+        } else {
+          enhancedMessage = `${message}\n\n[System Note: Calendar operation failed. ${agentTaskResult.error || agentTaskResult.message || 'Please try again.'}]`;
         }
       }
-
-      console.log('--- Calling generateAIResponse ---');
+      
       const aiResponsePromise = generateAIResponse(
-        message,
+        enhancedMessage,
         [],
         'Danny Ray',
         undefined,

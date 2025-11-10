@@ -1,0 +1,54 @@
+[
+  {
+    "id": "default-satisfaction-survey",
+    "title": "User Satisfaction Survey",
+    "description": "Help Milla improve by sharing your experience",
+    "active": true,
+    "createdAt": 1762726225482,
+    "questions": [
+      {
+        "id": "q1",
+        "question": "How satisfied are you with Milla's responses?",
+        "type": "rating",
+        "category": "overall"
+      },
+      {
+        "id": "q2",
+        "question": "How would you rate Milla's response speed?",
+        "type": "rating",
+        "category": "performance"
+      },
+      {
+        "id": "q3",
+        "question": "Are Milla's features easy to use?",
+        "type": "rating",
+        "category": "usability"
+      },
+      {
+        "id": "q4",
+        "question": "Are you satisfied with the available features?",
+        "type": "rating",
+        "category": "feature"
+      },
+      {
+        "id": "q5",
+        "question": "Would you recommend Milla to others?",
+        "type": "yes_no",
+        "category": "overall"
+      },
+      {
+        "id": "q6",
+        "question": "What feature would you like to see improved?",
+        "type": "text",
+        "category": "feature"
+      },
+      {
+        "id": "q7",
+        "question": "What do you like most about Milla?",
+        "type": "text",
+        "category": "overall"
+      }
+    ],
+    "responses": []
+  }
+]

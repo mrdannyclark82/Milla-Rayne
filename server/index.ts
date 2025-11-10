@@ -168,6 +168,22 @@ export async function initApp() {
   // Register Milla supervisor agent
   const { millaAgent } = await import('./agents/millaAgent');
   agentController.registerAgent(millaAgent);
+  
+  // Register CalendarAgent for calendar operations
+  await import('./agents/calendarAgent'); // Self-registers via registry
+  console.log('✅ CalendarAgent registered and ready');
+  
+  // Register TasksAgent for Google Tasks operations
+  await import('./agents/tasksAgent'); // Self-registers via registry
+  console.log('✅ TasksAgent registered and ready');
+  
+  // Register EmailAgent for email operations  
+  await import('./agents/emailAgent'); // Self-registers via registry
+  console.log('✅ EmailAgent registered and ready');
+  
+  // Register YouTubeAgent for video analysis
+  await import('./agents/youtubeAgent'); // Self-registers via registry
+  console.log('✅ YouTubeAgent registered and ready');
 
   // Start email delivery loop if enabled
   const { startEmailDeliveryLoop } = await import(
