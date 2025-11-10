@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 150,
+  "tokenBalance": 700,
   "transactions": [
     {
       "id": "txn_1762783949186_xel82vfkz",
@@ -16,6 +16,94 @@
       "type": "earn",
       "category": "feature_development",
       "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1762786915060_aw3kfzzn8",
+      "timestamp": 1762786915061,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1762786915063_b4yfirmbf",
+      "timestamp": 1762786915063,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1762786915063_6b72jah2c",
+      "timestamp": 1762786915063,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: First Bug Hunter",
+      "relatedId": "goal_1762726225381_tx4bafv7n"
+    },
+    {
+      "id": "txn_1762786915063_mx0a36b21",
+      "timestamp": 1762786915063,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Feature Architect",
+      "relatedId": "goal_1762726225386_v83rnesyu"
+    },
+    {
+      "id": "txn_1762786915063_tnnaoku4l",
+      "timestamp": 1762786915063,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1762726225392_ac5r0dqb2"
+    },
+    {
+      "id": "txn_1762786915064_wrwof9qjb",
+      "timestamp": 1762786915064,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1762726225392_ac5r0dqb2"
+    },
+    {
+      "id": "txn_1762786915064_450quvy0j",
+      "timestamp": 1762786915064,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: User Champion",
+      "relatedId": "goal_1762726225389_is917gioi"
+    },
+    {
+      "id": "txn_1762786915064_1w0qmeal6",
+      "timestamp": 1762786915064,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Feature Architect",
+      "relatedId": "goal_1762726225386_v83rnesyu"
+    },
+    {
+      "id": "txn_1762786915064_dokoaqodd",
+      "timestamp": 1762786915064,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: User Champion",
+      "relatedId": "goal_1762726225389_is917gioi"
+    },
+    {
+      "id": "txn_1762786915064_3fokoix5v",
+      "timestamp": 1762786915064,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1762726225392_ac5r0dqb2"
     }
   ],
   "goals": [
@@ -24,45 +112,49 @@
       "name": "First Bug Hunter",
       "description": "Fix your first 5 bugs",
       "targetTokens": 250,
-      "currentTokens": 150,
+      "currentTokens": 300,
       "reward": "Unlock advanced debugging tools",
       "priority": "medium",
       "createdAt": 1762726225382,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1762786915063
     },
     {
       "id": "goal_1762726225386_v83rnesyu",
       "name": "Feature Architect",
       "description": "Develop 3 complete features",
       "targetTokens": 300,
-      "currentTokens": 150,
+      "currentTokens": 550,
       "reward": "Gain ability to propose architectural changes",
       "priority": "high",
       "createdAt": 1762726225386,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1762786915064
     },
     {
       "id": "goal_1762726225389_is917gioi",
       "name": "User Champion",
       "description": "Achieve 90%+ user satisfaction across 20 interactions",
       "targetTokens": 500,
-      "currentTokens": 150,
+      "currentTokens": 600,
       "reward": "Unlock personalized user experience features",
       "priority": "high",
       "createdAt": 1762726225389,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1762786915064
     },
     {
       "id": "goal_1762726225392_ac5r0dqb2",
       "name": "Code Optimizer",
       "description": "Optimize 10 functions for better performance",
       "targetTokens": 300,
-      "currentTokens": 150,
+      "currentTokens": 650,
       "reward": "Access to advanced performance profiling",
       "priority": "medium",
       "createdAt": 1762726225392,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1762786915064
     }
   ],
-  "lastUpdated": 1762783949186
+  "lastUpdated": 1762786915064
 }
