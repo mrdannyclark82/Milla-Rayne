@@ -25,7 +25,7 @@
  * In production, actual HE schemes like Paillier, BGV, or BFV would be used.
  */
 
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 // Encryption key - In production, this would be stored securely in KMS/HSM
 const ENCRYPTION_KEY = process.env.HE_ENCRYPTION_KEY || 'default-prototype-key-change-in-production';
