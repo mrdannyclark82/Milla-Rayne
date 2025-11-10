@@ -22,12 +22,23 @@ import {
 } from './avRagService';
 import type { VoiceAnalysisResult } from './voiceAnalysisService';
 import type { UICommand } from '../shared/schema';
+import {
+  startReasoningSession,
+  trackCommandIntent,
+  trackToolSelection,
+  trackMemoryRetrieval,
+  trackResponseGeneration,
+  getReasoningData,
+  addReasoningStep,
+  type XAIData,
+} from './xaiTracker';
 
 export interface AIResponse {
   content: string;
   success: boolean;
   error?: string;
   uiCommand?: UICommand;
+  xaiSessionId?: string;
 }
 
 export interface DispatchContext {
@@ -100,12 +111,44 @@ function buildAVRagContext(context: DispatchContext): AVRagContext | null {
   }
 }
 
+/**
+ * Detect user intent from message for XAI tracking
+ */
+function detectIntent(message: string): string {
+  const lowerMessage = message.toLowerCase();
+  
+  if (lowerMessage.includes('youtube') || lowerMessage.includes('video')) {
+    return 'Video analysis or playback request';
+  }
+  if (lowerMessage.includes('meditat') || lowerMessage.includes('relax')) {
+    return 'Meditation or relaxation request';
+  }
+  if (lowerMessage.includes('search') || lowerMessage.includes('find')) {
+    return 'Information search request';
+  }
+  if (lowerMessage.includes('code') || lowerMessage.includes('programming')) {
+    return 'Programming or technical assistance';
+  }
+  if (lowerMessage.includes('weather')) {
+    return 'Weather information request';
+  }
+  if (lowerMessage.includes('calendar') || lowerMessage.includes('schedule')) {
+    return 'Calendar or scheduling request';
+  }
+  
+  return 'General conversation';
+}
+
 export async function dispatchAIResponse(
   userMessage: string,
   context: DispatchContext,
   maxTokens?: number
 ): Promise<AIResponse> {
   console.log('--- dispatchAIResponse called ---');
+  
+  // Start XAI reasoning session
+  const xaiSessionId = startReasoningSession(context.userId || 'anonymous');
+  
   let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
   if (context.userId) {
@@ -123,6 +166,10 @@ export async function dispatchAIResponse(
   }
 
   // --- Dynamic Model Selection Logic ---
+  // Track command intent
+  const intent = detectIntent(userMessage);
+  trackCommandIntent(xaiSessionId, intent);
+  
   // This is where the intelligence for switching models based on context will go.
   // For now, it will primarily respect user preference, with basic contextual overrides.
 
@@ -142,6 +189,7 @@ export async function dispatchAIResponse(
 
   if (hasCodeContext && config.openrouter?.grok1ApiKey) {
     modelToUse = 'grok';
+    addReasoningStep(xaiSessionId, 'tools', 'Model Selection', 'Selected Grok for code-related query');
   }
 
   // Agent command override
@@ -149,9 +197,14 @@ export async function dispatchAIResponse(
   if (agentMatch) {
     const [, agentName, task] = agentMatch;
     console.log(`Dispatching to agent: ${agentName} with task: ${task}`);
+    trackToolSelection(xaiSessionId, [`Agent: ${agentName}`]);
     const { agentController } = await import('./agentController');
     const result = await agentController.dispatch(agentName, task);
-    return { content: result, success: true };
+    return { 
+      content: result, 
+      success: true,
+      xaiSessionId,
+    };
   }
   // Add more sophisticated logic here based on intent, emotional state, etc.
 
@@ -162,10 +215,31 @@ export async function dispatchAIResponse(
   console.log(`--- Dispatching to model: ${modelToUse} ---`);
 
   // Enrich context with semantic retrieval (V-RAG)
+  const semanticStartTime = Date.now();
   const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
+  const semanticEndTime = Date.now();
+  
+  // Track memory retrieval
+  if (semanticContext) {
+    addReasoningStep(
+      xaiSessionId,
+      'memory',
+      'Semantic Context Retrieved',
+      `Retrieved relevant context (${semanticEndTime - semanticStartTime}ms)`,
+      { processingTime: semanticEndTime - semanticStartTime }
+    );
+  }
   
   // Build A/V-RAG context from scene and voice data
   const avContext = buildAVRagContext(context);
+  
+  // Track A/V context if available
+  if (avContext) {
+    const avTools = [];
+    if (avContext.scene) avTools.push('Scene Detection');
+    if (avContext.voice) avTools.push('Voice Analysis');
+    trackToolSelection(xaiSessionId, avTools);
+  }
   
   // Augment user message with all context layers
   let augmentedMessage = userMessage;
@@ -249,6 +323,7 @@ export async function dispatchAIResponse(
     console.log(
       'OpenAI failed (possibly rate limited), falling back to OpenRouter...'
     );
+    addReasoningStep(xaiSessionId, 'response', 'Fallback Triggered', 'Primary model failed, falling back to OpenRouter');
     response = await generateOpenRouterResponse(
       augmentedMessage,
       {
@@ -261,12 +336,19 @@ export async function dispatchAIResponse(
     );
   }
 
+  // Track response generation
+  trackResponseGeneration(xaiSessionId, modelToUse, undefined, undefined);
+
   // Generate UI commands based on user message and response content
   const uiCommand = detectUICommand(userMessage, response.content);
   if (uiCommand) {
     response.uiCommand = uiCommand;
+    addReasoningStep(xaiSessionId, 'response', 'UI Command Detected', JSON.stringify(uiCommand));
     console.log('✨ Generated UI command:', uiCommand);
   }
+
+  // Attach XAI session ID to response
+  response.xaiSessionId = xaiSessionId;
 
   return response;
 }
