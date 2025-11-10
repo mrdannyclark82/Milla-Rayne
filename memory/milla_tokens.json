@@ -1,13 +1,30 @@
 {
-  "tokenBalance": 0,
-  "transactions": [],
+  "tokenBalance": 150,
+  "transactions": [
+    {
+      "id": "txn_1762783949186_xel82vfkz",
+      "timestamp": 1762783949186,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1762783949186_yrm024h1y",
+      "timestamp": 1762783949186,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    }
+  ],
   "goals": [
     {
       "id": "goal_1762726225381_tx4bafv7n",
       "name": "First Bug Hunter",
       "description": "Fix your first 5 bugs",
       "targetTokens": 250,
-      "currentTokens": 0,
+      "currentTokens": 150,
       "reward": "Unlock advanced debugging tools",
       "priority": "medium",
       "createdAt": 1762726225382,
@@ -18,7 +35,7 @@
       "name": "Feature Architect",
       "description": "Develop 3 complete features",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 150,
       "reward": "Gain ability to propose architectural changes",
       "priority": "high",
       "createdAt": 1762726225386,
@@ -29,7 +46,7 @@
       "name": "User Champion",
       "description": "Achieve 90%+ user satisfaction across 20 interactions",
       "targetTokens": 500,
-      "currentTokens": 0,
+      "currentTokens": 150,
       "reward": "Unlock personalized user experience features",
       "priority": "high",
       "createdAt": 1762726225389,
@@ -40,12 +57,12 @@
       "name": "Code Optimizer",
       "description": "Optimize 10 functions for better performance",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 150,
       "reward": "Access to advanced performance profiling",
       "priority": "medium",
       "createdAt": 1762726225392,
       "status": "active"
     }
   ],
-  "lastUpdated": 1762726225392
+  "lastUpdated": 1762783949186
 }

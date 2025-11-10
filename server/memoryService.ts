@@ -2,6 +2,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { detectEmotionalTone, extractTopics } from './utils';
 import { LRUCache } from 'lru-cache';
+import { vectorDB } from './vectorDBService';
 
 export interface MemoryData {
   content: string;
@@ -703,7 +704,8 @@ export async function searchKnowledge(query: string): Promise<KnowledgeItem[]> {
  * Update the memories file with new information
  */
 export async function updateMemories(
-  newMemory: string
+  newMemory: string,
+  userId: string = 'default-user'
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const memoryPath = join(process.cwd(), 'memory', 'memories.txt');
@@ -726,6 +728,20 @@ export async function updateMemories(
     // Invalidate memory core cache to force reload
     memoryCoreCache = null;
 
+    // Add to vector database for semantic retrieval
+    const memoryId = `memory:${Date.now()}`;
+    await vectorDB.addContent(
+      memoryId,
+      `[${timestamp}] ${newMemory}`,
+      {
+        type: 'memory',
+        timestamp: new Date().toISOString(),
+        userId,
+        date: timestamp,
+      }
+    );
+    console.log('✅ Added memory to vector database');
+
     return { success: true };
   } catch (error) {
     console.error('Error updating memories:', error);
@@ -737,4 +753,67 @@ export async function updateMemories(
           : 'Unknown error updating memories',
     };
   }
+}
+
+// ===========================================================================================
+// SEMANTIC MEMORY RETRIEVAL (V-RAG)
+// ===========================================================================================
+
+/**
+ * Semantic search for memories using vector embeddings
+ */
+export async function semanticSearchMemories(
+  query: string,
+  options: {
+    userId?: string;
+    topK?: number;
+    minSimilarity?: number;
+  } = {}
+): Promise<Array<{ content: string; similarity: number; metadata: any }>> {
+  console.log(`🔍 Semantic memory search for: "${query}"`);
+
+  const { userId = 'default-user', topK = 5, minSimilarity = 0.6 } = options;
+
+  try {
+    // Search vector database for similar memories
+    const results = await vectorDB.semanticSearch(query, {
+      topK,
+      minSimilarity,
+      type: 'memory',
+      userId,
+    });
+
+    return results.map(result => ({
+      content: result.entry.content,
+      similarity: result.similarity,
+      metadata: result.entry.metadata,
+    }));
+  } catch (error) {
+    console.error('Error in semantic memory search:', error);
+    return [];
+  }
+}
+
+/**
+ * Get memory context enriched with semantic retrieval for LLM prompts
+ */
+export async function getSemanticMemoryContext(
+  query: string,
+  userId: string = 'default-user'
+): Promise<string> {
+  const results = await semanticSearchMemories(query, {
+    userId,
+    topK: 3,
+    minSimilarity: 0.65,
+  });
+
+  if (results.length === 0) {
+    return '';
+  }
+
+  const contextParts = results.map((result, index) => 
+    `Memory ${index + 1} (relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.content}`
+  );
+
+  return `\n\nRelevant memories:\n${contextParts.join('\n\n')}`;
 }
