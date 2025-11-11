@@ -1,4 +1,5 @@
 import type { ExternalAgentCommand, ExternalAgentResponse } from '../shared/schema';
+import { processFinanceCommand, getFinanceAgentStatus } from './externalFinanceAgent';
 
 /**
  * Agent Communication Service
@@ -46,8 +47,17 @@ export async function dispatchExternalCommand(
   });
 
   try {
-    // STUB IMPLEMENTATION: In production, this would make actual network calls
-    // to external agent systems. For now, we return a successful mock response.
+    // Route to specific external agents if available
+    // In production, this would use service discovery and network protocols
+    
+    if (command.target === 'FinanceAgent') {
+      // Delegate to the Finance Agent
+      console.log('[AgentComms] Routing to FinanceAgent');
+      return await processFinanceCommand(command);
+    }
+    
+    // STUB IMPLEMENTATION: For other agents, use mock responses
+    // In production, this would make actual network calls to external agent systems
     
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -157,9 +167,29 @@ export async function getAgentStatus(targetAgent: string): Promise<{
   version: string;
   latency?: number;
 }> {
-  // STUB IMPLEMENTATION: In production, this would ping the actual agent
   console.log(`[AgentComms] Checking status of agent: ${targetAgent}`);
   
+  // Check if it's the Finance Agent
+  if (targetAgent === 'FinanceAgent') {
+    try {
+      const status = getFinanceAgentStatus();
+      return {
+        available: status.available,
+        version: status.version,
+        latency: 10, // Mock latency since it's local
+      };
+    } catch (error) {
+      console.error(`[AgentComms] Error getting FinanceAgent status:`, error);
+      return {
+        available: false,
+        version: 'unknown',
+        latency: undefined,
+      };
+    }
+  }
+  
+  // STUB IMPLEMENTATION: For other agents, return mock status
+  // In production, this would ping the actual agent
   return {
     available: true,
     version: '1.0.0-stub',
