@@ -1194,6 +1194,8 @@ export class SqliteStorage implements IStorage {
       summaryText: s.summary_text,
       topics: s.topics ? JSON.parse(s.topics) : [],
       emotionalTone: s.emotional_tone,
+      financialSummary: null,
+      medicalNotes: null,
       createdAt: new Date(s.created_at),
       updatedAt: new Date(s.updated_at),
     }));
@@ -1212,6 +1214,8 @@ export class SqliteStorage implements IStorage {
       summaryText: summary.summary_text,
       topics: summary.topics ? JSON.parse(summary.topics) : [],
       emotionalTone: summary.emotional_tone,
+      financialSummary: null,
+      medicalNotes: null,
       createdAt: new Date(summary.created_at),
       updatedAt: new Date(summary.updated_at),
     };
