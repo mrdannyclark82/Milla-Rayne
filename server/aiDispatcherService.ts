@@ -298,7 +298,7 @@ export async function dispatchAIResponse(
 
   // Get Adaptive Persona Configuration (Phase IV - A/B Testing)
   let adaptivePersona = null;
-  let conversationStartTime = Date.now();
+  const conversationStartTime = Date.now();
   try {
     const { getActivePersonaConfig } = await import('./selfEvolutionService');
     adaptivePersona = getActivePersonaConfig();

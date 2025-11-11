@@ -533,7 +533,7 @@ export class SqliteStorage implements IStorage {
       lastLoginAt: null,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { password, ...userWithoutPassword } = newUser;
     return userWithoutPassword as User;
   }

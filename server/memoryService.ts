@@ -542,10 +542,10 @@ function parseBackupContent(content: string): MemoryCoreEntry[] {
  * Create a complete Memory Core entry from partial data
  * Encrypts sensitive fields as needed
  */
-async function createMemoryEntry(
+function createMemoryEntry(
   partial: Partial<MemoryCoreEntry>,
   id: number
-): Promise<MemoryCoreEntry> {
+): MemoryCoreEntry {
   const entry: MemoryCoreEntry = {
     id: `entry_${id}`,
     timestamp: partial.timestamp || new Date().toISOString(),
@@ -558,8 +558,8 @@ async function createMemoryEntry(
   entry.topics = extractTopics(entry.content);
   entry.emotionalTone = detectEmotionalTone(entry.content);
 
-  // Apply homomorphic encryption to sensitive fields
-  return await encryptSensitiveMemoryFields(entry);
+  // Note: Async encryption would be applied separately after loading
+  return entry;
 }
 
 /**

@@ -47,7 +47,7 @@ function extractSearchQuery(message: string): string {
   const lowerMessage = message.toLowerCase();
 
   // Remove common trigger phrases to get the core query
-  let query = lowerMessage
+  const query = lowerMessage
     .replace(/youtube/gi, '')
     .replace(/show me|find|search for|play|watch|look for|get/gi, '')
     .replace(/videos? about|videos? on|videos? of/gi, '')
