@@ -207,16 +207,65 @@ class CodingAgent implements Agent {
   }
 
   /**
-   * Generate a code fix for an identified issue
+   * Generate a code fix for an identified issue using AI
    */
   private async generateCodeFix(issue: IssueIdentification): Promise<CodeFix> {
-    // This is a placeholder. In a production system, this would use an AI model
-    // to generate actual code fixes based on the issue description
-    return {
-      description: `Fix for ${issue.issueType}: ${issue.description}`,
-      files: issue.affectedFiles,
-      changes: `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
-    };
+    try {
+      // Use AI to generate a code fix based on the issue
+      const prompt = `As an expert software engineer, analyze and fix the following ${issue.severity} severity ${issue.issueType} issue:
+
+**Description:** ${issue.description}
+**Affected Files:** ${issue.affectedFiles.join(', ')}
+
+Please provide:
+1. A clear description of the fix
+2. The specific code changes needed
+3. Why this fix resolves the issue
+
+Format your response as JSON with keys: description, changes, reasoning`;
+
+      // Use OpenRouter service that's already configured
+      const { generateOpenRouterResponse } = await import('../openrouterService');
+
+      const result = await generateOpenRouterResponse(
+        prompt,
+        {
+          conversationHistory: [],
+          userName: 'CodingAgent',
+        },
+        'anthropic/claude-3-haiku'
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate fix');
+      }
+
+      let aiResponse;
+      try {
+        aiResponse = JSON.parse(result.content);
+      } catch {
+        // Fallback if AI doesn't return valid JSON
+        aiResponse = {
+          description: result.content.slice(0, 200),
+          changes: result.content,
+          reasoning: 'AI-generated fix',
+        };
+      }
+
+      return {
+        description: aiResponse.description || `Fix for ${issue.issueType}: ${issue.description}`,
+        files: issue.affectedFiles,
+        changes: aiResponse.changes || `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
+      };
+    } catch (error) {
+      console.error('Error generating AI fix, using fallback:', error);
+      // Fallback to simple fix description
+      return {
+        description: `Fix for ${issue.issueType}: ${issue.description}`,
+        files: issue.affectedFiles,
+        changes: `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue. Severity: ${issue.severity}. Requires manual review.`,
+      };
+    }
   }
 
   /**
