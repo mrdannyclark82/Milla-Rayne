@@ -917,3 +917,145 @@ export async function getSemanticMemoryContext(
 
   return `\n\nRelevant memories:\n${contextParts.join('\n\n')}`;
 }
+
+/**
+ * Store sensitive PII with automatic HE encryption
+ * 
+ * @param userId - User ID
+ * @param data - Sensitive data to encrypt and store
+ * @returns Success status
+ */
+export async function storeSensitiveMemory(
+  userId: string,
+  data: {
+    financialSummary?: string;
+    medicalNotes?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Encrypt sensitive fields
+    const encryptedData: { financialSummary?: string; medicalNotes?: string } = {};
+    
+    if (data.financialSummary) {
+      encryptedData.financialSummary = await encryptHomomorphic(data.financialSummary);
+      console.log('🔒 Encrypted financial summary with HE');
+    }
+    
+    if (data.medicalNotes) {
+      encryptedData.medicalNotes = await encryptHomomorphic(data.medicalNotes);
+      console.log('🔒 Encrypted medical notes with HE');
+    }
+    
+    // Store encrypted data via storage service
+    const { storage } = await import('./storage');
+    await storage.storeSensitiveMemory(userId, encryptedData);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error storing sensitive memory:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Retrieve sensitive PII with automatic HE decryption
+ * 
+ * @param userId - User ID
+ * @returns Decrypted sensitive data
+ */
+export async function retrieveSensitiveMemory(
+  userId: string
+): Promise<{
+  financialSummary?: string;
+  medicalNotes?: string;
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // Retrieve encrypted data from storage
+    const { storage } = await import('./storage');
+    const encrypted = await storage.getSensitiveMemory(userId);
+    
+    // Decrypt sensitive fields
+    const decrypted: { financialSummary?: string; medicalNotes?: string } = {};
+    
+    if (encrypted.financialSummary && isHomomorphicallyEncrypted(encrypted.financialSummary)) {
+      decrypted.financialSummary = await decryptHomomorphic(encrypted.financialSummary);
+      console.log('🔓 Decrypted financial summary');
+    }
+    
+    if (encrypted.medicalNotes && isHomomorphicallyEncrypted(encrypted.medicalNotes)) {
+      decrypted.medicalNotes = await decryptHomomorphic(encrypted.medicalNotes);
+      console.log('🔓 Decrypted medical notes');
+    }
+    
+    return {
+      ...decrypted,
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error retrieving sensitive memory:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * Search encrypted sensitive data
+ * 
+ * @param userId - User ID
+ * @param query - Search query
+ * @param field - Field to search ('financialSummary' or 'medicalNotes')
+ * @returns Search results with relevance scores
+ */
+export async function searchSensitiveMemory(
+  userId: string,
+  query: string,
+  field: 'financialSummary' | 'medicalNotes'
+): Promise<{
+  matches: boolean;
+  score: number;
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    // Retrieve encrypted data
+    const { storage } = await import('./storage');
+    const encrypted = await storage.getSensitiveMemory(userId);
+    
+    const encryptedField = encrypted[field];
+    
+    if (!encryptedField) {
+      return {
+        matches: false,
+        score: 0,
+        success: true,
+      };
+    }
+    
+    // Perform homomorphic query (searches without full decryption)
+    const result = await queryHomomorphic(encryptedField, query);
+    
+    console.log(`🔍 Searched encrypted ${field}: ${result.matches ? 'match found' : 'no match'}`);
+    
+    return {
+      matches: result.matches,
+      score: result.score,
+      success: true,
+    };
+  } catch (error) {
+    console.error('Error searching sensitive memory:', error);
+    return {
+      matches: false,
+      score: 0,
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+

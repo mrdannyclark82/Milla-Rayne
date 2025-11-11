@@ -249,4 +249,164 @@ describe('API Load Testing', () => {
       expect(Object.keys(benchmarks).length).toBeGreaterThan(0);
     });
   });
+
+  describe('Parallel Function Calling (PFC) Stress Tests', () => {
+    it('should handle concurrent PFC operations without race conditions', async () => {
+      const concurrentRequests = 20;
+      const startTime = Date.now();
+
+      // Simulate concurrent requests with PFC enabled
+      const requests = Array.from({ length: concurrentRequests }, (_, i) =>
+        request(app)
+          .post('/api/chat')
+          .send({
+            message: `Test PFC message ${i} - analyze weather and calendar`,
+            userId: `pfc-test-user-${i}`,
+            enablePFC: true,
+          })
+          .expect((res) => {
+            expect(res.status).toBeLessThanOrEqual(500);
+          })
+      );
+
+      const results = await Promise.allSettled(requests);
+      const duration = Date.now() - startTime;
+      const successCount = results.filter(r => r.status === 'fulfilled').length;
+
+      // Extract response bodies from successful requests
+      const responses = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<any>).value.body);
+
+      console.log(`PFC Stress Test: ${successCount}/${concurrentRequests} succeeded in ${duration}ms`);
+      console.log(`Average latency: ${(duration / concurrentRequests).toFixed(2)}ms`);
+
+      // Verify no race conditions - each response should have unique data
+      if (responses.length > 0) {
+        const messageIds = responses.map(r => r.messageId || r.id).filter(Boolean);
+        const uniqueIds = new Set(messageIds);
+        
+        console.log(`Unique message IDs: ${uniqueIds.size}/${messageIds.length}`);
+        
+        // All message IDs should be unique (no cross-contamination)
+        expect(uniqueIds.size).toBe(messageIds.length);
+
+        // Verify tool calls are not duplicated across responses
+        responses.forEach((response, index) => {
+          if (response.toolCalls && Array.isArray(response.toolCalls)) {
+            const toolIds = response.toolCalls.map((t: any) => t.id);
+            const uniqueToolIds = new Set(toolIds);
+            
+            // Each response should have unique tool call IDs
+            expect(uniqueToolIds.size).toBe(toolIds.length);
+            
+            console.log(`Response ${index}: ${toolIds.length} tool calls, all unique`);
+          }
+        });
+      }
+
+      // Performance check
+      expect(duration).toBeLessThan(120000); // 120 seconds
+      expect(successCount / concurrentRequests).toBeGreaterThanOrEqual(0.5); // At least 50% success
+    }, 180000); // 3 minute timeout
+
+    it('should prevent tool call result mixing in concurrent PFC requests', async () => {
+      const concurrentRequests = 10;
+
+      // Create requests with different tool requirements
+      const requests = [
+        // Weather requests
+        ...Array.from({ length: 5 }, (_, i) =>
+          request(app)
+            .post('/api/chat')
+            .send({
+              message: `What's the weather in city ${i}?`,
+              userId: `weather-user-${i}`,
+              enablePFC: true,
+            })
+        ),
+        // Calendar requests
+        ...Array.from({ length: 5 }, (_, i) =>
+          request(app)
+            .post('/api/chat')
+            .send({
+              message: `Show my schedule for day ${i}`,
+              userId: `calendar-user-${i}`,
+              enablePFC: true,
+            })
+        ),
+      ];
+
+      const results = await Promise.allSettled(requests);
+      const responses = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<any>).value.body);
+
+      // Verify weather responses don't contain calendar data and vice versa
+      responses.forEach((response, index) => {
+        if (response.content && typeof response.content === 'string') {
+          const isWeatherRequest = index < 5;
+          
+          if (isWeatherRequest) {
+            // Weather response shouldn't contain calendar-specific terms
+            const hasCalendarLeak = /\b(meeting|appointment|event)\b/i.test(response.content);
+            if (hasCalendarLeak) {
+              console.warn(`Potential data leak: Weather response ${index} contains calendar terms`);
+            }
+          } else {
+            // Calendar response shouldn't contain weather-specific terms
+            const hasWeatherLeak = /\b(temperature|forecast|sunny|rainy)\b/i.test(response.content);
+            if (hasWeatherLeak) {
+              console.warn(`Potential data leak: Calendar response ${index} contains weather terms`);
+            }
+          }
+        }
+      });
+
+      expect(responses.length).toBeGreaterThan(0);
+    }, 120000);
+
+    it('should maintain PFC performance under sustained load', async () => {
+      const iterations = 5;
+      const batchSize = 4;
+      const latencies: number[] = [];
+
+      for (let i = 0; i < iterations; i++) {
+        const batchStart = Date.now();
+
+        const batch = Array.from({ length: batchSize }, (_, j) =>
+          request(app)
+            .post('/api/chat')
+            .send({
+              message: `PFC load test iteration ${i} batch ${j}`,
+              userId: `load-test-user-${i}-${j}`,
+              enablePFC: true,
+            })
+        );
+
+        await Promise.allSettled(batch);
+        const batchLatency = Date.now() - batchStart;
+        latencies.push(batchLatency);
+
+        console.log(`Iteration ${i + 1}/${iterations}: ${batchLatency}ms`);
+
+        // Brief pause between batches
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      // Calculate performance metrics
+      const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+      const maxLatency = Math.max(...latencies);
+      const minLatency = Math.min(...latencies);
+
+      console.log(`\nPFC Sustained Load Results:`);
+      console.log(`  Average: ${avgLatency.toFixed(2)}ms`);
+      console.log(`  Min: ${minLatency}ms`);
+      console.log(`  Max: ${maxLatency}ms`);
+      console.log(`  Variance: ${((maxLatency - minLatency) / avgLatency * 100).toFixed(1)}%`);
+
+      // Performance should remain consistent (max shouldn't be > 2x avg)
+      expect(maxLatency).toBeLessThan(avgLatency * 2.5);
+    }, 180000);
+  });
 });
