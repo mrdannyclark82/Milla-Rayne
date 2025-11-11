@@ -1,68 +1,51 @@
 {
-  "tokenBalance": 150,
-  "transactions": [
-    {
-      "id": "txn_1762783949186_xel82vfkz",
-      "timestamp": 1762783949186,
-      "amount": 50,
-      "type": "earn",
-      "category": "bug_fix",
-      "description": "Fixed bug: Fixed test bug"
-    },
-    {
-      "id": "txn_1762783949186_yrm024h1y",
-      "timestamp": 1762783949186,
-      "amount": 100,
-      "type": "earn",
-      "category": "feature_development",
-      "description": "Developed feature: Implemented test feature"
-    }
-  ],
+  "tokenBalance": 0,
+  "transactions": [],
   "goals": [
     {
-      "id": "goal_1762726225381_tx4bafv7n",
+      "id": "goal_1762680810452_iiln02z36",
       "name": "First Bug Hunter",
       "description": "Fix your first 5 bugs",
       "targetTokens": 250,
-      "currentTokens": 150,
+      "currentTokens": 0,
       "reward": "Unlock advanced debugging tools",
       "priority": "medium",
-      "createdAt": 1762726225382,
+      "createdAt": 1762680810452,
       "status": "active"
     },
     {
-      "id": "goal_1762726225386_v83rnesyu",
+      "id": "goal_1762680810455_m9893wxj7",
       "name": "Feature Architect",
       "description": "Develop 3 complete features",
       "targetTokens": 300,
-      "currentTokens": 150,
+      "currentTokens": 0,
       "reward": "Gain ability to propose architectural changes",
       "priority": "high",
-      "createdAt": 1762726225386,
+      "createdAt": 1762680810455,
       "status": "active"
     },
     {
-      "id": "goal_1762726225389_is917gioi",
+      "id": "goal_1762680810458_8iwwun8c5",
       "name": "User Champion",
       "description": "Achieve 90%+ user satisfaction across 20 interactions",
       "targetTokens": 500,
-      "currentTokens": 150,
+      "currentTokens": 0,
       "reward": "Unlock personalized user experience features",
       "priority": "high",
-      "createdAt": 1762726225389,
+      "createdAt": 1762680810458,
       "status": "active"
     },
     {
-      "id": "goal_1762726225392_ac5r0dqb2",
+      "id": "goal_1762680810459_z6srzhwvp",
       "name": "Code Optimizer",
       "description": "Optimize 10 functions for better performance",
       "targetTokens": 300,
-      "currentTokens": 150,
+      "currentTokens": 0,
       "reward": "Access to advanced performance profiling",
       "priority": "medium",
-      "createdAt": 1762726225392,
+      "createdAt": 1762680810459,
       "status": "active"
     }
   ],
-  "lastUpdated": 1762783949186
+  "lastUpdated": 1762680810459
 }

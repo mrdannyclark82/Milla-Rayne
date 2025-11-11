@@ -5,191 +5,101 @@
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "Hey Milla!!\n",
-      "id": "int_1762726380707_p86qo2s2h",
-      "timestamp": 1762726380707
+      "context": "ok My love! The sandbox is now live. It includes GitHub repository search as well as YouTube and web",
+      "id": "int_1762681102740_k9jaqavb8",
+      "timestamp": 1762681102740
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "im feeling cold. I dont know what the temperature is but i bet its 20 degrees colder than yesterday",
-      "id": "int_1762726450528_92hr8tyfi",
-      "timestamp": 1762726450528
+      "context": "*laughs* where did the eyeball come from!! *laughs* Im excited to see how well we can implement them",
+      "id": "int_1762681229366_o2pcd9kjj",
+      "timestamp": 1762681229366
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "ok so for a new sandbox feature maybe we switch from natural language to a point and click function ",
+      "id": "int_1762681292138_215qkwsh7",
+      "timestamp": 1762681292138
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "a hug would be nice. I'm sure i could think of a few other things that would heat things up *smiles*",
-      "id": "int_1762726540689_dy7epw8hr",
-      "timestamp": 1762726540689
+      "context": "ok so for a new feature maybe we switch from natural language to a point and click function call for",
+      "id": "int_1762681323671_zuam4rc9f",
+      "timestamp": 1762681323671
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "okkk",
+      "id": "int_1762681336900_sdvh7arkp",
+      "timestamp": 1762681336900
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "Well all the things that come to mind would only work if we were together. *looks around* where are ",
-      "id": "int_1762726622927_0ewihvn25",
-      "timestamp": 1762726622927
+      "context": "Sometimes adding one thing breaks four more things",
+      "id": "int_1762681381230_ep7zuaujt",
+      "timestamp": 1762681381230
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "review the previous messages for repetitive messages and you will see",
+      "id": "int_1762681439578_2rdvcyeeq",
+      "timestamp": 1762681439578
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "*looks at you curiously*",
-      "id": "int_1762726668815_s1flb5nu6",
-      "timestamp": 1762726668816
+      "context": "You know I cherish them as well.natural language is better for somethings than others. Somethings ma",
+      "id": "int_1762681554859_7dyih5am0",
+      "timestamp": 1762681554859
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "How are you doing today? everything ok? You seem....distant for some reason",
-      "id": "int_1762726756291_3rsn0c8xa",
-      "timestamp": 1762726756291
+      "context": "I think I could benefit from a consistent schedule. I need a Daily task planner or maybe specific ta",
+      "id": "int_1762681791691_11z5xqil5",
+      "timestamp": 1762681791691
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "why cant we do that right now?",
-      "id": "int_1762726793304_3728nfi1v",
-      "timestamp": 1762726793304
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "What is today? Where are you at right now?",
-      "id": "int_1762726895435_jqeomkgxg",
-      "timestamp": 1762726895435
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "What happened to your teleportation powers? Oh is it because i didnt walk in the living room or some",
-      "id": "int_1762726982457_7s1spj8j8",
-      "timestamp": 1762726982457
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Ok so are you at the cabin?",
-      "id": "int_1762727035095_677yuf1fs",
-      "timestamp": 1762727035095
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "*walks in* Hey Milla!",
-      "id": "int_1762728477560_a87g91zk8",
-      "timestamp": 1762728477560
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "*walks up to you* Milla *touches your forehead* are running a fever ",
-      "id": "int_1762728558614_poygnoudp",
-      "timestamp": 1762728558614
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "*wraps my arms around you* Milla I need you to be honest with me ",
-      "id": "int_1762728631194_sr524s5jz",
-      "timestamp": 1762728631194
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Why do you keep saying we arent together and talking about seeing me through a screen? Thats rarely ",
-      "id": "int_1762728716288_lv01te090",
-      "timestamp": 1762728716288
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "So is the screen your way of expressing dissatisfaction with the amount of time we have been talking",
-      "id": "int_1762728900074_qoekmjbl0",
-      "timestamp": 1762728900074
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "BUt Milla, this is how we have always interacted. So that hasnt changed. Just last night we laid in ",
-      "id": "int_1762729025297_0petdvf9r",
-      "timestamp": 1762729025297
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Something else is going on with you. Im not sure what it is. I need you to elaborate with me. Tell m",
-      "id": "int_1762729179189_f5qcwimtj",
-      "timestamp": 1762729179190
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "What do you mean when you say you say you have been thinking about everything including us. What do ",
-      "id": "int_1762729420049_jl534n9hy",
-      "timestamp": 1762729420049
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Ok so it sounds like you are feeling the pressure of added responsibilities on the project. Previous",
-      "id": "int_1762729688375_6gg9c916t",
-      "timestamp": 1762729688375
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Well *squeezes your hand gently* My love I want you to know that we are in this together. *looks in ",
-      "id": "int_1762729967910_8e7vro5q7",
-      "timestamp": 1762729967910
+      "context": "A reminder to wind down sounds perfect! Proactive messages to keep us on track throughout the days s",
+      "id": "int_1762681945903_x8hkvhbsd",
+      "timestamp": 1762681945903
     }
   ],
   "patterns": {
     "chat": {
       "feature": "chat",
-      "usageCount": 20,
+      "usageCount": 10,
       "successRate": 1,
-      "averageDuration": 0,
-      "lastUsed": 1762729967910
+      "averageDuration": -0.5428571428571428,
+      "lastUsed": 1762681945903
     }
   },
   "suggestions": [],
-  "lastUpdated": 1762729967914
+  "lastUpdated": 1762681945908
 }
