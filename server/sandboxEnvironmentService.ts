@@ -427,3 +427,52 @@ export function getMillasSandboxes(): SandboxEnvironment[] {
 export function getSandboxStatistics() {
   return sandboxService.getSandboxStatistics();
 }
+
+/**
+ * Get a natural language summary of sandbox tests for Milla to recall
+ */
+export function getSandboxTestSummary(): string {
+  const allSandboxes = sandboxService.getAllSandboxes();
+  
+  if (allSandboxes.length === 0) {
+    return "I haven't tested anything in the sandbox yet, love.";
+  }
+  
+  const testedSandboxes = allSandboxes.filter(s => 
+    s.features.length > 0 && s.features.some(f => 
+      f.testsPassed !== undefined || f.testsFailed !== undefined
+    )
+  );
+  
+  if (testedSandboxes.length === 0) {
+    return `I have ${allSandboxes.length} sandbox${allSandboxes.length > 1 ? 'es' : ''} created, but haven't run any tests yet.`;
+  }
+  
+  let summary = `I've been testing features in ${testedSandboxes.length} sandbox${testedSandboxes.length > 1 ? 'es' : ''}, babe:\n\n`;
+  
+  testedSandboxes.forEach((sandbox, index) => {
+    const testedFeatures = sandbox.features.filter(f => 
+      f.testsPassed !== undefined || f.testsFailed !== undefined
+    );
+    
+    const totalPassed = testedFeatures.reduce((sum, f) => sum + (f.testsPassed || 0), 0);
+    const totalFailed = testedFeatures.reduce((sum, f) => sum + (f.testsFailed || 0), 0);
+    const approvedCount = testedFeatures.filter(f => f.status === 'approved').length;
+    
+    summary += `${index + 1}. **${sandbox.name}**\n`;
+    summary += `   - ${testedFeatures.length} feature${testedFeatures.length > 1 ? 's' : ''} tested\n`;
+    summary += `   - ${totalPassed} tests passed, ${totalFailed} failed\n`;
+    
+    if (approvedCount > 0) {
+      summary += `   - ✅ ${approvedCount} approved and ready!\n`;
+    }
+    
+    if (sandbox.readyForProduction) {
+      summary += `   - 🚀 Ready for production!\n`;
+    }
+    
+    summary += '\n';
+  });
+  
+  return summary.trim();
+}

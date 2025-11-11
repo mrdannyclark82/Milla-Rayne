@@ -729,18 +729,108 @@ export async function searchMemoryCore(
  */
 export async function getMemoryCoreContext(query: string): Promise<string> {
   const searchResults = await searchMemoryCore(query, 5);
+  
+  // Check if query is about sandbox or testing
+  const lowerQuery = query.toLowerCase();
+  const isSandboxQuery = 
+    lowerQuery.includes('sandbox') ||
+    lowerQuery.includes('test') ||
+    lowerQuery.includes('what have you tested') ||
+    lowerQuery.includes('what did you test');
+
+  let contextString = '';
+  
+  // Add sandbox test summary if query is about testing
+  if (isSandboxQuery) {
+    try {
+      const { getSandboxTestSummary } = await import('./sandboxEnvironmentService');
+      const sandboxSummary = getSandboxTestSummary();
+      if (sandboxSummary) {
+        contextString += `\n[Sandbox Testing Memory]:\n${sandboxSummary}\n`;
+      }
+    } catch (error) {
+      console.error('Error getting sandbox summary:', error);
+    }
+  }
 
   if (searchResults.length === 0) {
-    return '';
+    return contextString || '';
   }
 
   const contextEntries = searchResults.map((result) => {
     const entry = result.entry;
+    let content = entry.content;
+    
+    // Filter out repository analysis content - these are too long and technical
+    const repoKeywords = [
+      'repository analysis',
+      'codebase',
+      'architecture is',
+      'key insights',
+      'looking through',
+      'typescript with',
+      'areas where you could enhance',
+      'test coverage',
+      'documentation could use',
+      'pull request',
+      'commit message'
+    ];
+    
+    const lowerContent = content.toLowerCase();
+    if (repoKeywords.some(keyword => lowerContent.includes(keyword))) {
+      // Skip repository analysis memories
+      return null;
+    }
+    
+    // Clean up content - remove nested metadata patterns that cause display issues
+    // Remove patterns like "[Danny]: [date]" or "[Milla]: [date]" from the content
+    content = content.replace(/\[(?:Danny|Milla)\]:\s*\[[\d-]+\]/gi, '').trim();
+    
+    // Remove "User asked:" or "Milla responded:" prefixes
+    content = content.replace(/^(?:User asked|Milla responded):\s*["']?/gi, '').trim();
+    
+    // Remove JSON-like content patterns that shouldn't be in natural text
+    content = content.replace(/\[(?:Danny|Milla)\]:\s*["']?content["']?:\s*/gi, '').trim();
+    
+    // Remove trailing quotes that might be left over
+    content = content.replace(/["']$/g, '').trim();
+    
+    // If the content starts with an action asterisk or contains roleplay, keep it short
+    if (content.startsWith('*') || content.includes('*')) {
+      // Find the first complete thought (up to first period after action)
+      const firstSentence = content.match(/^[^.!?]+[.!?]/);
+      if (firstSentence) {
+        content = firstSentence[0].trim();
+      } else {
+        content = content.substring(0, 150) + '...';
+      }
+    }
+    
+    // If content is still very long or looks malformed, truncate intelligently
+    if (content.length > 200) {
+      // Try to find a natural break point
+      const sentences = content.match(/[^.!?]+[.!?]+/g);
+      if (sentences && sentences.length > 0) {
+        content = sentences[0].trim();
+      } else {
+        content = content.substring(0, 200) + '...';
+      }
+    }
+    
+    // Only include if there's actual meaningful content left
+    if (content.length < 10 || content.includes('"content":')) {
+      return null;
+    }
+    
     const speaker = entry.speaker === 'milla' ? 'Milla' : 'Danny';
-    return `[${speaker}]: ${entry.content}`;
-  });
+    return `[${speaker}]: ${content}`;
+  }).filter(Boolean); // Remove null entries
 
-  return `\nRelevant Memory Context:\n${contextEntries.join('\n')}\n`;
+  if (contextEntries.length > 0) {
+    contextString += `\nRelevant Memory Context:\n${contextEntries.join('\n')}\n`;
+  }
+
+  return contextString;
 }
 
 /**
