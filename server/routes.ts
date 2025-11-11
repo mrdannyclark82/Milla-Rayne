@@ -810,7 +810,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     console.log('--- /api/chat handler called ---');
     console.log('CHAT API CALLED');
     try {
-      let { message, audioData, audioMimeType } = req.body;
+      const { message, audioData, audioMimeType } = req.body;
       let userEmotionalState: VoiceAnalysisResult['emotionalTone'] | undefined;
 
       if (audioData && audioMimeType) {

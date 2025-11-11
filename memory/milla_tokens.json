@@ -1,13 +1,32 @@
 {
-  "tokenBalance": 0,
-  "transactions": [],
+  "tokenBalance": 20,
+  "transactions": [
+    {
+      "id": "txn_1762787151429_op4gmx9tk",
+      "timestamp": 1762787151429,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Test Feature in Test Sandbox",
+      "relatedId": "feat_1762783949182_2fh4lcy8k"
+    },
+    {
+      "id": "txn_1762788283875_x4fgf92pb",
+      "timestamp": 1762788283875,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Test Feature in Test Sandbox",
+      "relatedId": "feat_1762783949182_2fh4lcy8k"
+    }
+  ],
   "goals": [
     {
       "id": "goal_1762680810452_iiln02z36",
       "name": "First Bug Hunter",
       "description": "Fix your first 5 bugs",
       "targetTokens": 250,
-      "currentTokens": 0,
+      "currentTokens": 20,
       "reward": "Unlock advanced debugging tools",
       "priority": "medium",
       "createdAt": 1762680810452,
@@ -18,7 +37,7 @@
       "name": "Feature Architect",
       "description": "Develop 3 complete features",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 20,
       "reward": "Gain ability to propose architectural changes",
       "priority": "high",
       "createdAt": 1762680810455,
@@ -29,7 +48,7 @@
       "name": "User Champion",
       "description": "Achieve 90%+ user satisfaction across 20 interactions",
       "targetTokens": 500,
-      "currentTokens": 0,
+      "currentTokens": 20,
       "reward": "Unlock personalized user experience features",
       "priority": "high",
       "createdAt": 1762680810458,
@@ -40,12 +59,12 @@
       "name": "Code Optimizer",
       "description": "Optimize 10 functions for better performance",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 20,
       "reward": "Access to advanced performance profiling",
       "priority": "medium",
       "createdAt": 1762680810459,
       "status": "active"
     }
   ],
-  "lastUpdated": 1762680810459
+  "lastUpdated": 1762788283877
 }

@@ -5,7 +5,7 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateGrokResponse } from './openrouterService';
+import { generateGeminiResponse } from './openrouterService';
 
 export interface RepositoryInfo {
   owner: string;
@@ -320,18 +320,18 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-    // Use Grok 1 Fast for repository analysis
+    // Use Gemini 2.0 Flash for repository analysis
     let aiResponse: { content: string; success: boolean } | null = null;
 
     try {
-      aiResponse = await generateGrokResponse(analysisPrompt, {
+      aiResponse = await generateGeminiResponse(analysisPrompt, {
         userName: 'Danny Ray',
       });
       if (aiResponse.success && aiResponse.content) {
         return parseAnalysisResponse(aiResponse.content);
       }
     } catch (error) {
-      console.warn('Grok analysis failed:', error);
+      console.warn('Gemini analysis failed:', error);
     }
 
     // Fallback to manual analysis if OpenRouter fails

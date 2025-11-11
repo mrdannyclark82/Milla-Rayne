@@ -1,0 +1,12 @@
+{
+  "name": "copilot-swe-agent",
+  "version": "0.0.1",
+  "description": "Copilot SWE agent wrapper (diagnostics)",
+  "main": "index.js",
+  "scripts": {
+    "check-callback": "node ./scripts/check-callback.js"
+  },
+  "dependencies": {
+    "undici": "^6.9.0"
+  }
+}

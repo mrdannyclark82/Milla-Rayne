@@ -16,8 +16,8 @@
           "files": [
             "test.ts"
           ],
-          "status": "testing",
-          "testsPassed": 1,
+          "status": "approved",
+          "testsPassed": 3,
           "testsFailed": 0,
           "addedAt": 1762783949182
         }
@@ -32,9 +32,27 @@
           "passed": true,
           "details": "All tests passed successfully",
           "duration": 1207.8809326948904
+        },
+        {
+          "id": "test_1762787151417_nvacnovdf",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1762787151417,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2274.8427196101693
+        },
+        {
+          "id": "test_1762788283858_51box3w6e",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1762788283858,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2219.3581875486975
         }
       ]
     }
   },
-  "lastUpdated": 1762783949184
+  "lastUpdated": 1762788283859
 }

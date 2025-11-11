@@ -1,5 +1,18 @@
 {
-  "actions": [],
+  "actions": [
+    {
+      "id": "action_1762788283889_gsynfujsy",
+      "timestamp": 1762788283889,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: Test Sandbox",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1762783949017_8kqtt85st"
+      ]
+    }
+  ],
   "lastCheck": 1762782761017,
-  "lastUpdated": 1762784499740
+  "lastUpdated": 1762841325612
 }
