@@ -38,6 +38,30 @@ export async function dispatchExternalCommand(
 ): Promise<ExternalAgentResponse> {
   const startTime = Date.now();
   
+  // Security check: Validate target agent against whitelist
+  const allowedAgents = [
+    'FinanceAgent',
+    'HealthAgent',
+    'TravelAgent',
+    'SmartHomeAgent',
+    'CalendarAgent',
+  ];
+  
+  if (!allowedAgents.includes(command.target)) {
+    console.warn(`[AgentComms] ⚠️ Unauthorized agent target: ${command.target}`);
+    return {
+      success: false,
+      statusCode: 'UNAUTHORIZED',
+      data: null,
+      metadata: {
+        executionTime: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+        agentVersion: '1.0.0',
+      },
+      error: `Agent target '${command.target}' is not in the approved whitelist`,
+    };
+  }
+  
   // Log the command for debugging and audit purposes
   console.log('[AgentComms] Dispatching external command:', {
     target: command.target,
