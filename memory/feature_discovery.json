@@ -1,5 +1,205 @@
 {
-  "features": [],
-  "repositories": [],
-  "lastUpdated": 1762726286330
+  "features": [
+    {
+      "id": "feat_1762900866375_dd4iyv75r",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "source": "github",
+      "sourceUrl": "https://github.com/ChatGPTNextWeb/NextChat",
+      "repositoryExample": "NextChat",
+      "popularity": 9,
+      "relevance": 7,
+      "implementationComplexity": "low",
+      "estimatedValue": 8,
+      "discoveredAt": 1762900866375,
+      "status": "in_sandbox",
+      "tags": [
+        "chat",
+        "realtime"
+      ]
+    },
+    {
+      "id": "feat_1762900866375_gmvbizcij",
+      "name": "Message History",
+      "description": "Feature inspired by NextChat: Message History",
+      "source": "github",
+      "sourceUrl": "https://github.com/ChatGPTNextWeb/NextChat",
+      "repositoryExample": "NextChat",
+      "popularity": 9,
+      "relevance": 7,
+      "implementationComplexity": "low",
+      "estimatedValue": 8,
+      "discoveredAt": 1762900866375,
+      "status": "in_sandbox",
+      "tags": []
+    },
+    {
+      "id": "feat_1762900866375_c47gwzojp",
+      "name": "Chat Analytics",
+      "description": "Feature inspired by NextChat: Chat Analytics",
+      "source": "github",
+      "sourceUrl": "https://github.com/ChatGPTNextWeb/NextChat",
+      "repositoryExample": "NextChat",
+      "popularity": 9,
+      "relevance": 7,
+      "implementationComplexity": "high",
+      "estimatedValue": 8,
+      "discoveredAt": 1762900866375,
+      "status": "discovered",
+      "tags": [
+        "chat",
+        "analytics"
+      ]
+    }
+  ],
+  "repositories": [
+    {
+      "repositoryUrl": "https://github.com/ChatGPTNextWeb/NextChat",
+      "repositoryName": "NextChat",
+      "stars": 86392,
+      "language": "TypeScript",
+      "features": [
+        "Real-time Chat",
+        "Message History",
+        "Chat Analytics"
+      ],
+      "interestingPatterns": [],
+      "scannedAt": 1762900866375
+    },
+    {
+      "repositoryUrl": "https://github.com/LAION-AI/Open-Assistant",
+      "repositoryName": "Open-Assistant",
+      "stars": 37493,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900866375
+    },
+    {
+      "repositoryUrl": "https://github.com/chatboxai/chatbox",
+      "repositoryName": "chatbox",
+      "stars": 37381,
+      "language": "TypeScript",
+      "features": [
+        "Real-time Chat",
+        "Message History",
+        "Chat Analytics"
+      ],
+      "interestingPatterns": [],
+      "scannedAt": 1762900866375
+    },
+    {
+      "repositoryUrl": "https://github.com/TabbyML/tabby",
+      "repositoryName": "tabby",
+      "stars": 32393,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900866375
+    },
+    {
+      "repositoryUrl": "https://github.com/khoj-ai/khoj",
+      "repositoryName": "khoj",
+      "stars": 31542,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900866375
+    },
+    {
+      "repositoryUrl": "https://github.com/f/awesome-chatgpt-prompts",
+      "repositoryName": "awesome-chatgpt-prompts",
+      "stars": 136397,
+      "language": "TypeScript",
+      "features": [
+        "Real-time Chat",
+        "Message History",
+        "Chat Analytics"
+      ],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867236
+    },
+    {
+      "repositoryUrl": "https://github.com/rasbt/LLMs-from-scratch",
+      "repositoryName": "LLMs-from-scratch",
+      "stars": 78452,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867236
+    },
+    {
+      "repositoryUrl": "https://github.com/fighting41love/funNLP",
+      "repositoryName": "funNLP",
+      "stars": 77136,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867236
+    },
+    {
+      "repositoryUrl": "https://github.com/xtekky/gpt4free",
+      "repositoryName": "gpt4free",
+      "stars": 65518,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867236
+    },
+    {
+      "repositoryUrl": "https://github.com/pathwaycom/llm-app",
+      "repositoryName": "llm-app",
+      "stars": 46716,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867236
+    },
+    {
+      "repositoryUrl": "https://github.com/RasaHQ/rasa",
+      "repositoryName": "rasa",
+      "stars": 20838,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867589
+    },
+    {
+      "repositoryUrl": "https://github.com/HeyWillow/willow",
+      "repositoryName": "willow",
+      "stars": 2898,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867589
+    },
+    {
+      "repositoryUrl": "https://github.com/rhasspy/rhasspy",
+      "repositoryName": "rhasspy",
+      "stars": 2689,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867589
+    },
+    {
+      "repositoryUrl": "https://github.com/zixiiu/Digital_Life_Server",
+      "repositoryName": "Digital_Life_Server",
+      "stars": 2548,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867589
+    },
+    {
+      "repositoryUrl": "https://github.com/Priler/jarvis",
+      "repositoryName": "jarvis",
+      "stars": 2540,
+      "language": "TypeScript",
+      "features": [],
+      "interestingPatterns": [],
+      "scannedAt": 1762900867589
+    }
+  ],
+  "lastUpdated": 1762900871600
 }
