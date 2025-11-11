@@ -294,3 +294,123 @@ export async function loginOrRegisterWithGoogle(
     return { success: false, error: 'Failed to authenticate with Google' };
   }
 }
+
+/**
+ * ZKP-based authentication (Decentralized future implementation)
+ * 
+ * This function demonstrates how Zero-Knowledge Proof authentication would work
+ * in a decentralized, self-sovereign identity system. The user proves their
+ * identity without revealing sensitive PII.
+ * 
+ * Future Integration:
+ * - This will replace traditional password-based authentication
+ * - Users will prove identity ownership via ZKP instead of passwords
+ * - Sensitive data remains encrypted in decentralized vault
+ * - No centralized token server required
+ * 
+ * @param userId - User identifier
+ * @param zkProof - Zero-Knowledge Proof from user
+ * @returns Authentication result with session if successful
+ */
+export async function loginUserWithZKP(
+  userId: string,
+  zkProof: string
+): Promise<{
+  success: boolean;
+  user?: Partial<User>;
+  sessionToken?: string;
+  error?: string;
+}> {
+  try {
+    console.log(`[Auth] Attempting ZKP authentication for user: ${userId}`);
+    
+    // Import decentralization service
+    const { verifyIdentityZKP } = await import('./decentralizationService');
+    
+    // Verify identity using Zero-Knowledge Proof
+    // This checks HE-encrypted vault data without revealing PII
+    const isVerified = await verifyIdentityZKP(userId, zkProof);
+    
+    if (!isVerified) {
+      console.warn(`[Auth] ZKP verification failed for user: ${userId}`);
+      return { 
+        success: false, 
+        error: 'Identity verification failed - invalid ZK proof' 
+      };
+    }
+    
+    // Retrieve user record (for session creation)
+    const user = await storage.getUserById(userId);
+    if (!user) {
+      return { 
+        success: false, 
+        error: 'User not found' 
+      };
+    }
+    
+    // Generate session token (traditional approach for now)
+    // In pure decentralized system, this would be a self-signed JWT
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(
+      Date.now() + SESSION_EXPIRY_HOURS * 60 * 60 * 1000
+    );
+    
+    // Create session
+    await storage.createUserSession({
+      userId: user.id,
+      sessionToken,
+      expiresAt,
+    });
+    
+    // Update last login
+    await storage.updateUserLastLogin(user.id);
+    
+    console.log(`[Auth] ✅ ZKP authentication successful for user: ${userId}`);
+    console.log(`[Auth] Note: Verified identity without exposing PII from HE-encrypted vault`);
+    
+    return {
+      success: true,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+      sessionToken,
+    };
+  } catch (error) {
+    console.error('[Auth] ZKP authentication error:', error);
+    return { 
+      success: false, 
+      error: 'ZKP authentication failed' 
+    };
+  }
+}
+
+/**
+ * Conceptual hook for future decentralized authentication
+ * 
+ * This demonstrates how ZKP verification would integrate into the login flow:
+ * 
+ * 1. User generates ZK proof locally (client-side)
+ * 2. Proof is sent to server instead of password
+ * 3. Server verifies proof against HE-encrypted vault data
+ * 4. Access granted without revealing sensitive PII
+ * 
+ * Benefits:
+ * - No passwords stored on server
+ * - User controls their identity data
+ * - Verification without data exposure
+ * - Decentralized, self-sovereign identity
+ * 
+ * Future: This would replace centralized token checks entirely
+ */
+export function conceptualZKPAuthenticationFlow(): void {
+  console.log('[Auth] Conceptual ZKP Authentication Flow:');
+  console.log('[Auth] 1. User creates ZK proof locally (proves identity ownership)');
+  console.log('[Auth] 2. Proof sent to server instead of password');
+  console.log('[Auth] 3. Server verifies using verifyIdentityZKP()');
+  console.log('[Auth] 4. HE-encrypted vault data checked without decryption');
+  console.log('[Auth] 5. Access granted - PII never exposed');
+  console.log('[Auth] Future: Replace centralized JWT with decentralized DID tokens');
+}
+
