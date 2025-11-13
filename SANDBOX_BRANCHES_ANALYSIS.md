@@ -110,7 +110,7 @@ The numeric suffixes appear to be Unix timestamps (milliseconds since epoch):
 ## Recommendations
 
 1. **Cleanup candidates**: 
-   - The 6 identical test-sandbox branches from late November can likely be deleted as they contain no unique changes
+   - The 6 identical test-sandbox branches from mid-November can likely be deleted as they contain no unique changes
    
 2. **Feature development active**:
    - sandbox/message-history_1762900870809 and sandbox/real-time-chat_1762900867630 are actively used and contain significant feature work
