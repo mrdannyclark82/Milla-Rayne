@@ -34,7 +34,7 @@ The repository contains **8 sandbox branches** in total:
   - AI-powered code fix generation
   - Callback wrapper fixes
 
-### 4-8. sandbox/test-sandbox_1762974283374, _1762974384933, _1762974535101, _1762974668554, _1762974731646, _1762974860827
+### 4-9. sandbox/test-sandbox_1762974283374, _1762974384933, _1762974535101, _1762974668554, _1762974731646, _1762974860827
 - **Purpose**: Multiple test sandbox instances
 - **Latest Commit**: a5d7e90 - "fix: replace OpenRouter Grok with OpenAI for GitHub repository analysis"
 - **Status**: **ALL IDENTICAL** - All point to the same commit as the main branch
@@ -97,15 +97,15 @@ The repository contains **8 sandbox branches** in total:
 ## Branch Purposes by Timestamp Pattern
 
 The numeric suffixes appear to be Unix timestamps (milliseconds since epoch):
-- **1762852736031**: ~January 11, 2026 (oldest test-sandbox)
-- **1762900867630**: ~November 13, 2025 (real-time-chat)
-- **1762900870809**: ~November 13, 2025 (message-history)
-- **1762974283374**: ~November 14, 2025 (newer test-sandbox branches)
-- **1762974384933**: ~November 14, 2025
-- **1762974535101**: ~November 14, 2025
-- **1762974668554**: ~November 14, 2025
-- **1762974731646**: ~November 14, 2025
-- **1762974860827**: ~November 14, 2025
+- **1762852736031**: November 11, 2025 09:18 UTC (oldest test-sandbox)
+- **1762900867630**: November 11, 2025 22:41 UTC (real-time-chat)
+- **1762900870809**: November 11, 2025 22:41 UTC (message-history)
+- **1762974283374**: November 12, 2025 19:04 UTC (newer test-sandbox branches)
+- **1762974384933**: November 12, 2025 19:06 UTC
+- **1762974535101**: November 12, 2025 19:08 UTC
+- **1762974668554**: November 12, 2025 19:11 UTC
+- **1762974731646**: November 12, 2025 19:12 UTC
+- **1762974860827**: November 12, 2025 19:14 UTC
 
 ## Recommendations
 
