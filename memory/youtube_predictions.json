@@ -1,6 +1,13 @@
 {
   "watchHistory": [
     {
+      "videoId": "FwOTs4UxQS4",
+      "title": "AI Agents, Clearly Explained",
+      "query": "search  for ai agents",
+      "timestamp": 1763109803141,
+      "channelName": "Jeff Su"
+    },
+    {
       "videoId": "ZJnZw23Irq8",
       "title": "#ChatGPT vs #Gemini vs #Replit vs #Deepseek – Who Coded the Best #SnakeGame in JS? 🐍 #codebyunknown",
       "query": "search  gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!",
@@ -80,7 +87,8 @@
       "search  for cli ai coding": 1,
       "music on": 2,
       "search  for this gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!": 1,
-      "search  gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!": 1
+      "search  gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!": 1,
+      "search  for ai agents": 1
     },
     "topChannels": {
       "The Pet Collective": 1,
@@ -89,10 +97,12 @@
       "GilbartBlox": 1,
       "NetworkChuck": 1,
       "7clouds": 2,
-      "Code By Unknown": 2
+      "Code By Unknown": 2,
+      "Jeff Su": 1
     },
     "topCategories": {},
     "timePreferences": {
+      "2": 1,
       "14": 2,
       "16": 3,
       "19": 1,

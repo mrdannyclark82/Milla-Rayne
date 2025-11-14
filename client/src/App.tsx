@@ -69,6 +69,8 @@ function App() {
 
   useNeutralizeLegacyBackground();
   const [showSharedNotepad, setShowSharedNotepad] = useState(false);
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
   
   // XAI Transparency state
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
@@ -495,6 +497,24 @@ function App() {
             onToggleSharedNotepad={() =>
               setShowSharedNotepad(!showSharedNotepad)
             }
+            onShowKnowledgeBase={() => {
+              setUiCommand({
+                action: 'SHOW_COMPONENT',
+                componentName: 'KnowledgeBaseSearch',
+                data: {}
+              });
+            }}
+            onShowYoutubeMemories={() =>
+              setShowYoutubeMemories(!showYoutubeMemories)
+            }
+            onShowFeatures={() => {
+              // TODO: Add features panel
+              console.log('Show features panel');
+            }}
+            onShowSettings={() => {
+              // TODO: Add settings panel
+              console.log('Show settings panel');
+            }}
           />
           <SharedNotepad
             isOpen={showSharedNotepad}

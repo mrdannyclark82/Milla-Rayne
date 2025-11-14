@@ -5885,6 +5885,23 @@ async function generateAIResponse(
       return {
         content: response,
         millalyzer_analysis: analysis, // Pass full analysis for future interactions
+        uiCommand: {
+          action: 'SHOW_COMPONENT' as const,
+          componentName: 'VideoAnalysisPanel',
+          data: {
+            analysis: {
+              videoId,
+              title: analysis.title,
+              type: analysis.type,
+              summary: analysis.summary,
+              keyPoints: analysis.keyPoints,
+              codeSnippets: analysis.codeSnippets,
+              cliCommands: analysis.cliCommands,
+              actionableItems: analysis.actionableItems,
+              transcriptAvailable: analysis.transcriptAvailable,
+            }
+          }
+        }
       };
     } catch (error: any) {
       console.error('millAlyzer error:', error);
