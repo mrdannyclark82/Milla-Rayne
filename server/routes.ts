@@ -362,6 +362,24 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // Get feature flags configuration
+  app.get('/api/feature-flags', async (req, res) => {
+    try {
+      const { getFeatureFlags } = await import('./featureFlags');
+      const flags = getFeatureFlags();
+      res.json({
+        success: true,
+        flags,
+      });
+    } catch (error) {
+      console.error('Error getting feature flags:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to get feature flags' 
+      });
+    }
+  });
+
   // Get XAI reasoning data for a session
   app.get('/api/xai/session/:sessionId', async (req, res) => {
     try {
