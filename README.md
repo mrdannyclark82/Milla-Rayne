@@ -8,13 +8,9 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
 
->Milla-Rayne is a pioneering digital intelligence platform, architected not merely as an assistant, but as a self-evolving, cognitive entity. Its core design pushes the boundaries of human-computer interaction, weaving together cutting-edge AI research with hardened, production-grade systems.
+>Milla-Rayne is a pioneering digital intelligence platform, architected as an assistant. Its core design pushes the boundaries of human-computer interaction, weaving together cutting-edge AI research with hardened, production-grade systems.
 
-🧠 The Metacognitive Core: Deep Intelligence & Self-Awareness
-The system's intelligence is powered by a sophisticated metacognitive dispatch architecture. Rather than relying on a single large model, Milla-Rayne employs a network of specialized Agentic Personalities (e.g., Coding, Calendar, Email, YouTube Agents) orchestrated by a central dispatcher.
-Self-Evolution Engine: Incorporates real-time introspection and autonomous system updates, allowing the platform to continuously adapt and improve its core decision logic based on user interaction and performance profiling.
-Persona Fusion Layer: Achieves hyper-contextual awareness by dynamically merging task, sentiment, and profile data from a high-dimensional vector memory to form a fluid, responsive digital persona.
-Explainable AI (XAI): A dedicated XAI tracker provides unprecedented visibility into the agent's reasoning process, ensuring transparency and auditability in every decision.
+
 
 🌐 Architectural Zenith: Hybrid, Decentralized, and Edge-Ready
 Milla-Rayne runs on an intrinsically flexible, hybrid architecture designed for zero-latency performance and maximum reach.
