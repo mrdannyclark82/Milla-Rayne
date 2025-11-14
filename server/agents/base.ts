@@ -105,6 +105,20 @@ export abstract class BaseAgent implements Agent {
     } catch (error) {
       const executionTime = Date.now() - startTime;
       this.log(`Execution failed after ${executionTime}ms`, 'error');
+      
+      // P2.4: Report failure to SCPA for self-correction
+      try {
+        const { reportAgentFailure } = await import('../metacognitiveService');
+        await reportAgentFailure(error as Error, {
+          agentName: this.name,
+          taskId: `task_${Date.now()}`,
+          attemptCount: 1,
+          taskContext: { task, executionTime },
+        });
+      } catch (reportError) {
+        console.error('Failed to report agent failure to SCPA:', reportError);
+      }
+      
       throw error;
     }
   }
