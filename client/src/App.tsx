@@ -9,7 +9,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
-import { YoutubePlayer } from '@/components/YoutubePlayer';
+import { YoutubePlayerWithActiveListening } from '@/components/YoutubePlayerWithActiveListening';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
 import {
@@ -294,7 +294,7 @@ function App() {
 
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayer
+          <YoutubePlayerWithActiveListening
             videoId={youtubeVideoId || undefined}
             videos={youtubeVideos || undefined}
             onClose={() => {
@@ -304,6 +304,10 @@ function App() {
             onSelectVideo={(videoId) => {
               setYoutubeVideoId(videoId);
               setYoutubeVideos(null);
+            }}
+            activeListeningEnabled={true}
+            onInsightDetected={(insight) => {
+              console.log('🎧 Insight detected:', insight);
             }}
           />
         )}

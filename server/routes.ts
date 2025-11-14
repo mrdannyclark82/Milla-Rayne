@@ -2282,6 +2282,117 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // Active Listening endpoints
+  app.post('/api/active-listening/start', async (req, res) => {
+    try {
+      const { videoId, videoContext } = req.body;
+      
+      if (!videoId || !videoContext) {
+        return res.status(400).json({ error: 'Video ID and context are required' });
+      }
+
+      const { startActiveListening } = await import('./activeListeningService');
+      const result = await startActiveListening(videoId, videoContext);
+
+      res.json({
+        success: true,
+        message: 'Active listening started',
+        videoId,
+        insightCount: result.insightCount,
+        pausePoints: result.pausePoints,
+      });
+    } catch (error) {
+      console.error('Error starting active listening:', error);
+      res.status(500).json({ error: 'Failed to start active listening' });
+    }
+  });
+
+  app.post('/api/active-listening/stop', async (req, res) => {
+    try {
+      const { stopActiveListening } = await import('./activeListeningService');
+      stopActiveListening();
+
+      res.json({
+        success: true,
+        message: 'Active listening stopped',
+      });
+    } catch (error) {
+      console.error('Error stopping active listening:', error);
+      res.status(500).json({ error: 'Failed to stop active listening' });
+    }
+  });
+
+  app.post('/api/active-listening/check-pause', async (req, res) => {
+    try {
+      const { currentTime } = req.body;
+      
+      if (currentTime === undefined) {
+        return res.status(400).json({ 
+          error: 'Current time is required' 
+        });
+      }
+
+      const { checkForScheduledPause } = await import('./activeListeningService');
+      const insight = checkForScheduledPause(currentTime);
+
+      res.json({
+        success: true,
+        insight,
+        shouldPause: insight !== null,
+      });
+    } catch (error) {
+      console.error('Error checking for pause:', error);
+      res.status(500).json({ error: 'Failed to check for pause' });
+    }
+  });
+
+  app.post('/api/active-listening/save-insight', async (req, res) => {
+    try {
+      const { insight, videoId, videoTitle } = req.body;
+      const sessionToken = req.cookies.session_token;
+      
+      let userId = 'default-user';
+      if (sessionToken) {
+        const sessionResult = await validateSession(sessionToken);
+        if (sessionResult.valid && sessionResult.user) {
+          userId = sessionResult.user.id || 'default-user';
+        }
+      }
+
+      if (!insight || !videoId || !videoTitle) {
+        return res.status(400).json({ 
+          error: 'Missing required fields: insight, videoId, videoTitle' 
+        });
+      }
+
+      const { saveInsightToMemory } = await import('./activeListeningService');
+      await saveInsightToMemory(insight, videoId, videoTitle, userId);
+
+      res.json({
+        success: true,
+        message: 'Insight saved to memory',
+      });
+    } catch (error) {
+      console.error('Error saving insight:', error);
+      res.status(500).json({ error: 'Failed to save insight' });
+    }
+  });
+
+  app.get('/api/active-listening/state', async (req, res) => {
+    try {
+      const { getActiveListeningState } = await import('./activeListeningService');
+      const state = getActiveListeningState();
+
+      res.json({
+        success: true,
+        state,
+      });
+    } catch (error) {
+      console.error('Error getting active listening state:', error);
+      res.status(500).json({ error: 'Failed to get active listening state' });
+    }
+  });
+
   // YouTube video search endpoint
   app.get('/api/search-videos', async (req, res) => {
     try {
