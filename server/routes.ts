@@ -963,9 +963,15 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Phase 3.5: Parse commands and execute agent tasks if needed
       let agentTaskResult = null;
-      try {
-        const { parseCommandLLM } = await import('./commandParserLLM');
-        const parsedCommand = await parseCommandLLM(message);
+      
+      // Check if message is prefaced with ## to bypass function calls
+      const bypassFunctionCalls = message.trim().startsWith('##');
+      const processedMessage = bypassFunctionCalls ? message.trim().substring(2).trim() : message;
+      
+      if (!bypassFunctionCalls) {
+        try {
+          const { parseCommandLLM } = await import('./commandParserLLM');
+          const parsedCommand = await parseCommandLLM(processedMessage);
         
         console.log('📋 Parsed command:', parsedCommand);
         
@@ -1122,9 +1128,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
             };
           }
         }
-      } catch (error) {
-        console.error('Command parsing error:', error);
-        // Continue with normal chat flow if command parsing fails
+        } catch (error) {
+          console.error('Command parsing error:', error);
+          // Continue with normal chat flow if command parsing fails
+        }
+      } else {
+        console.log('🚫 Function calls bypassed due to ## prefix');
       }
 
       // Generate AI response using existing logic with timeout
@@ -1138,12 +1147,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       console.log('--- Calling generateAIResponse ---');
       
       // Enhance message with agent task context if available
-      let enhancedMessage = message;
+      let enhancedMessage = processedMessage;
       if (agentTaskResult) {
         if (agentTaskResult.success) {
-          enhancedMessage = `${message}\n\n[System Note: Calendar operation completed successfully. ${agentTaskResult.message || 'Event was created.'}]`;
+          enhancedMessage = `${processedMessage}\n\n[System Note: Calendar operation completed successfully. ${agentTaskResult.message || 'Event was created.'}]`;
         } else {
-          enhancedMessage = `${message}\n\n[System Note: Calendar operation failed. ${agentTaskResult.error || agentTaskResult.message || 'Please try again.'}]`;
+          enhancedMessage = `${processedMessage}\n\n[System Note: Calendar operation failed. ${agentTaskResult.error || agentTaskResult.message || 'Please try again.'}]`;
         }
       }
       
@@ -1176,20 +1185,20 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       let dailyNews = null;
 
       // Don't trigger YouTube analysis for GitHub or other repository links
-      const hasGitHubLink = message.match(
+      const hasGitHubLink = processedMessage.match(
         /(?:github\.com|gitlab\.com|bitbucket\.org)/i
       );
       const youtubeUrlMatch = !hasGitHubLink
-        ? message.match(
+        ? processedMessage.match(
           /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
         )
         : null;
 
       // Check for knowledge base request
       if (
-        message.toLowerCase().includes('knowledge base') ||
-        message.toLowerCase().includes('show videos') ||
-        message.toLowerCase().includes('my videos')
+        processedMessage.toLowerCase().includes('knowledge base') ||
+        processedMessage.toLowerCase().includes('show videos') ||
+        processedMessage.toLowerCase().includes('my videos')
       ) {
         showKnowledgeBase = true;
         console.log('📚 millAlyzer: Knowledge base request detected');
@@ -1197,9 +1206,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Check for daily news request
       if (
-        message.toLowerCase().includes('daily news') ||
-        message.toLowerCase().includes('tech news') ||
-        message.toLowerCase().includes("what's new")
+        processedMessage.toLowerCase().includes('daily news') ||
+        processedMessage.toLowerCase().includes('tech news') ||
+        processedMessage.toLowerCase().includes("what's new")
       ) {
         try {
           const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
@@ -1212,8 +1221,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       if (
         youtubeUrlMatch ||
-        (message.toLowerCase().includes('analyze') &&
-          message.toLowerCase().includes('video'))
+        (processedMessage.toLowerCase().includes('analyze') &&
+          processedMessage.toLowerCase().includes('video'))
       ) {
         try {
           let videoId: string | null = null;
@@ -1274,7 +1283,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         feature: 'chat',
         success: true,
         duration: responseEndTime - Date.now(), // Approximate duration
-        context: message.substring(0, 100),
+        context: processedMessage.substring(0, 100),
       }).catch(err => console.error('Failed to track interaction:', err));
 
       res.json({
