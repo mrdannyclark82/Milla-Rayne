@@ -186,12 +186,19 @@ function buildAmbientContextString(ambient: AmbientContext): string {
 export async function dispatchAIResponse(
   userMessage: string,
   context: DispatchContext,
-  maxTokens?: number
+  maxTokens?: number,
+  traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
-  console.log('--- dispatchAIResponse called ---');
+  // P1.5: Generate trace ID if not provided
+  const requestTraceId = traceId || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Starting`);
+  console.log(`🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`);
+  
+  const startTime = Date.now();
   
   // Start XAI reasoning session
   const xaiSessionId = startReasoningSession(context.userId || 'anonymous');
+  console.log(`🔍 [TRACE:${requestTraceId}] XAI Session: ${xaiSessionId}`);
   
   let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
@@ -498,6 +505,11 @@ export async function dispatchAIResponse(
       console.error('Error recording persona test result:', error);
     }
   }
+
+  // P1.5: Log end of trace with duration
+  const duration = Date.now() - startTime;
+  console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Completed in ${duration}ms`);
+  console.log(`🔍 [TRACE:${requestTraceId}] Model: ${modelToUse}, Success: ${response.success}`);
 
   return response;
 }
