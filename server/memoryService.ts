@@ -728,7 +728,8 @@ export async function searchMemoryCore(
  * Get Memory Core context for a user query
  */
 export async function getMemoryCoreContext(query: string): Promise<string> {
-  const searchResults = await searchMemoryCore(query, 5);
+  // Increased from 5 to 15 for better memory recall
+  const searchResults = await searchMemoryCore(query, 15);
   
   // Check if query is about sandbox or testing
   const lowerQuery = query.toLowerCase();
@@ -761,24 +762,19 @@ export async function getMemoryCoreContext(query: string): Promise<string> {
     const entry = result.entry;
     let content = entry.content;
     
-    // Filter out repository analysis content - these are too long and technical
-    const repoKeywords = [
-      'repository analysis',
-      'codebase',
+    // Filter out overly technical repository analysis - only skip if very technical
+    const technicalKeywords = [
       'architecture is',
       'key insights',
-      'looking through',
-      'typescript with',
-      'areas where you could enhance',
       'test coverage',
       'documentation could use',
-      'pull request',
-      'commit message'
     ];
     
     const lowerContent = content.toLowerCase();
-    if (repoKeywords.some(keyword => lowerContent.includes(keyword))) {
-      // Skip repository analysis memories
+    // Only skip if multiple technical keywords are present
+    const technicalMatches = technicalKeywords.filter(keyword => lowerContent.includes(keyword)).length;
+    if (technicalMatches >= 2) {
+      // Skip overly technical repository analysis memories
       return null;
     }
     
@@ -795,25 +791,28 @@ export async function getMemoryCoreContext(query: string): Promise<string> {
     // Remove trailing quotes that might be left over
     content = content.replace(/["']$/g, '').trim();
     
-    // If the content starts with an action asterisk or contains roleplay, keep it short
+    // If the content starts with an action asterisk or contains roleplay, keep more context
     if (content.startsWith('*') || content.includes('*')) {
-      // Find the first complete thought (up to first period after action)
-      const firstSentence = content.match(/^[^.!?]+[.!?]/);
-      if (firstSentence) {
-        content = firstSentence[0].trim();
-      } else {
-        content = content.substring(0, 150) + '...';
+      // Allow up to 300 chars for roleplay context
+      if (content.length > 300) {
+        const firstSentences = content.match(/^[^.!?]+[.!?]+[^.!?]*[.!?]*/);
+        if (firstSentences) {
+          content = firstSentences[0].trim();
+        } else {
+          content = content.substring(0, 300) + '...';
+        }
       }
     }
     
-    // If content is still very long or looks malformed, truncate intelligently
-    if (content.length > 200) {
-      // Try to find a natural break point
+    // If content is still very long, truncate more generously
+    if (content.length > 400) {
+      // Try to find a natural break point - keep first 2-3 sentences
       const sentences = content.match(/[^.!?]+[.!?]+/g);
       if (sentences && sentences.length > 0) {
-        content = sentences[0].trim();
+        const keep = sentences.slice(0, Math.min(3, sentences.length));
+        content = keep.join(' ').trim();
       } else {
-        content = content.substring(0, 200) + '...';
+        content = content.substring(0, 400) + '...';
       }
     }
     
