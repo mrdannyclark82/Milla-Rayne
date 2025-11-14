@@ -380,6 +380,174 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // ========================================================================
+  // Monitoring & Status Endpoints (implementing TODOs)
+  // ========================================================================
+
+  // Get agent controller metrics
+  app.get('/api/monitoring/agents', async (req, res) => {
+    try {
+      const { agentController } = await import('./agentController');
+      const metrics = agentController.getAllMetrics();
+      const agents = agentController.getRegisteredAgents();
+      
+      res.json({
+        success: true,
+        agents,
+        metrics,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting agent metrics:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get agent metrics',
+      });
+    }
+  });
+
+  // Get API resilience status (circuit breakers, cache, rate limiters)
+  app.get('/api/monitoring/resilience', async (req, res) => {
+    try {
+      const { circuitBreaker, apiCache, rateLimiter } = await import('./apiResilience');
+      
+      res.json({
+        success: true,
+        circuitBreaker: circuitBreaker.getStatus(),
+        cache: {
+          size: apiCache.size(),
+          maxSize: 1000,
+        },
+        rateLimiter: rateLimiter.getStatus(),
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting resilience status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get resilience status',
+      });
+    }
+  });
+
+  // Get SCPA queue status
+  app.get('/api/monitoring/scpa', async (req, res) => {
+    try {
+      const { getSCPAQueueStatus } = await import('./metacognitiveService');
+      const status = getSCPAQueueStatus();
+      
+      res.json({
+        success: true,
+        ...status,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting SCPA status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get SCPA status',
+      });
+    }
+  });
+
+  // Get memory scheduler status
+  app.get('/api/monitoring/memory-scheduler', async (req, res) => {
+    try {
+      const { getSchedulerStatus } = await import('./memorySummarizationScheduler');
+      const status = getSchedulerStatus();
+      
+      res.json({
+        success: true,
+        ...status,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting scheduler status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get scheduler status',
+      });
+    }
+  });
+
+  // Force memory summarization (manual trigger)
+  app.post('/api/monitoring/memory-scheduler/force-run', async (req, res) => {
+    try {
+      const { forceMemorySummarization } = await import('./memorySummarizationScheduler');
+      await forceMemorySummarization();
+      
+      res.json({
+        success: true,
+        message: 'Memory summarization triggered',
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error forcing summarization:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to trigger summarization',
+      });
+    }
+  });
+
+  // Get combined system health
+  app.get('/api/monitoring/health', async (req, res) => {
+    try {
+      const { agentController } = await import('./agentController');
+      const { circuitBreaker } = await import('./apiResilience');
+      const { getSCPAQueueStatus } = await import('./metacognitiveService');
+      const { getSchedulerStatus } = await import('./memorySummarizationScheduler');
+      
+      const agentMetrics = agentController.getAllMetrics();
+      const cbStatus = circuitBreaker.getStatus();
+      const scpaStatus = getSCPAQueueStatus();
+      const schedulerStatus = getSchedulerStatus();
+      
+      // Determine overall health
+      const openCircuits = Object.values(cbStatus).filter((s: any) => s.state === 'OPEN').length;
+      const criticalFailures = scpaStatus.criticalFailures;
+      const agentFailures = Object.values(agentMetrics).reduce((sum: number, m: any) => sum + (m.failureCount || 0), 0);
+      
+      let health = 'healthy';
+      if (criticalFailures > 3 || openCircuits > 2) {
+        health = 'critical';
+      } else if (criticalFailures > 0 || openCircuits > 0 || agentFailures > 5) {
+        health = 'degraded';
+      }
+      
+      res.json({
+        success: true,
+        health,
+        components: {
+          agents: {
+            total: agentController.getRegisteredAgents().length,
+            failures: agentFailures,
+          },
+          circuitBreakers: {
+            total: Object.keys(cbStatus).length,
+            open: openCircuits,
+          },
+          scpa: {
+            queueSize: scpaStatus.queueSize,
+            critical: criticalFailures,
+          },
+          scheduler: {
+            running: schedulerStatus.isRunning,
+            successRate: schedulerStatus.successRate,
+          },
+        },
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting system health:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get system health',
+        health: 'unknown',
+      });
+    }
+  });
+
   // Get XAI reasoning data for a session
   app.get('/api/xai/session/:sessionId', async (req, res) => {
     try {
