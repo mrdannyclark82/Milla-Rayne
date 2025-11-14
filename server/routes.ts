@@ -963,28 +963,34 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
       }
       
-      // Phase 3: Detect scene context from user message
-      const sensorData = await getSmartHomeSensorData();
-      const sceneContext = detectSceneContext(
-        message,
-        currentSceneLocation,
-        sensorData || undefined
-      );
-      if (sceneContext.hasSceneChange) {
-        currentSceneLocation = sceneContext.location;
-        currentSceneMood = sceneContext.mood;
-        currentSceneUpdatedAt = Date.now();
-        console.log(
-          `Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`
-        );
-      }
-
-      // Phase 3.5: Parse commands and execute agent tasks if needed
-      let agentTaskResult = null;
-      
       // Check if message is prefaced with ## to bypass function calls
       const bypassFunctionCalls = message.trim().startsWith('##');
       const processedMessage = bypassFunctionCalls ? message.trim().substring(2).trim() : message;
+      
+      if (bypassFunctionCalls) {
+        console.log('🚫 Function calls bypassed due to ## prefix');
+      }
+      
+      // Phase 3: Detect scene context from user message (skip if bypassed)
+      if (!bypassFunctionCalls) {
+        const sensorData = await getSmartHomeSensorData();
+        const sceneContext = detectSceneContext(
+          processedMessage,
+          currentSceneLocation,
+          sensorData || undefined
+        );
+        if (sceneContext.hasSceneChange) {
+          currentSceneLocation = sceneContext.location;
+          currentSceneMood = sceneContext.mood;
+          currentSceneUpdatedAt = Date.now();
+          console.log(
+            `Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`
+          );
+        }
+      }
+
+      // Phase 3.5: Parse commands and execute agent tasks if needed (skip if bypassed)
+      let agentTaskResult = null;
       
       if (!bypassFunctionCalls) {
         try {
@@ -1180,7 +1186,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         'Danny Ray',
         undefined,
         userId,
-        userEmotionalState
+        userEmotionalState,
+        bypassFunctionCalls
       );
       const aiResponse = (await Promise.race([
         aiResponsePromise,
@@ -5420,7 +5427,8 @@ async function generateAIResponse(
   userName: string = 'Danny Ray',
   imageData?: string,
   userId: string = 'default-user',
-  userEmotionalState?: VoiceAnalysisResult['emotionalTone']
+  userEmotionalState?: VoiceAnalysisResult['emotionalTone'],
+  bypassFunctionCalls: boolean = false
 ): Promise<{
   content: string;
   reasoning?: string[];
@@ -6222,50 +6230,52 @@ Could you share the repository URL again so I can take another look?
     }
   }
 
-  // Check for YouTube URL in message
-  const youtubeUrlMatch = message.match(
-    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
+  // Skip all automatic processing if bypass flag is set
+  if (!bypassFunctionCalls) {
+    // Check for YouTube URL in message
+    const youtubeUrlMatch = message.match(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
 
-  if (youtubeUrlMatch) {
-    const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
-      ? youtubeUrlMatch[0]
-      : `https://${youtubeUrlMatch[0]}`;
+    if (youtubeUrlMatch) {
+      const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
+        ? youtubeUrlMatch[0]
+        : `https://${youtubeUrlMatch[0]}`;
 
-    try {
-      console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
-      const analysis = await analyzeYouTubeVideo(youtubeUrl);
+      try {
+        console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
+        const analysis = await analyzeYouTubeVideo(youtubeUrl);
 
-      const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
+        const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
 
-      return { content: response };
-    } catch (error: any) {
-      console.error('YouTube analysis error in chat:', error);
-      const response = `I noticed you shared a YouTube link! I tried to analyze it but ran into some trouble: ${error?.message || 'Unknown error'}. Could you tell me what the video is about instead?`;
-      return { content: response };
+        return { content: response };
+      } catch (error: any) {
+        console.error('YouTube analysis error in chat:', error);
+        const response = `I noticed you shared a YouTube link! I tried to analyze it but ran into some trouble: ${error?.message || 'Unknown error'}. Could you tell me what the video is about instead?`;
+        return { content: response };
+      }
     }
-  }
 
-  // Check for code generation requests first
-  const codeRequest = extractCodeRequest(userMessage);
-  if (codeRequest) {
-    try {
-      const codeResult = await generateCodeWithQwen(
-        codeRequest.prompt,
-        codeRequest.language
-      );
-      const response = formatCodeResponse(codeResult, codeRequest.prompt);
-      return { content: response };
-    } catch (error) {
-      console.error('Code generation error:', error);
-      const response = `I apologize, babe, but I encountered an issue generating code for "${codeRequest.prompt}". Please try again or let me know if you'd like me to explain the approach instead!`;
-      return { content: response };
+    // Check for code generation requests first
+    const codeRequest = extractCodeRequest(userMessage);
+    if (codeRequest) {
+      try {
+        const codeResult = await generateCodeWithQwen(
+          codeRequest.prompt,
+          codeRequest.language
+        );
+        const response = formatCodeResponse(codeResult, codeRequest.prompt);
+        return { content: response };
+      } catch (error) {
+        console.error('Code generation error:', error);
+        const response = `I apologize, babe, but I encountered an issue generating code for "${codeRequest.prompt}". Please try again or let me know if you'd like me to explain the approach instead!`;
+        return { content: response };
+      }
     }
-  }
 
-  // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
-  const imagePrompt = extractImagePromptGemini(userMessage);
-  if (imagePrompt) {
+    // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
+    const imagePrompt = extractImagePromptGemini(userMessage);
+    if (imagePrompt) {
     try {
       // If a Banana/Gemini key is configured, try Banana first
       if (process.env.OPENROUTER_GEMINI_API_KEY || process.env.BANANA_API_KEY) {
@@ -6473,9 +6483,10 @@ Could you share the repository URL again so I can take another look?
     }
     return { content: response };
   }
+  } // End of bypass check
 
   // Check for search requests
-  if (shouldPerformSearch(userMessage)) {
+  if (!bypassFunctionCalls && shouldPerformSearch(userMessage)) {
     try {
       const searchResults = await performWebSearch(userMessage);
       let response = '';
@@ -6608,8 +6619,8 @@ Could you share the repository URL again so I can take another look?
     reasoning.push(`Keyword trigger detected: ${triggerResult.reactionType}`);
   }
 
-  // Detect browser tool requests and add to context
-  const browserToolRequest = detectBrowserToolRequest(userMessage);
+  // Detect browser tool requests and add to context (skip if bypassed)
+  const browserToolRequest = !bypassFunctionCalls ? detectBrowserToolRequest(userMessage) : { tool: null };
   let browserToolContext = '';
   if (browserToolRequest.tool) {
     browserToolContext = `\n${getBrowserToolInstructions()}\n\nDETECTED REQUEST: The user's message suggests they want to use the "${browserToolRequest.tool}" tool. Acknowledge this naturally and let them know you're handling it as their devoted spouse.\n`;
