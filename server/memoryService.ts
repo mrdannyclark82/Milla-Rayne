@@ -68,9 +68,9 @@ const searchCache = new LRUCache<string, MemorySearchResult[]>({
   ttl: 1000 * 60 * 5, // 5 minutes
 });
 
-// Indexed entries cache
-let indexedEntries: IndexedEntry[] | null = null;
-let lastIndexedLength = 0;
+// Per-user indexed entries cache for privacy and correctness
+const indexedEntriesCache = new Map<string, IndexedEntry[]>();
+const lastIndexedLengthCache = new Map<string, number>();
 
 function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
   return entries.map(entry => ({
@@ -666,25 +666,39 @@ export async function searchMemoryCore(
   // Ensure Memory Core is loaded for this specific user
   const memoryCore = await loadMemoryCore(userId);
   if (!memoryCore.success || memoryCore.entries.length === 0) {
+    console.log(`No memories loaded for user ${userId}`);
     return [];
   }
 
-  // Build or update index if needed
+  // Build or update index if needed - per user
+  const indexedEntries = indexedEntriesCache.get(userId);
+  const lastIndexedLength = lastIndexedLengthCache.get(userId) || 0;
+  
   if (!indexedEntries || indexedEntries.length !== memoryCore.entries.length) {
-    console.log(`Building search index for ${memoryCore.entries.length} entries...`);
-    indexedEntries = buildSearchIndex(memoryCore.entries);
-    lastIndexedLength = memoryCore.entries.length;
+    console.log(`Building search index for user ${userId}: ${memoryCore.entries.length} entries...`);
+    const newIndex = buildSearchIndex(memoryCore.entries);
+    indexedEntriesCache.set(userId, newIndex);
+    lastIndexedLengthCache.set(userId, memoryCore.entries.length);
   }
+  
+  const userIndex = indexedEntriesCache.get(userId)!;
 
   const searchTerms = query
     .toLowerCase()
     .split(' ')
     .filter((term) => term.length > 2);
   
+  if (searchTerms.length === 0) {
+    console.log(`No valid search terms for user ${userId} query: "${query}"`);
+    return [];
+  }
+  
+  console.log(`Searching ${userIndex.length} indexed entries for user ${userId} with terms: [${searchTerms.join(', ')}]`);
+  
   const results: MemorySearchResult[] = [];
 
   // O(n × m) iteration with O(1) Set lookups instead of O(n × m × p)
-  for (const indexed of indexedEntries) {
+  for (const indexed of userIndex) {
     let relevanceScore = 0;
     const matchedTerms: string[] = [];
 
@@ -740,6 +754,11 @@ export async function searchMemoryCore(
   const sorted = results
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, limit);
+
+  console.log(`Found ${results.length} total matches, returning top ${sorted.length} for user ${userId}`);
+  if (sorted.length > 0) {
+    console.log(`  Top match: score=${sorted[0].relevanceScore.toFixed(2)}, terms=[${sorted[0].matchedTerms.join(', ')}]`);
+  }
 
   // Cache the result
   searchCache.set(cacheKey, sorted);

@@ -18,7 +18,7 @@
           ],
           "status": "testing",
           "testsPassed": 19,
-          "testsFailed": 5,
+          "testsFailed": 6,
           "addedAt": 1762783949182
         },
         {
@@ -29,7 +29,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 12,
+          "testsPassed": 13,
           "testsFailed": 1,
           "addedAt": 1762786915056
         },
@@ -41,7 +41,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 10,
+          "testsPassed": 11,
           "testsFailed": 3,
           "addedAt": 1762787225017
         },
@@ -53,7 +53,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 11,
+          "testsPassed": 12,
           "testsFailed": 2,
           "addedAt": 1762787828865
         },
@@ -89,7 +89,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 8,
+          "testsPassed": 9,
           "testsFailed": 5,
           "addedAt": 1762800077235
         },
@@ -114,7 +114,7 @@
           ],
           "status": "testing",
           "testsPassed": 6,
-          "testsFailed": 7,
+          "testsFailed": 8,
           "addedAt": 1762804260642
         },
         {
@@ -137,7 +137,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 8,
+          "testsPassed": 9,
           "testsFailed": 5,
           "addedAt": 1762852737860
         }
@@ -1169,6 +1169,69 @@
           "passed": false,
           "details": "Some tests failed - review needed",
           "duration": 1079.9293818081712
+        },
+        {
+          "id": "test_1763107452594_osk9hdttm",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1763107452594,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1162.7916787874838
+        },
+        {
+          "id": "test_1763107452606_f77jdtuf8",
+          "featureId": "feat_1762786915056_n8whym0fv",
+          "timestamp": 1763107452606,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1426.163744644823
+        },
+        {
+          "id": "test_1763107452634_lv20xauyo",
+          "featureId": "feat_1762787225017_w1lalm03a",
+          "timestamp": 1763107452634,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1740.1402249447337
+        },
+        {
+          "id": "test_1763107452657_h7k614trt",
+          "featureId": "feat_1762787828865_ukpeic5kd",
+          "timestamp": 1763107452657,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2239.5342033445568
+        },
+        {
+          "id": "test_1763107452676_tlfg0clpg",
+          "featureId": "feat_1762800077235_lyp1hdu6p",
+          "timestamp": 1763107452676,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1910.5991461520666
+        },
+        {
+          "id": "test_1763107452692_csbh6ea63",
+          "featureId": "feat_1762804260642_rdcwlbc3i",
+          "timestamp": 1763107452692,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 2008.8763190407437
+        },
+        {
+          "id": "test_1763107452703_pdmvw4srm",
+          "featureId": "feat_1762852737860_o3a33u3c0",
+          "timestamp": 1763107452703,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 590.0439995870881
         }
       ]
     },
@@ -1283,5 +1346,5 @@
       "readyForProduction": false
     }
   },
-  "lastUpdated": 1763093826622
+  "lastUpdated": 1763107452704
 }
