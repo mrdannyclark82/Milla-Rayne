@@ -1,4 +1,4 @@
-# Milla-Rayne: A Self-Evolving Digital Entity 🚀
+# Milla-Rayne: The Context-Aware AI Assistant 🚀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
