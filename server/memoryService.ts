@@ -176,14 +176,27 @@ export async function searchEncryptedContext(entry: MemoryCoreEntry, query: stri
 /**
  * Read memories from the local txt file in the /memory folder
  */
-export async function getMemoriesFromTxt(): Promise<MemoryData> {
+export async function getMemoriesFromTxt(userId: string = 'danny-ray'): Promise<MemoryData> {
   try {
-    const memoryPath = join(process.cwd(), 'memory', 'memories.txt');
+    // For danny-ray, use the main memories.txt
+    // For other users, would use memories_{userId}.txt
+    const filename = (userId === 'danny-ray' || userId === 'default-user') 
+      ? 'memories.txt' 
+      : `memories_${userId}.txt`;
+    const memoryPath = join(process.cwd(), 'memory', filename);
 
     // Check if file exists
     try {
       await fs.access(memoryPath);
     } catch (error) {
+      // If user-specific file doesn't exist and it's not danny-ray, return empty
+      if (userId !== 'danny-ray' && userId !== 'default-user') {
+        console.log(`No memory file found for user: ${userId}`);
+        return {
+          content: '',
+          success: true, // Not an error, just no memories yet
+        };
+      }
       return {
         content: '',
         success: false,
@@ -329,49 +342,53 @@ function parseCsvLine(line: string): string[] {
 // MEMORY CORE SYSTEM - Long-term Backup Integration
 // ========================================
 
-// Global memory core cache
-let memoryCoreCache: MemoryCoreData | null = null;
-let memoryCoreLastLoaded: number = 0;
+// Per-user memory core cache for privacy isolation
+const memoryCoreCache = new Map<string, MemoryCoreData>();
+const memoryCoreLastLoaded = new Map<string, number>();
 const MEMORY_CORE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (increased for performance)
 
 /**
- * Load and parse the entire Milla backup file into a searchable Memory Core
- * This function runs at application startup and caches results
+ * Load and parse user-specific Memory Core
+ * This function caches results per user for privacy
+ * @param userId - User ID for privacy isolation (defaults to 'danny-ray')
  */
-export async function loadMemoryCore(): Promise<MemoryCoreData> {
+export async function loadMemoryCore(userId: string = 'danny-ray'): Promise<MemoryCoreData> {
   const startTime = Date.now();
   try {
-    // Check cache first
+    // Check cache first for this specific user
     const now = Date.now();
-    if (memoryCoreCache && now - memoryCoreLastLoaded < MEMORY_CORE_CACHE_TTL) {
-      console.log('Using cached Memory Core data');
+    const cachedData = memoryCoreCache.get(userId);
+    const lastLoaded = memoryCoreLastLoaded.get(userId) || 0;
+    
+    if (cachedData && now - lastLoaded < MEMORY_CORE_CACHE_TTL) {
+      console.log(`Using cached Memory Core data for user: ${userId}`);
       const endTime = Date.now();
       console.log(`Memory Core cache access latency: ${endTime - startTime}ms`);
-      return memoryCoreCache;
+      return cachedData;
     }
 
-    console.log('Loading Memory Core from memories.txt as primary source...');
+    console.log(`Loading Memory Core for user: ${userId} from memories.txt...`);
 
-    // Try to load from memories.txt first (primary source)
+    // Try to load from user-specific memories file
     try {
-      const result = await loadMemoryCoreFromExistingFiles();
+      const result = await loadMemoryCoreFromExistingFiles(userId);
       if (result.success && result.entries.length > 0) {
         console.log(
-          `Successfully loaded Memory Core from memories.txt: ${result.entries.length} entries`
+          `Successfully loaded Memory Core for ${userId}: ${result.entries.length} entries`
         );
 
-        // Cache the result
-        memoryCoreCache = result;
-        memoryCoreLastLoaded = now;
+        // Cache the result for this user
+        memoryCoreCache.set(userId, result);
+        memoryCoreLastLoaded.set(userId, now);
 
         const endTime = Date.now();
         console.log(
-          `Memory Core loaded from memories.txt latency: ${endTime - startTime}ms`
+          `Memory Core loaded for ${userId} latency: ${endTime - startTime}ms`
         );
         return result;
       }
     } catch (error) {
-      console.log('Failed to load from memories.txt, trying backup files...');
+      console.log(`Failed to load memories for ${userId}, trying backup files...`);
     }
 
     // Fallback to backup files if memories.txt is not available or empty
@@ -426,18 +443,18 @@ export async function loadMemoryCore(): Promise<MemoryCoreData> {
       success: true,
     };
 
-    // Cache the result
-    memoryCoreCache = result;
-    memoryCoreLastLoaded = now;
+    // Cache the result for this user
+    memoryCoreCache.set(userId, result);
+    memoryCoreLastLoaded.set(userId, now);
 
-    console.log(`Memory Core loaded from backup: ${entries.length} entries`);
+    console.log(`Memory Core loaded from backup for ${userId}: ${entries.length} entries`);
     const endTime = Date.now();
     console.log(
       `Memory Core loaded from backup latency: ${endTime - startTime}ms`
     );
     return result;
   } catch (error) {
-    console.error('Error loading Memory Core:', error);
+    console.error(`Error loading Memory Core for ${userId}:`, error);
 
     // Final fallback - empty memory core
     const endTime = Date.now();
@@ -563,25 +580,27 @@ function createMemoryEntry(
 }
 
 /**
- * Load Memory Core from existing memory files when no backup is available
+ * Load Memory Core from existing memory files
+ * @param userId - User ID for privacy isolation
  */
-async function loadMemoryCoreFromExistingFiles(): Promise<MemoryCoreData> {
+async function loadMemoryCoreFromExistingFiles(userId: string = 'danny-ray'): Promise<MemoryCoreData> {
   try {
     const entries: MemoryCoreEntry[] = [];
     let entryId = 1;
 
-    // Load from memories.txt
-    const memoriesData = await getMemoriesFromTxt();
+    // Load from user-specific or default memories.txt
+    // For now, danny-ray uses memories.txt, others would use memories_{userId}.txt
+    const memoriesData = await getMemoriesFromTxt(userId);
     if (memoriesData.success && memoriesData.content) {
       const memoryLines = memoriesData.content.split('\n');
       for (const line of memoryLines) {
         if (line.trim() && line.length > 10) {
           entries.push({
-            id: `memory_${entryId++}`,
+            id: `${userId}_memory_${entryId++}`,
             timestamp: new Date().toISOString(),
             speaker: 'user',
             content: line.trim(),
-            context: 'memory_file',
+            context: `memory_file_${userId}`,
             searchableContent: line.trim().toLowerCase(),
             topics: extractTopics(line),
             emotionalTone: detectEmotionalTone(line),
@@ -590,7 +609,7 @@ async function loadMemoryCoreFromExistingFiles(): Promise<MemoryCoreData> {
       }
     }
 
-    // Load from knowledge.csv
+    // Load from knowledge.csv (shared knowledge base)
     const knowledgeData = await getKnowledgeFromCsv();
     if (knowledgeData.success) {
       for (const item of knowledgeData.items) {
@@ -625,23 +644,27 @@ async function loadMemoryCoreFromExistingFiles(): Promise<MemoryCoreData> {
 
 /**
  * Search Memory Core for relevant entries based on query
+ * @param query - Search query
+ * @param limit - Maximum number of results
+ * @param userId - User ID for privacy isolation (defaults to 'danny-ray')
  */
 export async function searchMemoryCore(
   query: string,
-  limit: number = 10
+  limit: number = 10,
+  userId: string = 'danny-ray'
 ): Promise<MemorySearchResult[]> {
-  // Check cache first
-  const cacheKey = `${query}:${limit}`;
+  // Check cache first (include userId in cache key for privacy)
+  const cacheKey = `${userId}:${query}:${limit}`;
   const cached = searchCache.get(cacheKey);
   if (cached) {
-    console.log(`Memory search cache hit for: "${query}"`);
+    console.log(`Memory search cache hit for user ${userId}: "${query}"`);
     return cached;
   }
 
-  console.log(`Memory search cache miss for: "${query}"`);
+  console.log(`Memory search cache miss for user ${userId}: "${query}"`);
 
-  // Ensure Memory Core is loaded
-  const memoryCore = await loadMemoryCore();
+  // Ensure Memory Core is loaded for this specific user
+  const memoryCore = await loadMemoryCore(userId);
   if (!memoryCore.success || memoryCore.entries.length === 0) {
     return [];
   }
@@ -726,10 +749,12 @@ export async function searchMemoryCore(
 
 /**
  * Get Memory Core context for a user query
+ * @param query - Search query
+ * @param userId - User ID for privacy isolation (defaults to 'danny-ray')
  */
-export async function getMemoryCoreContext(query: string): Promise<string> {
+export async function getMemoryCoreContext(query: string, userId: string = 'danny-ray'): Promise<string> {
   // Increased from 5 to 15 for better memory recall
-  const searchResults = await searchMemoryCore(query, 15);
+  const searchResults = await searchMemoryCore(query, 15, userId);
   
   // Check if query is about sandbox or testing
   const lowerQuery = query.toLowerCase();
@@ -894,10 +919,14 @@ export async function searchKnowledge(query: string): Promise<KnowledgeItem[]> {
  */
 export async function updateMemories(
   newMemory: string,
-  userId: string = 'default-user'
+  userId: string = 'danny-ray'
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const memoryPath = join(process.cwd(), 'memory', 'memories.txt');
+    // Use user-specific memory file
+    const filename = (userId === 'danny-ray' || userId === 'default-user') 
+      ? 'memories.txt' 
+      : `memories_${userId}.txt`;
+    const memoryPath = join(process.cwd(), 'memory', filename);
     const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
     // Read existing content
@@ -906,19 +935,21 @@ export async function updateMemories(
       existingContent = await fs.readFile(memoryPath, 'utf-8');
     } catch (error) {
       // File doesn't exist, will create new one
+      console.log(`Creating new memory file for user: ${userId}`);
     }
 
     // Append new memory with timestamp
     const updatedContent = existingContent + `\n\n[${timestamp}] ${newMemory}`;
 
-    // Write back to file
+    // Write back to user-specific file
     await fs.writeFile(memoryPath, updatedContent, 'utf-8');
 
-    // Invalidate memory core cache to force reload
-    memoryCoreCache = null;
+    // Invalidate memory core cache for this user to force reload
+    memoryCoreCache.delete(userId);
+    memoryCoreLastLoaded.delete(userId);
 
-    // Add to vector database for semantic retrieval
-    const memoryId = `memory:${Date.now()}`;
+    // Add to vector database for semantic retrieval with userId
+    const memoryId = `memory:${userId}:${Date.now()}`;
     await vectorDB.addContent(
       memoryId,
       `[${timestamp}] ${newMemory}`,
@@ -929,7 +960,7 @@ export async function updateMemories(
         date: timestamp,
       }
     );
-    console.log('✅ Added memory to vector database');
+    console.log(`✅ Added memory to vector database for user: ${userId}`);
 
     return { success: true };
   } catch (error) {

@@ -6707,10 +6707,11 @@ Could you share the repository URL again so I can take another look?
   // PRIMARY: Search Memory Core for relevant context (highest priority)
   let memoryCoreContext = '';
   try {
-    memoryCoreContext = await getMemoryCoreContext(userMessage);
+    // Pass userId for privacy isolation - only show this user's memories
+    memoryCoreContext = await getMemoryCoreContext(userMessage, userId || 'danny-ray');
     if (memoryCoreContext) {
       console.log(
-        'Found Memory Core context for query:',
+        `Found Memory Core context for user ${userId}:`,
         userMessage.substring(0, 50)
       );
       reasoning.push(
@@ -6943,7 +6944,8 @@ This message requires you to be fully present as ${userName}'s partner, companio
       ) {
         try {
           await updateMemories(
-            `User asked: "${userMessage}" - Milla responded: "${aiResponse.content}"`
+            `User asked: "${userMessage}" - Milla responded: "${aiResponse.content}"`,
+            userId || 'danny-ray'
           );
         } catch (error) {
           console.error('Error updating memories:', error);
@@ -6978,7 +6980,8 @@ This message requires you to be fully present as ${userName}'s partner, companio
       ) {
         try {
           await updateMemories(
-            `User asked: "${userMessage}" - Milla responded: "${fallbackResponse}"`
+            `User asked: "${userMessage}" - Milla responded: "${fallbackResponse}"`,
+            userId || 'danny-ray'
           );
         } catch (error) {
           console.error('Error updating memories:', error);
