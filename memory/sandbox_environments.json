@@ -17,8 +17,8 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 17,
-          "testsFailed": 4,
+          "testsPassed": 19,
+          "testsFailed": 5,
           "addedAt": 1762783949182
         },
         {
@@ -29,7 +29,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 9,
+          "testsPassed": 12,
           "testsFailed": 1,
           "addedAt": 1762786915056
         },
@@ -41,7 +41,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 7,
+          "testsPassed": 10,
           "testsFailed": 3,
           "addedAt": 1762787225017
         },
@@ -53,7 +53,7 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 8,
+          "testsPassed": 11,
           "testsFailed": 2,
           "addedAt": 1762787828865
         },
@@ -89,8 +89,8 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 6,
-          "testsFailed": 4,
+          "testsPassed": 8,
+          "testsFailed": 5,
           "addedAt": 1762800077235
         },
         {
@@ -113,8 +113,8 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 4,
-          "testsFailed": 6,
+          "testsPassed": 6,
+          "testsFailed": 7,
           "addedAt": 1762804260642
         },
         {
@@ -137,8 +137,8 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 7,
-          "testsFailed": 3,
+          "testsPassed": 8,
+          "testsFailed": 5,
           "addedAt": 1762852737860
         }
       ],
@@ -980,6 +980,195 @@
           "passed": true,
           "details": "All tests passed successfully",
           "duration": 1028.2908696156996
+        },
+        {
+          "id": "test_1763092681557_6le0e06en",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1763092681557,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1742.8429899707073
+        },
+        {
+          "id": "test_1763092681574_rwv6xnwpz",
+          "featureId": "feat_1762786915056_n8whym0fv",
+          "timestamp": 1763092681574,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2282.9248010900596
+        },
+        {
+          "id": "test_1763092681603_3xpr7zeop",
+          "featureId": "feat_1762787225017_w1lalm03a",
+          "timestamp": 1763092681603,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1952.3604607095913
+        },
+        {
+          "id": "test_1763092681650_rs1s1ri2t",
+          "featureId": "feat_1762787828865_ukpeic5kd",
+          "timestamp": 1763092681651,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1762.2936801823887
+        },
+        {
+          "id": "test_1763092681769_2nbjfk5qr",
+          "featureId": "feat_1762800077235_lyp1hdu6p",
+          "timestamp": 1763092681769,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1152.1350365297626
+        },
+        {
+          "id": "test_1763092681872_xe9iaotfz",
+          "featureId": "feat_1762804260642_rdcwlbc3i",
+          "timestamp": 1763092681872,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2382.7458458276383
+        },
+        {
+          "id": "test_1763092681948_zo83ozv22",
+          "featureId": "feat_1762852737860_o3a33u3c0",
+          "timestamp": 1763092681948,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2370.9752557261572
+        },
+        {
+          "id": "test_1763093471629_enku7g53a",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1763093471629,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 903.4360755450259
+        },
+        {
+          "id": "test_1763093471672_u1mcq4p0g",
+          "featureId": "feat_1762786915056_n8whym0fv",
+          "timestamp": 1763093471672,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 718.0389965055203
+        },
+        {
+          "id": "test_1763093471687_px8avvotw",
+          "featureId": "feat_1762787225017_w1lalm03a",
+          "timestamp": 1763093471687,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1940.7915714919134
+        },
+        {
+          "id": "test_1763093471705_g26rcq1x9",
+          "featureId": "feat_1762787828865_ukpeic5kd",
+          "timestamp": 1763093471705,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 606.9195525378619
+        },
+        {
+          "id": "test_1763093471721_73m1w8yhc",
+          "featureId": "feat_1762800077235_lyp1hdu6p",
+          "timestamp": 1763093471721,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 721.6414189103182
+        },
+        {
+          "id": "test_1763093471736_knd5mq55m",
+          "featureId": "feat_1762804260642_rdcwlbc3i",
+          "timestamp": 1763093471736,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1513.4881907214462
+        },
+        {
+          "id": "test_1763093471748_702zyn3wx",
+          "featureId": "feat_1762852737860_o3a33u3c0",
+          "timestamp": 1763093471748,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1183.914616360936
+        },
+        {
+          "id": "test_1763093826523_3w12vf64w",
+          "featureId": "feat_1762783949182_2fh4lcy8k",
+          "timestamp": 1763093826523,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1840.0263217363024
+        },
+        {
+          "id": "test_1763093826537_q5a9258qu",
+          "featureId": "feat_1762786915056_n8whym0fv",
+          "timestamp": 1763093826537,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 516.7140399211245
+        },
+        {
+          "id": "test_1763093826551_lb2apgws0",
+          "featureId": "feat_1762787225017_w1lalm03a",
+          "timestamp": 1763093826551,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1123.8062438736142
+        },
+        {
+          "id": "test_1763093826569_avz6f50hh",
+          "featureId": "feat_1762787828865_ukpeic5kd",
+          "timestamp": 1763093826569,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1785.4471792192132
+        },
+        {
+          "id": "test_1763093826587_0q2yzvpgw",
+          "featureId": "feat_1762800077235_lyp1hdu6p",
+          "timestamp": 1763093826587,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1667.0105838976842
+        },
+        {
+          "id": "test_1763093826607_kc46igvyu",
+          "featureId": "feat_1762804260642_rdcwlbc3i",
+          "timestamp": 1763093826608,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1540.4935401792202
+        },
+        {
+          "id": "test_1763093826622_lnlx62eap",
+          "featureId": "feat_1762852737860_o3a33u3c0",
+          "timestamp": 1763093826622,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1079.9293818081712
         }
       ]
     },
@@ -1094,5 +1283,5 @@
       "readyForProduction": false
     }
   },
-  "lastUpdated": 1762905062769
+  "lastUpdated": 1763093826622
 }

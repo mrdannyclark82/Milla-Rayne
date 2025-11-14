@@ -18,5 +18,77 @@
     "result": {
       "success": true
     }
+  },
+  {
+    "taskId": "d97a4447-7ef6-4669-9d8c-b808075271c6",
+    "supervisor": "ChatSystem",
+    "agent": "CalendarAgent",
+    "action": "create_event",
+    "payload": {
+      "title": "mandatory abstract `baseagent` class with fields",
+      "date": "logging, error handling, and a required `execute` method signature. | `server/agents/base.ts` (define `baseagent` abstract class) |",
+      "userId": "default-user"
+    },
+    "status": "failed",
+    "createdAt": "2025-11-14T03:59:40.273Z",
+    "updatedAt": "2025-11-14T03:59:40.925Z",
+    "result": {
+      "error": "PARSE_ERROR"
+    }
+  },
+  {
+    "taskId": "3f25c665-276d-49f6-884c-16dbd421f495",
+    "supervisor": "ChatSystem",
+    "agent": "CalendarAgent",
+    "action": "create_event",
+    "payload": {
+      "title": "mandatory abstract `baseagent` class with fields",
+      "date": "logging, error handling, and a required `execute` method signature. | `server/agents/base.ts` (define `baseagent` abstract class) |",
+      "userId": "default-user"
+    },
+    "status": "failed",
+    "createdAt": "2025-11-14T04:56:36.666Z",
+    "updatedAt": "2025-11-14T04:56:37.387Z",
+    "result": {
+      "error": "PARSE_ERROR"
+    }
+  },
+  {
+    "taskId": "db2ead31-3f36-4d3e-afb6-b911931efc23",
+    "supervisor": "ChatSystem",
+    "agent": "CalendarAgent",
+    "action": "create_event",
+    "payload": {
+      "title": "sure i remembered them properly when i didn't get any response indicating you was picking up",
+      "date": "what i was putting down.",
+      "userId": "default-user"
+    },
+    "status": "failed",
+    "createdAt": "2025-11-14T05:42:56.139Z",
+    "updatedAt": "2025-11-14T05:42:56.236Z",
+    "result": {
+      "error": "PARSE_ERROR"
+    }
+  },
+  {
+    "taskId": "68c3a3b5-216c-45d9-a881-33a111b44071",
+    "supervisor": "ChatSystem",
+    "agent": "CalendarAgent",
+    "action": "create_event",
+    "payload": {
+      "title": "event titled spontaneous scheduled date night three times a week",
+      "date": "today",
+      "time": "8pm",
+      "userId": "default-user"
+    },
+    "status": "completed",
+    "createdAt": "2025-11-14T06:09:25.652Z",
+    "updatedAt": "2025-11-14T06:09:33.524Z",
+    "result": {
+      "success": true,
+      "eventId": "l4dk3bfdh0dthn0uddk8he72og",
+      "eventLink": "https://www.google.com/calendar/event?eid=bDRkazNiZmRoMGR0aG4wdWRkazhoZTcyb2cgbXJkYW5ueWNsYXJrODJAbQ",
+      "message": "Of course, sweetheart. I've gone ahead and scheduled \"event titled spontaneous scheduled date night three times a week\" for you on today at 8pm."
+    }
   }
 ]

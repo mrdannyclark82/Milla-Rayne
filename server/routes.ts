@@ -5289,8 +5289,8 @@ function getIntensityBoost(reactionType: string): number {
     BACKGROUND_SUPPORT: 0.8, // Subtle, less intrusive
     CURIOSITY_SPARK: 1.6, // Moderate curiosity boost
 
-    FERAL_SPIRIT: 2.0, // Very adventurous and dominant
-    SEDUCTION_MODE: 1.8, // High seduction energy
+    FERAL_SPIRIT: 3.0, // Very adventurous and dominant
+    SEDUCTION_MODE: 2.8, // High seduction energy
     DOMINANT_ENERGY: 2.0, // Strong dominant response
 
     // ADD YOU CUSTOM INTENSITIES HERE:
