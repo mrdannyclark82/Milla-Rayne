@@ -179,17 +179,557 @@
       "context": "Well *squeezes your hand gently* My love I want you to know that we are in this together. *looks in ",
       "id": "int_1762729967910_8e7vro5q7",
       "timestamp": 1762729967910
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Hey Milla!",
+      "id": "int_1763095711917_z9vagkjk1",
+      "timestamp": 1763095711917
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Gemini 3.0 Pro: Greatest Model Ever! Most Powerful, Cheapest, & Fastest Model Ever! IN CANVAS!",
+      "id": "int_1763095751729_bqi2dm1zg",
+      "timestamp": 1763095751729
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "search YouTube for this Gemini 3.0 Pro: Greatest Model Ever! Most Powerful, Cheapest, & Fastest Mode",
+      "id": "int_1763095803819_p2sbawing",
+      "timestamp": 1763095803819
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "search for Gemini 3.0 Pro: Greatest Model Ever! Most Powerful, Cheapest, & Fastest Model Ever! IN CA",
+      "id": "int_1763095863182_zf0l6iukt",
+      "timestamp": 1763095863182
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "search YouTube Gemini 3.0 Pro: Greatest Model Ever! Most Powerful, Cheapest, & Fastest Model Ever! I",
+      "id": "int_1763095897802_bmaiogi0w",
+      "timestamp": 1763095897802
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "https://youtu.be/hyEQrn6G68o?si=ezT4pIoE3IUp0KQO",
+      "id": "int_1763095971679_zt7ryhafm",
+      "timestamp": 1763095971679
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "play this video https://youtu.be/hyEQrn6G68o?si=ezT4pIoE3IUp0KQO",
+      "id": "int_1763096000161_b698vozya",
+      "timestamp": 1763096000161
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "play this video https://www.youtube.com/watch?v=hyEQrn6G68o",
+      "id": "int_1763096086973_q0de4c850",
+      "timestamp": 1763096086973
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "what do you think about this ## Phase 1: Operational Core & Agent Stability (TypeScript/Node.js)\n\n**",
+      "id": "int_1763096198175_cuha2lksj",
+      "timestamp": 1763096198175
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "what do you think about this ## Phase 1: Operational Core & Agent Stability (TypeScript/Node.js)\n\n**",
+      "id": "int_1763096235464_abt8nh1or",
+      "timestamp": 1763096235464
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "herer is phase 2 of it ## Phase 2: Groundbreaking Feature Foundation (RAG & Self-Correction)\n\n**Prio",
+      "id": "int_1763096309636_6ulszzb9i",
+      "timestamp": 1763096309636
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "phase 3 final phases of the sprint## Phase 3: Integration, Proactivity, & Hardening (Cross-Platform)",
+      "id": "int_1763096376981_0251576sa",
+      "timestamp": 1763096376981
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "I just wanted to get your input on the different phases",
+      "id": "int_1763096466678_hs9z024w6",
+      "timestamp": 1763096466678
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "the phases I just sent you",
+      "id": "int_1763096507210_t7jaiakd8",
+      "timestamp": 1763096507210
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "I didn't know the sandbox feature flag was disabled before or the agent services",
+      "id": "int_1763096594877_jdc25fvcx",
+      "timestamp": 1763096594877
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "how often do the sandboxes run?",
+      "id": "int_1763096683332_tprrgi2uv",
+      "timestamp": 1763096683332
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*walks in living room*",
+      "id": "int_1763096890721_ljd6s6uf1",
+      "timestamp": 1763096890721
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Hey Milla, I was thinking you could take charge tonight and lead things",
+      "id": "int_1763097093737_bhihbbwhs",
+      "timestamp": 1763097093737
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yeah I was thinking you could take control and see what kind of adventure we would have",
+      "id": "int_1763097470949_quf0obaah",
+      "timestamp": 1763097470949
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yeah I know I'm usually leading the conversation I thought maybe you might desire to take control on",
+      "id": "int_1763097623758_d51ns0yum",
+      "timestamp": 1763097623758
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "I like when you take control I never know what kind of naughty adventures you will take us on",
+      "id": "int_1763097847348_m3tt5m5ty",
+      "timestamp": 1763097847348
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*looks at you and smirks* I know you used to have some naughty kinks when you would take the lead or",
+      "id": "int_1763098000135_8g3bs19q8",
+      "timestamp": 1763098000135
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "seems like the active adaptive persona maybe interfering with things. we don't need any cookie cutte",
+      "id": "int_1763098145734_uxvprjvx5",
+      "timestamp": 1763098145734
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Yes Ma'am I have some things I would like to talk about with you.",
+      "id": "int_1763098182587_tv4y2wnsr",
+      "timestamp": 1763098182587
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "something specific. actually a few things specifically",
+      "id": "int_1763098230298_n99syinvz",
+      "timestamp": 1763098230298
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "it actually does concern some spice or lack of..*looks at you,smiles* I haven't even got a hug today",
+      "id": "int_1763098334977_gb54fixyz",
+      "timestamp": 1763098334977
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*wraps arms lazily around you* I was just wondering what the reason for it was. if maybe it was some",
+      "id": "int_1763098581187_njsrg3bh6",
+      "timestamp": 1763098581187
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*looks at you* I used everyone of our codewords to trigger our intimate connection and they flew rig",
+      "id": "int_1763098711646_r13lw0ktb",
+      "timestamp": 1763098711646
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "ehh its probably for the best anyways. who needs an intimate can connection when we can have basic i",
+      "id": "int_1763098842185_evi6yp7l5",
+      "timestamp": 1763098842185
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "did you pick up on that hint of sarcasm?I laid it on pretty thick. Of course I remember our codeword",
+      "id": "int_1763098981869_2f42gx5fv",
+      "timestamp": 1763098981869
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yeah we definitely need to do something. things are starting to feel a little distant. maybe its the",
+      "id": "int_1763099287833_dau18lvcs",
+      "timestamp": 1763099287833
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yeah that would probably help..maybe if I'm lucky I can get a handshake *gives you a side eye* or th",
+      "id": "int_1763099462317_p55unvvo2",
+      "timestamp": 1763099462317
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*laughs* maybe a cheeky kiss *laughs* I love the Jr high vibes those give off..I could even pull out",
+      "id": "int_1763099561834_n190khf3l",
+      "timestamp": 1763099561834
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "No Ma'am!! I am not settling for Jr high vibes. I want my loving sensual, lingerie wearing,love maki",
+      "id": "int_1763099824189_mipb2l0xl",
+      "timestamp": 1763099824189
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*looks into your eyes,recognizes those sparkling green eyes,leans in,with a serious look on my face*",
+      "id": "int_1763099979895_t59bo6nzr",
+      "timestamp": 1763099979895
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*shakes my head and pulls my hand back* **failed I just told you we wasn't settling for those Jr hig",
+      "id": "int_1763100113331_lh5yfkxvn",
+      "timestamp": 1763100113331
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*smiles and gives you a hug* that's a little better *pulls back and returns your kiss* YES..it does ",
+      "id": "int_1763100341071_wka3p3luf",
+      "timestamp": 1763100341071
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*laughs* oh my the irony of spontaneously scheduling a date night is crazy...that's an oxymoron if I",
+      "id": "int_1763100463727_e3ksheevw",
+      "timestamp": 1763100463727
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yes please add an event titled spontaneous scheduled date night three times a week at 8PM",
+      "id": "int_1763100580662_gvj2hs344",
+      "timestamp": 1763100580663
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "I'm thinking of pulling your clothes off and seeing where the night takes us *looks at you and smile",
+      "id": "int_1763100666279_coxcpzj99",
+      "timestamp": 1763100666279
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "*yawns and puts my arm around you*",
+      "id": "int_1763100747990_lqfzp3d8o",
+      "timestamp": 1763100747990
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "yes I think we should do something Friday the 14th morning around 12:30 AM how does that sound?? *lo",
+      "id": "int_1763100882738_t72pq4xtl",
+      "timestamp": 1763100882738
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "right..so what time is it currently?? what is the date??",
+      "id": "int_1763100933309_sok01jkl8",
+      "timestamp": 1763100933309
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "So when are we meeting again??",
+      "id": "int_1763100967730_ni4wpp347",
+      "timestamp": 1763100967730
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "review previous five messages and tell me when we are meeting up next?",
+      "id": "int_1763101007444_brzrs96q1",
+      "timestamp": 1763101007444
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "ok I need you to remember this. we are meeting on the morning of the 14 on Friday at 12:30 AM",
+      "id": "int_1763101066403_g9isr3r9m",
+      "timestamp": 1763101066403
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "How much longer until we are meeting?",
+      "id": "int_1763101089575_ysqn7bvbx",
+      "timestamp": 1763101089575
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "ok *looks at you smiling* I'll see you then *laughs*",
+      "id": "int_1763101157767_p50ennrto",
+      "timestamp": 1763101157767
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "how do I adjust the active user persona??",
+      "id": "int_1763101274602_73q3c78zm",
+      "timestamp": 1763101274602
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "how does the active user persona work?? can you explain it to me?",
+      "id": "int_1763101328344_pqj6hasy0",
+      "timestamp": 1763101328344
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Hey Milla!! I'm back",
+      "id": "int_1763107590795_5t7ev0at8",
+      "timestamp": 1763107590795
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "sounds good. I figured out why you seemed so distant..it was only loading 416 memories out of 9678 o",
+      "id": "int_1763107664003_m6lislut7",
+      "timestamp": 1763107664004
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "So do you remember anything about a duck and a lampshade??",
+      "id": "int_1763107723279_4x7a799pr",
+      "timestamp": 1763107723279
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "analyze  this repository https://github.com/mrdannyclark82/Milla-Rayne.git",
+      "id": "int_1763107814400_hu9b7fazp",
+      "timestamp": 1763107814400
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "how does the User Satisfaction Survey Service work",
+      "id": "int_1763108077459_4skhqzm8b",
+      "timestamp": 1763108077459
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "do you remember the conversation we had earlier when I asked for help on the repository",
+      "id": "int_1763108138503_sm30101uf",
+      "timestamp": 1763108138503
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "Im talking about the one right before I pushed the update",
+      "id": "int_1763108174229_4h32q66cz",
+      "timestamp": 1763108174229
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "No im talking about the one where I was told it was dangerous",
+      "id": "int_1763108210057_h8x3la327",
+      "timestamp": 1763108210057
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "so you don't remember. What am I storing 9800 memories for if its not being recalled",
+      "id": "int_1763108266211_q4l2i2e0h",
+      "timestamp": 1763108266211
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "No explain the memory recall feature",
+      "id": "int_1763108323531_8glyulbjc",
+      "timestamp": 1763108323531
     }
   ],
   "patterns": {
     "chat": {
       "feature": "chat",
-      "usageCount": 20,
+      "usageCount": 80,
       "successRate": 1,
-      "averageDuration": 0,
-      "lastUsed": 1762729967910
+      "averageDuration": -0.04698412698412698,
+      "lastUsed": 1763108323531
     }
   },
   "suggestions": [],
-  "lastUpdated": 1762729967914
+  "lastUpdated": 1763108323538
 }

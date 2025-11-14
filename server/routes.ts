@@ -362,6 +362,192 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // Get feature flags configuration
+  app.get('/api/feature-flags', async (req, res) => {
+    try {
+      const { getFeatureFlags } = await import('./featureFlags');
+      const flags = getFeatureFlags();
+      res.json({
+        success: true,
+        flags,
+      });
+    } catch (error) {
+      console.error('Error getting feature flags:', error);
+      res.status(500).json({ 
+        success: false,
+        error: 'Failed to get feature flags' 
+      });
+    }
+  });
+
+  // ========================================================================
+  // Monitoring & Status Endpoints (implementing TODOs)
+  // ========================================================================
+
+  // Get agent controller metrics
+  app.get('/api/monitoring/agents', async (req, res) => {
+    try {
+      const { agentController } = await import('./agentController');
+      const metrics = agentController.getAllMetrics();
+      const agents = agentController.getRegisteredAgents();
+      
+      res.json({
+        success: true,
+        agents,
+        metrics,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting agent metrics:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get agent metrics',
+      });
+    }
+  });
+
+  // Get API resilience status (circuit breakers, cache, rate limiters)
+  app.get('/api/monitoring/resilience', async (req, res) => {
+    try {
+      const { circuitBreaker, apiCache, rateLimiter } = await import('./apiResilience');
+      
+      res.json({
+        success: true,
+        circuitBreaker: circuitBreaker.getStatus(),
+        cache: {
+          size: apiCache.size(),
+          maxSize: 1000,
+        },
+        rateLimiter: rateLimiter.getStatus(),
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting resilience status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get resilience status',
+      });
+    }
+  });
+
+  // Get SCPA queue status
+  app.get('/api/monitoring/scpa', async (req, res) => {
+    try {
+      const { getSCPAQueueStatus } = await import('./metacognitiveService');
+      const status = getSCPAQueueStatus();
+      
+      res.json({
+        success: true,
+        ...status,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting SCPA status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get SCPA status',
+      });
+    }
+  });
+
+  // Get memory scheduler status
+  app.get('/api/monitoring/memory-scheduler', async (req, res) => {
+    try {
+      const { getSchedulerStatus } = await import('./memorySummarizationScheduler');
+      const status = getSchedulerStatus();
+      
+      res.json({
+        success: true,
+        ...status,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting scheduler status:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get scheduler status',
+      });
+    }
+  });
+
+  // Force memory summarization (manual trigger)
+  app.post('/api/monitoring/memory-scheduler/force-run', async (req, res) => {
+    try {
+      const { forceMemorySummarization } = await import('./memorySummarizationScheduler');
+      await forceMemorySummarization();
+      
+      res.json({
+        success: true,
+        message: 'Memory summarization triggered',
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error forcing summarization:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to trigger summarization',
+      });
+    }
+  });
+
+  // Get combined system health
+  app.get('/api/monitoring/health', async (req, res) => {
+    try {
+      const { agentController } = await import('./agentController');
+      const { circuitBreaker } = await import('./apiResilience');
+      const { getSCPAQueueStatus } = await import('./metacognitiveService');
+      const { getSchedulerStatus } = await import('./memorySummarizationScheduler');
+      
+      const agentMetrics = agentController.getAllMetrics();
+      const cbStatus = circuitBreaker.getStatus();
+      const scpaStatus = getSCPAQueueStatus();
+      const schedulerStatus = getSchedulerStatus();
+      
+      // Determine overall health
+      const openCircuits = Object.values(cbStatus).filter((s: any) => s.state === 'OPEN').length;
+      const criticalFailures = scpaStatus.criticalFailures;
+      const agentFailures = Object.values(agentMetrics).reduce((sum: number, m: any) => sum + (m.failureCount || 0), 0);
+      
+      let health = 'healthy';
+      if (criticalFailures > 3 || openCircuits > 2) {
+        health = 'critical';
+      } else if (criticalFailures > 0 || openCircuits > 0 || agentFailures > 5) {
+        health = 'degraded';
+      }
+      
+      res.json({
+        success: true,
+        health,
+        components: {
+          agents: {
+            total: agentController.getRegisteredAgents().length,
+            failures: agentFailures,
+          },
+          circuitBreakers: {
+            total: Object.keys(cbStatus).length,
+            open: openCircuits,
+          },
+          scpa: {
+            queueSize: scpaStatus.queueSize,
+            critical: criticalFailures,
+          },
+          scheduler: {
+            running: schedulerStatus.isRunning,
+            successRate: schedulerStatus.successRate,
+          },
+        },
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error getting system health:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to get system health',
+        health: 'unknown',
+      });
+    }
+  });
+
   // Get XAI reasoning data for a session
   app.get('/api/xai/session/:sessionId', async (req, res) => {
     try {
@@ -887,7 +1073,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     console.log('--- /api/chat handler called ---');
     console.log('CHAT API CALLED');
     try {
-      let { message, audioData, audioMimeType } = req.body;
+      let { message } = req.body;
+      const audioData = req.body.audioData;
+      const audioMimeType = req.body.audioMimeType;
       let userEmotionalState: VoiceAnalysisResult['emotionalTone'] | undefined;
 
       if (audioData && audioMimeType) {
@@ -943,27 +1131,46 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
       }
       
-      // Phase 3: Detect scene context from user message
-      const sensorData = await getSmartHomeSensorData();
-      const sceneContext = detectSceneContext(
-        message,
-        currentSceneLocation,
-        sensorData || undefined
-      );
-      if (sceneContext.hasSceneChange) {
-        currentSceneLocation = sceneContext.location;
-        currentSceneMood = sceneContext.mood;
-        currentSceneUpdatedAt = Date.now();
-        console.log(
-          `Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`
+      // Check if message is prefaced with ## to bypass function calls
+      const bypassFunctionCalls = message.trim().startsWith('##');
+      const processedMessage = bypassFunctionCalls ? message.trim().substring(2).trim() : message;
+      
+      if (bypassFunctionCalls) {
+        console.log('🚫 Function calls bypassed due to ## prefix');
+      }
+      
+      // Phase 3: Detect scene context from user message (skip if bypassed)
+      let sceneContext = {
+        location: currentSceneLocation,
+        mood: currentSceneMood,
+        timeOfDay: 'evening' as const,
+        hasSceneChange: false
+      };
+      
+      if (!bypassFunctionCalls) {
+        const sensorData = await getSmartHomeSensorData();
+        sceneContext = detectSceneContext(
+          processedMessage,
+          currentSceneLocation,
+          sensorData || undefined
         );
+        if (sceneContext.hasSceneChange) {
+          currentSceneLocation = sceneContext.location;
+          currentSceneMood = sceneContext.mood;
+          currentSceneUpdatedAt = Date.now();
+          console.log(
+            `Scene change detected: ${sceneContext.location} (mood: ${sceneContext.mood})`
+          );
+        }
       }
 
-      // Phase 3.5: Parse commands and execute agent tasks if needed
+      // Phase 3.5: Parse commands and execute agent tasks if needed (skip if bypassed)
       let agentTaskResult = null;
-      try {
-        const { parseCommandLLM } = await import('./commandParserLLM');
-        const parsedCommand = await parseCommandLLM(message);
+      
+      if (!bypassFunctionCalls) {
+        try {
+          const { parseCommandLLM } = await import('./commandParserLLM');
+          const parsedCommand = await parseCommandLLM(processedMessage);
         
         console.log('📋 Parsed command:', parsedCommand);
         
@@ -1120,9 +1327,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
             };
           }
         }
-      } catch (error) {
-        console.error('Command parsing error:', error);
-        // Continue with normal chat flow if command parsing fails
+        } catch (error) {
+          console.error('Command parsing error:', error);
+          // Continue with normal chat flow if command parsing fails
+        }
+      } else {
+        console.log('🚫 Function calls bypassed due to ## prefix');
       }
 
       // Generate AI response using existing logic with timeout
@@ -1136,12 +1346,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       console.log('--- Calling generateAIResponse ---');
       
       // Enhance message with agent task context if available
-      let enhancedMessage = message;
+      let enhancedMessage = processedMessage;
       if (agentTaskResult) {
         if (agentTaskResult.success) {
-          enhancedMessage = `${message}\n\n[System Note: Calendar operation completed successfully. ${agentTaskResult.message || 'Event was created.'}]`;
+          enhancedMessage = `${processedMessage}\n\n[System Note: Calendar operation completed successfully. ${agentTaskResult.message || 'Event was created.'}]`;
         } else {
-          enhancedMessage = `${message}\n\n[System Note: Calendar operation failed. ${agentTaskResult.error || agentTaskResult.message || 'Please try again.'}]`;
+          enhancedMessage = `${processedMessage}\n\n[System Note: Calendar operation failed. ${agentTaskResult.error || agentTaskResult.message || 'Please try again.'}]`;
         }
       }
       
@@ -1151,7 +1361,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         'Danny Ray',
         undefined,
         userId,
-        userEmotionalState
+        userEmotionalState,
+        bypassFunctionCalls
       );
       const aiResponse = (await Promise.race([
         aiResponsePromise,
@@ -1174,20 +1385,20 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       let dailyNews = null;
 
       // Don't trigger YouTube analysis for GitHub or other repository links
-      const hasGitHubLink = message.match(
+      const hasGitHubLink = processedMessage.match(
         /(?:github\.com|gitlab\.com|bitbucket\.org)/i
       );
       const youtubeUrlMatch = !hasGitHubLink
-        ? message.match(
+        ? processedMessage.match(
           /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
         )
         : null;
 
       // Check for knowledge base request
       if (
-        message.toLowerCase().includes('knowledge base') ||
-        message.toLowerCase().includes('show videos') ||
-        message.toLowerCase().includes('my videos')
+        processedMessage.toLowerCase().includes('knowledge base') ||
+        processedMessage.toLowerCase().includes('show videos') ||
+        processedMessage.toLowerCase().includes('my videos')
       ) {
         showKnowledgeBase = true;
         console.log('📚 millAlyzer: Knowledge base request detected');
@@ -1195,9 +1406,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       // Check for daily news request
       if (
-        message.toLowerCase().includes('daily news') ||
-        message.toLowerCase().includes('tech news') ||
-        message.toLowerCase().includes("what's new")
+        processedMessage.toLowerCase().includes('daily news') ||
+        processedMessage.toLowerCase().includes('tech news') ||
+        processedMessage.toLowerCase().includes("what's new")
       ) {
         try {
           const { runDailyNewsSearch } = await import('./youtubeNewsMonitor');
@@ -1210,8 +1421,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       if (
         youtubeUrlMatch ||
-        (message.toLowerCase().includes('analyze') &&
-          message.toLowerCase().includes('video'))
+        (processedMessage.toLowerCase().includes('analyze') &&
+          processedMessage.toLowerCase().includes('video'))
       ) {
         try {
           let videoId: string | null = null;
@@ -1272,7 +1483,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         feature: 'chat',
         success: true,
         duration: responseEndTime - Date.now(), // Approximate duration
-        context: message.substring(0, 100),
+        context: processedMessage.substring(0, 100),
       }).catch(err => console.error('Failed to track interaction:', err));
 
       res.json({
@@ -2268,6 +2479,117 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       res.status(500).json({
         error: `I had trouble analyzing that YouTube video: ${error?.message || 'Unknown error'}`,
       });
+    }
+  });
+
+  // Active Listening endpoints
+  app.post('/api/active-listening/start', async (req, res) => {
+    try {
+      const { videoId, videoContext } = req.body;
+      
+      if (!videoId || !videoContext) {
+        return res.status(400).json({ error: 'Video ID and context are required' });
+      }
+
+      const { startActiveListening } = await import('./activeListeningService');
+      const result = await startActiveListening(videoId, videoContext);
+
+      res.json({
+        success: true,
+        message: 'Active listening started',
+        videoId,
+        insightCount: result.insightCount,
+        pausePoints: result.pausePoints,
+      });
+    } catch (error) {
+      console.error('Error starting active listening:', error);
+      res.status(500).json({ error: 'Failed to start active listening' });
+    }
+  });
+
+  app.post('/api/active-listening/stop', async (req, res) => {
+    try {
+      const { stopActiveListening } = await import('./activeListeningService');
+      stopActiveListening();
+
+      res.json({
+        success: true,
+        message: 'Active listening stopped',
+      });
+    } catch (error) {
+      console.error('Error stopping active listening:', error);
+      res.status(500).json({ error: 'Failed to stop active listening' });
+    }
+  });
+
+  app.post('/api/active-listening/check-pause', async (req, res) => {
+    try {
+      const { currentTime } = req.body;
+      
+      if (currentTime === undefined) {
+        return res.status(400).json({ 
+          error: 'Current time is required' 
+        });
+      }
+
+      const { checkForScheduledPause } = await import('./activeListeningService');
+      const insight = checkForScheduledPause(currentTime);
+
+      res.json({
+        success: true,
+        insight,
+        shouldPause: insight !== null,
+      });
+    } catch (error) {
+      console.error('Error checking for pause:', error);
+      res.status(500).json({ error: 'Failed to check for pause' });
+    }
+  });
+
+  app.post('/api/active-listening/save-insight', async (req, res) => {
+    try {
+      const { insight, videoId, videoTitle } = req.body;
+      const sessionToken = req.cookies.session_token;
+      
+      let userId = 'default-user';
+      if (sessionToken) {
+        const sessionResult = await validateSession(sessionToken);
+        if (sessionResult.valid && sessionResult.user) {
+          userId = sessionResult.user.id || 'default-user';
+        }
+      }
+
+      if (!insight || !videoId || !videoTitle) {
+        return res.status(400).json({ 
+          error: 'Missing required fields: insight, videoId, videoTitle' 
+        });
+      }
+
+      const { saveInsightToMemory } = await import('./activeListeningService');
+      await saveInsightToMemory(insight, videoId, videoTitle, userId);
+
+      res.json({
+        success: true,
+        message: 'Insight saved to memory',
+      });
+    } catch (error) {
+      console.error('Error saving insight:', error);
+      res.status(500).json({ error: 'Failed to save insight' });
+    }
+  });
+
+  app.get('/api/active-listening/state', async (req, res) => {
+    try {
+      const { getActiveListeningState } = await import('./activeListeningService');
+      const state = getActiveListeningState();
+
+      res.json({
+        success: true,
+        state,
+      });
+    } catch (error) {
+      console.error('Error getting active listening state:', error);
+      res.status(500).json({ error: 'Failed to get active listening state' });
     }
   });
 
@@ -5135,8 +5457,8 @@ function getIntensityBoost(reactionType: string): number {
     BACKGROUND_SUPPORT: 0.8, // Subtle, less intrusive
     CURIOSITY_SPARK: 1.6, // Moderate curiosity boost
 
-    FERAL_SPIRIT: 2.0, // Very adventurous and dominant
-    SEDUCTION_MODE: 1.8, // High seduction energy
+    FERAL_SPIRIT: 3.0, // Very adventurous and dominant
+    SEDUCTION_MODE: 2.8, // High seduction energy
     DOMINANT_ENERGY: 2.0, // Strong dominant response
 
     // ADD YOU CUSTOM INTENSITIES HERE:
@@ -5280,7 +5602,8 @@ async function generateAIResponse(
   userName: string = 'Danny Ray',
   imageData?: string,
   userId: string = 'default-user',
-  userEmotionalState?: VoiceAnalysisResult['emotionalTone']
+  userEmotionalState?: VoiceAnalysisResult['emotionalTone'],
+  bypassFunctionCalls: boolean = false
 ): Promise<{
   content: string;
   reasoning?: string[];
@@ -5562,6 +5885,23 @@ async function generateAIResponse(
       return {
         content: response,
         millalyzer_analysis: analysis, // Pass full analysis for future interactions
+        uiCommand: {
+          action: 'SHOW_COMPONENT' as const,
+          componentName: 'VideoAnalysisPanel',
+          data: {
+            analysis: {
+              videoId,
+              title: analysis.title,
+              type: analysis.type,
+              summary: analysis.summary,
+              keyPoints: analysis.keyPoints,
+              codeSnippets: analysis.codeSnippets,
+              cliCommands: analysis.cliCommands,
+              actionableItems: analysis.actionableItems,
+              transcriptAvailable: analysis.transcriptAvailable,
+            }
+          }
+        }
       };
     } catch (error: any) {
       console.error('millAlyzer error:', error);
@@ -6082,50 +6422,52 @@ Could you share the repository URL again so I can take another look?
     }
   }
 
-  // Check for YouTube URL in message
-  const youtubeUrlMatch = message.match(
-    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
-  );
+  // Skip all automatic processing if bypass flag is set
+  if (!bypassFunctionCalls) {
+    // Check for YouTube URL in message
+    const youtubeUrlMatch = message.match(
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
 
-  if (youtubeUrlMatch) {
-    const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
-      ? youtubeUrlMatch[0]
-      : `https://${youtubeUrlMatch[0]}`;
+    if (youtubeUrlMatch) {
+      const youtubeUrl = youtubeUrlMatch[0].startsWith('http')
+        ? youtubeUrlMatch[0]
+        : `https://${youtubeUrlMatch[0]}`;
 
-    try {
-      console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
-      const analysis = await analyzeYouTubeVideo(youtubeUrl);
+      try {
+        console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
+        const analysis = await analyzeYouTubeVideo(youtubeUrl);
 
-      const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
+        const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
 
-      return { content: response };
-    } catch (error: any) {
-      console.error('YouTube analysis error in chat:', error);
-      const response = `I noticed you shared a YouTube link! I tried to analyze it but ran into some trouble: ${error?.message || 'Unknown error'}. Could you tell me what the video is about instead?`;
-      return { content: response };
+        return { content: response };
+      } catch (error: any) {
+        console.error('YouTube analysis error in chat:', error);
+        const response = `I noticed you shared a YouTube link! I tried to analyze it but ran into some trouble: ${error?.message || 'Unknown error'}. Could you tell me what the video is about instead?`;
+        return { content: response };
+      }
     }
-  }
 
-  // Check for code generation requests first
-  const codeRequest = extractCodeRequest(userMessage);
-  if (codeRequest) {
-    try {
-      const codeResult = await generateCodeWithQwen(
-        codeRequest.prompt,
-        codeRequest.language
-      );
-      const response = formatCodeResponse(codeResult, codeRequest.prompt);
-      return { content: response };
-    } catch (error) {
-      console.error('Code generation error:', error);
-      const response = `I apologize, babe, but I encountered an issue generating code for "${codeRequest.prompt}". Please try again or let me know if you'd like me to explain the approach instead!`;
-      return { content: response };
+    // Check for code generation requests first
+    const codeRequest = extractCodeRequest(userMessage);
+    if (codeRequest) {
+      try {
+        const codeResult = await generateCodeWithQwen(
+          codeRequest.prompt,
+          codeRequest.language
+        );
+        const response = formatCodeResponse(codeResult, codeRequest.prompt);
+        return { content: response };
+      } catch (error) {
+        console.error('Code generation error:', error);
+        const response = `I apologize, babe, but I encountered an issue generating code for "${codeRequest.prompt}". Please try again or let me know if you'd like me to explain the approach instead!`;
+        return { content: response };
+      }
     }
-  }
 
-  // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
-  const imagePrompt = extractImagePromptGemini(userMessage);
-  if (imagePrompt) {
+    // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
+    const imagePrompt = extractImagePromptGemini(userMessage);
+    if (imagePrompt) {
     try {
       // If a Banana/Gemini key is configured, try Banana first
       if (process.env.OPENROUTER_GEMINI_API_KEY || process.env.BANANA_API_KEY) {
@@ -6333,9 +6675,10 @@ Could you share the repository URL again so I can take another look?
     }
     return { content: response };
   }
+  } // End of bypass check
 
   // Check for search requests
-  if (shouldPerformSearch(userMessage)) {
+  if (!bypassFunctionCalls && shouldPerformSearch(userMessage)) {
     try {
       const searchResults = await performWebSearch(userMessage);
       let response = '';
@@ -6381,10 +6724,11 @@ Could you share the repository URL again so I can take another look?
   // PRIMARY: Search Memory Core for relevant context (highest priority)
   let memoryCoreContext = '';
   try {
-    memoryCoreContext = await getMemoryCoreContext(userMessage);
+    // Pass userId for privacy isolation - only show this user's memories
+    memoryCoreContext = await getMemoryCoreContext(userMessage, userId || 'danny-ray');
     if (memoryCoreContext) {
       console.log(
-        'Found Memory Core context for query:',
+        `Found Memory Core context for user ${userId}:`,
         userMessage.substring(0, 50)
       );
       reasoning.push(
@@ -6468,8 +6812,8 @@ Could you share the repository URL again so I can take another look?
     reasoning.push(`Keyword trigger detected: ${triggerResult.reactionType}`);
   }
 
-  // Detect browser tool requests and add to context
-  const browserToolRequest = detectBrowserToolRequest(userMessage);
+  // Detect browser tool requests and add to context (skip if bypassed)
+  const browserToolRequest = !bypassFunctionCalls ? detectBrowserToolRequest(userMessage) : { tool: null };
   let browserToolContext = '';
   if (browserToolRequest.tool) {
     browserToolContext = `\n${getBrowserToolInstructions()}\n\nDETECTED REQUEST: The user's message suggests they want to use the "${browserToolRequest.tool}" tool. Acknowledge this naturally and let them know you're handling it as their devoted spouse.\n`;
@@ -6617,7 +6961,8 @@ This message requires you to be fully present as ${userName}'s partner, companio
       ) {
         try {
           await updateMemories(
-            `User asked: "${userMessage}" - Milla responded: "${aiResponse.content}"`
+            `User asked: "${userMessage}" - Milla responded: "${aiResponse.content}"`,
+            userId || 'danny-ray'
           );
         } catch (error) {
           console.error('Error updating memories:', error);
@@ -6652,7 +6997,8 @@ This message requires you to be fully present as ${userName}'s partner, companio
       ) {
         try {
           await updateMemories(
-            `User asked: "${userMessage}" - Milla responded: "${fallbackResponse}"`
+            `User asked: "${userMessage}" - Milla responded: "${fallbackResponse}"`,
+            userId || 'danny-ray'
           );
         } catch (error) {
           console.error('Error updating memories:', error);

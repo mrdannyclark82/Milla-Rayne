@@ -348,3 +348,177 @@ export function getSceneContextSettings(sceneContext: SceneContext): string {
     getSceneDescription(sceneContext.location) || getContextualSceneSettings()
   );
 }
+
+// ============================================================================
+// P3.2: Scene State Inference from Sensor Data (STUB)
+// ============================================================================
+
+/**
+ * Projected user state based on sensor data
+ */
+export type ProjectedState = 
+  | 'active'      // High motion, moving around
+  | 'working'     // At desk, moderate activity
+  | 'relaxing'    // Low motion, settled
+  | 'sleeping'    // Minimal motion, night time
+  | 'away'        // No presence detected
+  | 'exercising'  // High motion + elevated heart rate
+  | 'cooking'     // Kitchen location + activity
+  | 'unknown';
+
+export interface ProjectedStateContext {
+  state: ProjectedState;
+  confidence: number; // 0-1
+  factors: string[]; // What led to this inference
+  timestamp: number;
+  suggestedSceneAdjustment?: {
+    mood?: SceneMood;
+    lighting?: string;
+    ambient?: string;
+  };
+}
+
+/**
+ * P3.2: Infer user's projected state from sensor data
+ * Maps raw sensor readings to meaningful activity states
+ * 
+ * @param sensorData - Raw sensor data from mobile/smart home
+ * @returns Projected state with confidence and context
+ * 
+ * STUB: Uses simple heuristics - in production would use ML model
+ */
+export function inferProjectedState(
+  sensorData: SmartHomeSensorData
+): ProjectedStateContext {
+  const factors: string[] = [];
+  let state: ProjectedState = 'unknown';
+  let confidence = 0.5;
+  
+  // Analyze motion patterns
+  const motion = sensorData.motion?.detected || false;
+  const motionLevel = sensorData.motion?.level || 0;
+  
+  // Analyze location
+  const location = sensorData.location || 'unknown';
+  
+  // Analyze time of day
+  const hour = new Date().getHours();
+  const isNight = hour >= 22 || hour < 6;
+  const isMorning = hour >= 6 && hour < 10;
+  const isEvening = hour >= 18 && hour < 22;
+  
+  // STUB: Simple rule-based inference
+  // TODO: Replace with ML model trained on user patterns
+  
+  if (!motion && isNight) {
+    state = 'sleeping';
+    confidence = 0.9;
+    factors.push('No motion detected', 'Night time hours');
+  } else if (location === 'kitchen' && motion) {
+    state = 'cooking';
+    confidence = 0.8;
+    factors.push('Kitchen location', 'Motion detected');
+  } else if (motionLevel > 0.7) {
+    state = 'exercising';
+    confidence = 0.75;
+    factors.push('High motion level', 'Sustained activity');
+  } else if (motion && motionLevel > 0.3) {
+    state = 'active';
+    confidence = 0.7;
+    factors.push('Moderate to high motion');
+  } else if (motion && motionLevel <= 0.3) {
+    state = 'working';
+    confidence = 0.65;
+    factors.push('Low motion', 'Presence detected');
+  } else if (!motion && !isNight) {
+    state = 'relaxing';
+    confidence = 0.6;
+    factors.push('Minimal motion', 'Daytime hours');
+  } else if (!motion && sensorData.presence === false) {
+    state = 'away';
+    confidence = 0.85;
+    factors.push('No presence detected', 'No motion');
+  }
+  
+  // Suggest scene adjustments based on state
+  let suggestedSceneAdjustment;
+  
+  switch (state) {
+    case 'sleeping':
+      suggestedSceneAdjustment = {
+        mood: 'calm' as SceneMood,
+        lighting: 'minimal',
+        ambient: 'quiet night sounds',
+      };
+      break;
+    case 'exercising':
+      suggestedSceneAdjustment = {
+        mood: 'energetic' as SceneMood,
+        lighting: 'bright',
+        ambient: 'upbeat music',
+      };
+      break;
+    case 'relaxing':
+      suggestedSceneAdjustment = {
+        mood: 'calm' as SceneMood,
+        lighting: 'soft',
+        ambient: 'gentle background',
+      };
+      break;
+    case 'working':
+      suggestedSceneAdjustment = {
+        mood: 'calm' as SceneMood,
+        lighting: 'focused',
+        ambient: 'productivity sounds',
+      };
+      break;
+  }
+  
+  console.log(`🔮 [Scene] Inferred state: ${state} (${(confidence * 100).toFixed(0)}% confidence)`);
+  console.log(`🔮 [Scene] Factors: ${factors.join(', ')}`);
+  
+  return {
+    state,
+    confidence,
+    factors,
+    timestamp: Date.now(),
+    suggestedSceneAdjustment,
+  };
+}
+
+/**
+ * P3.2: Get continuous state stream for proactive adjustments
+ * In production, would poll sensors and emit events when state changes
+ */
+export function startProjectedStateMonitoring(
+  callback: (state: ProjectedStateContext) => void,
+  intervalMs: number = 30000 // Check every 30 seconds
+): NodeJS.Timeout {
+  console.log('🔮 [Scene] Starting projected state monitoring');
+  
+  const interval = setInterval(async () => {
+    try {
+      // Get current sensor data
+      const { getSmartHomeSensorData } = await import('./smartHomeService');
+      const sensorData = await getSmartHomeSensorData();
+      
+      if (sensorData) {
+        const projectedState = inferProjectedState(sensorData);
+        callback(projectedState);
+      }
+    } catch (error) {
+      console.error('Error in projected state monitoring:', error);
+    }
+  }, intervalMs);
+  
+  return interval;
+}
+
+/**
+ * P3.2: Stop state monitoring
+ */
+export function stopProjectedStateMonitoring(interval: NodeJS.Timeout): void {
+  clearInterval(interval);
+  console.log('🔮 [Scene] Stopped projected state monitoring');
+}
+

@@ -58,7 +58,10 @@ export async function dispatchExternalCommand(
         timestamp: new Date().toISOString(),
         agentVersion: '1.0.0',
       },
-      error: `Agent target '${command.target}' is not in the approved whitelist`,
+      error: {
+        code: 'UNAUTHORIZED_AGENT',
+        message: `Agent target '${command.target}' is not in the approved whitelist`,
+      },
     };
   }
   

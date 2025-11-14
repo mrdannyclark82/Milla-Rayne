@@ -5,6 +5,7 @@
  * Provides data for the XAI overlay visualization on the client
  */
 
+import { randomUUID } from 'crypto';
 import type { ReasoningStep, XAIData } from '../client/src/components/XAIOverlay';
 
 interface ReasoningSession {
@@ -25,8 +26,7 @@ const SESSION_TTL = 60 * 60 * 1000;
  */
 export function startReasoningSession(userId: string): string {
   // Use crypto.randomUUID() for cryptographically secure random IDs
-  const crypto = require('crypto');
-  const sessionId = `xai-${Date.now()}-${crypto.randomUUID().slice(0, 9)}`;
+  const sessionId = `xai-${Date.now()}-${randomUUID().slice(0, 9)}`;
   
   reasoningSessions.set(sessionId, {
     sessionId,

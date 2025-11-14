@@ -414,3 +414,83 @@ export function conceptualZKPAuthenticationFlow(): void {
   console.log('[Auth] Future: Replace centralized JWT with decentralized DID tokens');
 }
 
+/**
+ * P1.4: OAuth Token Refresh Stub
+ * Placeholder for automatic token rotation to improve security
+ * 
+ * In production, this would:
+ * 1. Check if access token is expiring soon
+ * 2. Use refresh token to get new access token
+ * 3. Update user session with new tokens
+ * 4. Rotate refresh token periodically
+ */
+export async function refreshAccessTokenIfExpired(
+  userId: string,
+  accessToken: string,
+  refreshToken?: string
+): Promise<{ success: boolean; newAccessToken?: string; error?: string }> {
+  // Stub implementation - to be completed with actual OAuth provider integration
+  console.log(`[Auth] Token refresh check for user ${userId}`);
+  
+  try {
+    // TODO: Implement actual token refresh logic with OAuth provider
+    // For now, return success if token exists
+    if (!accessToken) {
+      return { success: false, error: 'No access token provided' };
+    }
+    
+    // Mock token expiration check (in production, decode JWT and check exp claim)
+    const mockTokenAge = Date.now(); // Placeholder
+    const mockTokenExpiry = mockTokenAge + (3600 * 1000); // 1 hour
+    const timeUntilExpiry = mockTokenExpiry - Date.now();
+    
+    // Refresh if token expires in less than 5 minutes
+    if (timeUntilExpiry < 5 * 60 * 1000) {
+      console.log('[Auth] Token expiring soon, would refresh here');
+      
+      // TODO: Call OAuth provider refresh endpoint
+      // const newTokens = await oauthProvider.refreshToken(refreshToken);
+      // await storage.updateUserSession(userId, newTokens);
+      
+      // Return mock success for now
+      return {
+        success: true,
+        newAccessToken: accessToken, // In production, return new token
+      };
+    }
+    
+    return { success: true, newAccessToken: accessToken };
+  } catch (error) {
+    console.error('[Auth] Token refresh error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Token refresh failed',
+    };
+  }
+}
+
+/**
+ * P1.4: Token Rotation Scheduler
+ * Automatically checks and refreshes tokens for active sessions
+ * Should be called periodically (e.g., every 30 minutes)
+ */
+export async function scheduleTokenRotation(): Promise<void> {
+  console.log('[Auth] Starting token rotation scheduler...');
+  
+  // TODO: Get all active sessions from storage
+  // TODO: For each session, check if token needs refresh
+  // TODO: Call refreshAccessTokenIfExpired for expiring tokens
+  
+  // Stub: Log that scheduler would run
+  console.log('[Auth] Token rotation scheduler initialized (stub)');
+  
+  // In production, set up interval:
+  // setInterval(async () => {
+  //   const sessions = await storage.getActiveSessions();
+  //   for (const session of sessions) {
+  //     await refreshAccessTokenIfExpired(session.userId, session.accessToken, session.refreshToken);
+  //   }
+  // }, 30 * 60 * 1000); // Every 30 minutes
+}
+
+

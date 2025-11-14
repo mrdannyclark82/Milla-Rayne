@@ -5,7 +5,7 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateGrokResponse } from './openrouterService';
+import { generateAIResponse } from './openaiService';
 
 export interface RepositoryInfo {
   owner: string;
@@ -320,21 +320,17 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-    // Use Grok 1 Fast for repository analysis
-    let aiResponse: { content: string; success: boolean } | null = null;
+    // Use OpenAI for repository analysis
+    const aiResponse = await generateAIResponse(analysisPrompt, {
+      userName: 'Danny Ray',
+    });
 
-    try {
-      aiResponse = await generateGrokResponse(analysisPrompt, {
-        userName: 'Danny Ray',
-      });
-      if (aiResponse.success && aiResponse.content) {
-        return parseAnalysisResponse(aiResponse.content);
-      }
-    } catch (error) {
-      console.warn('Grok analysis failed:', error);
+    if (aiResponse.success && aiResponse.content) {
+      return parseAnalysisResponse(aiResponse.content);
     }
 
-    // Fallback to manual analysis if OpenRouter fails
+    // Fallback to manual analysis if AI fails
+    console.warn('AI analysis failed, using fallback');
     return generateFallbackAnalysis(repoData);
   } catch (error) {
     console.error('Error generating repository analysis:', error);
