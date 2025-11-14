@@ -972,9 +972,16 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       }
       
       // Phase 3: Detect scene context from user message (skip if bypassed)
+      let sceneContext = {
+        location: currentSceneLocation,
+        mood: currentSceneMood,
+        timeOfDay: 'evening' as const,
+        hasSceneChange: false
+      };
+      
       if (!bypassFunctionCalls) {
         const sensorData = await getSmartHomeSensorData();
-        const sceneContext = detectSceneContext(
+        sceneContext = detectSceneContext(
           processedMessage,
           currentSceneLocation,
           sensorData || undefined
