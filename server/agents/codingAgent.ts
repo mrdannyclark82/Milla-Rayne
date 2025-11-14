@@ -1,4 +1,4 @@
-import { Agent } from './base';
+import { BaseAgent } from './base';
 import { AgentTask } from './taskStorage';
 import {
   createSandbox,
@@ -30,12 +30,13 @@ export interface CodeFix {
   changes: string;
 }
 
-class CodingAgent implements Agent {
-  name = 'coding';
-  description = 'An agent that can write and understand code, perform automated bug fixes, and create pull requests.';
+class CodingAgent extends BaseAgent {
+  constructor() {
+    super('coding', 'An agent that can write and understand code, perform automated bug fixes, and create pull requests.');
+  }
 
-  async execute(task: string): Promise<string> {
-    console.log(`CodingAgent received task: ${task}`);
+  protected async executeInternal(task: string): Promise<string> {
+    this.log(`CodingAgent received task: ${task}`);
     // In the future, this could be a call to a code generation model
     return `I have received the coding task: '${task}'. I will work on it.`;
   }
