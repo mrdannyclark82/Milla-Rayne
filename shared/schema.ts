@@ -106,6 +106,9 @@ export const memorySummaries = pgTable('memory_summaries', {
   emotionalTone: varchar('emotional_tone', {
     enum: ['positive', 'negative', 'neutral'],
   }),
+  // Sensitive PII fields - automatically encrypted with HE
+  financialSummary: text('financial_summary'), // Bank balances, income, investments (HE encrypted)
+  medicalNotes: text('medical_notes'), // Health conditions, medications, treatments (HE encrypted)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -76,7 +76,7 @@ export async function generateActivePersona(
   };
   
   // 2. Fetch relevant semantic memories
-  let memoryContextData: {
+  const memoryContextData: {
     recentInteractions: string;
     relevantTopics: string[];
     emotionalPatterns: string[];

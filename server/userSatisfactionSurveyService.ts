@@ -255,7 +255,7 @@ class UserSatisfactionSurveyService {
     // Extract top praises
     const praiseResponses = survey.responses.filter(r => {
       const question = survey.questions.find(q => q.id === r.questionId);
-      return question?.type === 'text' && q.question.toLowerCase().includes('like');
+      return question?.type === 'text' && question.question.toLowerCase().includes('like');
     });
 
     const topPraises = praiseResponses
