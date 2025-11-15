@@ -1,14 +1,14 @@
-import { Agent } from './base';
+import { BaseAgent } from './base';
 import { glob } from 'glob';
 import fs from 'fs/promises';
 
-class EnhancementSearchAgent implements Agent {
-  name = 'enhancement';
-  description =
-    'An agent that searches for potential enhancements for the Milla Rayne project.';
+class EnhancementSearchAgent extends BaseAgent {
+  constructor() {
+    super('enhancement', 'An agent that searches for potential enhancements for the Milla Rayne project.');
+  }
 
-  async execute(task: string): Promise<string> {
-    console.log(`EnhancementSearchAgent received task: ${task}`);
+  protected async executeInternal(task: string): Promise<string> {
+    this.log(`EnhancementSearchAgent received task: ${task}`);
     const keywords = task.split(' ');
     const files = await glob('**/*.md', { ignore: 'node_modules/**' });
     const results: string[] = [];

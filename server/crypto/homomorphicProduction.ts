@@ -336,3 +336,64 @@ export async function migrateToV2(v1EncryptedData: string): Promise<string> {
   const decrypted = decryptV1(v1EncryptedData);
   return encryptHomomorphic(decrypted);
 }
+
+// ============================================================================
+// P2.1: HCF Vector Encryption for RAG (Homomorphic Context Fusion)
+// ============================================================================
+
+/**
+ * Encrypted Vector Type for HCF
+ */
+export interface EncryptedVector {
+  ciphertext: string;
+  dimensions: number;
+  timestamp: number;
+  metadata?: {
+    encryptionScheme: 'mock' | 'CKKS' | 'BFV';
+    keyId: string;
+  };
+}
+
+/**
+ * P2.1: Encrypt a vector for homomorphic operations (STUB)
+ * In production, would use CKKS scheme for floating-point vectors
+ */
+export function encryptVector(vector: number[]): EncryptedVector {
+  console.log(`🔐 [HCF] Encrypting vector of dimension ${vector.length}`);
+  
+  // STUB: Mock encryption - in production use actual CKKS
+  const mockCiphertext = Buffer.from(JSON.stringify({
+    encrypted: true,
+    checksum: vector.reduce((a, b) => a + b, 0),
+  })).toString('base64');
+  
+  return {
+    ciphertext: mockCiphertext,
+    dimensions: vector.length,
+    timestamp: Date.now(),
+    metadata: {
+      encryptionScheme: 'mock',
+      keyId: 'mock_key',
+    },
+  };
+}
+
+/**
+ * P2.1: Compute distance between encrypted vectors WITHOUT decryption (STUB)
+ * In production, would use homomorphic operations
+ */
+export function encryptedDistance(
+  v1: EncryptedVector,
+  v2: EncryptedVector
+): number {
+  console.log(`🔐 [HCF] Computing encrypted distance`);
+  
+  if (v1.dimensions !== v2.dimensions) {
+    throw new Error('Vector dimension mismatch');
+  }
+  
+  // STUB: Mock distance - in production compute homomorphically
+  const timeDiff = Math.abs(v1.timestamp - v2.timestamp);
+  return (timeDiff % 1000) / 1000;
+}
+

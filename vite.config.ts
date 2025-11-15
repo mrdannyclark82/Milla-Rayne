@@ -1,4 +1,3 @@
-// @ts-nocheck - Vite config has runtime dependencies
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 

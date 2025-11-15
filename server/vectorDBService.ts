@@ -24,6 +24,15 @@ export interface VectorEntry {
   id: string;
   content: string;
   embedding: number[];
+  // P2.6: Add summary vector for hierarchical indexing
+  summaryVector?: number[]; // Smaller, faster vector for initial filtering
+  // P2.2: Add encrypted vector support for HCF
+  encryptedEmbedding?: {
+    ciphertext: string;
+    dimensions: number;
+    timestamp: number;
+    metadata?: any;
+  };
   metadata: {
     type: 'memory' | 'knowledge' | 'conversation' | 'youtube';
     timestamp: string;
@@ -156,13 +165,57 @@ class VectorStore {
   /**
    * Search for similar vectors using cosine similarity
    */
+  /**
+   * P2.2: Search with HCF encrypted vectors support
+   * Accepts both plain and encrypted query vectors
+   */
   async search(queryEmbedding: number[], options: {
     topK?: number;
     minSimilarity?: number;
     filter?: (entry: VectorEntry) => boolean;
+    useEncrypted?: boolean; // P2.2: Enable HCF encrypted search
   } = {}): Promise<SearchResult[]> {
-    const { topK = 5, minSimilarity = 0.5, filter } = options;
+    const { topK = 5, minSimilarity = 0.5, filter, useEncrypted = false } = options;
     
+    // P2.2: If encrypted search requested, use HCF operations
+    if (useEncrypted) {
+      console.log('🔐 [HCF] Performing encrypted similarity search');
+      const { encryptVector, encryptedDistance } = await import('./crypto/homomorphicProduction');
+      
+      // Encrypt query vector
+      const encryptedQuery = encryptVector(queryEmbedding);
+      
+      const results: SearchResult[] = [];
+      
+      for (const entry of this.entries.values()) {
+        // Apply filter if provided
+        if (filter && !filter(entry)) {
+          continue;
+        }
+        
+        // Use encrypted embedding if available, otherwise encrypt on-the-fly
+        let distance: number;
+        if (entry.encryptedEmbedding) {
+          distance = encryptedDistance(encryptedQuery, entry.encryptedEmbedding);
+        } else {
+          const encryptedEntry = encryptVector(entry.embedding);
+          distance = encryptedDistance(encryptedQuery, encryptedEntry);
+        }
+        
+        // Convert distance to similarity (inverse relationship)
+        const similarity = 1 - distance;
+        
+        if (similarity >= minSimilarity) {
+          results.push({ entry, similarity });
+        }
+      }
+      
+      // Sort by similarity descending and take top K
+      results.sort((a, b) => b.similarity - a.similarity);
+      return results.slice(0, topK);
+    }
+    
+    // Original plain-text search
     const results: SearchResult[] = [];
     
     for (const entry of this.entries.values()) {
@@ -171,7 +224,22 @@ class VectorStore {
         continue;
       }
       
-      const similarity = cosineSimilarity(queryEmbedding, entry.embedding);
+      // P2.6: Use summary vector for initial filtering if available
+      let similarity: number;
+      if (entry.summaryVector && queryEmbedding.length > entry.summaryVector.length) {
+        // Fast filtering with summary vector
+        const querySummary = queryEmbedding.slice(0, entry.summaryVector.length);
+        const prelimSimilarity = cosineSimilarity(querySummary, entry.summaryVector);
+        
+        // Only compute full similarity if summary passes threshold
+        if (prelimSimilarity >= minSimilarity * 0.8) {
+          similarity = cosineSimilarity(queryEmbedding, entry.embedding);
+        } else {
+          continue; // Skip this entry
+        }
+      } else {
+        similarity = cosineSimilarity(queryEmbedding, entry.embedding);
+      }
       
       if (similarity >= minSimilarity) {
         results.push({ entry, similarity });

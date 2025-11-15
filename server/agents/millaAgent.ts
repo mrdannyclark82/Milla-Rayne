@@ -1,4 +1,4 @@
-import { Agent } from './base';
+import { BaseAgent } from './base';
 import { v4 as uuidv4 } from 'uuid';
 import { addTask } from './taskStorage';
 import { runTask } from './worker';
@@ -8,12 +8,12 @@ import { runTask } from './worker';
  * This is a lightweight supervisor implementation used by the server when a
  * higher-level instruction is sent to 'milla' via the simple agentController.
  */
-class MillaAgent implements Agent {
-  name = 'milla';
-  description =
-    'Supervisor agent that orchestrates domain agents and task creation.';
+class MillaAgent extends BaseAgent {
+  constructor() {
+    super('milla', 'Supervisor agent that orchestrates domain agents and task creation.');
+  }
 
-  async execute(task: string): Promise<string> {
+  protected async executeInternal(task: string): Promise<string> {
     // Task may be a JSON string describing a domain task. Try to parse it.
     let parsed: any = null;
     try {

@@ -1,0 +1,15 @@
+{
+  "name": "copilot-swe-agent-callbacks",
+  "version": "1.0.0",
+  "description": "Callback wrapper for Copilot SWE agent to prevent WebSocket connection errors",
+  "main": "src/callback-wrapper.js",
+  "scripts": {
+    "check": "node scripts/check-callback.js"
+  },
+  "dependencies": {
+    "undici": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

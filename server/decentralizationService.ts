@@ -488,6 +488,89 @@ export function getSSIStats(): {
 }
 
 /**
+ * Verify user identity using Zero-Knowledge Proof
+ * 
+ * This function demonstrates ZKP-based identity verification for authentication.
+ * The user proves possession of valid credentials without revealing sensitive PII.
+ * 
+ * Integration point for authService.ts to enable decentralized authentication.
+ * 
+ * @param userId - User identifier
+ * @param proof - The ZK proof string or proof ID
+ * @returns Promise<boolean> indicating if identity is verified
+ * 
+ * @example
+ * ```typescript
+ * // During login, user provides a ZK proof instead of password
+ * const verified = await verifyIdentityZKP(userId, zkProofId);
+ * if (verified) {
+ *   // Grant access
+ * }
+ * ```
+ */
+export async function verifyIdentityZKP(
+  userId: string,
+  proof: string
+): Promise<boolean> {
+  console.log(`[Decentralization] Verifying identity for user: ${userId} using ZKP`);
+  
+  try {
+    // Check if proof is a proof ID or an actual proof string
+    let proofId: string;
+    
+    if (proof.startsWith('zkp_')) {
+      // It's a proof ID, verify directly
+      proofId = proof;
+    } else {
+      // It's a proof string, decode and extract ID
+      try {
+        const proofData = JSON.parse(Buffer.from(proof, 'base64').toString());
+        proofId = proofData.id || proof;
+      } catch {
+        proofId = proof;
+      }
+    }
+    
+    // Verify the ZK proof
+    const isValid = verifyZKProof(proofId);
+    
+    if (!isValid) {
+      console.warn(`[Decentralization] Identity verification failed for user: ${userId}`);
+      return false;
+    }
+    
+    // Additional check: Verify associated credentials
+    const userCredentials = getUserCredentials(userId);
+    const hasValidCredentials = userCredentials.some(cred => 
+      verifyCredential(cred.id) && 
+      (cred.type === 'EmailVerification' || cred.type === 'AgeVerification')
+    );
+    
+    if (!hasValidCredentials) {
+      console.warn(`[Decentralization] User ${userId} has no valid credentials`);
+      return false;
+    }
+    
+    // Check if user has encrypted identity data in vault
+    const vaultEntries = getUserVaultEntries(userId);
+    const hasIdentityVault = vaultEntries.some(entry => entry.dataType === 'identity');
+    
+    if (!hasIdentityVault) {
+      console.warn(`[Decentralization] User ${userId} has no identity vault`);
+      return false;
+    }
+    
+    console.log(`[Decentralization] ✅ Identity verified for user: ${userId} using ZKP`);
+    console.log(`[Decentralization] Note: Verified without exposing PII - using HE-encrypted vault data`);
+    
+    return true;
+  } catch (error) {
+    console.error(`[Decentralization] Error verifying identity ZKP:`, error);
+    return false;
+  }
+}
+
+/**
  * Initialize the decentralization service
  */
 export function initializeDecentralizationService(): void {

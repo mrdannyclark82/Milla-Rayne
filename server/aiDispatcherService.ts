@@ -186,12 +186,19 @@ function buildAmbientContextString(ambient: AmbientContext): string {
 export async function dispatchAIResponse(
   userMessage: string,
   context: DispatchContext,
-  maxTokens?: number
+  maxTokens?: number,
+  traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
-  console.log('--- dispatchAIResponse called ---');
+  // P1.5: Generate trace ID if not provided
+  const requestTraceId = traceId || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Starting`);
+  console.log(`🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`);
+  
+  const startTime = Date.now();
   
   // Start XAI reasoning session
   const xaiSessionId = startReasoningSession(context.userId || 'anonymous');
+  console.log(`🔍 [TRACE:${requestTraceId}] XAI Session: ${xaiSessionId}`);
   
   let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
@@ -296,6 +303,24 @@ export async function dispatchAIResponse(
     }
   }
 
+  // Get Adaptive Persona Configuration (Phase IV - A/B Testing)
+  let adaptivePersona = null;
+  const conversationStartTime = Date.now();
+  try {
+    const { getActivePersonaConfig } = await import('./selfEvolutionService');
+    adaptivePersona = getActivePersonaConfig();
+    addReasoningStep(
+      xaiSessionId,
+      'tools',
+      'Adaptive Persona Selected',
+      `Using ${adaptivePersona.name} persona (${adaptivePersona.style})`,
+      { personaId: adaptivePersona.id, temperature: adaptivePersona.temperature }
+    );
+    console.log(`🧠 Adaptive Persona: ${adaptivePersona.name} (temp: ${adaptivePersona.temperature})`);
+  } catch (error) {
+    console.error('Error getting adaptive persona:', error);
+  }
+
   // Enrich context with semantic retrieval (V-RAG)
   const semanticStartTime = Date.now();
   const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
@@ -325,6 +350,12 @@ export async function dispatchAIResponse(
   
   // Augment user message with all context layers
   let augmentedMessage = userMessage;
+  
+  // Add Adaptive Persona System Prompt Modifier (Phase IV)
+  if (adaptivePersona && adaptivePersona.systemPromptModifier) {
+    augmentedMessage = `[PERSONA DIRECTIVE]: ${adaptivePersona.systemPromptModifier}\n\n` + augmentedMessage;
+    console.log('✅ Enhanced with Adaptive Persona directive');
+  }
   
   // Add Active User Persona (if available)
   if (activePersona) {
@@ -444,6 +475,41 @@ export async function dispatchAIResponse(
 
   // Attach XAI session ID to response
   response.xaiSessionId = xaiSessionId;
+
+  // Record Adaptive Persona Test Result (Phase IV - A/B Testing)
+  if (adaptivePersona && context.userId) {
+    const conversationEndTime = Date.now();
+    const responseTime = conversationEndTime - conversationStartTime;
+    
+    // Calculate outcome metrics
+    const taskCompletionRate = response.success ? 0.95 : 0.3; // Inferred from success
+    const userSatisfactionScore = response.success ? 4.0 : 2.0; // Estimated (will be updated by surveys)
+    const engagementLevel = response.content ? Math.min(response.content.length / 500, 1.0) : 0.5;
+    
+    try {
+      const { recordPersonaTestResult } = await import('./selfEvolutionService');
+      await recordPersonaTestResult(
+        adaptivePersona.id,
+        xaiSessionId, // Use XAI session as conversation ID
+        context.userId,
+        {
+          taskCompletionRate,
+          userSatisfactionScore,
+          responseTime,
+          engagementLevel,
+        },
+        response.success ? 'success' : 'failure'
+      );
+      console.log(`📊 Recorded persona test result for ${adaptivePersona.name}`);
+    } catch (error) {
+      console.error('Error recording persona test result:', error);
+    }
+  }
+
+  // P1.5: Log end of trace with duration
+  const duration = Date.now() - startTime;
+  console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Completed in ${duration}ms`);
+  console.log(`🔍 [TRACE:${requestTraceId}] Model: ${modelToUse}, Success: ${response.success}`);
 
   return response;
 }

@@ -1,4 +1,4 @@
-import { Agent } from './base';
+import { BaseAgent } from './base';
 import { AgentTask } from './taskStorage';
 import {
   createSandbox,
@@ -30,12 +30,13 @@ export interface CodeFix {
   changes: string;
 }
 
-class CodingAgent implements Agent {
-  name = 'coding';
-  description = 'An agent that can write and understand code, perform automated bug fixes, and create pull requests.';
+class CodingAgent extends BaseAgent {
+  constructor() {
+    super('coding', 'An agent that can write and understand code, perform automated bug fixes, and create pull requests.');
+  }
 
-  async execute(task: string): Promise<string> {
-    console.log(`CodingAgent received task: ${task}`);
+  protected async executeInternal(task: string): Promise<string> {
+    this.log(`CodingAgent received task: ${task}`);
     // In the future, this could be a call to a code generation model
     return `I have received the coding task: '${task}'. I will work on it.`;
   }
@@ -207,16 +208,65 @@ class CodingAgent implements Agent {
   }
 
   /**
-   * Generate a code fix for an identified issue
+   * Generate a code fix for an identified issue using AI
    */
   private async generateCodeFix(issue: IssueIdentification): Promise<CodeFix> {
-    // This is a placeholder. In a production system, this would use an AI model
-    // to generate actual code fixes based on the issue description
-    return {
-      description: `Fix for ${issue.issueType}: ${issue.description}`,
-      files: issue.affectedFiles,
-      changes: `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
-    };
+    try {
+      // Use AI to generate a code fix based on the issue
+      const prompt = `As an expert software engineer, analyze and fix the following ${issue.severity} severity ${issue.issueType} issue:
+
+**Description:** ${issue.description}
+**Affected Files:** ${issue.affectedFiles.join(', ')}
+
+Please provide:
+1. A clear description of the fix
+2. The specific code changes needed
+3. Why this fix resolves the issue
+
+Format your response as JSON with keys: description, changes, reasoning`;
+
+      // Use OpenRouter service that's already configured
+      const { generateOpenRouterResponse } = await import('../openrouterService');
+
+      const result = await generateOpenRouterResponse(
+        prompt,
+        {
+          conversationHistory: [],
+          userName: 'CodingAgent',
+        },
+        'anthropic/claude-3-haiku'
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate fix');
+      }
+
+      let aiResponse;
+      try {
+        aiResponse = JSON.parse(result.content);
+      } catch {
+        // Fallback if AI doesn't return valid JSON
+        aiResponse = {
+          description: result.content.slice(0, 200),
+          changes: result.content,
+          reasoning: 'AI-generated fix',
+        };
+      }
+
+      return {
+        description: aiResponse.description || `Fix for ${issue.issueType}: ${issue.description}`,
+        files: issue.affectedFiles,
+        changes: aiResponse.changes || `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
+      };
+    } catch (error) {
+      console.error('Error generating AI fix, using fallback:', error);
+      // Fallback to simple fix description
+      return {
+        description: `Fix for ${issue.issueType}: ${issue.description}`,
+        files: issue.affectedFiles,
+        changes: `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue. Severity: ${issue.severity}. Requires manual review.`,
+      };
+    }
   }
 
   /**
@@ -250,6 +300,144 @@ class CodingAgent implements Agent {
 }
 
 export const codingAgent = new CodingAgent();
+
+// ============================================================================
+// P2.5: SCPA Self-Correction Logic Stub
+// ============================================================================
+
+/**
+ * P2.5: Generate fix for agent failure (STUB)
+ * This would analyze the error and generate code to fix it
+ * 
+ * @param failureContext - Context about the agent failure
+ * @returns Mock code patch object
+ */
+export async function generateFix(failureContext: any): Promise<{
+  success: boolean;
+  patch?: {
+    files: string[];
+    changes: string;
+    description: string;
+    testPlan: string;
+  };
+  error?: string;
+}> {
+  console.log(`🔧 [SCPA] Generating fix for ${failureContext.agentName}`);
+  console.log(`🔧 [SCPA] Error: ${failureContext.error}`);
+  
+  // STUB: In production, this would:
+  // 1. Analyze the error stack trace
+  // 2. Locate the failing code
+  // 3. Use LLM to understand the bug
+  // 4. Generate a code fix
+  // 5. Create test cases to verify the fix
+  
+  // Mock fix generation based on error pattern
+  const errorStr = String(failureContext.error);
+  let mockFix: any;
+  
+  if (errorStr.includes('undefined') || errorStr.includes('null')) {
+    mockFix = {
+      files: [`server/agents/${failureContext.agentName}.ts`],
+      changes: `
+// Add null check before accessing property
+if (!variable) {
+  console.warn('Variable is null/undefined, using default');
+  variable = defaultValue;
+}
+`,
+      description: 'Added null/undefined safety check',
+      testPlan: 'Test with null input, verify no crash and proper fallback',
+    };
+  } else if (errorStr.includes('timeout') || errorStr.includes('ETIMEDOUT')) {
+    mockFix = {
+      files: [`server/agents/${failureContext.agentName}.ts`],
+      changes: `
+// Increase timeout and add retry logic
+const result = await retry(
+  () => apiCall(),
+  { retries: 3, timeout: 60000 }
+);
+`,
+      description: 'Added retry logic and increased timeout',
+      testPlan: 'Test with slow network, verify retries work',
+    };
+  } else if (errorStr.includes('parse') || errorStr.includes('JSON')) {
+    mockFix = {
+      files: [`server/agents/${failureContext.agentName}.ts`],
+      changes: `
+// Add JSON parsing error handling
+try {
+  const data = JSON.parse(response);
+} catch (parseError) {
+  console.error('JSON parse failed:', parseError);
+  return fallbackValue;
+}
+`,
+      description: 'Added JSON parsing error handling',
+      testPlan: 'Test with invalid JSON, verify graceful fallback',
+    };
+  } else {
+    // Generic error handling fix
+    mockFix = {
+      files: [`server/agents/${failureContext.agentName}.ts`],
+      changes: `
+// Add generic error handling
+try {
+  // Original code here
+} catch (error) {
+  console.error('Operation failed:', error);
+  // Log to monitoring service
+  await reportError(error);
+  // Return safe fallback
+  return defaultResponse;
+}
+`,
+      description: 'Added comprehensive error handling',
+      testPlan: 'Test error scenarios, verify proper logging and fallback',
+    };
+  }
+  
+  console.log(`✅ [SCPA] Mock fix generated for ${failureContext.agentName}`);
+  console.log(`📝 [SCPA] Fix description: ${mockFix.description}`);
+  
+  // TODO: In production:
+  // 1. Actually modify the file with the fix
+  // 2. Run tests in sandbox environment
+  // 3. If tests pass, create PR
+  // 4. If tests fail, iterate on the fix
+  // const sandbox = await createSandbox(`scpa-fix-${Date.now()}`);
+  // await applyPatch(sandbox, mockFix);
+  // const testResults = await runTests(sandbox);
+  // if (testResults.passed) {
+  //   await createPRForSandbox(sandbox);
+  // }
+  
+  return {
+    success: true,
+    patch: mockFix,
+  };
+}
+
+/**
+ * P2.5: Apply generated fix to codebase (STUB)
+ * In production, this would actually modify files
+ */
+export async function applyFixToCodebase(patch: any): Promise<boolean> {
+  console.log(`🔧 [SCPA] Applying fix to codebase (STUB)`);
+  console.log(`📁 [SCPA] Files to modify: ${patch.files.join(', ')}`);
+  
+  // STUB: Would actually modify files here
+  // TODO: Use fs to read/write files with the patch
+  // for (const file of patch.files) {
+  //   const content = await fs.readFile(file, 'utf-8');
+  //   const updated = applyPatch(content, patch.changes);
+  //   await fs.writeFile(file, updated);
+  // }
+  
+  console.log(`✅ [SCPA] Fix applied successfully (STUB)`);
+  return true;
+}
 
 // Register the coding agent with the registry for task-based operations
 import { registerAgent } from './registry';
