@@ -345,7 +345,7 @@ function parseCsvLine(line: string): string[] {
 // Per-user memory core cache for privacy isolation
 const memoryCoreCache = new Map<string, MemoryCoreData>();
 const memoryCoreLastLoaded = new Map<string, number>();
-const MEMORY_CORE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes (increased for performance)
+const MEMORY_CORE_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours (increased for performance)
 
 /**
  * Load and parse user-specific Memory Core

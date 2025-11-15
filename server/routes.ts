@@ -1169,13 +1169,14 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       
       if (!bypassFunctionCalls) {
         try {
-          const { parseCommandLLM } = await import('./commandParserLLM');
-          const parsedCommand = await parseCommandLLM(processedMessage);
+          // LLM Parser disabled - keeping LLM calls functional but skipping command parsing
+          // const { parseCommandLLM } = await import('./commandParserLLM');
+          // const parsedCommand = await parseCommandLLM(processedMessage);
         
-        console.log('📋 Parsed command:', parsedCommand);
+        // console.log('📋 Parsed command:', parsedCommand);
         
         // Handle calendar commands through CalendarAgent
-        if (parsedCommand.service === 'calendar' && parsedCommand.action === 'add') {
+        if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'add') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1215,7 +1216,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
         
         // Handle calendar list commands
-        if (parsedCommand.service === 'calendar' && parsedCommand.action === 'list') {
+        if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'list') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1252,7 +1253,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
         
         // Handle tasks commands (Google Tasks / Keep alternative)
-        if (parsedCommand.service === 'tasks' && parsedCommand.action === 'add') {
+        if (false && parsedCommand.service === 'tasks' && parsedCommand.action === 'add') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1290,7 +1291,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
         
         // Handle email commands
-        if (parsedCommand.service === 'gmail' && parsedCommand.action === 'send') {
+        if (false && parsedCommand.service === 'gmail' && parsedCommand.action === 'send') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -4194,6 +4195,19 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  app.get('/api/youtube/knowledge/stats', async (req, res) => {
+    try {
+      const { getKnowledgeBaseStats } = await import('./youtubeKnowledgeBase');
+      const userId = req.user?.id || 'default-user';
+
+      const stats = await getKnowledgeBaseStats(userId);
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      console.error('Error getting knowledge base stats:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.get('/api/youtube/knowledge/:videoId', async (req, res) => {
     try {
       const { getVideoFromKnowledgeBase } = await import(
@@ -4255,19 +4269,6 @@ Project: Milla Rayne - AI Virtual Assistant
       res.json({ success: true, data: results });
     } catch (error: any) {
       console.error('Error searching CLI commands:', error);
-      res.status(500).json({ success: false, error: error.message });
-    }
-  });
-
-  app.get('/api/youtube/knowledge/stats', async (req, res) => {
-    try {
-      const { getKnowledgeBaseStats } = await import('./youtubeKnowledgeBase');
-      const userId = req.user?.id || 'default-user';
-
-      const stats = await getKnowledgeBaseStats(userId);
-      res.json({ success: true, data: stats });
-    } catch (error: any) {
-      console.error('Error getting knowledge base stats:', error);
       res.status(500).json({ success: false, error: error.message });
     }
   });

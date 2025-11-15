@@ -9,26 +9,26 @@ import { useSceneContext } from '@/contexts/SceneContext';
 export function BackgroundLayer() {
   const { location } = useSceneContext();
   const [imageSrc, setImageSrc] = useState<string>(
-    '/assets/scenes/front_door.jpg'
+    '/assets/scenes/front_door-night.jpg'
   );
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     // Map location to image path - using actual filenames from /client/public/assets/scenes/
     const locationImageMap: Record<string, string> = {
-      front_door: '/assets/scenes/front_door.jpg',
-      living_room: '/assets/scenes/living_room-fireplace.jpg', // Default living room variant
-      bedroom: '/assets/scenes/bedroom.jpg',
-      bathroom: '/assets/scenes/bathroom.jpg',
-      kitchen: '/assets/scenes/kitchen.jpg',
-      outdoor: '/assets/scenes/outdoor-night.jpg',
-      dining_room: '/assets/scenes/living_room-fireplace.jpg', // Fallback to living room
-      workspace: '/assets/scenes/living_room-fireplace.jpg', // Fallback to living room
-      guest_room: '/assets/scenes/bedroom.jpg', // Fallback to bedroom
+      front_door: '/assets/scenes/front_door-night.jpg',
+      living_room: '/assets/scenes/living_room-night.jpg',
+      bedroom: '/assets/scenes/living_room-night.jpg', // Fallback to living room
+      bathroom: '/assets/scenes/living_room-night.jpg', // Fallback to living room
+      kitchen: '/assets/scenes/living_room-night.jpg', // Fallback to living room
+      outdoor: '/assets/scenes/front_door-night.jpg', // Fallback to front door
+      dining_room: '/assets/scenes/living_room-night.jpg', // Fallback to living room
+      workspace: '/assets/scenes/living_room-night.jpg', // Fallback to living room
+      guest_room: '/assets/scenes/living_room-night.jpg', // Fallback to living room
     };
 
     const newImageSrc =
-      locationImageMap[location] || '/assets/scenes/front_door.jpg';
+      locationImageMap[location] || '/assets/scenes/front_door-night.jpg';
     setImageLoaded(false);
     setImageSrc(newImageSrc);
   }, [location]);
