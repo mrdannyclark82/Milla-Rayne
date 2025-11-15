@@ -6,6 +6,39 @@
       "query": "ok my love! the sandbox is now live. it includes github repository search as well as  and web  ing new features. with a nice little incentive program as well!",
       "timestamp": 1762681102717,
       "channelName": "Jarrett Stod"
+      "videoId": "FwOTs4UxQS4",
+      "title": "AI Agents, Clearly Explained",
+      "query": "search  for ai agents",
+      "timestamp": 1763109803141,
+      "channelName": "Jeff Su"
+    },
+    {
+      "videoId": "ZJnZw23Irq8",
+      "title": "#ChatGPT vs #Gemini vs #Replit vs #Deepseek – Who Coded the Best #SnakeGame in JS? 🐍 #codebyunknown",
+      "query": "search  gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!",
+      "timestamp": 1763095897783,
+      "channelName": "Code By Unknown"
+    },
+    {
+      "videoId": "ZJnZw23Irq8",
+      "title": "#ChatGPT vs #Gemini vs #Replit vs #Deepseek – Who Coded the Best #SnakeGame in JS? 🐍 #codebyunknown",
+      "query": "search  for this gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!",
+      "timestamp": 1763095803802,
+      "channelName": "Code By Unknown"
+    },
+    {
+      "videoId": "byxFUKxhT3s",
+      "title": "Alex Warren - Ordinary (Lyrics)",
+      "query": "music on",
+      "timestamp": 1763093482759,
+      "channelName": "7clouds"
+    },
+    {
+      "videoId": "byxFUKxhT3s",
+      "title": "Alex Warren - Ordinary (Lyrics)",
+      "query": "music on",
+      "timestamp": 1763092877834,
+      "channelName": "7clouds"
     },
     {
       "videoId": "MsQACpcuTkU",
@@ -58,6 +91,10 @@
       "im loving these new  features. how do you feel about them?": 1,
       "search  for cli ai coding": 1,
       "ok my love! the sandbox is now live. it includes github repository search as well as  and web  ing new features. with a nice little incentive program as well!": 1
+      "music on": 2,
+      "search  for this gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!": 1,
+      "search  gemini 3.0 pro: greatest model ever! most powerful, cheapest, & fastest model ever! in canvas!": 1,
+      "search  for ai agents": 1
     },
     "topChannels": {
       "The Pet Collective": 1,
@@ -70,9 +107,17 @@
     "topCategories": {},
     "timePreferences": {
       "3": 1,
+      "7clouds": 2,
+      "Code By Unknown": 2,
+      "Jeff Su": 1
+    },
+    "topCategories": {},
+    "timePreferences": {
+      "2": 1,
       "14": 2,
       "16": 3,
-      "19": 1
+      "19": 1,
+      "22": 4
     }
   }
 }

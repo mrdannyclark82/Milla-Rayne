@@ -43,16 +43,36 @@ export async function initApp() {
   });
   app.use(limiter);
 
-  // Add CORS headers
+  // P1.4: Strict CORS Policy - Only allow trusted origins
+  const trustedOrigins = process.env.TRUSTED_ORIGINS 
+    ? process.env.TRUSTED_ORIGINS.split(',')
+    : ['http://localhost:5000', 'http://localhost:5173', 'http://127.0.0.1:5000'];
+
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+    
+    // Check if origin is trusted
+    if (origin && trustedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    } else if (!origin) {
+      // Allow requests without origin (e.g., server-to-server)
+      res.header('Access-Control-Allow-Origin', trustedOrigins[0]);
+    } else {
+      console.warn(`⚠️  Blocked CORS request from untrusted origin: ${origin}`);
+    }
+    
     res.header(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, DELETE, OPTIONS'
     );
     res.header(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Trace-Id'
+    );
+    res.header(
+      'Access-Control-Max-Age',
+      '3600' // Cache preflight for 1 hour
     );
 
     if (req.method === 'OPTIONS') {
@@ -67,6 +87,13 @@ export async function initApp() {
     const path = req.path;
     let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
+    // P1.5: Distributed Tracing - Generate unique trace ID for request
+    const traceId = req.headers['x-trace-id'] as string || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    req.headers['x-trace-id'] = traceId;
+    res.setHeader('X-Trace-Id', traceId);
+    
+    console.log(`🔍 [TRACE:${traceId}] ${req.method} ${path} - Started`);
+
     const originalResJson = res.json;
     res.json = function (bodyJson, ...args) {
       capturedJsonResponse = bodyJson;
@@ -76,7 +103,7 @@ export async function initApp() {
     res.on('finish', () => {
       const duration = Date.now() - start;
       if (path.startsWith('/api')) {
-        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+        let logLine = `🔍 [TRACE:${traceId}] ${req.method} ${path} ${res.statusCode} in ${duration}ms`;
         if (capturedJsonResponse) {
           logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
         }
@@ -222,6 +249,11 @@ export async function initApp() {
   // Register API routes BEFORE Vite setup to prevent catch-all interference
   // registerRoutes will return an http.Server instance that we should use
   httpServer = await registerRoutes(app);
+
+  // Setup sensor data WebSocket for mobile clients
+  const { setupSensorDataWebSocket } = await import('./websocketService');
+  await setupSensorDataWebSocket(httpServer);
+  console.log('✅ Mobile sensor data WebSocket initialized');
 
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

@@ -10,7 +10,10 @@ async function sendCallback(url, body = undefined, options = {}) {
   let fetchFn = global.fetch;
   if (typeof fetchFn !== 'function') {
     try {
+
       // eslint-disable-next-line @typescript-eslint/no-require-imports
+
+
       const { fetch: undiciFetch } = require('undici');
       fetchFn = undiciFetch;
     } catch (e) {

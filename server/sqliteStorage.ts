@@ -1193,6 +1193,8 @@ export class SqliteStorage implements IStorage {
       summaryText: s.summary_text,
       topics: s.topics ? JSON.parse(s.topics) : [],
       emotionalTone: s.emotional_tone,
+      financialSummary: null,
+      medicalNotes: null,
       createdAt: new Date(s.created_at),
       updatedAt: new Date(s.updated_at),
     }));
@@ -1211,6 +1213,8 @@ export class SqliteStorage implements IStorage {
       summaryText: summary.summary_text,
       topics: summary.topics ? JSON.parse(summary.topics) : [],
       emotionalTone: summary.emotional_tone,
+      financialSummary: null,
+      medicalNotes: null,
       createdAt: new Date(summary.created_at),
       updatedAt: new Date(summary.updated_at),
     };
@@ -1371,4 +1375,135 @@ export class SqliteStorage implements IStorage {
   close(): void {
     this.db.close();
   }
+
+  // ========================================================================
+  // P3.4: CRDT (Conflict-free Replicated Data Type) Placeholder
+  // ========================================================================
+  
+  /**
+   * P3.4: Merge operation for CRDT-based distributed synchronization
+   * 
+   * This is where CRDT logic would be implemented for decentralized
+   * data synchronization across multiple devices without conflicts.
+   * 
+   * CRDT Types to Consider:
+   * - LWW (Last-Write-Wins) Register: For simple fields with timestamps
+   * - OR-Set (Observed-Remove Set): For add/remove collections
+   * - G-Counter: For increment-only counters
+   * - PN-Counter: For increment/decrement counters
+   * - RGA (Replicated Growable Array): For ordered lists
+   * 
+   * Implementation Steps (TODO):
+   * 1. Add vector clock or Lamport timestamp to each record
+   * 2. Track operation history with causality
+   * 3. Implement merge function for each data type
+   * 4. Handle concurrent updates deterministically
+   * 5. Propagate changes to other replicas
+   * 
+   * Example Schema Changes Needed:
+   * ```sql
+   * ALTER TABLE messages ADD COLUMN vector_clock TEXT;
+   * ALTER TABLE messages ADD COLUMN site_id TEXT;
+   * ALTER TABLE messages ADD COLUMN operation_type TEXT;
+   * CREATE TABLE crdt_operations (
+   *   id TEXT PRIMARY KEY,
+   *   table_name TEXT,
+   *   record_id TEXT,
+   *   operation TEXT,
+   *   vector_clock TEXT,
+   *   site_id TEXT,
+   *   timestamp INTEGER
+   * );
+   * ```
+   * 
+   * @param localData - Data from this device
+   * @param remoteData - Data from remote device
+   * @returns Merged data with conflicts resolved
+   */
+  mergeCRDT(localData: any, remoteData: any): any {
+    console.log('📡 [CRDT] Merge operation called (STUB)');
+    console.log('📡 [CRDT] Local entries:', Object.keys(localData).length);
+    console.log('📡 [CRDT] Remote entries:', Object.keys(remoteData).length);
+    
+    // STUB: In production, implement actual CRDT merge logic
+    // For now, return a simple last-write-wins merge
+    
+    const merged = { ...localData };
+    
+    for (const [key, remoteValue] of Object.entries(remoteData)) {
+      const localValue = localData[key];
+      
+      // TODO: Replace with proper CRDT merge based on type
+      // - For LWW: Compare timestamps, keep newer
+      // - For OR-Set: Union of additions, apply removals
+      // - For Counters: Sum increments, handle decrements
+      // - For RGA: Merge ordered lists preserving causality
+      
+      if (!localValue) {
+        // New entry from remote
+        merged[key] = remoteValue;
+        console.log(`📡 [CRDT] Added new entry: ${key}`);
+      } else if (this.shouldKeepRemoteValue(localValue, remoteValue)) {
+        // Remote is newer/preferred
+        merged[key] = remoteValue;
+        console.log(`📡 [CRDT] Updated entry: ${key}`);
+      } else {
+        // Keep local value
+        console.log(`📡 [CRDT] Kept local entry: ${key}`);
+      }
+    }
+    
+    console.log('📡 [CRDT] Merge complete:', Object.keys(merged).length, 'entries');
+    return merged;
+  }
+  
+  /**
+   * P3.4: Helper to determine if remote value should be kept (STUB)
+   * In production, would use vector clocks or Lamport timestamps
+   */
+  private shouldKeepRemoteValue(localValue: any, remoteValue: any): boolean {
+    // STUB: Simple timestamp comparison
+    // TODO: Implement proper causality checking with vector clocks
+    
+    const localTimestamp = localValue.timestamp || localValue.updated_at || 0;
+    const remoteTimestamp = remoteValue.timestamp || remoteValue.updated_at || 0;
+    
+    // LWW (Last-Write-Wins) strategy
+    if (remoteTimestamp > localTimestamp) {
+      return true;
+    }
+    
+    // If timestamps equal, use deterministic tie-breaking
+    // (e.g., higher site_id wins)
+    if (remoteTimestamp === localTimestamp) {
+      const localSiteId = localValue.site_id || '';
+      const remoteSiteId = remoteValue.site_id || '';
+      return remoteSiteId > localSiteId;
+    }
+    
+    return false;
+  }
+  
+  /**
+   * P3.4: Sync state with remote replica (STUB)
+   * Would be called periodically or on connection to sync devices
+   */
+  async syncWithReplica(replicaUrl: string): Promise<{ success: boolean; synced: number }> {
+    console.log(`📡 [CRDT] Syncing with replica: ${replicaUrl} (STUB)`);
+    
+    // TODO: Implement actual sync protocol
+    // 1. Get local vector clock
+    // 2. Send to remote replica
+    // 3. Receive missing operations from remote
+    // 4. Apply CRDT merge for each operation
+    // 5. Send local operations that remote is missing
+    // 6. Update vector clock
+    
+    // STUB: Return mock success
+    return {
+      success: true,
+      synced: 0, // Number of operations synced
+    };
+  }
 }
+

@@ -1,4 +1,4 @@
-# Milla Rayne - AI Companion
+# Milla-Rayne: The Context-Aware AI Assistant 🚀
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
@@ -8,7 +8,21 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
 
-> A virtual AI assistant with an adaptive personality, featuring a modern UI with full-screen background, SQLite-based memory system, and voice interaction capabilities.
+>Milla-Rayne is a pioneering digital intelligence platform, architected as an assistant. Its core design pushes the boundaries of human-computer interaction, weaving together cutting-edge AI research with hardened, production-grade systems.
+
+
+
+🌐 Architectural Zenith: Hybrid, Decentralized, and Edge-Ready
+Milla-Rayne runs on an intrinsically flexible, hybrid architecture designed for zero-latency performance and maximum reach.
+Poly-Model Synthesis: Integrates a multitude of state-of-the-art foundation models (Gemini, Mistral, OpenAI, specialized local models) through a secure and optimized dispatch layer, enabling a best-of-breed approach to every cognitive task.
+Adaptive Multimodal Frontend: The client application provides a sensory-rich, high-fidelity visual experience, dynamically adapting its virtual environment (SceneManager.tsx) and integrating real-time weather and environmental data for deep context.
+Edge Processing: The native mobile application includes a local edge agent (LocalEdgeAgent.kt), enabling critical real-time processing and sensor fusion directly on the user's device, minimizing reliance on remote servers and ensuring sub-millisecond response times for local tasks.
+
+🔒 Cryptographic Assurance: Privacy and Data Integrity
+Trust is built into the foundation. Milla-Rayne features advanced cryptographic layers to protect user data and computational integrity.
+Zero-Knowledge State: Incorporates Homomorphic Encryption capabilities to allow the system to perform complex analyses on user data in an encrypted state, maintaining cryptographic assurance of privacy for sensitive profile details and memory artifacts.
+Hardened Repository Management: An automated system monitors the entire repository, proactively managing enhancements, security audits, and deployment integrity, ensuring a robust and continuously evolving codebase.
+
 
 ## 📑 Table of Contents
 
@@ -1075,6 +1089,48 @@ docker-compose logs -f
 # Stop containers
 docker-compose down
 ```
+
+## Documentation
+
+### Living API Documentation
+
+Comprehensive API documentation is automatically generated from the TypeScript source code using TypeDoc and deployed to GitHub Pages with every push to the main branch.
+
+**📚 View the API Documentation:**
+- **Live Docs:** [https://mrdannyclark82.github.io/Milla-Rayne/api-docs/](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
+- **Status:** [![Documentation](https://img.shields.io/badge/docs-live-brightgreen)](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
+
+The documentation includes:
+- ✅ Full API reference for all services and agents
+- ✅ Type definitions and interfaces
+- ✅ Function signatures and parameters
+- ✅ Usage examples and descriptions
+- ✅ Automatically updated on every deployment
+
+### Generating Documentation Locally
+
+To generate and view the documentation on your local machine:
+
+```bash
+# Generate documentation
+npm run docs:generate
+
+# Watch mode (auto-regenerates on file changes)
+npm run docs:watch
+
+# Open the generated docs in your browser
+open docs/api/index.html
+```
+
+The documentation is generated from TypeScript source files in:
+- `server/` - Backend services, agents, and APIs
+- `shared/` - Shared types and utilities
+
+### Additional Documentation
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[SECURITY.md](SECURITY.md)** - Security policies and reporting
+- **[docs/](docs/)** - Detailed feature documentation and guides
 
 ## Contributing
 

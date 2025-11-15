@@ -106,6 +106,9 @@ export const memorySummaries = pgTable('memory_summaries', {
   emotionalTone: varchar('emotional_tone', {
     enum: ['positive', 'negative', 'neutral'],
   }),
+  // Sensitive PII fields - automatically encrypted with HE
+  financialSummary: text('financial_summary'), // Bank balances, income, investments (HE encrypted)
+  medicalNotes: text('medical_notes'), // Health conditions, medications, treatments (HE encrypted)
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -228,3 +231,71 @@ export type InsertYoutubeKnowledge = z.infer<
   typeof insertYoutubeKnowledgeSchema
 >;
 export type YoutubeKnowledge = typeof youtubeKnowledgeBase.$inferSelect;
+
+// UI Command Schema for Agent-Driven UI
+export const uiCommandSchema = z.object({
+  action: z.enum([
+    'SHOW_COMPONENT',
+    'HIDE_COMPONENT',
+    'UPDATE_COMPONENT',
+    'NAVIGATE',
+  ]),
+  componentName: z.enum([
+    'VideoAnalysisPanel',
+    'GuidedMeditation',
+    'KnowledgeBaseSearch',
+    'SharedNotepad',
+    'CodeSnippetCard',
+  ]).optional(),
+  data: z.record(z.string(), z.any()).optional(),
+  metadata: z.object({
+    reason: z.string().optional(),
+    priority: z.enum(['low', 'medium', 'high']).optional(),
+  }).optional(),
+});
+
+export type UICommand = z.infer<typeof uiCommandSchema>;
+
+// ===========================================================================================
+// EXTERNAL AGENT COMMUNICATION PROTOCOL (Phase IV)
+// ===========================================================================================
+
+// Schema for requesting services from external AI systems
+export const externalAgentCommandSchema = z.object({
+  target: z.string().describe('Target agent system name (e.g., "FinanceAgent", "HealthAgent")'),
+  command: z.string().describe('Command to execute (e.g., "GET_BALANCE", "SCHEDULE_APPOINTMENT")'),
+  args: z.record(z.string(), z.any()).describe('Command arguments'),
+  metadata: z.object({
+    priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+    timeout: z.number().optional().describe('Timeout in milliseconds'),
+    retryCount: z.number().optional().describe('Number of retries on failure'),
+  }).optional(),
+});
+
+export type ExternalAgentCommand = z.infer<typeof externalAgentCommandSchema>;
+
+// Schema for responses from external AI systems
+export const externalAgentResponseSchema = z.object({
+  success: z.boolean().describe('Whether the command executed successfully'),
+  statusCode: z.enum([
+    'OK',
+    'ERROR',
+    'TIMEOUT',
+    'UNAUTHORIZED',
+    'NOT_FOUND',
+    'SERVICE_UNAVAILABLE',
+  ]).describe('Status code of the operation'),
+  data: z.any().optional().describe('Response payload data'),
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    details: z.any().optional(),
+  }).optional().describe('Error information if command failed'),
+  metadata: z.object({
+    executionTime: z.number().optional().describe('Execution time in milliseconds'),
+    timestamp: z.string().optional().describe('Response timestamp'),
+    agentVersion: z.string().optional().describe('Version of the responding agent'),
+  }).optional(),
+});
+
+export type ExternalAgentResponse = z.infer<typeof externalAgentResponseSchema>;

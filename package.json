@@ -19,7 +19,9 @@
     "test:coverage": "vitest run --coverage --config ./vitest.config.server.ts",
     "test:ui": "vitest --ui --config ./vitest.config.server.ts",
     "lint": "npx eslint . --ext .ts,.tsx",
-    "format": "npx prettier --write ."
+    "format": "npx prettier --write .",
+    "docs:generate": "npx typedoc",
+    "docs:watch": "npx typedoc --watch"
   },
   "dependencies": {
     "@ai-sdk/xai": "^2.0.20",
@@ -91,6 +93,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.1",
+    "fast-json-stable-stringify": "^2.1.0",
     "form-data": "^4.0.4",
     "framer-motion": "^12.23.24",
     "huggingface-mcp-server": "^1.0.26",

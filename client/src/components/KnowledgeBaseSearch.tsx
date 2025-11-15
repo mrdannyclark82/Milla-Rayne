@@ -23,6 +23,8 @@ import type {
 
 interface KnowledgeBaseSearchProps {
   onSelectVideo?: (video: YoutubeKnowledge) => void;
+  initialQuery?: string;
+  onClose?: () => void;
   className?: string;
 }
 
@@ -37,9 +39,11 @@ interface KnowledgeBaseSearchProps {
  */
 export function KnowledgeBaseSearch({
   onSelectVideo,
+  initialQuery = '',
+  onClose,
   className = '',
 }: KnowledgeBaseSearchProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<YoutubeKnowledge[]>([]);
   const [stats, setStats] = useState<KnowledgeBaseStats | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,6 +52,10 @@ export function KnowledgeBaseSearch({
 
   useEffect(() => {
     fetchStats();
+    // Auto-search if initialQuery provided
+    if (initialQuery) {
+      handleSearch();
+    }
   }, []);
 
   const fetchStats = async () => {

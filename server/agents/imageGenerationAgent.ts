@@ -1,18 +1,17 @@
-import { Agent } from './base';
+import { BaseAgent } from './base';
 import { config } from '../config';
 import { InferenceClient } from '@huggingface/inference';
 
-class ImageGenerationAgent implements Agent {
-  name = 'image';
-  description = 'An agent that can generate images from a text prompt.';
+class ImageGenerationAgent extends BaseAgent {
   private hf: InferenceClient;
 
   constructor() {
+    super('image', 'An agent that can generate images from a text prompt.');
     this.hf = new InferenceClient(config.huggingface.apiKey);
   }
 
-  async execute(task: string): Promise<string> {
-    console.log(`ImageGenerationAgent received task: ${task}`);
+  protected async executeInternal(task: string): Promise<string> {
+    this.log(`ImageGenerationAgent received task: ${task}`);
     try {
       const response = await this.hf.textToImage({
         model: 'stabilityai/stable-diffusion-2',

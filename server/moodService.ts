@@ -1,6 +1,5 @@
 import { join } from 'path';
 import { promises as fs } from 'fs';
-import { getMemoriesFromTxt } from './memoryService';
 import { getPersonalTasks } from './personalTaskService';
 
 export interface MillaMood {

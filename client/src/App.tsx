@@ -9,7 +9,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
-import { YoutubePlayer } from '@/components/YoutubePlayer';
+import { YoutubePlayerWithActiveListening } from '@/components/YoutubePlayerWithActiveListening';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
 import {
@@ -26,6 +26,10 @@ import { FloatingInput } from '@/components/FloatingInput';
 import { CentralDock } from '@/components/CentralDock';
 import { SharedNotepad } from '@/components/SharedNotepad';
 import { GuidedMeditation } from '@/components/GuidedMeditation';
+import { XAIOverlay, type XAIData } from '@/components/XAIOverlay';
+import { getDeveloperMode } from '@/lib/scene/featureFlags';
+import { DynamicFeatureRenderer } from '@/components/DynamicFeatureRenderer';
+import type { UICommand } from '@shared/schema';
 
 function App() {
   console.log('App render start');
@@ -65,6 +69,16 @@ function App() {
 
   useNeutralizeLegacyBackground();
   const [showSharedNotepad, setShowSharedNotepad] = useState(false);
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
+  
+  // XAI Transparency state
+  const [xaiData, setXaiData] = useState<XAIData | null>(null);
+  const [showXAIOverlay, setShowXAIOverlay] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(getDeveloperMode());
+  
+  // Agent-Driven UI state
+  const [uiCommand, setUiCommand] = useState<UICommand | null>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -165,6 +179,12 @@ function App() {
         if (data.youtube_videos.length === 1) {
           setYoutubeVideoId(data.youtube_videos[0].id);
         }
+      }
+
+      // Handle UI commands from agent
+      if (data.uiCommand) {
+        console.log('✨ UI Command received:', data.uiCommand);
+        setUiCommand(data.uiCommand);
       }
 
       if (voiceEnabled && selectedVoice) {
@@ -276,7 +296,7 @@ function App() {
 
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayer
+          <YoutubePlayerWithActiveListening
             videoId={youtubeVideoId || undefined}
             videos={youtubeVideos || undefined}
             onClose={() => {
@@ -286,6 +306,10 @@ function App() {
             onSelectVideo={(videoId) => {
               setYoutubeVideoId(videoId);
               setYoutubeVideos(null);
+            }}
+            activeListeningEnabled={true}
+            onInsightDetected={(insight) => {
+              console.log('🎧 Insight detected:', insight);
             }}
           />
         )}
@@ -473,6 +497,24 @@ function App() {
             onToggleSharedNotepad={() =>
               setShowSharedNotepad(!showSharedNotepad)
             }
+            onShowKnowledgeBase={() => {
+              setUiCommand({
+                action: 'SHOW_COMPONENT',
+                componentName: 'KnowledgeBaseSearch',
+                data: {}
+              });
+            }}
+            onShowYoutubeMemories={() =>
+              setShowYoutubeMemories(!showYoutubeMemories)
+            }
+            onShowFeatures={() => {
+              // TODO: Add features panel
+              console.log('Show features panel');
+            }}
+            onShowSettings={() => {
+              // TODO: Add settings panel
+              console.log('Show settings panel');
+            }}
           />
           <SharedNotepad
             isOpen={showSharedNotepad}
@@ -505,6 +547,22 @@ function App() {
             onVoiceVolumeChange={setVoiceVolume}
             availableVoices={availableVoices}
           />
+
+          {/* XAI Transparency Overlay - Only shown in developer mode */}
+          {developerMode && showXAIOverlay && xaiData && (
+            <XAIOverlay
+              data={xaiData}
+              onClose={() => setShowXAIOverlay(false)}
+            />
+          )}
+
+          {/* Agent-Driven UI Renderer */}
+          {uiCommand && (
+            <DynamicFeatureRenderer
+              uiCommand={uiCommand}
+              onClose={() => setUiCommand(null)}
+            />
+          )}
         </div>
       </div>
     </SceneProvider>
