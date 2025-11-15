@@ -1,5 +1,5 @@
 /**
- * OpenRouter Code Generation Service using qwen/qwen3-coder:free
+ * OpenRouter Code Generation and Review Service
  */
 
 import nodeFetch from 'node-fetch';
@@ -10,6 +10,29 @@ export interface OpenRouterCodeGenerationResult {
   code?: string;
   language?: string;
   explanation?: string;
+  error?: string;
+}
+
+export interface CodeReviewResult {
+  success: boolean;
+  review?: {
+    summary: string;
+    issues: Array<{
+      type: 'security' | 'performance' | 'style' | 'bug' | 'suggestion';
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      line?: number;
+      description: string;
+      suggestion: string;
+    }>;
+    positives: string[];
+    overallScore: number; // 0-10
+  };
+  error?: string;
+}
+
+export interface CodeEmbeddingResult {
+  success: boolean;
+  embedding?: number[];
   error?: string;
 }
 
@@ -245,3 +268,342 @@ ${result.code}
 
   return response;
 }
+
+/**
+ * Review code using google/gemini-2.0-flash-exp:free via OpenRouter
+ */
+export async function reviewCodeWithGemini(
+  code: string,
+  language?: string,
+  context?: string
+): Promise<CodeReviewResult> {
+  if (!process.env.OPENROUTER_API_KEY) {
+    return {
+      success: false,
+      error: 'OpenRouter API key is not configured. Please set OPENROUTER_API_KEY in your environment.',
+    };
+  }
+
+  try {
+    const systemPrompt = `You are an expert code reviewer. Analyze the provided code for:
+1. Security vulnerabilities
+2. Performance issues
+3. Code style and best practices
+4. Potential bugs
+5. Improvement suggestions
+
+Provide your review in this JSON format:
+{
+  "summary": "Brief overview of the code quality",
+  "issues": [
+    {
+      "type": "security|performance|style|bug|suggestion",
+      "severity": "critical|high|medium|low",
+      "line": <line number if applicable>,
+      "description": "What the issue is",
+      "suggestion": "How to fix it"
+    }
+  ],
+  "positives": ["List of things done well"],
+  "overallScore": <number 0-10>
+}`;
+
+    let userPrompt = `Please review this ${language || 'code'}:\n\n\`\`\`${language || ''}\n${code}\n\`\`\``;
+    if (context) {
+      userPrompt += `\n\nContext: ${context}`;
+    }
+
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'X-Title': 'Milla Rayne AI Assistant - Code Review',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.0-flash-exp:free',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: userPrompt,
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.2,
+          response_format: { type: 'json_object' },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenRouter Gemini API error:', response.status, errorData);
+
+      return {
+        success: false,
+        error: `OpenRouter Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Unexpected OpenRouter Gemini response format:', data);
+      return {
+        success: false,
+        error: 'Invalid response format from OpenRouter Gemini',
+      };
+    }
+
+    const content = data.choices[0].message.content;
+    
+    // Parse JSON response
+    let review;
+    try {
+      review = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Failed to parse Gemini review response:', content);
+      return {
+        success: false,
+        error: 'Failed to parse code review response',
+      };
+    }
+
+    return {
+      success: true,
+      review,
+    };
+  } catch (error) {
+    console.error('OpenRouter Gemini code review error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during code review',
+    };
+  }
+}
+
+/**
+ * Format code review response for user
+ */
+export function formatCodeReviewResponse(
+  result: CodeReviewResult,
+  language?: string
+): string {
+  if (!result.success) {
+    return `I'd love to review that code for you, babe, but I'm having some trouble right now. ${result.error ? `Error: ${result.error}` : 'Want to discuss any specific concerns you have about it?'}`;
+  }
+
+  if (!result.review) {
+    return `I reviewed the code but couldn't generate a detailed analysis. Let me know if you have specific questions!`;
+  }
+
+  const { review } = result;
+  let response = `## 💻 Code Review (${language || 'Code'})\n\n`;
+  
+  response += `**Overall Score:** ${review.overallScore}/10\n\n`;
+  response += `**Summary:** ${review.summary}\n\n`;
+
+  if (review.positives && review.positives.length > 0) {
+    response += `### ✨ What's Good:\n`;
+    review.positives.forEach(positive => {
+      response += `- ${positive}\n`;
+    });
+    response += `\n`;
+  }
+
+  if (review.issues && review.issues.length > 0) {
+    const critical = review.issues.filter(i => i.severity === 'critical');
+    const high = review.issues.filter(i => i.severity === 'high');
+    const medium = review.issues.filter(i => i.severity === 'medium');
+    const low = review.issues.filter(i => i.severity === 'low');
+
+    if (critical.length > 0) {
+      response += `### 🚨 Critical Issues:\n`;
+      critical.forEach(issue => {
+        response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
+        response += `  💡 ${issue.suggestion}\n`;
+      });
+      response += `\n`;
+    }
+
+    if (high.length > 0) {
+      response += `### ⚠️ High Priority:\n`;
+      high.forEach(issue => {
+        response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
+        response += `  💡 ${issue.suggestion}\n`;
+      });
+      response += `\n`;
+    }
+
+    if (medium.length > 0) {
+      response += `### 📝 Medium Priority:\n`;
+      medium.forEach(issue => {
+        response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
+        response += `  💡 ${issue.suggestion}\n`;
+      });
+      response += `\n`;
+    }
+
+    if (low.length > 0) {
+      response += `### 💡 Suggestions:\n`;
+      low.forEach(issue => {
+        response += `- ${issue.description} - ${issue.suggestion}\n`;
+      });
+    }
+  } else {
+    response += `No issues found! The code looks solid. 💪\n`;
+  }
+
+  response += `\nWant me to help fix any of these issues or explain something in more detail?`;
+
+  return response;
+}
+
+/**
+ * Generate code embeddings using google/gemini-embedding-001 via OpenRouter
+ */
+export async function generateCodeEmbedding(
+  code: string,
+  language?: string
+): Promise<CodeEmbeddingResult> {
+  if (!process.env.OPENROUTER_GEMINI_API_KEY && !process.env.OPENROUTER_API_KEY) {
+    return {
+      success: false,
+      error: 'OpenRouter API key is not configured. Please set OPENROUTER_GEMINI_API_KEY or OPENROUTER_API_KEY in your environment.',
+    };
+  }
+
+  try {
+    // Prepare the code with language context
+    const input = language ? `${language}:\n${code}` : code;
+
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/embeddings',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json',
+          'X-Title': 'Milla Rayne AI Assistant - Code Embeddings',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-embedding-001',
+          input: input,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenRouter Gemini embedding API error:', response.status, errorData);
+
+      return {
+        success: false,
+        error: `OpenRouter Gemini embedding API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.data || !data.data[0] || !data.data[0].embedding) {
+      console.error('Unexpected OpenRouter embedding response format:', data);
+      return {
+        success: false,
+        error: 'Invalid response format from OpenRouter Gemini embeddings',
+      };
+    }
+
+    return {
+      success: true,
+      embedding: data.data[0].embedding,
+    };
+  } catch (error) {
+    console.error('OpenRouter Gemini embedding error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during embedding generation',
+    };
+  }
+}
+
+/**
+ * Calculate similarity between two code embeddings (cosine similarity)
+ */
+export function calculateCodeSimilarity(
+  embedding1: number[],
+  embedding2: number[]
+): number {
+  if (embedding1.length !== embedding2.length) {
+    throw new Error('Embeddings must have the same length');
+  }
+
+  let dotProduct = 0;
+  let magnitude1 = 0;
+  let magnitude2 = 0;
+
+  for (let i = 0; i < embedding1.length; i++) {
+    dotProduct += embedding1[i] * embedding2[i];
+    magnitude1 += embedding1[i] * embedding1[i];
+    magnitude2 += embedding2[i] * embedding2[i];
+  }
+
+  magnitude1 = Math.sqrt(magnitude1);
+  magnitude2 = Math.sqrt(magnitude2);
+
+  if (magnitude1 === 0 || magnitude2 === 0) {
+    return 0;
+  }
+
+  return dotProduct / (magnitude1 * magnitude2);
+}
+
+/**
+ * Find similar code snippets from a collection
+ */
+export async function findSimilarCode(
+  queryCode: string,
+  codeCollection: Array<{ code: string; metadata?: any }>,
+  language?: string,
+  topK: number = 5
+): Promise<Array<{ code: string; similarity: number; metadata?: any }>> {
+  // Generate embedding for query code
+  const queryEmbeddingResult = await generateCodeEmbedding(queryCode, language);
+  
+  if (!queryEmbeddingResult.success || !queryEmbeddingResult.embedding) {
+    console.error('Failed to generate query embedding:', queryEmbeddingResult.error);
+    return [];
+  }
+
+  // Generate embeddings for all code in collection and calculate similarities
+  const results: Array<{ code: string; similarity: number; metadata?: any }> = [];
+
+  for (const item of codeCollection) {
+    const embeddingResult = await generateCodeEmbedding(item.code, language);
+    
+    if (embeddingResult.success && embeddingResult.embedding) {
+      const similarity = calculateCodeSimilarity(
+        queryEmbeddingResult.embedding,
+        embeddingResult.embedding
+      );
+      
+      results.push({
+        code: item.code,
+        similarity,
+        metadata: item.metadata,
+      });
+    }
+  }
+
+  // Sort by similarity (highest first) and return top K
+  return results
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, topK);
+}
+
+

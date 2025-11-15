@@ -25,6 +25,13 @@
     "agent": "CalendarAgent",
     "action": "create_event",
     "payload": {
+      "title": "the core data structure (android/app/src/main/java/com/millarayne/data/sensordata.kt)",
+      "date": "ingesting low-latency, real-world context (motion, light, etc.) from the mobile app.",
+      "userId": "default-user"
+    },
+    "status": "failed",
+    "createdAt": "2025-11-10T16:18:49.736Z",
+    "updatedAt": "2025-11-10T16:18:50.395Z",
       "title": "mandatory abstract `baseagent` class with fields",
       "date": "logging, error handling, and a required `execute` method signature. | `server/agents/base.ts` (define `baseagent` abstract class) |",
       "userId": "default-user"
@@ -37,6 +44,43 @@
     }
   },
   {
+    "taskId": "56eb6a41-6232-4afd-abf9-1aa557060659",
+    "supervisor": "ChatSystem",
+    "agent": "TasksAgent",
+    "action": "add_task",
+    "payload": {
+      "title": "remind me to check anti-freeze in the car",
+      "content": "",
+      "userId": "default-user"
+    },
+    "status": "completed",
+    "createdAt": "2025-11-10T16:40:26.773Z",
+    "updatedAt": "2025-11-10T16:40:28.296Z",
+    "result": {
+      "success": true,
+      "taskId": "VnJ3T3JpWTdoemJKaHRudg",
+      "taskLink": "https://www.googleapis.com/tasks/v1/lists/MTcwODc5MTgyNjY0OTEzMjQzNTU6MDow/tasks/VnJ3T3JpWTdoemJKaHRudg",
+      "message": "I've added \"remind me to check anti-freeze in the car\" to your Google Tasks"
+    }
+  },
+  {
+    "taskId": "3732a05b-aa56-434a-8f12-efe419c940d6",
+    "supervisor": "ChatSystem",
+    "agent": "TasksAgent",
+    "action": "add_task",
+    "payload": {
+      "title": "google keep to remind me to check anti-freeze in the car",
+      "content": "",
+      "userId": "default-user"
+    },
+    "status": "completed",
+    "createdAt": "2025-11-10T16:42:19.122Z",
+    "updatedAt": "2025-11-10T16:42:20.128Z",
+    "result": {
+      "success": true,
+      "taskId": "OG04Wkx0ekR2dE85SndpTg",
+      "taskLink": "https://www.googleapis.com/tasks/v1/lists/MTcwODc5MTgyNjY0OTEzMjQzNTU6MDow/tasks/OG04Wkx0ekR2dE85SndpTg",
+      "message": "I've added \"google keep to remind me to check anti-freeze in the car\" to your Google Tasks"
     "taskId": "3f25c665-276d-49f6-884c-16dbd421f495",
     "supervisor": "ChatSystem",
     "agent": "CalendarAgent",

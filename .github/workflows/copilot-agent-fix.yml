@@ -1,0 +1,93 @@
+name: Copilot coding agent (diagnostics and safer checkout)
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+jobs:
+  copilot-agent:
+    name: Copilot agent (safer)
+    runs-on: ubuntu-latest
+    env:
+      CALLBACK_ENDPOINT: ${{ secrets.COPILOT_CALLBACK_ENDPOINT || '' }}
+    steps:
+      - name: Checkout repository (fetch full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure main ref is available (retry)
+        run: |
+          set -euo pipefail
+          tries=0
+          until [ $tries -ge 3 ]
+          do
+            git fetch origin main:refs/remotes/origin/main && break || {
+              tries=$((tries+1))
+              echo "git fetch failed, attempt $tries/3"
+              sleep $((tries * 2))
+            }
+          done
+          if [ $tries -ge 3 ]; then
+            echo "Failed to fetch origin/main after retries" >&2
+            git --version
+            git remote -v
+            exit 1
+          fi
+
+      - name: Safe cleanup for stale git index.lock
+        run: |
+          if [ -f .git/index.lock ]; then
+            echo "Found stale .git/index.lock — removing"
+            rm -f .git/index.lock
+          else
+            echo "No .git/index.lock found"
+          fi
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+
+      - name: Show runtime & dependency info
+        run: |
+          node -v
+          npm -v
+          echo "Installed undici (if available):"
+          npm ls undici || true
+
+      - name: Install dependencies for copilot agent (if package.json present)
+        working-directory: dynamic/copilot-swe-agent
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json in dynamic/copilot-swe-agent; skipping npm ci"
+          fi
+
+      - name: Callback endpoint diagnostic (HEAD)
+        working-directory: dynamic/copilot-swe-agent
+        env:
+          CALLBACK_ENDPOINT: ${{ env.CALLBACK_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CALLBACK_ENDPOINT:-}" ]; then
+            echo "CALLBACK_ENDPOINT not set (expected in secrets or env). Skipping network diagnostic."
+          else
+            echo "Testing callback endpoint (no secrets will be echoed) -> $CALLBACK_ENDPOINT"
+            if [ -f scripts/check-callback.js ]; then
+              node scripts/check-callback.js "$CALLBACK_ENDPOINT" || true
+            else
+              curl -I --max-time 10 "$CALLBACK_ENDPOINT" || echo "curl failed"
+            fi
+          fi
+
+      - name: Run copilot agent (original entry)
+        working-directory: dynamic/copilot-swe-agent
+        run: |
+          echo "Ready to run the copilot agent job. This workflow adds diagnostics and safer git handling."
+          if [ -f run-agent.sh ]; then
+            ./run-agent.sh
+          else
+            echo "No run-agent.sh detected; this workflow leaves the real agent execution step unchanged."
+          fi

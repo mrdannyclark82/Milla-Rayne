@@ -533,8 +533,7 @@ export class SqliteStorage implements IStorage {
       lastLoginAt: null,
     };
 
-     
-    const { password, ...userWithoutPassword } = newUser;
+    const { password: _password, ...userWithoutPassword } = newUser;
     return userWithoutPassword as User;
   }
 
