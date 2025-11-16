@@ -11,7 +11,7 @@ async function sendCallback(url, body = undefined, options = {}) {
   if (typeof fetchFn !== 'function') {
     try {
 
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+       
 
 
       const { fetch: undiciFetch } = require('undici');
