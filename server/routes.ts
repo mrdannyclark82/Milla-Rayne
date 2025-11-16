@@ -1165,7 +1165,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       }
 
       // Phase 3.5: Parse commands and execute agent tasks if needed (skip if bypassed)
-      let agentTaskResult: { success: boolean; message?: string; error?: string } | null = null;
+      const agentTaskResult: { success: boolean; message?: string; error?: string } | null = null;
       
       if (!bypassFunctionCalls) {
         try {
