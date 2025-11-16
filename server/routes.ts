@@ -1074,7 +1074,6 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     console.log('CHAT API CALLED');
     try {
       let { message } = req.body;
-      const { audioData, audioMimeType } = req.body;
       const audioData = req.body.audioData;
       const audioMimeType = req.body.audioMimeType;
       let userEmotionalState: VoiceAnalysisResult['emotionalTone'] | undefined;
@@ -1166,7 +1165,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       }
 
       // Phase 3.5: Parse commands and execute agent tasks if needed (skip if bypassed)
-      let agentTaskResult = null;
+      let agentTaskResult: { success: boolean; message?: string; error?: string } | null = null;
       
       if (!bypassFunctionCalls) {
         try {
@@ -1177,7 +1176,8 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         // console.log('📋 Parsed command:', parsedCommand);
         
         // Handle calendar commands through CalendarAgent
-        if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'add') {
+        // DISABLED: Legacy command parsing code - kept for reference
+        /* if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'add') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1214,10 +1214,11 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
               error: error instanceof Error ? error.message : 'Unknown error' 
             };
           }
-        }
+        } */
         
         // Handle calendar list commands
-        if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'list') {
+        // DISABLED: Legacy command parsing code - kept for reference
+        /* if (false && parsedCommand.service === 'calendar' && parsedCommand.action === 'list') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1251,10 +1252,11 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
               error: error instanceof Error ? error.message : 'Unknown error' 
             };
           }
-        }
+        } */
         
         // Handle tasks commands (Google Tasks / Keep alternative)
-        if (false && parsedCommand.service === 'tasks' && parsedCommand.action === 'add') {
+        // DISABLED: Legacy command parsing code - kept for reference
+        /* if (false && parsedCommand.service === 'tasks' && parsedCommand.action === 'add') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1289,10 +1291,11 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
               error: error instanceof Error ? error.message : 'Unknown error' 
             };
           }
-        }
+        } */
         
         // Handle email commands
-        if (false && parsedCommand.service === 'gmail' && parsedCommand.action === 'send') {
+        // DISABLED: Legacy command parsing code - kept for reference
+        /* if (false && parsedCommand.service === 'gmail' && parsedCommand.action === 'send') {
           const { addTask, runTask } = await import('./agents/taskStorage');
           const { runTask: executeTask } = await import('./agents/worker');
           const { v4: uuidv4 } = await import('uuid');
@@ -1328,7 +1331,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
               error: error instanceof Error ? error.message : 'Unknown error' 
             };
           }
-        }
+        } */
         } catch (error) {
           console.error('Command parsing error:', error);
           // Continue with normal chat flow if command parsing fails
