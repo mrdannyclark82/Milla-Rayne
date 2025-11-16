@@ -342,30 +342,32 @@ class FeatureDiscoveryService {
       for (const term of searchTerms) {
         const results = await performWebSearch(term);
         
-        for (const result of results.slice(0, 5)) {
-          // Extract features from web search results
-          const feature: DiscoveredFeature = {
-            id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: this.extractFeatureNameFromText(result.title),
-            description: result.snippet || result.title,
-            source: 'web',
-            sourceUrl: result.url,
-            popularity: 5, // Base popularity for web sources
-            relevance: this.calculateWebResultRelevance(result.title, result.snippet),
-            implementationComplexity: 'medium',
-            estimatedValue: 6,
-            discoveredAt: Date.now(),
-            status: 'discovered',
-            tags: this.extractTagsFromText(result.title + ' ' + result.snippet),
-          };
+        if (results && Array.isArray(results)) {
+          for (const result of results.slice(0, 5)) {
+            // Extract features from web search results
+            const feature: DiscoveredFeature = {
+              id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              name: this.extractFeatureNameFromText(result.title),
+              description: result.snippet || result.title,
+              source: 'web',
+              sourceUrl: result.url,
+              popularity: 5, // Base popularity for web sources
+              relevance: this.calculateWebResultRelevance(result.title, result.snippet),
+              implementationComplexity: 'medium',
+              estimatedValue: 6,
+              discoveredAt: Date.now(),
+              status: 'discovered',
+              tags: this.extractTagsFromText(result.title + ' ' + result.snippet),
+            };
 
-          const existing = this.discoveredFeatures.find(f => 
-            f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
-          );
-          
-          if (!existing) {
-            this.discoveredFeatures.push(feature);
-            newFeatures.push(feature);
+            const existing = this.discoveredFeatures.find(f => 
+              f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+            );
+            
+            if (!existing) {
+              this.discoveredFeatures.push(feature);
+              newFeatures.push(feature);
+            }
           }
         }
       }
@@ -381,11 +383,16 @@ class FeatureDiscoveryService {
 
   /**
    * Discover features from YouTube videos
+   * Note: Currently disabled as searchYouTubeVideos function is not available
    */
   async discoverFromYouTube(searchTerms: string[] = ['AI assistant tutorial', 'chatbot features']): Promise<DiscoveredFeature[]> {
     const newFeatures: DiscoveredFeature[] = [];
 
-    try {
+    // TODO: Re-enable when searchYouTubeVideos is implemented in youtubeService
+    console.log('YouTube feature discovery is currently disabled');
+    return newFeatures;
+
+    /* try {
       const { searchYouTubeVideos } = await import('./youtubeService');
       
       for (const term of searchTerms) {
@@ -426,6 +433,7 @@ class FeatureDiscoveryService {
     }
 
     return newFeatures;
+    */
   }
 
   /**
@@ -533,8 +541,8 @@ class FeatureDiscoveryService {
       if (filters.source) {
         features = features.filter(f => f.source === filters.source);
       }
-      if (filters.minRelevance) {
-        features = features.filter(f => f.relevance >= filters.minRelevance);
+      if (filters.minRelevance !== undefined) {
+        features = features.filter(f => f.relevance >= filters.minRelevance!);
       }
       if (filters.tags && filters.tags.length > 0) {
         features = features.filter(f => 

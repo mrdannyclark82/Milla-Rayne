@@ -31,7 +31,7 @@ class SimpleCache {
   set<T>(key: string, data: T, ttl: number = 300000): void {
     // Clear old entries if cache is full
     if (this.cache.size >= this.maxSize) {
-      const oldestKey = this.cache.keys().next().value;
+      const oldestKey = this.cache.keys().next().value as string;
       this.cache.delete(oldestKey);
     }
 
