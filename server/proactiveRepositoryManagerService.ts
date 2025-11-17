@@ -37,11 +37,13 @@ import {
   getMillaMotivation,
   getTokenStatistics,
 } from './tokenIncentiveService';
+import { codingAgent } from './agents/codingAgent';
+import { config } from './config';
 
 export interface ProactiveAction {
   id: string;
   timestamp: number;
-  type: 'bug_fix' | 'feature_proposal' | 'optimization' | 'sandbox_creation' | 'pr_preparation' | 'user_engagement';
+  type: 'bug_fix' | 'feature_proposal' | 'optimization' | 'sandbox_creation' | 'pr_preparation' | 'user_engagement' | 'autonomous_fix';
   description: string;
   status: 'planned' | 'in_progress' | 'completed' | 'blocked';
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -158,6 +160,46 @@ class ProactiveRepositoryManagerService {
         const action = await this.createUserEngagementAction();
         if (action) {
           newActions.push(action);
+        }
+      }
+
+      // Step 7: Run autonomous code improvement if enabled
+      if (config.enableAutonomousCodeImprovement) {
+        console.log('🔧 Running autonomous code improvement analysis...');
+        try {
+          const repositoryPath = process.cwd();
+          const result = await codingAgent.performAutomatedFixLifecycle({
+            repositoryPath,
+            issueSource: 'proactive_cycle',
+          });
+
+          if (result.success) {
+            const action: ProactiveAction = {
+              id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              timestamp: Date.now(),
+              type: 'autonomous_fix',
+              description: `Autonomous code improvement: ${result.message}`,
+              status: 'completed',
+              priority: 'medium',
+              estimatedImpact: 7,
+              completedAt: Date.now(),
+              relatedIds: result.sandboxId ? [result.sandboxId] : [],
+            };
+
+            // Award tokens for successful autonomous fix
+            if (result.prUrl) {
+              const tokenReward = await awardTokensForPR(`Autonomous fix: ${result.message}`, action.id);
+              action.tokensEarned = tokenReward.amount;
+            }
+
+            newActions.push(action);
+            console.log(`✅ Autonomous code improvement completed: ${result.message}`);
+          } else {
+            console.log(`ℹ️ Autonomous code improvement result: ${result.message}`);
+          }
+        } catch (error) {
+          console.error('Error in autonomous code improvement:', error);
+          // Don't throw - allow proactive cycle to continue
         }
       }
 
@@ -320,6 +362,10 @@ class ProactiveRepositoryManagerService {
         const prReward = await awardTokensForPR(action.description, actionId);
         tokensEarned = prReward.amount;
         break;
+      case 'autonomous_fix':
+        const autonomousReward = await awardTokensForBugFix(action.description, actionId);
+        tokensEarned = autonomousReward.amount;
+        break;
       case 'optimization':
         tokensEarned = 30;
         break;
@@ -440,6 +486,7 @@ class ProactiveRepositoryManagerService {
         sandboxCreation: this.actions.filter(a => a.type === 'sandbox_creation').length,
         prPreparation: this.actions.filter(a => a.type === 'pr_preparation').length,
         userEngagement: this.actions.filter(a => a.type === 'user_engagement').length,
+        autonomousFix: this.actions.filter(a => a.type === 'autonomous_fix').length,
       },
     };
   }
