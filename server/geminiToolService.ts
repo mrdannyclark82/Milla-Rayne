@@ -66,13 +66,15 @@ export interface GeminiChatResponse {
 export const AVAILABLE_TOOLS: ToolDefinition[] = [
   {
     name: 'check_calendar',
-    description: 'Check calendar events and appointments. Use this when the user asks about their schedule, appointments, or what they have planned.',
+    description:
+      'Check calendar events and appointments. Use this when the user asks about their schedule, appointments, or what they have planned.',
     parameters: {
       type: 'object',
       properties: {
         timeRange: {
           type: 'string',
-          description: 'Time range to check (e.g., "today", "this week", "tomorrow")',
+          description:
+            'Time range to check (e.g., "today", "this week", "tomorrow")',
         },
         maxResults: {
           type: 'number',
@@ -84,7 +86,8 @@ export const AVAILABLE_TOOLS: ToolDefinition[] = [
   },
   {
     name: 'search_youtube',
-    description: 'Search for YouTube videos. Use this when the user wants to find videos on a specific topic.',
+    description:
+      'Search for YouTube videos. Use this when the user wants to find videos on a specific topic.',
     parameters: {
       type: 'object',
       properties: {
@@ -102,7 +105,8 @@ export const AVAILABLE_TOOLS: ToolDefinition[] = [
   },
   {
     name: 'get_weather',
-    description: 'Get current weather information for a location. Use this when the user asks about weather conditions.',
+    description:
+      'Get current weather information for a location. Use this when the user asks about weather conditions.',
     parameters: {
       type: 'object',
       properties: {
@@ -119,7 +123,7 @@ export const AVAILABLE_TOOLS: ToolDefinition[] = [
 /**
  * Execute multiple tool calls in parallel
  * This is the key optimization that reduces latency for independent operations
- * 
+ *
  * @param toolCalls - Array of tool calls to execute
  * @param userId - User ID for context
  * @returns Promise resolving to array of execution results
@@ -129,80 +133,91 @@ export async function executeToolCallsInParallel(
   userId?: string
 ): Promise<ToolExecutionResult[]> {
   const startTime = Date.now();
-  
-  console.log(`[GeminiTools] Executing ${toolCalls.length} tool calls in parallel`);
-  
+
+  console.log(
+    `[GeminiTools] Executing ${toolCalls.length} tool calls in parallel`
+  );
+
   // Create promise for each tool call
-  const executionPromises = toolCalls.map(async (toolCall): Promise<ToolExecutionResult> => {
-    const toolStartTime = Date.now();
-    
-    try {
-      // Execute tool via agent registry
-      const result = await executeToolCall(toolCall, userId);
-      const executionTime = Date.now() - toolStartTime;
-      
-      console.log(`[GeminiTools] Tool ${toolCall.name} completed in ${executionTime}ms`);
-      
-      return {
-        toolCallId: toolCall.id,
-        toolName: toolCall.name,
-        result,
-        success: true,
-        executionTime,
-      };
-    } catch (error) {
-      const executionTime = Date.now() - toolStartTime;
-      
-      console.error(`[GeminiTools] Tool ${toolCall.name} failed:`, error);
-      
-      return {
-        toolCallId: toolCall.id,
-        toolName: toolCall.name,
-        result: null,
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
-        executionTime,
-      };
+  const executionPromises = toolCalls.map(
+    async (toolCall): Promise<ToolExecutionResult> => {
+      const toolStartTime = Date.now();
+
+      try {
+        // Execute tool via agent registry
+        const result = await executeToolCall(toolCall, userId);
+        const executionTime = Date.now() - toolStartTime;
+
+        console.log(
+          `[GeminiTools] Tool ${toolCall.name} completed in ${executionTime}ms`
+        );
+
+        return {
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
+          result,
+          success: true,
+          executionTime,
+        };
+      } catch (error) {
+        const executionTime = Date.now() - toolStartTime;
+
+        console.error(`[GeminiTools] Tool ${toolCall.name} failed:`, error);
+
+        return {
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
+          result: null,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+          executionTime,
+        };
+      }
     }
-  });
-  
+  );
+
   // Execute all tools in parallel
   const results = await Promise.all(executionPromises);
-  
+
   const totalTime = Date.now() - startTime;
-  console.log(`[GeminiTools] All ${toolCalls.length} tools completed in ${totalTime}ms (parallel execution)`);
-  
+  console.log(
+    `[GeminiTools] All ${toolCalls.length} tools completed in ${totalTime}ms (parallel execution)`
+  );
+
   return results;
 }
 
 /**
  * Execute a single tool call by routing to the appropriate agent
- * 
+ *
  * @param toolCall - The tool call to execute
  * @param userId - User ID for context
  * @returns The result of the tool execution
  */
-async function executeToolCall(toolCall: ToolCall, userId?: string): Promise<any> {
+async function executeToolCall(
+  toolCall: ToolCall,
+  userId?: string
+): Promise<any> {
   // Map tool names to agent names
   const toolToAgentMap: Record<string, string> = {
     check_calendar: 'CalendarAgent',
     search_youtube: 'YoutubeAgent',
     get_weather: 'WeatherAgent',
   };
-  
+
   const agentName = toolToAgentMap[toolCall.name];
-  
+
   if (!agentName) {
     throw new Error(`Unknown tool: ${toolCall.name}`);
   }
-  
+
   // Get agent from registry
   const agent = getAgent(agentName);
-  
+
   if (!agent) {
     throw new Error(`Agent not found: ${agentName}`);
   }
-  
+
   // Create agent task
   const task: AgentTask = {
     taskId: `tool_${toolCall.id}`,
@@ -213,10 +228,10 @@ async function executeToolCall(toolCall: ToolCall, userId?: string): Promise<any
     status: 'pending',
     createdAt: new Date().toISOString(),
   };
-  
+
   // Execute the task
   const result = await agent.handleTask(task);
-  
+
   return result;
 }
 
@@ -229,14 +244,14 @@ function mapToolToAction(toolName: string): string {
     search_youtube: 'search',
     get_weather: 'get_current',
   };
-  
+
   return actionMap[toolName] || 'execute';
 }
 
 /**
  * Generate chat response with tool support
  * This function detects when multiple tools are needed and executes them in parallel
- * 
+ *
  * @param userMessage - The user's message
  * @param context - Chat context including history and available tools
  * @returns Promise resolving to chat response
@@ -248,31 +263,38 @@ export async function generateGeminiChatWithTools(
   try {
     // Detect if the message might need multiple tools (heuristic)
     const needsMultipleTools = detectMultipleToolNeeds(userMessage);
-    
+
     if (needsMultipleTools) {
-      console.log('[GeminiTools] Message likely requires multiple tools - optimizing for parallel execution');
+      console.log(
+        '[GeminiTools] Message likely requires multiple tools - optimizing for parallel execution'
+      );
     }
-    
+
     // Build conversation with system prompt about available tools
     const messages = buildMessagesWithToolContext(userMessage, context);
-    
+
     // For this prototype, we'll simulate tool detection
     // In production with actual Gemini function calling, we'd use the API's tool response
     const detectedToolCalls = detectToolCalls(userMessage);
-    
+
     if (detectedToolCalls.length > 0) {
-      console.log(`[GeminiTools] Detected ${detectedToolCalls.length} tool calls`);
-      
+      console.log(
+        `[GeminiTools] Detected ${detectedToolCalls.length} tool calls`
+      );
+
       // Execute tools in parallel
-      const toolResults = await executeToolCallsInParallel(detectedToolCalls, context.userId);
-      
+      const toolResults = await executeToolCallsInParallel(
+        detectedToolCalls,
+        context.userId
+      );
+
       // Aggregate results and generate final response
       const finalResponse = await generateResponseWithToolResults(
         userMessage,
         toolResults,
         context
       );
-      
+
       return {
         content: finalResponse,
         toolCalls: detectedToolCalls,
@@ -280,19 +302,20 @@ export async function generateGeminiChatWithTools(
         success: true,
       };
     }
-    
+
     // No tools needed - generate regular response
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: messages,
     });
-    
+
     return {
-      content: response.text || 'I apologize, but I had trouble generating a response.',
+      content:
+        response.text ||
+        'I apologize, but I had trouble generating a response.',
       finishReason: 'stop',
       success: true,
     };
-    
   } catch (error) {
     console.error('[GeminiTools] Chat generation failed:', error);
     return {
@@ -309,14 +332,14 @@ export async function generateGeminiChatWithTools(
  */
 function detectMultipleToolNeeds(message: string): boolean {
   const lowerMessage = message.toLowerCase();
-  
+
   // Check for multiple intents in one message
   const patterns = [
     /\b(and|also|then|plus)\b/g,
-    /\?.*\?/,  // Multiple questions
+    /\?.*\?/, // Multiple questions
   ];
-  
-  return patterns.some(pattern => pattern.test(lowerMessage));
+
+  return patterns.some((pattern) => pattern.test(lowerMessage));
 }
 
 /**
@@ -327,13 +350,13 @@ function buildMessagesWithToolContext(
   context: GeminiChatContext
 ): any[] {
   const systemMessage = `You are Milla, an AI assistant with access to the following tools:
-${context.availableTools.map(tool => `- ${tool.name}: ${tool.description}`).join('\n')}
+${context.availableTools.map((tool) => `- ${tool.name}: ${tool.description}`).join('\n')}
 
 When the user asks for information you can get from these tools, let me know which tools to use.`;
 
   return [
     systemMessage,
-    ...context.conversationHistory.map(msg => msg.content),
+    ...context.conversationHistory.map((msg) => msg.content),
     userMessage,
   ];
 }
@@ -346,7 +369,7 @@ When the user asks for information you can get from these tools, let me know whi
 function detectToolCalls(message: string): ToolCall[] {
   const lowerMessage = message.toLowerCase();
   const toolCalls: ToolCall[] = [];
-  
+
   // Check for calendar-related requests
   if (
     lowerMessage.includes('calendar') ||
@@ -363,7 +386,7 @@ function detectToolCalls(message: string): ToolCall[] {
       },
     });
   }
-  
+
   // Check for YouTube search requests
   if (
     lowerMessage.includes('youtube') ||
@@ -371,9 +394,11 @@ function detectToolCalls(message: string): ToolCall[] {
     (lowerMessage.includes('search') && lowerMessage.includes('video'))
   ) {
     // Extract search query
-    const queryMatch = message.match(/(?:youtube|video|search).*?(for|about)\s+(.+?)(?:\?|$|and|also)/i);
+    const queryMatch = message.match(
+      /(?:youtube|video|search).*?(for|about)\s+(.+?)(?:\?|$|and|also)/i
+    );
     const query = queryMatch ? queryMatch[2].trim() : 'general';
-    
+
     toolCalls.push({
       id: `call_${Date.now()}_youtube`,
       name: 'search_youtube',
@@ -383,12 +408,19 @@ function detectToolCalls(message: string): ToolCall[] {
       },
     });
   }
-  
+
   // Check for weather requests
-  if (lowerMessage.includes('weather') || lowerMessage.includes('temperature')) {
-    const locationMatch = message.match(/(?:weather|temperature).*?(?:in|at|for)\s+([a-z\s]+?)(?:\?|$|and|also)/i);
-    const location = locationMatch ? locationMatch[1].trim() : 'current location';
-    
+  if (
+    lowerMessage.includes('weather') ||
+    lowerMessage.includes('temperature')
+  ) {
+    const locationMatch = message.match(
+      /(?:weather|temperature).*?(?:in|at|for)\s+([a-z\s]+?)(?:\?|$|and|also)/i
+    );
+    const location = locationMatch
+      ? locationMatch[1].trim()
+      : 'current location';
+
     toolCalls.push({
       id: `call_${Date.now()}_weather`,
       name: 'get_weather',
@@ -397,7 +429,7 @@ function detectToolCalls(message: string): ToolCall[] {
       },
     });
   }
-  
+
   return toolCalls;
 }
 
@@ -410,14 +442,16 @@ async function generateResponseWithToolResults(
   context: GeminiChatContext
 ): Promise<string> {
   // Build context with tool results
-  const toolResultsSummary = toolResults.map(result => {
-    if (result.success) {
-      return `${result.toolName}: ${JSON.stringify(result.result)}`;
-    } else {
-      return `${result.toolName}: Failed - ${result.error}`;
-    }
-  }).join('\n');
-  
+  const toolResultsSummary = toolResults
+    .map((result) => {
+      if (result.success) {
+        return `${result.toolName}: ${JSON.stringify(result.result)}`;
+      } else {
+        return `${result.toolName}: Failed - ${result.error}`;
+      }
+    })
+    .join('\n');
+
   const prompt = `Based on the user's request: "${originalMessage}"
 
 I executed the following tools and got these results:
@@ -430,10 +464,16 @@ Please provide a helpful, conversational response to the user incorporating this
       model: 'gemini-2.5-flash',
       contents: prompt,
     });
-    
-    return response.text || 'I gathered some information, but had trouble formulating a response.';
+
+    return (
+      response.text ||
+      'I gathered some information, but had trouble formulating a response.'
+    );
   } catch (error) {
-    console.error('[GeminiTools] Failed to generate response with tool results:', error);
+    console.error(
+      '[GeminiTools] Failed to generate response with tool results:',
+      error
+    );
     return `I gathered the information, but I'm having trouble putting it into words. Here's what I found: ${toolResultsSummary}`;
   }
 }

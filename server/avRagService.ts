@@ -1,9 +1,9 @@
 /**
  * A/V-RAG Service (Audio/Visual Retrieval-Augmented Generation)
- * 
+ *
  * Integrates real-time scene data and voice tone/emotion analysis
  * into LLM prompts for contextually-aware responses.
- * 
+ *
  * Features:
  * - Scene context extraction (time of day, location, weather, app state)
  * - Voice emotion analysis integration
@@ -50,7 +50,7 @@ export interface AVRagContext {
  */
 export function extractSceneContext(scene: SceneContextData): string {
   const contextParts: string[] = [];
-  
+
   // Time of day context
   const timeDescriptions = {
     dawn: 'early morning (dawn)',
@@ -59,17 +59,17 @@ export function extractSceneContext(scene: SceneContextData): string {
     night: 'nighttime',
   };
   contextParts.push(`Current time: ${timeDescriptions[scene.timeOfDay]}`);
-  
+
   // Location context
   if (scene.location) {
     contextParts.push(`Location context: ${scene.location}`);
   }
-  
+
   // Weather effects
   if (scene.weatherEffect && scene.weatherEffect !== 'none') {
     contextParts.push(`Weather effect: ${scene.weatherEffect}`);
   }
-  
+
   // App state - indicates what user is doing
   const stateDescriptions = {
     idle: 'User is idle',
@@ -79,16 +79,16 @@ export function extractSceneContext(scene: SceneContextData): string {
     error: 'Error state',
   };
   contextParts.push(stateDescriptions[scene.appState]);
-  
+
   // User preferences
   if (scene.reducedMotion) {
     contextParts.push('User prefers reduced motion/animations');
   }
-  
+
   if (scene.isBackgrounded) {
     contextParts.push('App is in background (user may be multitasking)');
   }
-  
+
   return contextParts.join('. ');
 }
 
@@ -97,7 +97,7 @@ export function extractSceneContext(scene: SceneContextData): string {
  */
 export function getAtmosphericContext(scene: SceneContextData): string {
   const { timeOfDay, weatherEffect } = scene;
-  
+
   // Combine time and weather for atmospheric description
   const atmospheres: Record<string, Record<string, string>> = {
     dawn: {
@@ -125,7 +125,7 @@ export function getAtmosphericContext(scene: SceneContextData): string {
       fog: 'a foggy night',
     },
   };
-  
+
   return atmospheres[timeOfDay][weatherEffect] || 'the current environment';
 }
 
@@ -138,11 +138,11 @@ export function getAtmosphericContext(scene: SceneContextData): string {
  */
 export function extractVoiceContext(voice: VoiceAnalysisResult): string {
   const contextParts: string[] = [];
-  
+
   if (!voice.success) {
     return '';
   }
-  
+
   // Emotional tone
   const emotionDescriptions = {
     positive: 'User sounds positive and upbeat',
@@ -150,11 +150,11 @@ export function extractVoiceContext(voice: VoiceAnalysisResult): string {
     neutral: 'User has a calm, neutral tone',
     unknown: '',
   };
-  
+
   if (voice.emotionalTone !== 'unknown') {
     contextParts.push(emotionDescriptions[voice.emotionalTone]);
   }
-  
+
   return contextParts.join('. ');
 }
 
@@ -165,13 +165,13 @@ export function getEmpatheticGuidance(voice: VoiceAnalysisResult): string {
   if (!voice.success || voice.emotionalTone === 'unknown') {
     return '';
   }
-  
+
   const guidance = {
     positive: 'Match their positive energy and enthusiasm',
     negative: 'Be extra supportive and compassionate',
     neutral: 'Maintain a balanced, helpful tone',
   };
-  
+
   return guidance[voice.emotionalTone] || '';
 }
 
@@ -184,35 +184,35 @@ export function getEmpatheticGuidance(voice: VoiceAnalysisResult): string {
  */
 export function buildAVRagContext(avContext: AVRagContext): string {
   const contextSections: string[] = [];
-  
+
   // Scene context
   if (avContext.scene) {
     const sceneCtx = extractSceneContext(avContext.scene);
     const atmosphere = getAtmosphericContext(avContext.scene);
-    
+
     contextSections.push(
       `[Scene Context] ${sceneCtx}. The atmosphere is ${atmosphere}.`
     );
   }
-  
+
   // Voice/emotion context
   if (avContext.voice && avContext.voice.success) {
     const voiceCtx = extractVoiceContext(avContext.voice);
     const guidance = getEmpatheticGuidance(avContext.voice);
-    
+
     if (voiceCtx) {
       contextSections.push(`[Voice Analysis] ${voiceCtx}.`);
     }
-    
+
     if (guidance) {
       contextSections.push(`[Response Guidance] ${guidance}.`);
     }
   }
-  
+
   if (contextSections.length === 0) {
     return '';
   }
-  
+
   return `\n\n---\nContextual awareness:\n${contextSections.join('\n')}`;
 }
 
@@ -224,11 +224,11 @@ export function enrichMessageWithAVContext(
   avContext: AVRagContext
 ): string {
   const contextString = buildAVRagContext(avContext);
-  
+
   if (!contextString) {
     return userMessage;
   }
-  
+
   return `${userMessage}${contextString}`;
 }
 
@@ -255,28 +255,28 @@ export function createAVContext(
  */
 export function validateSceneContext(scene: any): SceneContextData | null {
   if (!scene) return null;
-  
+
   // Validate required fields
   const validTimeOfDay = ['dawn', 'day', 'dusk', 'night'];
   const validAppState = ['idle', 'chatting', 'listening', 'thinking', 'error'];
   const validWeather = ['none', 'rain', 'snow', 'fog'];
-  
+
   if (!validTimeOfDay.includes(scene.timeOfDay)) {
     console.warn('Invalid timeOfDay in scene context');
     return null;
   }
-  
+
   if (!validAppState.includes(scene.appState)) {
     console.warn('Invalid appState in scene context');
     return null;
   }
-  
+
   return {
     timeOfDay: scene.timeOfDay,
     appState: scene.appState,
     location: scene.location || 'unknown',
-    weatherEffect: validWeather.includes(scene.weatherEffect) 
-      ? scene.weatherEffect 
+    weatherEffect: validWeather.includes(scene.weatherEffect)
+      ? scene.weatherEffect
       : 'none',
     performanceMode: scene.performanceMode || 'balanced',
     reducedMotion: Boolean(scene.reducedMotion),
@@ -290,14 +290,14 @@ export function validateSceneContext(scene: any): SceneContextData | null {
  */
 export function validateVoiceContext(voice: any): VoiceAnalysisResult | null {
   if (!voice || typeof voice !== 'object') return null;
-  
+
   const validEmotions = ['positive', 'negative', 'neutral', 'unknown'];
-  
+
   if (!validEmotions.includes(voice.emotionalTone)) {
     console.warn('Invalid emotionalTone in voice context');
     return null;
   }
-  
+
   return {
     text: voice.text || '',
     emotionalTone: voice.emotionalTone,
@@ -323,17 +323,17 @@ export function exampleUsage() {
     reducedMotion: false,
     isBackgrounded: false,
   };
-  
+
   const voiceData: VoiceAnalysisResult = {
     text: 'I need help with my code',
     emotionalTone: 'neutral',
     success: true,
   };
-  
+
   const avContext = createAVContext(sceneData, voiceData);
   const userMessage = 'Can you help me debug this function?';
   const enrichedMessage = enrichMessageWithAVContext(userMessage, avContext);
-  
+
   console.log('Original:', userMessage);
   console.log('Enriched:', enrichedMessage);
 }

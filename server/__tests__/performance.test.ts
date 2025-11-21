@@ -1,6 +1,6 @@
 /**
  * Performance and Load Testing
- * 
+ *
  * Tests API endpoints under load to identify scaling bottlenecks
  * Focus on Parallel Function Calling (PFC) and Metacognitive Loop endpoints
  */
@@ -18,7 +18,7 @@ describe('API Load Testing', () => {
     // Create test app instance
     app = express();
     app.use(express.json());
-    
+
     // Setup routes
     await setupRoutes(app);
   });
@@ -33,7 +33,7 @@ describe('API Load Testing', () => {
     it('should handle concurrent metacognitive requests', async () => {
       const concurrentRequests = 10;
       const startTime = Date.now();
-      
+
       // Simulate concurrent requests
       const requests = Array.from({ length: concurrentRequests }, (_, i) =>
         request(app)
@@ -56,14 +56,20 @@ describe('API Load Testing', () => {
 
       // Performance assertions
       expect(duration).toBeLessThan(30000); // Should complete within 30 seconds
-      
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+
+      const successCount = results.filter(
+        (r) => r.status === 'fulfilled'
+      ).length;
       const successRate = successCount / concurrentRequests;
-      
-      console.log(`Metacognitive Load Test: ${successCount}/${concurrentRequests} succeeded in ${duration}ms`);
+
+      console.log(
+        `Metacognitive Load Test: ${successCount}/${concurrentRequests} succeeded in ${duration}ms`
+      );
       console.log(`Success rate: ${(successRate * 100).toFixed(1)}%`);
-      console.log(`Average response time: ${(duration / concurrentRequests).toFixed(2)}ms`);
-      
+      console.log(
+        `Average response time: ${(duration / concurrentRequests).toFixed(2)}ms`
+      );
+
       // At least 70% should succeed (accounting for API limits and potential issues)
       expect(successRate).toBeGreaterThanOrEqual(0.7);
     }, 60000); // 60 second timeout
@@ -74,7 +80,7 @@ describe('API Load Testing', () => {
 
       for (let i = 0; i < iterations; i++) {
         const startTime = Date.now();
-        
+
         await request(app)
           .post('/api/metacognitive/analyze')
           .send({
@@ -89,7 +95,8 @@ describe('API Load Testing', () => {
       }
 
       // Calculate performance metrics
-      const avgResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+      const avgResponseTime =
+        responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
       const maxResponseTime = Math.max(...responseTimes);
       const minResponseTime = Math.min(...responseTimes);
 
@@ -125,11 +132,17 @@ describe('API Load Testing', () => {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const successCount = results.filter(
+        (r) => r.status === 'fulfilled'
+      ).length;
       const successRate = successCount / concurrentDispatches;
 
-      console.log(`Agent Dispatch Load Test: ${successCount}/${concurrentDispatches} succeeded in ${duration}ms`);
-      console.log(`Average response time: ${(duration / concurrentDispatches).toFixed(2)}ms`);
+      console.log(
+        `Agent Dispatch Load Test: ${successCount}/${concurrentDispatches} succeeded in ${duration}ms`
+      );
+      console.log(
+        `Average response time: ${(duration / concurrentDispatches).toFixed(2)}ms`
+      );
 
       // Should complete within reasonable time
       expect(duration).toBeLessThan(45000); // 45 seconds
@@ -158,11 +171,17 @@ describe('API Load Testing', () => {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const successCount = results.filter(
+        (r) => r.status === 'fulfilled'
+      ).length;
       const successRate = successCount / burstSize;
 
-      console.log(`Chat Burst Test: ${successCount}/${burstSize} succeeded in ${duration}ms`);
-      console.log(`Throughput: ${(successCount / (duration / 1000)).toFixed(2)} req/s`);
+      console.log(
+        `Chat Burst Test: ${successCount}/${burstSize} succeeded in ${duration}ms`
+      );
+      console.log(
+        `Throughput: ${(successCount / (duration / 1000)).toFixed(2)} req/s`
+      );
 
       expect(duration).toBeLessThan(60000); // 60 seconds
       expect(successRate).toBeGreaterThanOrEqual(0.5); // At least 50% success
@@ -198,10 +217,16 @@ describe('API Load Testing', () => {
       const endTime = Date.now();
       const duration = endTime - startTime;
 
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const successCount = results.filter(
+        (r) => r.status === 'fulfilled'
+      ).length;
 
-      console.log(`Memory Search Load Test: ${successCount}/${concurrentSearches} succeeded in ${duration}ms`);
-      console.log(`Average latency: ${(duration / concurrentSearches).toFixed(2)}ms`);
+      console.log(
+        `Memory Search Load Test: ${successCount}/${concurrentSearches} succeeded in ${duration}ms`
+      );
+      console.log(
+        `Average latency: ${(duration / concurrentSearches).toFixed(2)}ms`
+      );
 
       // Memory searches should be fast
       expect(duration / concurrentSearches).toBeLessThan(1000); // Less than 1s average
@@ -212,7 +237,7 @@ describe('API Load Testing', () => {
     it('should document websocket performance characteristics', () => {
       // Note: Full WebSocket load testing requires a different approach
       // This test documents the expected behavior
-      
+
       const expectedMetrics = {
         maxConcurrentConnections: 1000,
         messageLatency: '<100ms',
@@ -271,23 +296,33 @@ describe('API Load Testing', () => {
 
       const results = await Promise.allSettled(requests);
       const duration = Date.now() - startTime;
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const successCount = results.filter(
+        (r) => r.status === 'fulfilled'
+      ).length;
 
       // Extract response bodies from successful requests
       const responses = results
-        .filter(r => r.status === 'fulfilled')
-        .map(r => (r as PromiseFulfilledResult<any>).value.body);
+        .filter((r) => r.status === 'fulfilled')
+        .map((r) => (r as PromiseFulfilledResult<any>).value.body);
 
-      console.log(`PFC Stress Test: ${successCount}/${concurrentRequests} succeeded in ${duration}ms`);
-      console.log(`Average latency: ${(duration / concurrentRequests).toFixed(2)}ms`);
+      console.log(
+        `PFC Stress Test: ${successCount}/${concurrentRequests} succeeded in ${duration}ms`
+      );
+      console.log(
+        `Average latency: ${(duration / concurrentRequests).toFixed(2)}ms`
+      );
 
       // Verify no race conditions - each response should have unique data
       if (responses.length > 0) {
-        const messageIds = responses.map(r => r.messageId || r.id).filter(Boolean);
+        const messageIds = responses
+          .map((r) => r.messageId || r.id)
+          .filter(Boolean);
         const uniqueIds = new Set(messageIds);
-        
-        console.log(`Unique message IDs: ${uniqueIds.size}/${messageIds.length}`);
-        
+
+        console.log(
+          `Unique message IDs: ${uniqueIds.size}/${messageIds.length}`
+        );
+
         // All message IDs should be unique (no cross-contamination)
         expect(uniqueIds.size).toBe(messageIds.length);
 
@@ -296,11 +331,13 @@ describe('API Load Testing', () => {
           if (response.toolCalls && Array.isArray(response.toolCalls)) {
             const toolIds = response.toolCalls.map((t: any) => t.id);
             const uniqueToolIds = new Set(toolIds);
-            
+
             // Each response should have unique tool call IDs
             expect(uniqueToolIds.size).toBe(toolIds.length);
-            
-            console.log(`Response ${index}: ${toolIds.length} tool calls, all unique`);
+
+            console.log(
+              `Response ${index}: ${toolIds.length} tool calls, all unique`
+            );
           }
         });
       }
@@ -339,25 +376,32 @@ describe('API Load Testing', () => {
 
       const results = await Promise.allSettled(requests);
       const responses = results
-        .filter(r => r.status === 'fulfilled')
-        .map(r => (r as PromiseFulfilledResult<any>).value.body);
+        .filter((r) => r.status === 'fulfilled')
+        .map((r) => (r as PromiseFulfilledResult<any>).value.body);
 
       // Verify weather responses don't contain calendar data and vice versa
       responses.forEach((response, index) => {
         if (response.content && typeof response.content === 'string') {
           const isWeatherRequest = index < 5;
-          
+
           if (isWeatherRequest) {
             // Weather response shouldn't contain calendar-specific terms
-            const hasCalendarLeak = /\b(meeting|appointment|event)\b/i.test(response.content);
+            const hasCalendarLeak = /\b(meeting|appointment|event)\b/i.test(
+              response.content
+            );
             if (hasCalendarLeak) {
-              console.warn(`Potential data leak: Weather response ${index} contains calendar terms`);
+              console.warn(
+                `Potential data leak: Weather response ${index} contains calendar terms`
+              );
             }
           } else {
             // Calendar response shouldn't contain weather-specific terms
-            const hasWeatherLeak = /\b(temperature|forecast|sunny|rainy)\b/i.test(response.content);
+            const hasWeatherLeak =
+              /\b(temperature|forecast|sunny|rainy)\b/i.test(response.content);
             if (hasWeatherLeak) {
-              console.warn(`Potential data leak: Calendar response ${index} contains weather terms`);
+              console.warn(
+                `Potential data leak: Calendar response ${index} contains weather terms`
+              );
             }
           }
         }
@@ -391,11 +435,12 @@ describe('API Load Testing', () => {
         console.log(`Iteration ${i + 1}/${iterations}: ${batchLatency}ms`);
 
         // Brief pause between batches
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       // Calculate performance metrics
-      const avgLatency = latencies.reduce((a, b) => a + b, 0) / latencies.length;
+      const avgLatency =
+        latencies.reduce((a, b) => a + b, 0) / latencies.length;
       const maxLatency = Math.max(...latencies);
       const minLatency = Math.min(...latencies);
 
@@ -403,7 +448,9 @@ describe('API Load Testing', () => {
       console.log(`  Average: ${avgLatency.toFixed(2)}ms`);
       console.log(`  Min: ${minLatency}ms`);
       console.log(`  Max: ${maxLatency}ms`);
-      console.log(`  Variance: ${((maxLatency - minLatency) / avgLatency * 100).toFixed(1)}%`);
+      console.log(
+        `  Variance: ${(((maxLatency - minLatency) / avgLatency) * 100).toFixed(1)}%`
+      );
 
       // Performance should remain consistent (max shouldn't be > 2x avg)
       expect(maxLatency).toBeLessThan(avgLatency * 2.5);

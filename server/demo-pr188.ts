@@ -1,6 +1,6 @@
 /**
  * Manual Test: Metacognitive Loop and Embodied Intelligence
- * 
+ *
  * This script demonstrates the key features implemented in PR #188:
  * 1. Metacognitive loop for goal drift correction
  * 2. Real-time ambient context integration
@@ -8,11 +8,16 @@
  */
 
 import { monitorTaskAlignment } from './metacognitiveService';
-import { updateAmbientContext, getAmbientContext } from './realWorldInfoService';
+import {
+  updateAmbientContext,
+  getAmbientContext,
+} from './realWorldInfoService';
 import type { AgentTask } from './agents/taskStorage';
 import type { SensorData } from './realWorldInfoService';
 
-console.log('=== PR #188: Self-Governing Agent Autonomy & Embodied Intelligence Demo ===\n');
+console.log(
+  '=== PR #188: Self-Governing Agent Autonomy & Embodied Intelligence Demo ===\n'
+);
 
 // Test 1: Metacognitive Loop
 console.log('Test 1: Metacognitive Loop for Goal Drift Correction');
@@ -41,7 +46,9 @@ console.log('Task:', {
 });
 
 // Note: This would normally check against actual user profile with health/fitness interests
-console.log('(In production, this would check against user profile with interests like "fitness", "health")');
+console.log(
+  '(In production, this would check against user profile with interests like "fitness", "health")'
+);
 console.log('Expected: Feedback if user prefers healthy eating\n');
 
 // Test 2: Ambient Context Integration
@@ -74,7 +81,9 @@ console.log('Sensor Data:', {
   lightLevel: context1?.lightLevel,
   battery: context1?.deviceContext.battery,
 });
-console.log('Expected Behavior: YouTube agent should prioritize upbeat, high-tempo content\n');
+console.log(
+  'Expected Behavior: YouTube agent should prioritize upbeat, high-tempo content\n'
+);
 
 // Scenario 2: Driving
 const sensorData2: SensorData = {
@@ -98,7 +107,9 @@ console.log('Sensor Data:', {
   battery: context2?.deviceContext.battery,
   charging: context2?.deviceContext.charging,
 });
-console.log('Expected Behavior: YouTube agent should prioritize audio-focused, hands-free content\n');
+console.log(
+  'Expected Behavior: YouTube agent should prioritize audio-focused, hands-free content\n'
+);
 
 // Scenario 3: Low light environment
 const sensorData3: SensorData = {
@@ -121,7 +132,9 @@ console.log('Sensor Data:', {
   lightLevel: context3?.lightLevel,
   battery: context3?.deviceContext.battery,
 });
-console.log('Expected Behavior: YouTube agent should prioritize audio/podcast content\n');
+console.log(
+  'Expected Behavior: YouTube agent should prioritize audio/podcast content\n'
+);
 
 console.log('=== Demo Complete ===');
 console.log('\nKey Features Demonstrated:');

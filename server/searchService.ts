@@ -28,7 +28,7 @@ export async function performWebSearch(
 ): Promise<SearchResponse | null> {
   // Normalize query for better cache hits
   const normalizedQuery = query.toLowerCase().trim();
-  
+
   // Check cache first
   const cached = searchCache.get(normalizedQuery);
   if (cached) {
@@ -73,7 +73,8 @@ export async function performWebSearch(
       };
 
       // Enhance with real-world info
-      const enhancedResponse = await enhanceSearchWithRealWorldInfo(baseResponse);
+      const enhancedResponse =
+        await enhanceSearchWithRealWorldInfo(baseResponse);
       searchCache.set(normalizedQuery, enhancedResponse);
       return enhancedResponse;
     }
@@ -144,7 +145,7 @@ export async function performWebSearch(
           results,
           summary: content,
         };
-        
+
         searchCache.set(normalizedQuery, response);
         return response;
       } else {
@@ -152,7 +153,8 @@ export async function performWebSearch(
           'No results from Perplexity, falling back to knowledge base'
         );
         const fallbackResponse = generateKnowledgeBasedResponse(query);
-        const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+        const enhancedResponse =
+          await enhanceSearchWithRealWorldInfo(fallbackResponse);
         searchCache.set(normalizedQuery, enhancedResponse);
         return enhancedResponse;
       }
@@ -160,7 +162,8 @@ export async function performWebSearch(
       console.error('Search error:', error);
       console.log('Falling back to knowledge-based search');
       const fallbackResponse = generateKnowledgeBasedResponse(query);
-      const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+      const enhancedResponse =
+        await enhanceSearchWithRealWorldInfo(fallbackResponse);
       searchCache.set(normalizedQuery, enhancedResponse);
       return enhancedResponse;
     }
@@ -169,7 +172,8 @@ export async function performWebSearch(
   // Fallback to knowledge base
   console.warn('No search API keys found, using knowledge base fallback');
   const fallbackResponse = generateKnowledgeBasedResponse(query);
-  const enhancedResponse = await enhanceSearchWithRealWorldInfo(fallbackResponse);
+  const enhancedResponse =
+    await enhanceSearchWithRealWorldInfo(fallbackResponse);
   searchCache.set(normalizedQuery, enhancedResponse);
   return enhancedResponse;
 }

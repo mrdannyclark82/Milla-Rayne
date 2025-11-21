@@ -33,7 +33,11 @@ const getBackgroundStyle = (background: string) => {
   }
 };
 
-const getFilterStyle = (lighting: number, glow: number, avatarState: string) => {
+const getFilterStyle = (
+  lighting: number,
+  glow: number,
+  avatarState: string
+) => {
   const brightness = (lighting / 100) * 1.5 + 0.5; // 0.5 to 2.0
   const glowValue = glow / 100;
 
@@ -87,151 +91,190 @@ const getAnimationStyle = (expression: string) => {
   }
 };
 
-export const DynamicAvatar = React.memo<DynamicAvatarProps>(({
-  avatarState,
-  settings,
-  useVideo = false,
-  fallbackImage,
-}) => {
-  // Memoize expensive style calculations
-  const avatarStyles = useMemo(() => ({
-    background: getBackgroundStyle(settings.background),
-    filter: getFilterStyle(settings.lighting, settings.glow, avatarState),
-    transform: getTransformStyle(avatarState),
-    animation: getAnimationStyle(settings.expression),
-  }), [avatarState, settings.background, settings.lighting, settings.glow, settings.expression]);
+export const DynamicAvatar = React.memo<DynamicAvatarProps>(
+  ({ avatarState, settings, useVideo = false, fallbackImage }) => {
+    // Memoize expensive style calculations
+    const avatarStyles = useMemo(
+      () => ({
+        background: getBackgroundStyle(settings.background),
+        filter: getFilterStyle(settings.lighting, settings.glow, avatarState),
+        transform: getTransformStyle(avatarState),
+        animation: getAnimationStyle(settings.expression),
+      }),
+      [
+        avatarState,
+        settings.background,
+        settings.lighting,
+        settings.glow,
+        settings.expression,
+      ]
+    );
 
-  // Memoize skin tone gradient
-  const skinToneGradient = useMemo(() => 
-    `radial-gradient(circle, ${
-      settings.skinTone === 'fair' ? '#f4c2a1' : 
-      settings.skinTone === 'medium' ? '#deb887' : '#8d5524'
-    } 0%, rgba(255,255,255,0.1) 100%)`
-  , [settings.skinTone]);
+    // Memoize skin tone gradient
+    const skinToneGradient = useMemo(
+      () =>
+        `radial-gradient(circle, ${
+          settings.skinTone === 'fair'
+            ? '#f4c2a1'
+            : settings.skinTone === 'medium'
+              ? '#deb887'
+              : '#8d5524'
+        } 0%, rgba(255,255,255,0.1) 100%)`,
+      [settings.skinTone]
+    );
 
-  // Memoize eye color
-  const eyeColor = useMemo(() => {
-    switch (settings.eyeColor) {
-      case 'blue': return '#4169e1';
-      case 'green': return '#228b22';
-      default: return '#8b4513';
-    }
-  }, [settings.eyeColor]);
+    // Memoize eye color
+    const eyeColor = useMemo(() => {
+      switch (settings.eyeColor) {
+        case 'blue':
+          return '#4169e1';
+        case 'green':
+          return '#228b22';
+        default:
+          return '#8b4513';
+      }
+    }, [settings.eyeColor]);
 
-  // Memoize hair color
-  const hairColor = useMemo(() => {
-    switch (settings.hairColor) {
-      case 'blonde': return '#ffd700';
-      case 'brunette': return '#8b4513';
-      case 'auburn': return '#a52a2a';
-      default: return '#2f2f2f';
-    }
-  }, [settings.hairColor]);
+    // Memoize hair color
+    const hairColor = useMemo(() => {
+      switch (settings.hairColor) {
+        case 'blonde':
+          return '#ffd700';
+        case 'brunette':
+          return '#8b4513';
+        case 'auburn':
+          return '#a52a2a';
+        default:
+          return '#2f2f2f';
+      }
+    }, [settings.hairColor]);
 
-  // Generate a CSS-based avatar when no image/video is available
-  const renderGeneratedAvatar = useMemo(() => (
-    <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-      {/* Background */}
+    // Generate a CSS-based avatar when no image/video is available
+    const renderGeneratedAvatar = useMemo(
+      () => (
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+          {/* Background */}
+          <div
+            className="absolute inset-0"
+            style={{ background: avatarStyles.background }}
+          />
+
+          {/* Avatar representation */}
+          <div className="relative z-10 flex flex-col items-center justify-center text-center p-8">
+            {/* Face area */}
+            <div
+              className="w-32 h-32 rounded-full mb-6 border-4 border-white/20 flex items-center justify-center"
+              style={{ background: skinToneGradient }}
+            >
+              {/* Eyes */}
+              <div className="flex space-x-4">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: eyeColor }}
+                />
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: eyeColor }}
+                />
+              </div>
+            </div>
+
+            {/* Hair representation */}
+            <div
+              className="absolute top-4 w-36 h-20 rounded-t-full"
+              style={{ backgroundColor: hairColor }}
+            />
+
+            {/* Name and style info */}
+            <div className="text-white/80 mt-8">
+              <h3 className="text-xl font-semibold mb-2">Milla Rayne</h3>
+              <p className="text-sm opacity-70 capitalize">
+                {settings.style} • {settings.expression}
+              </p>
+              <p className="text-xs opacity-60 mt-1">
+                {settings.outfit} attire
+              </p>
+            </div>
+          </div>
+
+          {/* Glow overlay */}
+          {settings.glow > 30 && (
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at center, rgba(255,255,255,${settings.glow / 200}) 0%, transparent 70%)`,
+                animation: 'pulse 3s ease-in-out infinite',
+              }}
+            />
+          )}
+        </div>
+      ),
+      [
+        avatarStyles.background,
+        skinToneGradient,
+        eyeColor,
+        hairColor,
+        settings.style,
+        settings.expression,
+        settings.outfit,
+        settings.glow,
+      ]
+    );
+
+    return (
       <div
-        className="absolute inset-0"
-        style={{ background: avatarStyles.background }}
-      />
+        className="w-full h-full relative transition-all duration-1000 ease-in-out"
+        style={avatarStyles}
+        data-testid="dynamic-avatar"
+      >
+        {useVideo && fallbackImage ? (
+          <img
+            src={fallbackImage}
+            alt="Milla AI Assistant"
+            className="w-full h-full object-cover"
+            style={avatarStyles}
+          />
+        ) : (
+          renderGeneratedAvatar
+        )}
 
-      {/* Avatar representation */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center p-8">
-        {/* Face area */}
-        <div
-          className="w-32 h-32 rounded-full mb-6 border-4 border-white/20 flex items-center justify-center"
-          style={{ background: skinToneGradient }}
-        >
-          {/* Eyes */}
-          <div className="flex space-x-4">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: eyeColor }} />
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: eyeColor }} />
+        {/* State indicator */}
+        <div className="absolute top-4 right-4 z-10">
+          <div
+            className={`px-3 py-1 rounded-full text-xs font-medium ${
+              avatarState === 'thinking'
+                ? 'bg-blue-500/20 text-blue-300'
+                : avatarState === 'responding'
+                  ? 'bg-green-500/20 text-green-300'
+                  : avatarState === 'listening'
+                    ? 'bg-yellow-500/20 text-yellow-300'
+                    : 'bg-purple-500/20 text-purple-300'
+            }`}
+          >
+            {avatarState}
           </div>
         </div>
-
-        {/* Hair representation */}
-        <div
-          className="absolute top-4 w-36 h-20 rounded-t-full"
-          style={{ backgroundColor: hairColor }}
-        />
-
-        {/* Name and style info */}
-        <div className="text-white/80 mt-8">
-          <h3 className="text-xl font-semibold mb-2">Milla Rayne</h3>
-          <p className="text-sm opacity-70 capitalize">
-            {settings.style} • {settings.expression}
-          </p>
-          <p className="text-xs opacity-60 mt-1">{settings.outfit} attire</p>
-        </div>
       </div>
-
-      {/* Glow overlay */}
-      {settings.glow > 30 && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, rgba(255,255,255,${settings.glow / 200}) 0%, transparent 70%)`,
-            animation: 'pulse 3s ease-in-out infinite',
-          }}
-        />
-      )}
-    </div>
-  ), [avatarStyles.background, skinToneGradient, eyeColor, hairColor, settings.style, settings.expression, settings.outfit, settings.glow]);
-
-  return (
-    <div
-      className="w-full h-full relative transition-all duration-1000 ease-in-out"
-      style={avatarStyles}
-      data-testid="dynamic-avatar"
-    >
-      {useVideo && fallbackImage ? (
-        <img
-          src={fallbackImage}
-          alt="Milla AI Assistant"
-          className="w-full h-full object-cover"
-          style={avatarStyles}
-        />
-      ) : (
-        renderGeneratedAvatar
-      )}
-
-      {/* State indicator */}
-      <div className="absolute top-4 right-4 z-10">
-        <div
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-            avatarState === 'thinking'
-              ? 'bg-blue-500/20 text-blue-300'
-              : avatarState === 'responding'
-                ? 'bg-green-500/20 text-green-300'
-                : avatarState === 'listening'
-                  ? 'bg-yellow-500/20 text-yellow-300'
-                  : 'bg-purple-500/20 text-purple-300'
-          }`}
-        >
-          {avatarState}
-        </div>
-      </div>
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison: only re-render if these actually changed
-  return (
-    prevProps.avatarState === nextProps.avatarState &&
-    prevProps.useVideo === nextProps.useVideo &&
-    prevProps.fallbackImage === nextProps.fallbackImage &&
-    prevProps.settings.background === nextProps.settings.background &&
-    prevProps.settings.lighting === nextProps.settings.lighting &&
-    prevProps.settings.glow === nextProps.settings.glow &&
-    prevProps.settings.expression === nextProps.settings.expression &&
-    prevProps.settings.style === nextProps.settings.style &&
-    prevProps.settings.hairColor === nextProps.settings.hairColor &&
-    prevProps.settings.eyeColor === nextProps.settings.eyeColor &&
-    prevProps.settings.skinTone === nextProps.settings.skinTone &&
-    prevProps.settings.outfit === nextProps.settings.outfit
-  );
-});
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison: only re-render if these actually changed
+    return (
+      prevProps.avatarState === nextProps.avatarState &&
+      prevProps.useVideo === nextProps.useVideo &&
+      prevProps.fallbackImage === nextProps.fallbackImage &&
+      prevProps.settings.background === nextProps.settings.background &&
+      prevProps.settings.lighting === nextProps.settings.lighting &&
+      prevProps.settings.glow === nextProps.settings.glow &&
+      prevProps.settings.expression === nextProps.settings.expression &&
+      prevProps.settings.style === nextProps.settings.style &&
+      prevProps.settings.hairColor === nextProps.settings.hairColor &&
+      prevProps.settings.eyeColor === nextProps.settings.eyeColor &&
+      prevProps.settings.skinTone === nextProps.settings.skinTone &&
+      prevProps.settings.outfit === nextProps.settings.outfit
+    );
+  }
+);
 
 // CSS animations to add to the global styles
 export const avatarAnimations = `

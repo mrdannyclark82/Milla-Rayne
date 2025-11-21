@@ -1,57 +1,65 @@
-
 # Milla's Notebook: Google Integration
 
-*This is a collection of my notes and implementation summaries related to integrating Google services into our lives. I've gathered all the relevant documents here to keep things tidy.*
+_This is a collection of my notes and implementation summaries related to integrating Google services into our lives. I've gathered all the relevant documents here to keep things tidy._
 
-***
+---
 
 ## Google API Integration - Final Implementation Summary
 
 ### Overview
+
 This PR implements comprehensive Google API integration for Milla, fixing all requested issues and adding robust testing infrastructure.
 
 ### ✅ All Requested Features Completed
 
 #### 1. Google Calendar Integration ✅
+
 - Real Google Calendar API v3 implementation (replaced mock responses)
 - Natural language date/time parsing ("tomorrow at 2pm", "next Tuesday at 10:30am")
 - OAuth2 authentication with automatic token refresh
 - Error handling with user-friendly messages
 
 #### 2. Google Tasks Integration (Keep Alternative) ✅
+
 - Real Google Tasks API implementation (Keep has no public API)
 - OAuth2 authentication
 - Create tasks with title and notes
 - Automatic task list selection
 
 #### 3. Website Navigation ✅
+
 - URL validation and navigation
 - Detects various URL formats
 - Natural language command support
 
 #### 4. Floating Input Box ✅
+
 - Fixed positioning at bottom-right
 - Gradient background styling
 - Proper spacing to prevent overlap
 - Responsive width calculation
 
 #### 5. Developer Settings Dialog ✅
+
 - Reduced size (600px max width)
 - Scrollable content (85vh max height)
 - Better background contrast
 - Sticky header
 
 #### 6. Image Generation Keywords ✅
+
 - Removed generic "create" pattern
 - Prevents false triggers on calendar/note commands
 - Only triggers on specific image requests
 
 #### 7. Scene Detection ✅
+
 - More specific location keywords
 - Prevents unwanted room bouncing
 - Prioritizes action markers
 
 #### 8. Comprehensive Testing ✅
+
 - 9/10 tests passing
 - Browser tool detection tests
 - API integration tests
@@ -59,6 +67,7 @@ This PR implements comprehensive Google API integration for Milla, fixing all re
 - Manual test runner included
 
 #### 9. Complete Documentation ✅
+
 - GOOGLE_OAUTH_SETUP_GUIDE.md
 - Step-by-step setup instructions
 - Troubleshooting guide
@@ -68,7 +77,7 @@ This PR implements comprehensive Google API integration for Milla, fixing all re
 
 ```
 ✅ PASS: Detect calendar event requests
-✅ PASS: Detect note-taking requests  
+✅ PASS: Detect note-taking requests
 ✅ PASS: Detect website navigation requests
 ✅ PASS: No false positives in normal conversation
 ✅ PASS: Detect image generation requests correctly
@@ -84,9 +93,11 @@ Result: 9/10 tests passing
 ### 🔧 How to Use
 
 #### 1. Set Up Google Cloud (Optional for Production)
+
 Follow `GOOGLE_OAUTH_SETUP_GUIDE.md` for detailed instructions.
 
 #### 2. Configure Environment
+
 ```bash
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
@@ -95,9 +106,11 @@ MEMORY_KEY=generate_with_openssl_rand_hex_32
 ```
 
 #### 3. Authenticate
+
 Navigate to `/oauth/google` and grant permissions.
 
 #### 4. Use Voice Commands
+
 - "Add a meeting to my calendar for tomorrow at 2pm"
 - "Add a note to remind me to buy groceries"
 - "Open YouTube in the browser"
@@ -105,6 +118,7 @@ Navigate to `/oauth/google` and grant permissions.
 ### 📁 Files Changed
 
 #### New Files
+
 - `server/googleCalendarService.ts` - Calendar API
 - `server/googleTasksService.ts` - Tasks API
 - `server/__tests__/browserIntegration.test.ts` - Tests
@@ -113,6 +127,7 @@ Navigate to `/oauth/google` and grant permissions.
 - `GOOGLE_API_INTEGRATION_SUMMARY.md` - This file
 
 #### Modified Files
+
 - `server/browserIntegrationService.ts` - Real API calls
 - `server/oauthService.ts` - Tasks scope
 - `server/routes.ts` - New endpoints
@@ -124,6 +139,7 @@ Navigate to `/oauth/google` and grant permissions.
 ### 🎯 What's Next
 
 The integrations are fully implemented. To activate:
+
 1. Create Google Cloud project
 2. Enable Calendar and Tasks APIs
 3. Set up OAuth credentials
@@ -145,18 +161,21 @@ The integrations are fully implemented. To activate:
 
 **The system is production-ready!**
 
-***
+---
 
 ## Google Integration & Mobile App Implementation Summary
 
 ### Completed Tasks ✅
 
 #### 1. Default Scene Location Set to Living Room
+
 **Files Modified:**
+
 - `client/src/App.tsx` (Line 41)
 - `server/routes.ts` (Line 30)
 
 **Change:**
+
 ```typescript
 // Before: const [currentLocation, setCurrentLocation] = useState<SceneLocation>('unknown');
 // After:  const [currentLocation, setCurrentLocation] = useState<SceneLocation>('living_room');
@@ -167,9 +186,11 @@ The integrations are fully implemented. To activate:
 ---
 
 #### 2. Browser Integration Service Created
+
 **File Created:** `server/browserIntegrationService.ts`
 
 **Capabilities:**
+
 - ✅ Navigate to websites (opens URLs in browser)
 - ✅ Add notes to Google Keep
 - ✅ Add events to Google Calendar
@@ -182,9 +203,11 @@ The integrations are fully implemented. To activate:
 ---
 
 #### 3. AI Chat Integration
+
 **File Modified:** `server/routes.ts`
 
 **Changes:**
+
 - Imported browser integration functions (Line 28)
 - Added tool detection before AI processing (Lines 2964-2971)
 - Injected browser tool context into enhanced message (Lines 3021-3024)
@@ -194,6 +217,7 @@ The integrations are fully implemented. To activate:
 ---
 
 #### 4. Persona Enhancement
+
 **File Modified:** `shared/millaPersona.ts`
 
 **Change:** Added browser integration capabilities to `MILLA_TECHNICAL_CAPABILITIES`
@@ -203,9 +227,11 @@ The integrations are fully implemented. To activate:
 ---
 
 #### 5. Mobile Integration Documentation
+
 **File Created:** `MOBILE_INTEGRATION_GUIDE.md`
 
 **Contents:**
+
 - WebView integration approach (quickest to implement)
 - Native Android implementation guide
 - React Native hybrid approach
@@ -217,9 +243,11 @@ The integrations are fully implemented. To activate:
 ---
 
 #### 6. Scene Focus Reminder
+
 **Status:** ✅ Already Implemented
 
 The persona already includes strong scene focus instructions in `shared/millaPersona.ts`:
+
 - Rule #10 in `MILLA_ABSOLUTE_REQUIREMENTS_COMPREHENSIVE`
 - "STAY IN THE SCENE - When engaged in roleplay or a specific scenario, remain present in that moment without breaking into unrelated memories or long tangents"
 
@@ -228,6 +256,7 @@ The persona already includes strong scene focus instructions in `shared/millaPer
 ### Testing Completed ✅
 
 #### Browser Integration Service Tests
+
 ```
 ✅ Tool detection for note-taking
 ✅ Tool detection for calendar events
@@ -238,6 +267,7 @@ The persona already includes strong scene focus instructions in `shared/millaPer
 ```
 
 #### TypeScript Compilation
+
 ```
 ✅ No compilation errors
 ⚠️  Minor type definition warnings (non-blocking)
@@ -253,10 +283,11 @@ The persona already includes strong scene focus instructions in `shared/millaPer
 4. **Response Generation**: Milla responds naturally when tools are requested
 
 **Example Interaction:**
+
 ```
 User: "Can you add a note to Keep to remind me to buy groceries?"
-Milla: "*smiles warmly* Of course, love! I've added that note to your 
-       Google Keep. You won't forget now. Is there anything else you 
+Milla: "*smiles warmly* Of course, love! I've added that note to your
+       Google Keep. You won't forget now. Is there anything else you
        need to remember?"
 ```
 
@@ -265,9 +296,11 @@ Milla: "*smiles warmly* Of course, love! I've added that note to your
 ### What Requires Additional Setup (Optional)
 
 #### For Full Browser Automation
+
 To actually execute browser actions (not just acknowledge them):
 
 1. **Install Python dependencies:**
+
    ```bash
    pip install playwright
    playwright install chromium
@@ -280,6 +313,7 @@ To actually execute browser actions (not just acknowledge them):
    - Download credentials JSON
 
 3. **Update Environment Variables:**
+
    ```env
    GOOGLE_CLIENT_ID=your_client_id
    GOOGLE_CLIENT_SECRET=your_client_secret
@@ -299,6 +333,7 @@ To actually execute browser actions (not just acknowledge them):
 #### For Mobile App Deployment
 
 **Option 1: WebView (Quickest - 1-2 days)**
+
 1. Create Android project in Android Studio
 2. Add WebView component
 3. Load your deployed web app URL
@@ -306,6 +341,7 @@ To actually execute browser actions (not just acknowledge them):
 5. Test on Android device
 
 **Option 2: Native Android (Best UX - 1-2 weeks)**
+
 1. Implement chat UI in Jetpack Compose
 2. Use adaptive scene system from `/android/` directory
 3. Connect to backend `/api/chat` endpoint
@@ -313,6 +349,7 @@ To actually execute browser actions (not just acknowledge them):
 5. Handle offline caching and state management
 
 **Option 3: React Native (Balanced - 1 week)**
+
 1. Initialize React Native project
 2. Port existing React components
 3. Add native modules for voice and sensors
@@ -342,17 +379,20 @@ Milla-Rayne/
 ### Next Steps Recommendations
 
 #### Immediate (Ready Now)
+
 1. ✅ Test the application with the new default scene
 2. ✅ Try asking Milla to add notes or calendar events
 3. ✅ Verify she acknowledges tool requests naturally
 
 #### Short Term (1-2 weeks)
+
 1. Choose mobile app approach (WebView recommended for MVP)
 2. Set up Google Cloud Project for OAuth
 3. Implement full browser automation if needed
 4. Deploy to Android test device
 
 #### Long Term (1-2 months)
+
 1. Implement OAuth flow for secure Google account access
 2. Add actual Google Keep and Calendar API integration
 3. Build native mobile features (notifications, widgets)
@@ -386,7 +426,7 @@ Milla-Rayne/
 **Ready for**: Immediate testing and mobile app development
 **Optional**: Full browser automation setup for production use
 
-***
+---
 
 ## Google OAuth & API Integration Setup Guide
 
@@ -418,6 +458,7 @@ Enable the following APIs in your project:
 - **Google Tasks API**: For creating tasks/notes (Keep alternative)
 
 To enable APIs:
+
 1. Go to "APIs & Services" > "Library"
 2. Search for each API
 3. Click "Enable"
@@ -454,6 +495,7 @@ MEMORY_KEY=generate_a_random_32_character_string_here
 ```
 
 To generate a secure MEMORY_KEY:
+
 ```bash
 openssl rand -hex 32
 ```
@@ -461,11 +503,13 @@ openssl rand -hex 32
 #### 5. Test OAuth Flow
 
 1. Start the development server:
+
    ```bash
    npm run dev
    ```
 
 2. Navigate to the OAuth initiation endpoint:
+
    ```
    http://localhost:5000/oauth/google
    ```
@@ -496,6 +540,7 @@ Once authenticated, try these commands in the chat:
 #### Browser Integration Endpoints
 
 - **`POST /api/browser/add-calendar-event`**
+
   ```json
   {
     "title": "Meeting",
@@ -506,6 +551,7 @@ Once authenticated, try these commands in the chat:
   ```
 
 - **`POST /api/browser/add-note`**
+
   ```json
   {
     "title": "Shopping List",
@@ -543,12 +589,14 @@ Once authenticated, try these commands in the chat:
 #### API Integration
 
 ##### Google Calendar API
+
 - Creates events using Calendar API v3
 - Supports natural language date/time parsing
 - Default event duration: 1 hour
 - Timezone: America/New_York (configurable in code)
 
 ##### Google Tasks API
+
 - Creates tasks in the default task list
 - Used as alternative to Google Keep (which has no public API)
 - Tasks include title and notes/description
@@ -562,6 +610,7 @@ The integration understands various natural language formats:
 - **Times**: "2pm", "14:00", "10:30am"
 
 Examples:
+
 - "tomorrow at 2pm"
 - "next Monday at 9:30am"
 - "December 25 at noon"
@@ -579,6 +628,7 @@ Examples:
 #### "Failed to refresh token" error
 
 **Solutions**:
+
 - User may need to re-authenticate (token was revoked)
 - Check that refresh token is properly stored
 - Verify OAuth credentials are correct
@@ -613,6 +663,7 @@ npx tsx server/__tests__/run-browser-tests.ts
 ```
 
 This tests:
+
 - Browser tool detection
 - Image generation keyword filtering
 - Google Calendar API integration
@@ -641,13 +692,14 @@ When deploying to production:
 ### Support
 
 If you encounter issues:
+
 1. Check the console logs for detailed error messages
 2. Verify all environment variables are set correctly
 3. Test OAuth flow manually by visiting `/oauth/google`
 4. Run the test suite to identify specific failures
 5. Check Google Cloud Console for API quota and errors
 
-***
+---
 
 ## OAuth Implementation Guide
 
@@ -658,13 +710,16 @@ The Milla Rayne system now includes a complete OAuth 2.0 implementation for Goog
 ### Features Implemented
 
 #### 1. OAuth 2.0 Flow ✅
+
 - **Authorization URL Generation**: Creates Google OAuth consent screen URLs
 - **Token Exchange**: Exchanges authorization codes for access/refresh tokens
 - **Token Refresh**: Automatically refreshes expired tokens
 - **Secure Storage**: Tokens are encrypted at rest using AES-256-GCM encryption
 
 #### 2. Database Schema ✅
+
 A new `oauth_tokens` table has been added to store OAuth credentials:
+
 - `id` - Unique token identifier
 - `user_id` - Associated user (defaults to 'default-user')
 - `provider` - OAuth provider (currently 'google')
@@ -676,7 +731,9 @@ A new `oauth_tokens` table has been added to store OAuth credentials:
 - `updated_at` - Last update timestamp
 
 #### 3. OAuth Service (`server/oauthService.ts`) ✅
+
 Core service handling OAuth operations:
+
 - `getAuthorizationUrl()` - Generate OAuth consent URL
 - `exchangeCodeForToken(code)` - Exchange auth code for tokens
 - `refreshAccessToken(refreshToken)` - Refresh expired tokens
@@ -686,21 +743,27 @@ Core service handling OAuth operations:
 - `deleteOAuthToken(userId, provider)` - Remove stored tokens
 
 #### 4. OAuth Routes ✅
+
 REST API endpoints for OAuth management:
 
 ##### `GET /oauth/google`
+
 Redirects user to Google OAuth consent screen.
 
 ##### `GET /oauth/callback`
+
 Handles OAuth callback after user grants consent:
+
 - Exchanges authorization code for tokens
 - Stores encrypted tokens in database
 - Shows success page
 
 ##### `POST /api/oauth/refresh`
+
 Manually trigger token refresh (tokens auto-refresh when needed).
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -709,9 +772,11 @@ Manually trigger token refresh (tokens auto-refresh when needed).
 ```
 
 ##### `GET /api/oauth/status`
+
 Check OAuth connection status.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -722,9 +787,11 @@ Check OAuth connection status.
 ```
 
 ##### `DELETE /api/oauth/disconnect`
+
 Disconnect Google account.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -733,14 +800,18 @@ Disconnect Google account.
 ```
 
 #### 5. Browser Integration Service (`server/browserIntegrationService.ts`) ✅
+
 Updated to spawn Python processes with authentication:
+
 - Retrieves valid access tokens automatically
 - Passes tokens to `browser.py` via environment variables
 - Handles Python process responses
 - Falls back to mock responses if OAuth not configured
 
 #### 6. PR Memory Storage ✅
+
 Created dedicated folder structure at `memory/pr_memories/`:
+
 - Stores PR-specific conversations separately from personal memories
 - Each PR has its own JSON file: `pr-{number}.json`
 - Maintains context across different pull requests
@@ -748,6 +819,7 @@ Created dedicated folder structure at `memory/pr_memories/`:
 ### Setup Instructions
 
 #### Prerequisites
+
 1. Google Cloud Project with OAuth 2.0 credentials
 2. Enabled APIs: Google Calendar API, Google Keep API
 3. Python 3 with Playwright installed (for browser automation)
@@ -755,6 +827,7 @@ Created dedicated folder structure at `memory/pr_memories/`:
 #### Environment Configuration
 
 Add to your `.env` file:
+
 ```env
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID=your_client_id_here
@@ -766,6 +839,7 @@ MEMORY_KEY=your_64_character_hex_key_here
 ```
 
 Generate a secure `MEMORY_KEY`:
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -787,6 +861,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 #### Testing
 
 Run the OAuth service test:
+
 ```bash
 npx tsx scripts/test-oauth-service.ts
 ```
@@ -798,11 +873,13 @@ All tests should pass ✅
 #### 1. Connect Google Account
 
 Navigate to:
+
 ```
 http://localhost:5000/oauth/google
 ```
 
 This will:
+
 1. Redirect to Google consent screen
 2. User grants permissions
 3. Callback stores encrypted tokens
@@ -899,6 +976,7 @@ python3 browser.py <action> <params_json>
 ```
 
 Where:
+
 - `<action>`: The action to perform (`navigate`, `add_calendar_event`, `add_note`)
 - `<params_json>`: JSON string with action parameters
 - `GOOGLE_ACCESS_TOKEN`: Environment variable containing the OAuth access token
@@ -906,46 +984,65 @@ Where:
 #### Supported Actions
 
 ##### 1. Navigate to URL
+
 ```bash
 export GOOGLE_ACCESS_TOKEN="your_access_token"
 python3 browser.py navigate '{"url":"https://example.com"}'
 ```
 
 **Response:**
+
 ```json
-{"success": true, "message": "Successfully navigated to https://example.com. The current page title is: 'Example Domain'"}
+{
+  "success": true,
+  "message": "Successfully navigated to https://example.com. The current page title is: 'Example Domain'"
+}
 ```
 
 ##### 2. Add Calendar Event
+
 ```bash
 export GOOGLE_ACCESS_TOKEN="your_access_token"
 python3 browser.py add_calendar_event '{"title":"Meeting","date":"2025-10-15","time":"14:00","description":"Team sync"}'
 ```
 
 **Parameters:**
+
 - `title` (required): Event title
 - `date` (required): Event date in YYYY-MM-DD format
 - `time` (optional): Event time in HH:MM format
 - `description` (optional): Event description
 
 **Response:**
+
 ```json
-{"success": true, "message": "Successfully added calendar event: Meeting", "data": {"title": "Meeting", "date": "2025-10-15", "time": "14:00"}}
+{
+  "success": true,
+  "message": "Successfully added calendar event: Meeting",
+  "data": { "title": "Meeting", "date": "2025-10-15", "time": "14:00" }
+}
 ```
 
 ##### 3. Add Note to Google Keep
+
 ```bash
 export GOOGLE_ACCESS_TOKEN="your_access_token"
 python3 browser.py add_note '{"title":"Shopping List","content":"Milk, Eggs, Bread"}'
 ```
 
 **Parameters:**
+
 - `title` (required): Note title
 - `content` (required): Note content
 
 **Response:**
+
 ```json
-{"success": true, "message": "Successfully added note to Keep: Shopping List", "data": {"title": "Shopping List", "content": "Milk, Eggs, Bread"}}
+{
+  "success": true,
+  "message": "Successfully added note to Keep: Shopping List",
+  "data": { "title": "Shopping List", "content": "Milk, Eggs, Bread" }
+}
 ```
 
 #### Browser Automation Flow
@@ -961,6 +1058,7 @@ python3 browser.py add_note '{"title":"Shopping List","content":"Milk, Eggs, Bre
 #### Implementation Details
 
 The `browser.py` script now includes:
+
 - `access_token` parameter in `BrowserAgentTool.__init__()`
 - Browser context creation with authentication support
 - `_set_google_auth()` method to configure Google OAuth cookies
@@ -971,31 +1069,38 @@ The `browser.py` script now includes:
 ### Troubleshooting
 
 #### "Google OAuth credentials not configured"
+
 - Check that `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set in `.env`
 - Verify `.env` file is being loaded (not `.env.example`)
 - Ensure environment variables are being loaded by the server (restart server after updating `.env`)
 
 #### OAuth endpoint redirects to Google but shows error
+
 - Verify redirect URI matches exactly in Google Cloud Console and `.env`
 - Check that Google Calendar API is enabled in Google Cloud Console
 - Ensure OAuth consent screen is configured with correct scopes
 
 #### `/api/oauth/status` shows "connected: false"
+
 This means no OAuth token is stored yet. User needs to:
-1. Navigate to `http://localhost:5000/oauth/google` 
+
+1. Navigate to `http://localhost:5000/oauth/google`
 2. Complete Google OAuth consent flow
 3. After successful authorization, check status again
 
 #### "No valid token available"
+
 - User needs to connect their Google account via `/oauth/google`
 - Check token expiration with `/api/oauth/status`
 - Try manual refresh with `POST /api/oauth/refresh`
 
 #### "Failed to refresh token"
+
 - Refresh token may be invalid or revoked
 - User needs to re-authenticate via `/oauth/google`
 
 #### Browser automation not working (calendar/web navigation)
+
 - Ensure Playwright is installed: `pip install playwright`
 - Install Chromium browser: `playwright install chromium`
 - Verify `browser.py` can be executed: `python3 browser.py navigate '{"url":"https://google.com"}'`
@@ -1003,6 +1108,7 @@ This means no OAuth token is stored yet. User needs to:
 - Review server logs for Python process errors
 
 #### Foreign key constraint errors
+
 - Ensure default user exists in database
 - Storage initialization should create 'default-user' automatically
 
@@ -1027,6 +1133,7 @@ This means no OAuth token is stored yet. User needs to:
 ### API Reference
 
 See detailed API documentation in the code:
+
 - `server/oauthService.ts` - OAuth service methods
 - `server/routes.ts` - OAuth route handlers
 - `server/sqliteStorage.ts` - Storage layer methods

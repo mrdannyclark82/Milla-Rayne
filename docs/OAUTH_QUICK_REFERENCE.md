@@ -3,6 +3,7 @@
 ## Quick Start
 
 ### 1. Configure Environment
+
 ```bash
 # Add to .env
 GOOGLE_CLIENT_ID=your_client_id
@@ -12,43 +13,49 @@ MEMORY_KEY=$(node -e "console.log(require('crypto').randomBytes(32).toString('he
 ```
 
 ### 2. Start Server
+
 ```bash
 npm run dev
 ```
 
 ### 3. Connect Google Account
+
 Navigate to: `http://localhost:5000/oauth/google`
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/oauth/google` | GET | Initiate OAuth flow |
-| `/oauth/callback` | GET | Handle OAuth callback |
-| `/api/oauth/status` | GET | Check connection status |
-| `/api/oauth/refresh` | POST | Manually refresh token |
-| `/api/oauth/disconnect` | DELETE | Disconnect account |
+| Endpoint                | Method | Description             |
+| ----------------------- | ------ | ----------------------- |
+| `/oauth/google`         | GET    | Initiate OAuth flow     |
+| `/oauth/callback`       | GET    | Handle OAuth callback   |
+| `/api/oauth/status`     | GET    | Check connection status |
+| `/api/oauth/refresh`    | POST   | Manually refresh token  |
+| `/api/oauth/disconnect` | DELETE | Disconnect account      |
 
 ## Usage Examples
 
 ### Check Status
+
 ```bash
 curl http://localhost:5000/api/oauth/status
 ```
 
 ### Add Note (TypeScript)
+
 ```typescript
 import { addNoteToKeep } from './server/browserIntegrationService';
 await addNoteToKeep('Shopping', 'Milk, Eggs, Bread');
 ```
 
 ### Add Calendar Event (TypeScript)
+
 ```typescript
 import { addCalendarEvent } from './server/browserIntegrationService';
 await addCalendarEvent('Meeting', '2025-10-15', '14:00');
 ```
 
 ### Browser.py CLI (Direct Python Usage)
+
 ```bash
 # Navigate to a webpage
 export GOOGLE_ACCESS_TOKEN="your_token"
@@ -62,8 +69,9 @@ python3 browser.py add_note '{"title":"Ideas","content":"Project brainstorming n
 ```
 
 ### Via Chat
+
 **User:** "Add a note to buy groceries"  
-**Milla:** "*smiles* I've added that to your Google Keep, love!"
+**Milla:** "_smiles_ I've added that to your Google Keep, love!"
 
 **User:** "Open YouTube for me"  
 **Milla:** "I've opened YouTube in the browser for you!"
@@ -95,7 +103,7 @@ scripts/
 ✅ All tokens encrypted with AES-256-GCM  
 ✅ Auto-refresh 5 min before expiry  
 ✅ Environment variables for secrets  
-✅ HTTPS ready for production  
+✅ HTTPS ready for production
 
 ## Testing
 
@@ -113,13 +121,13 @@ Expected: ✅ All OAuth service tests passed!
 
 ## Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| "OAuth credentials not configured" | Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env |
-| "No valid token available" | Visit /oauth/google to connect |
-| "Failed to refresh token" | Re-authenticate via /oauth/google |
-| Browser actions not working | Install: `pip install playwright && playwright install chromium` |
-| Status shows connected:false | Complete OAuth flow at /oauth/google first |
+| Issue                              | Solution                                                         |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| "OAuth credentials not configured" | Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env            |
+| "No valid token available"         | Visit /oauth/google to connect                                   |
+| "Failed to refresh token"          | Re-authenticate via /oauth/google                                |
+| Browser actions not working        | Install: `pip install playwright && playwright install chromium` |
+| Status shows connected:false       | Complete OAuth flow at /oauth/google first                       |
 
 ## Next Steps
 

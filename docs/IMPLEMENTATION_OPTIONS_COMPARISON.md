@@ -8,19 +8,19 @@ This document provides a comprehensive comparison of the three proposed implemen
 
 ## Executive Summary Table
 
-| Factor | Option 1: CSS Only | Option 2: WebGL Only | Option 3: Hybrid |
-|--------|-------------------|---------------------|------------------|
-| **Recommended For** | Quick MVP, Broad audience | Showcase projects, High-end only | Production deployment |
-| **Time Investment** | 2-3 days | 5-7 days | 4-6 days |
-| **Developer Skill Required** | Intermediate CSS/React | Advanced WebGL/Three.js | Intermediate-Advanced React |
-| **Visual Appeal** | Good ⭐⭐⭐ | Excellent ⭐⭐⭐⭐⭐ | Very Good ⭐⭐⭐⭐ |
-| **Performance** | Excellent ⭐⭐⭐⭐⭐ | Variable ⭐⭐⭐ | Excellent ⭐⭐⭐⭐⭐ |
-| **Device Compatibility** | 100% ⭐⭐⭐⭐⭐ | ~95% ⭐⭐⭐⭐ | 100% ⭐⭐⭐⭐⭐ |
-| **Bundle Size Impact** | Minimal (+15KB) | Significant (+150KB) | Moderate (+50KB) |
-| **Maintenance Complexity** | Low ⭐⭐⭐⭐⭐ | Medium ⭐⭐⭐ | Medium ⭐⭐⭐⭐ |
-| **Future Extensibility** | Limited ⭐⭐ | Moderate ⭐⭐⭐ | High ⭐⭐⭐⭐⭐ |
-| **Accessibility Support** | Excellent ⭐⭐⭐⭐⭐ | Good ⭐⭐⭐ | Excellent ⭐⭐⭐⭐⭐ |
-| **Risk Level** | Low ✅ | High ⚠️ | Medium ⚡ |
+| Factor                       | Option 1: CSS Only        | Option 2: WebGL Only             | Option 3: Hybrid            |
+| ---------------------------- | ------------------------- | -------------------------------- | --------------------------- |
+| **Recommended For**          | Quick MVP, Broad audience | Showcase projects, High-end only | Production deployment       |
+| **Time Investment**          | 2-3 days                  | 5-7 days                         | 4-6 days                    |
+| **Developer Skill Required** | Intermediate CSS/React    | Advanced WebGL/Three.js          | Intermediate-Advanced React |
+| **Visual Appeal**            | Good ⭐⭐⭐               | Excellent ⭐⭐⭐⭐⭐             | Very Good ⭐⭐⭐⭐          |
+| **Performance**              | Excellent ⭐⭐⭐⭐⭐      | Variable ⭐⭐⭐                  | Excellent ⭐⭐⭐⭐⭐        |
+| **Device Compatibility**     | 100% ⭐⭐⭐⭐⭐           | ~95% ⭐⭐⭐⭐                    | 100% ⭐⭐⭐⭐⭐             |
+| **Bundle Size Impact**       | Minimal (+15KB)           | Significant (+150KB)             | Moderate (+50KB)            |
+| **Maintenance Complexity**   | Low ⭐⭐⭐⭐⭐            | Medium ⭐⭐⭐                    | Medium ⭐⭐⭐⭐             |
+| **Future Extensibility**     | Limited ⭐⭐              | Moderate ⭐⭐⭐                  | High ⭐⭐⭐⭐⭐             |
+| **Accessibility Support**    | Excellent ⭐⭐⭐⭐⭐      | Good ⭐⭐⭐                      | Excellent ⭐⭐⭐⭐⭐        |
+| **Risk Level**               | Low ✅                    | High ⚠️                          | Medium ⚡                   |
 
 ---
 
@@ -28,83 +28,85 @@ This document provides a comprehensive comparison of the three proposed implemen
 
 ### Visual Capabilities
 
-| Feature | CSS Only | WebGL Only | Hybrid |
-|---------|----------|------------|--------|
-| **Gradients** | ✅ Smooth, animated | ✅ Advanced | ✅ Both |
-| **Particle Effects** | ⚠️ Limited (CSS keyframes) | ✅ Thousands, GPU-accelerated | ✅ CSS + GPU option |
-| **3D Effects** | ❌ Pseudo-3D only | ✅ True 3D environments | ✅ Optional 3D layer |
-| **Parallax** | ✅ 2D layers | ✅ 3D depth | ✅ Both |
-| **Lighting** | ⚠️ Simulated with gradients | ✅ Dynamic, realistic | ✅ Progressive |
-| **Shadows** | ⚠️ CSS drop-shadow | ✅ Real-time shadows | ✅ Both |
-| **Volumetric Effects** | ❌ No | ✅ Fog, mist, atmosphere | ✅ Optional |
-| **Post-Processing** | ❌ Limited filters | ✅ Bloom, SSAO, etc. | ✅ Optional |
+| Feature                | CSS Only                    | WebGL Only                    | Hybrid               |
+| ---------------------- | --------------------------- | ----------------------------- | -------------------- |
+| **Gradients**          | ✅ Smooth, animated         | ✅ Advanced                   | ✅ Both              |
+| **Particle Effects**   | ⚠️ Limited (CSS keyframes)  | ✅ Thousands, GPU-accelerated | ✅ CSS + GPU option  |
+| **3D Effects**         | ❌ Pseudo-3D only           | ✅ True 3D environments       | ✅ Optional 3D layer |
+| **Parallax**           | ✅ 2D layers                | ✅ 3D depth                   | ✅ Both              |
+| **Lighting**           | ⚠️ Simulated with gradients | ✅ Dynamic, realistic         | ✅ Progressive       |
+| **Shadows**            | ⚠️ CSS drop-shadow          | ✅ Real-time shadows          | ✅ Both              |
+| **Volumetric Effects** | ❌ No                       | ✅ Fog, mist, atmosphere      | ✅ Optional          |
+| **Post-Processing**    | ❌ Limited filters          | ✅ Bloom, SSAO, etc.          | ✅ Optional          |
 
 ### Performance Characteristics
 
-| Metric | CSS Only | WebGL Only | Hybrid |
-|--------|----------|------------|--------|
-| **FPS (Desktop)** | 60+ | 30-60 | 60 (CSS) / 30-60 (WebGL) |
-| **FPS (Mobile)** | 60 | 15-30 | 60 (auto-fallback) |
-| **CPU Usage** | Low (2-5%) | Low (offloaded to GPU) | Low-Medium |
-| **GPU Usage** | Minimal | High | Adaptive |
-| **Memory Usage** | 5-10MB | 50-100MB | 10-30MB |
-| **Battery Impact** | Minimal | Significant | Minimal (adaptive) |
-| **Startup Time** | Instant | 500-1000ms | Instant (WebGL lazy-loaded) |
-| **Frame Drops** | Rare | Common on low-end | Rare (fallback) |
+| Metric             | CSS Only   | WebGL Only             | Hybrid                      |
+| ------------------ | ---------- | ---------------------- | --------------------------- |
+| **FPS (Desktop)**  | 60+        | 30-60                  | 60 (CSS) / 30-60 (WebGL)    |
+| **FPS (Mobile)**   | 60         | 15-30                  | 60 (auto-fallback)          |
+| **CPU Usage**      | Low (2-5%) | Low (offloaded to GPU) | Low-Medium                  |
+| **GPU Usage**      | Minimal    | High                   | Adaptive                    |
+| **Memory Usage**   | 5-10MB     | 50-100MB               | 10-30MB                     |
+| **Battery Impact** | Minimal    | Significant            | Minimal (adaptive)          |
+| **Startup Time**   | Instant    | 500-1000ms             | Instant (WebGL lazy-loaded) |
+| **Frame Drops**    | Rare       | Common on low-end      | Rare (fallback)             |
 
 ### Device Support Matrix
 
-| Device Type | CSS Only | WebGL Only | Hybrid |
-|-------------|----------|------------|--------|
-| **High-end Desktop** | ✅ 60fps | ✅ 60fps | ✅ WebGL Enhanced |
-| **Mid-range Desktop** | ✅ 60fps | ⚠️ 30-45fps | ✅ CSS Enhanced |
-| **Low-end Desktop** | ✅ 60fps | ❌ <30fps or crash | ✅ CSS Basic |
-| **Modern Mobile** | ✅ 60fps | ⚠️ 30fps, battery drain | ✅ CSS Animated |
-| **Budget Mobile** | ✅ 60fps | ❌ Unusable | ✅ Static Gradient |
-| **Tablets** | ✅ 60fps | ⚠️ 30-45fps | ✅ CSS Animated |
-| **Android WebView** | ✅ Perfect | ⚠️ Variable | ✅ Adaptive |
-| **Reduced Motion** | ✅ Respects preference | ⚠️ Requires handling | ✅ Auto-static |
+| Device Type           | CSS Only               | WebGL Only              | Hybrid             |
+| --------------------- | ---------------------- | ----------------------- | ------------------ |
+| **High-end Desktop**  | ✅ 60fps               | ✅ 60fps                | ✅ WebGL Enhanced  |
+| **Mid-range Desktop** | ✅ 60fps               | ⚠️ 30-45fps             | ✅ CSS Enhanced    |
+| **Low-end Desktop**   | ✅ 60fps               | ❌ <30fps or crash      | ✅ CSS Basic       |
+| **Modern Mobile**     | ✅ 60fps               | ⚠️ 30fps, battery drain | ✅ CSS Animated    |
+| **Budget Mobile**     | ✅ 60fps               | ❌ Unusable             | ✅ Static Gradient |
+| **Tablets**           | ✅ 60fps               | ⚠️ 30-45fps             | ✅ CSS Animated    |
+| **Android WebView**   | ✅ Perfect             | ⚠️ Variable             | ✅ Adaptive        |
+| **Reduced Motion**    | ✅ Respects preference | ⚠️ Requires handling    | ✅ Auto-static     |
 
 ### Development & Maintenance
 
-| Aspect | CSS Only | WebGL Only | Hybrid |
-|--------|----------|------------|--------|
-| **Initial Setup** | 4-6 hours | 1-2 days | 1 day |
-| **Feature Development** | 1-2 days | 4-5 days | 3-4 days |
-| **Testing Time** | 4-6 hours | 1-2 days | 1 day |
-| **Debugging Complexity** | Low | High | Medium |
-| **Cross-browser Issues** | Minimal | Moderate | Minimal |
-| **Mobile Debugging** | Easy | Difficult | Easy |
-| **Code Maintainability** | High | Medium | High |
-| **Team Skill Required** | CSS/React basics | WebGL/Three.js expert | React proficiency |
+| Aspect                   | CSS Only         | WebGL Only            | Hybrid            |
+| ------------------------ | ---------------- | --------------------- | ----------------- |
+| **Initial Setup**        | 4-6 hours        | 1-2 days              | 1 day             |
+| **Feature Development**  | 1-2 days         | 4-5 days              | 3-4 days          |
+| **Testing Time**         | 4-6 hours        | 1-2 days              | 1 day             |
+| **Debugging Complexity** | Low              | High                  | Medium            |
+| **Cross-browser Issues** | Minimal          | Moderate              | Minimal           |
+| **Mobile Debugging**     | Easy             | Difficult             | Easy              |
+| **Code Maintainability** | High             | Medium                | High              |
+| **Team Skill Required**  | CSS/React basics | WebGL/Three.js expert | React proficiency |
 
 ### Technical Implementation
 
-| Component | CSS Only | WebGL Only | Hybrid |
-|-----------|----------|------------|--------|
-| **Dependencies** | None (built-in CSS) | @react-three/fiber, three | Both (lazy-loaded) |
-| **Bundle Impact** | +15KB | +150KB | +50KB (WebGL lazy) |
-| **Lines of Code** | ~300 | ~800 | ~600 |
-| **Complexity** | Low | High | Medium |
-| **Render Method** | CSS transforms/animations | WebGL canvas | Strategy pattern |
-| **State Management** | Simple (useState) | Complex (Three.js state) | Moderate (context) |
-| **Animation Engine** | CSS @keyframes | requestAnimationFrame | Both |
-| **Capability Detection** | Not required | Required | Required |
+| Component                | CSS Only                  | WebGL Only                | Hybrid             |
+| ------------------------ | ------------------------- | ------------------------- | ------------------ |
+| **Dependencies**         | None (built-in CSS)       | @react-three/fiber, three | Both (lazy-loaded) |
+| **Bundle Impact**        | +15KB                     | +150KB                    | +50KB (WebGL lazy) |
+| **Lines of Code**        | ~300                      | ~800                      | ~600               |
+| **Complexity**           | Low                       | High                      | Medium             |
+| **Render Method**        | CSS transforms/animations | WebGL canvas              | Strategy pattern   |
+| **State Management**     | Simple (useState)         | Complex (Three.js state)  | Moderate (context) |
+| **Animation Engine**     | CSS @keyframes            | requestAnimationFrame     | Both               |
+| **Capability Detection** | Not required              | Required                  | Required           |
 
 ---
 
 ## Use Case Recommendations
 
 ### Choose CSS Only (Option 1) If:
+
 ✅ You need **quick implementation** (2-3 days)  
 ✅ Your audience uses **diverse devices** (including low-end)  
 ✅ **Bundle size** is a critical concern  
 ✅ You prioritize **stability** over visual wow-factor  
 ✅ **Accessibility** is paramount  
 ✅ Your team has **limited WebGL experience**  
-✅ You want **minimal maintenance** burden  
+✅ You want **minimal maintenance** burden
 
 **Best For:**
+
 - MVP/prototype development
 - B2B applications
 - Accessibility-focused products
@@ -112,15 +114,17 @@ This document provides a comprehensive comparison of the three proposed implemen
 - Teams new to interactive scenes
 
 ### Choose WebGL Only (Option 2) If:
+
 ✅ You need **cutting-edge visuals** (portfolios, showcases)  
 ✅ Target audience has **high-end devices only**  
 ✅ You have **WebGL expertise** in-house  
 ✅ **Visual impact** is more important than compatibility  
 ✅ You can afford **longer development time**  
 ✅ Your project is **desktop-focused**  
-✅ Bundle size is **not a concern**  
+✅ Bundle size is **not a concern**
 
 **Best For:**
+
 - Portfolio/showcase projects
 - High-end gaming/entertainment apps
 - Desktop-only applications
@@ -128,15 +132,17 @@ This document provides a comprehensive comparison of the three proposed implemen
 - Marketing/demo experiences
 
 ### Choose Hybrid (Option 3) If: ⭐ RECOMMENDED
+
 ✅ You need **production-ready quality**  
 ✅ You want **best visual quality** on capable devices  
 ✅ You must **support all devices** (mobile to desktop)  
 ✅ You want **future-proof architecture**  
 ✅ You value **graceful degradation**  
 ✅ Your team can handle **moderate complexity**  
-✅ You plan to **iterate and enhance** over time  
+✅ You plan to **iterate and enhance** over time
 
 **Best For:**
+
 - Production applications (like Milla Rayne)
 - Consumer-facing products
 - Cross-platform apps (web + mobile)
@@ -150,12 +156,14 @@ This document provides a comprehensive comparison of the three proposed implemen
 ### Option 1: CSS Only
 
 **Investment:**
+
 - Development: 2-3 days ($800-1,200 @ $400/day)
 - Testing: 4-6 hours ($200-300)
 - Maintenance: Low (2-4 hours/month)
 - **Total First Year**: ~$1,500-2,000
 
 **Returns:**
+
 - ✅ Universal compatibility (100% users)
 - ✅ Minimal support issues
 - ✅ Quick time-to-market
@@ -167,6 +175,7 @@ This document provides a comprehensive comparison of the three proposed implemen
 ### Option 2: WebGL Only
 
 **Investment:**
+
 - Development: 5-7 days ($2,000-2,800)
 - Testing: 1-2 days ($400-800)
 - Maintenance: Medium (8-12 hours/month)
@@ -174,6 +183,7 @@ This document provides a comprehensive comparison of the three proposed implemen
 - **Total First Year**: ~$5,000-7,000
 
 **Returns:**
+
 - ✅ Stunning visuals (high-end devices)
 - ✅ Competitive differentiation
 - ❌ 5-10% user exclusion
@@ -185,12 +195,14 @@ This document provides a comprehensive comparison of the three proposed implemen
 ### Option 3: Hybrid
 
 **Investment:**
+
 - Development: 4-6 days ($1,600-2,400)
 - Testing: 1 day ($400)
 - Maintenance: Medium (4-8 hours/month)
 - **Total First Year**: ~$3,000-4,000
 
 **Returns:**
+
 - ✅ Universal compatibility (100% users)
 - ✅ Premium experience (80% users)
 - ✅ Competitive advantage
@@ -205,7 +217,9 @@ This document provides a comprehensive comparison of the three proposed implemen
 ## Risk Assessment
 
 ### Option 1: CSS Only
+
 **Risks:**
+
 - 🟢 Performance issues: Very Low
 - 🟢 Browser compatibility: Very Low
 - 🟢 Maintenance burden: Very Low
@@ -216,7 +230,9 @@ This document provides a comprehensive comparison of the three proposed implemen
 **Overall Risk**: **LOW** ✅
 
 ### Option 2: WebGL Only
+
 **Risks:**
+
 - 🔴 Performance issues: High (mobile)
 - 🟡 Browser compatibility: Medium
 - 🟡 Maintenance burden: Medium
@@ -228,7 +244,9 @@ This document provides a comprehensive comparison of the three proposed implemen
 **Overall Risk**: **MEDIUM-HIGH** ⚠️
 
 ### Option 3: Hybrid
+
 **Risks:**
+
 - 🟢 Performance issues: Low (fallbacks)
 - 🟢 Browser compatibility: Very Low
 - 🟡 Maintenance burden: Medium
@@ -244,6 +262,7 @@ This document provides a comprehensive comparison of the three proposed implemen
 ## Implementation Timeline Comparison
 
 ### Option 1: CSS Only (2-3 Days)
+
 ```
 Day 1:
 ├─ Setup types and utils (2h)
@@ -265,6 +284,7 @@ Day 3:
 ```
 
 ### Option 2: WebGL Only (5-7 Days)
+
 ```
 Day 1-2:
 ├─ Setup Three.js (4h)
@@ -291,6 +311,7 @@ Day 7:
 ```
 
 ### Option 3: Hybrid (4-6 Days)
+
 ```
 Day 1-2:
 ├─ Setup foundation (3h)
@@ -317,23 +338,23 @@ Day 5-6 (Optional WebGL):
 
 ## Feature Parity Matrix
 
-| Feature | CSS | WebGL | Hybrid |
-|---------|-----|-------|--------|
-| Time-based scenes | ✅ | ✅ | ✅ |
-| Mood adaptation | ✅ | ✅ | ✅ |
-| Context awareness | ✅ | ✅ | ✅ |
-| Mouse parallax | ✅ | ✅ | ✅ |
-| Particle systems | ⚠️ Limited | ✅ Advanced | ✅ Both |
-| Scene transitions | ✅ | ✅ | ✅ |
-| 3D environments | ❌ | ✅ | ✅ Optional |
-| Custom themes | ✅ | ✅ | ✅ |
-| Seasonal variations | ✅ | ✅ | ✅ |
-| User preferences | ✅ | ✅ | ✅ |
-| Reduced motion | ✅ | ⚠️ Manual | ✅ Auto |
-| Mobile support | ✅ Perfect | ⚠️ Limited | ✅ Adaptive |
-| Android WebView | ✅ | ⚠️ | ✅ |
-| Low-end devices | ✅ | ❌ | ✅ Fallback |
-| Performance monitoring | ✅ | ✅ | ✅ |
+| Feature                | CSS        | WebGL       | Hybrid      |
+| ---------------------- | ---------- | ----------- | ----------- |
+| Time-based scenes      | ✅         | ✅          | ✅          |
+| Mood adaptation        | ✅         | ✅          | ✅          |
+| Context awareness      | ✅         | ✅          | ✅          |
+| Mouse parallax         | ✅         | ✅          | ✅          |
+| Particle systems       | ⚠️ Limited | ✅ Advanced | ✅ Both     |
+| Scene transitions      | ✅         | ✅          | ✅          |
+| 3D environments        | ❌         | ✅          | ✅ Optional |
+| Custom themes          | ✅         | ✅          | ✅          |
+| Seasonal variations    | ✅         | ✅          | ✅          |
+| User preferences       | ✅         | ✅          | ✅          |
+| Reduced motion         | ✅         | ⚠️ Manual   | ✅ Auto     |
+| Mobile support         | ✅ Perfect | ⚠️ Limited  | ✅ Adaptive |
+| Android WebView        | ✅         | ⚠️          | ✅          |
+| Low-end devices        | ✅         | ❌          | ✅ Fallback |
+| Performance monitoring | ✅         | ✅          | ✅          |
 
 ---
 
@@ -342,6 +363,7 @@ Day 5-6 (Optional WebGL):
 ### 🏆 Winner: **Option 3 - Hybrid Approach**
 
 **Why?**
+
 1. **Universal Compatibility**: Works on 100% of devices
 2. **Scalable Quality**: Premium on high-end, good on low-end
 3. **Future-Proof**: Easy to enhance over time
@@ -351,11 +373,13 @@ Day 5-6 (Optional WebGL):
 7. **Best ROI**: Maximum reach with competitive quality
 
 **Implementation Strategy:**
+
 1. **Phase 1**: Build CSS foundation (Days 1-4) ← START HERE
 2. **Phase 2**: Add WebGL enhancement (Days 5-6) ← OPTIONAL
 3. **Phase 3**: Iterate based on analytics ← CONTINUOUS
 
 **This approach ensures:**
+
 - ✅ Quick initial value delivery (CSS ready in 2-3 days)
 - ✅ Works for all users immediately
 - ✅ Can enhance progressively

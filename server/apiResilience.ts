@@ -136,7 +136,9 @@ class CircuitBreaker {
       state.failures++;
       state.lastFailureTime = Date.now();
 
-      console.error(`❌ Circuit breaker failure ${state.failures}/${this.threshold} for ${service}`);
+      console.error(
+        `❌ Circuit breaker failure ${state.failures}/${this.threshold} for ${service}`
+      );
 
       // Open circuit if threshold reached
       if (state.failures >= this.threshold) {
@@ -169,7 +171,8 @@ class CircuitBreaker {
 
   // Mock function for testing - simulates failures
   simulateFailure(shouldFail: boolean = false): void {
-    if (shouldFail || Math.random() < 0.02) { // 2% failure rate
+    if (shouldFail || Math.random() < 0.02) {
+      // 2% failure rate
       throw new Error('Simulated API failure for testing');
     }
   }
@@ -182,7 +185,11 @@ class CircuitBreaker {
 class RateLimiter {
   private limiters: Map<string, RateLimitState> = new Map();
 
-  private getState(service: string, limit: number, window: number): RateLimitState {
+  private getState(
+    service: string,
+    limit: number,
+    window: number
+  ): RateLimitState {
     if (!this.limiters.has(service)) {
       this.limiters.set(service, {
         requests: [],
@@ -203,14 +210,16 @@ class RateLimiter {
     const now = Date.now();
 
     // Remove old requests outside the window
-    state.requests = state.requests.filter(time => now - time < state.window);
+    state.requests = state.requests.filter((time) => now - time < state.window);
 
     // Check if rate limit exceeded
     if (state.requests.length >= state.limit) {
       const oldestRequest = Math.min(...state.requests);
       const waitTime = state.window - (now - oldestRequest);
-      console.warn(`⏱️  Rate limit reached for ${service}, waiting ${waitTime}ms`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      console.warn(
+        `⏱️  Rate limit reached for ${service}, waiting ${waitTime}ms`
+      );
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
       return this.execute(service, fn, limit, window);
     }
 
@@ -221,19 +230,24 @@ class RateLimiter {
     return fn();
   }
 
-  getStatus(): Record<string, { current: number; limit: number; window: number }> {
+  getStatus(): Record<
+    string,
+    { current: number; limit: number; window: number }
+  > {
     const status: Record<string, any> = {};
     const now = Date.now();
-    
+
     this.limiters.forEach((state, service) => {
-      const activeRequests = state.requests.filter(time => now - time < state.window);
+      const activeRequests = state.requests.filter(
+        (time) => now - time < state.window
+      );
       status[service] = {
         current: activeRequests.length,
         limit: state.limit,
         window: state.window,
       };
     });
-    
+
     return status;
   }
 }
@@ -264,11 +278,21 @@ export async function resilientAPICall<T>(
 
   // Wrap with rate limiter
   const rateLimitedFn = options.rateLimit
-    ? () => rateLimiter.execute(service, fn, options.rateLimit!.limit, options.rateLimit!.window)
+    ? () =>
+        rateLimiter.execute(
+          service,
+          fn,
+          options.rateLimit!.limit,
+          options.rateLimit!.window
+        )
     : fn;
 
   // Wrap with circuit breaker
-  const result = await circuitBreaker.execute(service, rateLimitedFn, options.fallback);
+  const result = await circuitBreaker.execute(
+    service,
+    rateLimitedFn,
+    options.fallback
+  );
 
   // Cache the result
   if (options.cacheKey) {

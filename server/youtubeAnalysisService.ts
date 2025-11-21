@@ -148,9 +148,23 @@ export function analyzeVideoContent(
 function extractKeyTopics(content: string, title: string): string[] {
   // Pre-compiled stopwords as a Set for O(1) lookup
   const STOPWORDS = new Set([
-    'this', 'that', 'with', 'from', 'they', 'been', 'have',
-    'were', 'will', 'what', 'when', 'where', 'would', 'could',
-    'should', 'video', 'youtube'
+    'this',
+    'that',
+    'with',
+    'from',
+    'they',
+    'been',
+    'have',
+    'were',
+    'will',
+    'what',
+    'when',
+    'where',
+    'would',
+    'could',
+    'should',
+    'video',
+    'youtube',
   ]);
 
   const topics = new Set<string>();
@@ -160,7 +174,7 @@ function extractKeyTopics(content: string, title: string): string[] {
     .toLowerCase()
     .split(/\s+/)
     .filter((word) => word.length > 3 && !STOPWORDS.has(word));
-  
+
   titleWords.forEach((word) => topics.add(word));
 
   // If we have actual content, analyze it
@@ -175,7 +189,8 @@ function extractKeyTopics(content: string, title: string): string[] {
 
     // Count frequencies - O(n) with O(1) Set lookups instead of O(n×m) array includes
     for (const word of words) {
-      if (!STOPWORDS.has(word)) {  // O(1) Set lookup instead of O(m) array scan!
+      if (!STOPWORDS.has(word)) {
+        // O(1) Set lookup instead of O(m) array scan!
         wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
       }
     }

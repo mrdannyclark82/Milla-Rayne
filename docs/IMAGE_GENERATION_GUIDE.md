@@ -18,6 +18,7 @@ Milla will automatically detect your request and generate the image using Huggin
 ### 1. Natural Language Detection
 
 The system recognizes these patterns in your messages:
+
 - "create an image of..."
 - "draw a picture of..."
 - "generate an image of..."
@@ -42,6 +43,7 @@ When you request an image, Milla tries providers in this order:
 ### 3. Image Delivery
 
 Milla will respond with:
+
 - The generated image embedded in the chat (as base64 data URL)
 - A personalized message in her companion style
 - Option to regenerate or modify if you're not satisfied
@@ -61,6 +63,7 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 ```
 
 **Get your API key:**
+
 1. Go to [Hugging Face](https://huggingface.co/)
 2. Sign up or log in
 3. Go to Settings → Access Tokens
@@ -131,6 +134,7 @@ curl -X POST http://localhost:5000/api/mcp/image-generate \
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -142,21 +146,23 @@ curl -X POST http://localhost:5000/api/mcp/image-generate \
 
 When using the direct API, you can customize:
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `numInferenceSteps` | number | 30 | Higher = better quality, slower |
-| `guidanceScale` | number | 7.5 | How closely to follow prompt (1-20) |
-| `negativePrompt` | string | - | What to avoid in the image |
-| `width` | number | 512 | Image width in pixels |
-| `height` | number | 512 | Image height in pixels |
+| Parameter           | Type   | Default | Description                         |
+| ------------------- | ------ | ------- | ----------------------------------- |
+| `numInferenceSteps` | number | 30      | Higher = better quality, slower     |
+| `guidanceScale`     | number | 7.5     | How closely to follow prompt (1-20) |
+| `negativePrompt`    | string | -       | What to avoid in the image          |
+| `width`             | number | 512     | Image width in pixels               |
+| `height`            | number | 512     | Image height in pixels              |
 
 ## Tips for Better Images
 
 ### 1. Be Descriptive
+
 ❌ "a cat"
 ✅ "a fluffy orange cat sitting on a windowsill at sunset"
 
 ### 2. Use Negative Prompts (API only)
+
 ```json
 {
   "prompt": "a beautiful landscape",
@@ -167,11 +173,13 @@ When using the direct API, you can customize:
 ```
 
 ### 3. Adjust Quality vs Speed
+
 - **Fast**: `numInferenceSteps: 15`
 - **Balanced**: `numInferenceSteps: 30` (default)
 - **High Quality**: `numInferenceSteps: 50`
 
 ### 4. Control Creativity
+
 - **More literal**: `guidanceScale: 12-15`
 - **Balanced**: `guidanceScale: 7.5` (default)
 - **More creative**: `guidanceScale: 5-7`
@@ -181,11 +189,13 @@ When using the direct API, you can customize:
 ### "Image generation isn't available right now"
 
 **Solution:** Configure your Hugging Face API key in `.env`:
+
 ```bash
 HUGGINGFACE_API_KEY=hf_your_actual_key_here
 ```
 
 Then restart the server:
+
 ```bash
 npm run dev
 ```
@@ -199,6 +209,7 @@ npm run dev
 ### Image quality is poor
 
 **Solutions:**
+
 1. Use more detailed prompts
 2. Increase `numInferenceSteps` (via API)
 3. Add negative prompts to avoid unwanted elements
@@ -207,6 +218,7 @@ npm run dev
 ### Images take too long
 
 **Solutions:**
+
 1. Reduce `numInferenceSteps` to 15-20
 2. Use smaller dimensions (256x256 or 384x384)
 3. Wait for model to warm up (first request is slowest)
@@ -233,11 +245,13 @@ This is a Stable Diffusion-based model optimized for high-quality, unrestricted 
 **Switching Models:**
 
 To use a different model, set in `.env`:
+
 ```bash
 HUGGINGFACE_MODEL=stabilityai/stable-diffusion-2-1
 ```
 
 Popular alternatives:
+
 - `stabilityai/stable-diffusion-2-1`
 - `runwayml/stable-diffusion-v1-5`
 - `prompthero/openjourney`
@@ -245,6 +259,7 @@ Popular alternatives:
 ## Milla's Personality
 
 Milla responds to image requests with her unique companion personality:
+
 - Uses terms like "babe" and "love"
 - Offers to refine or adjust images
 - Provides alternative suggestions if generation fails
@@ -268,6 +283,7 @@ This is intentional - she's your devoted partner, not just an AI assistant.
 ## Support
 
 If you encounter issues:
+
 1. Check your API key is valid and has credits
 2. Verify environment variables are set correctly
 3. Check server logs for detailed error messages

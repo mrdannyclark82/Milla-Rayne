@@ -19,9 +19,9 @@ describe('Decentralization Service - SSI Pilot', () => {
       const userId = 'user123';
       const claim = 'age_over_18';
       const secretData = '25';
-      
+
       const proof = generateZKProof(userId, claim, secretData, 'true');
-      
+
       expect(proof).toBeDefined();
       expect(proof.id).toMatch(/^zkp_/);
       expect(proof.claim).toBe(claim);
@@ -35,16 +35,16 @@ describe('Decentralization Service - SSI Pilot', () => {
       const userId = 'user456';
       const claim = 'verified_email';
       const secretData = 'user@example.com';
-      
+
       const proof = generateZKProof(userId, claim, secretData);
       const isValid = verifyZKProof(proof.id);
-      
+
       expect(isValid).toBe(true);
     });
 
     it('should reject an invalid proof ID', () => {
       const isValid = verifyZKProof('invalid_proof_id');
-      
+
       expect(isValid).toBe(false);
     });
 
@@ -52,10 +52,10 @@ describe('Decentralization Service - SSI Pilot', () => {
       const userId = 'user789';
       const claim = 'age_over_18';
       const secretData = '30';
-      
+
       const proof1 = generateZKProof(userId, claim, secretData);
       const proof2 = generateZKProof(userId, claim, secretData);
-      
+
       expect(proof1.id).not.toBe(proof2.id);
       expect(proof1.proof).not.toBe(proof2.proof);
     });
@@ -65,10 +65,13 @@ describe('Decentralization Service - SSI Pilot', () => {
     it('should store data in the vault with encryption', () => {
       const userId = 'user123';
       const dataType = 'identity';
-      const data = JSON.stringify({ name: 'John Doe', email: 'john@example.com' });
-      
+      const data = JSON.stringify({
+        name: 'John Doe',
+        email: 'john@example.com',
+      });
+
       const vaultEntry = storeInVault(userId, dataType, data);
-      
+
       expect(vaultEntry).toBeDefined();
       expect(vaultEntry.id).toMatch(/^vault_/);
       expect(vaultEntry.userId).toBe(userId);
@@ -84,10 +87,10 @@ describe('Decentralization Service - SSI Pilot', () => {
       const userId = 'user456';
       const dataType = 'credential';
       const originalData = 'sensitive credential data';
-      
+
       const vaultEntry = storeInVault(userId, dataType, originalData);
       const retrievedData = retrieveFromVault(vaultEntry.id, userId);
-      
+
       expect(retrievedData).toBe(originalData);
     });
 
@@ -95,33 +98,36 @@ describe('Decentralization Service - SSI Pilot', () => {
       const userId = 'user789';
       const unauthorizedUserId = 'user999';
       const data = 'private data';
-      
+
       const vaultEntry = storeInVault(userId, 'identity', data);
-      const retrievedData = retrieveFromVault(vaultEntry.id, unauthorizedUserId);
-      
+      const retrievedData = retrieveFromVault(
+        vaultEntry.id,
+        unauthorizedUserId
+      );
+
       expect(retrievedData).toBeNull();
     });
 
     it('should return null for non-existent vault entry', () => {
       const retrievedData = retrieveFromVault('invalid_entry_id', 'user123');
-      
+
       expect(retrievedData).toBeNull();
     });
 
     it('should track access metadata', () => {
       const userId = 'user123';
       const data = 'test data';
-      
+
       const vaultEntry = storeInVault(userId, 'test', data);
-      
+
       // Access the data multiple times
       retrieveFromVault(vaultEntry.id, userId);
       retrieveFromVault(vaultEntry.id, userId);
       retrieveFromVault(vaultEntry.id, userId);
-      
+
       const entries = getUserVaultEntries(userId);
-      const updatedEntry = entries.find(e => e.id === vaultEntry.id);
-      
+      const updatedEntry = entries.find((e) => e.id === vaultEntry.id);
+
       expect(updatedEntry?.metadata.accessCount).toBe(3);
       expect(updatedEntry?.metadata.lastAccessed).toBeDefined();
     });
@@ -132,9 +138,9 @@ describe('Decentralization Service - SSI Pilot', () => {
       const subject = 'user123';
       const type = 'EmailVerification';
       const claims = { verified: true, email: 'user@example.com' };
-      
+
       const credential = issueVerifiableCredential(subject, type, claims);
-      
+
       expect(credential).toBeDefined();
       expect(credential.id).toMatch(/^vc_/);
       expect(credential.type).toBe(type);
@@ -150,16 +156,16 @@ describe('Decentralization Service - SSI Pilot', () => {
       const subject = 'user456';
       const type = 'AgeVerification';
       const claims = { verified: true, age_over_18: true };
-      
+
       const credential = issueVerifiableCredential(subject, type, claims);
       const isValid = verifyCredential(credential.id);
-      
+
       expect(isValid).toBe(true);
     });
 
     it('should reject an invalid credential ID', () => {
       const isValid = verifyCredential('invalid_credential_id');
-      
+
       expect(isValid).toBe(false);
     });
 
@@ -168,9 +174,14 @@ describe('Decentralization Service - SSI Pilot', () => {
       const type = 'CustomCredential';
       const claims = { custom: 'data' };
       const issuer = 'custom-issuer-system';
-      
-      const credential = issueVerifiableCredential(subject, type, claims, issuer);
-      
+
+      const credential = issueVerifiableCredential(
+        subject,
+        type,
+        claims,
+        issuer
+      );
+
       expect(credential.issuer).toBe(issuer);
     });
   });
@@ -183,21 +194,23 @@ describe('Decentralization Service - SSI Pilot', () => {
         email: 'john@example.com',
         age: 25,
       };
-      
+
       const profile = createSSIProfile(userId, identityData);
-      
+
       expect(profile).toBeDefined();
       expect(profile.vaultEntry).toBeDefined();
       expect(profile.vaultEntry.userId).toBe(userId);
       expect(profile.zkProofs.length).toBeGreaterThan(0);
       expect(profile.credentials.length).toBeGreaterThan(0);
-      
+
       // Check for age proof
-      const ageProof = profile.zkProofs.find(p => p.claim === 'age_over_18');
+      const ageProof = profile.zkProofs.find((p) => p.claim === 'age_over_18');
       expect(ageProof).toBeDefined();
-      
+
       // Check for age credential
-      const ageCredential = profile.credentials.find(c => c.type === 'AgeVerification');
+      const ageCredential = profile.credentials.find(
+        (c) => c.type === 'AgeVerification'
+      );
       expect(ageCredential).toBeDefined();
       expect(ageCredential?.claims.verified).toBe(true);
     });
@@ -207,15 +220,19 @@ describe('Decentralization Service - SSI Pilot', () => {
       const identityData = {
         email: 'test@example.com',
       };
-      
+
       const profile = createSSIProfile(userId, identityData);
-      
+
       // Check for email proof
-      const emailProof = profile.zkProofs.find(p => p.claim === 'verified_email');
+      const emailProof = profile.zkProofs.find(
+        (p) => p.claim === 'verified_email'
+      );
       expect(emailProof).toBeDefined();
-      
+
       // Check for email credential
-      const emailCredential = profile.credentials.find(c => c.type === 'EmailVerification');
+      const emailCredential = profile.credentials.find(
+        (c) => c.type === 'EmailVerification'
+      );
       expect(emailCredential).toBeDefined();
       expect(emailCredential?.claims.verified).toBe(true);
       expect(emailCredential?.claims.domain).toBe('example.com');
@@ -228,12 +245,12 @@ describe('Decentralization Service - SSI Pilot', () => {
         email: 'jane@example.com',
         age: 30,
       };
-      
+
       createSSIProfile(userId, identityData);
       const entries = getUserVaultEntries(userId);
-      
+
       expect(entries.length).toBeGreaterThan(0);
-      expect(entries.every(e => e.userId === userId)).toBe(true);
+      expect(entries.every((e) => e.userId === userId)).toBe(true);
     });
 
     it('should retrieve proofs by claim type', () => {
@@ -241,12 +258,12 @@ describe('Decentralization Service - SSI Pilot', () => {
       const identityData = {
         age: 28,
       };
-      
+
       createSSIProfile(userId, identityData);
       const ageProofs = getProofsByClaim('age_over_18');
-      
+
       expect(ageProofs.length).toBeGreaterThan(0);
-      expect(ageProofs.every(p => p.claim === 'age_over_18')).toBe(true);
+      expect(ageProofs.every((p) => p.claim === 'age_over_18')).toBe(true);
     });
 
     it('should retrieve user credentials', () => {
@@ -255,12 +272,12 @@ describe('Decentralization Service - SSI Pilot', () => {
         email: 'user@example.com',
         age: 22,
       };
-      
+
       createSSIProfile(userId, identityData);
       const credentials = getUserCredentials(userId);
-      
+
       expect(credentials.length).toBeGreaterThan(0);
-      expect(credentials.every(c => c.subject === userId)).toBe(true);
+      expect(credentials.every((c) => c.subject === userId)).toBe(true);
     });
   });
 
@@ -269,9 +286,9 @@ describe('Decentralization Service - SSI Pilot', () => {
       // Create some test data
       createSSIProfile('user1', { email: 'user1@example.com', age: 25 });
       createSSIProfile('user2', { email: 'user2@example.com', age: 30 });
-      
+
       const stats = getSSIStats();
-      
+
       expect(stats).toBeDefined();
       expect(stats.totalVaultEntries).toBeGreaterThan(0);
       expect(stats.totalZKProofs).toBeGreaterThan(0);

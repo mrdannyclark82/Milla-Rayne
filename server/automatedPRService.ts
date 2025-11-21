@@ -1,6 +1,6 @@
 /**
  * Automated PR Creation Service
- * 
+ *
  * Automatically creates pull requests for approved features and improvements.
  */
 
@@ -28,7 +28,11 @@ export interface PRRequest {
 
 class AutomatedPRService {
   private prRequests: PRRequest[] = [];
-  private readonly PR_FILE = path.join(process.cwd(), 'memory', 'automated_prs.json');
+  private readonly PR_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'automated_prs.json'
+  );
 
   async initialize(): Promise<void> {
     await this.loadPRData();
@@ -61,7 +65,7 @@ class AutomatedPRService {
     await this.savePRData();
 
     // Start PR creation process asynchronously
-    this.processPRCreation(prRequest.id).catch(error => {
+    this.processPRCreation(prRequest.id).catch((error) => {
       console.error(`Failed to create PR ${prRequest.id}:`, error);
     });
 
@@ -72,7 +76,7 @@ class AutomatedPRService {
    * Process PR creation
    */
   private async processPRCreation(prId: string): Promise<void> {
-    const prRequest = this.prRequests.find(pr => pr.id === prId);
+    const prRequest = this.prRequests.find((pr) => pr.id === prId);
     if (!prRequest) {
       throw new Error('PR request not found');
     }
@@ -94,7 +98,11 @@ class AutomatedPRService {
       }
 
       // Commit changes to branch
-      await this.commitChangesToBranch(prRequest.branch, prRequest.files, prRequest.title);
+      await this.commitChangesToBranch(
+        prRequest.branch,
+        prRequest.files,
+        prRequest.title
+      );
 
       // Create PR using GitHub API
       const prData = await this.createGitHubPR({
@@ -107,11 +115,14 @@ class AutomatedPRService {
       prRequest.status = 'created';
       prRequest.prUrl = prData.url;
       prRequest.prNumber = prData.number;
-      
-      console.log(`✅ Successfully created PR #${prData.number}: ${prRequest.title}`);
+
+      console.log(
+        `✅ Successfully created PR #${prData.number}: ${prRequest.title}`
+      );
     } catch (error) {
       prRequest.status = 'failed';
-      prRequest.error = error instanceof Error ? error.message : 'Unknown error';
+      prRequest.error =
+        error instanceof Error ? error.message : 'Unknown error';
       console.error(`❌ Failed to create PR:`, error);
     }
 
@@ -123,7 +134,9 @@ class AutomatedPRService {
    */
   private async checkBranchExists(branchName: string): Promise<boolean> {
     try {
-      const { stdout } = await execAsync(`git rev-parse --verify ${branchName}`);
+      const { stdout } = await execAsync(
+        `git rev-parse --verify ${branchName}`
+      );
       return true;
     } catch {
       return false;
@@ -133,24 +146,33 @@ class AutomatedPRService {
   /**
    * Create a new git branch
    */
-  private async createBranch(branchName: string, baseBranch: string): Promise<void> {
+  private async createBranch(
+    branchName: string,
+    baseBranch: string
+  ): Promise<void> {
     try {
       // Fetch latest changes
       await execAsync('git fetch origin');
-      
+
       // Create and checkout new branch
       await execAsync(`git checkout -b ${branchName} origin/${baseBranch}`);
-      
+
       console.log(`Created branch: ${branchName}`);
     } catch (error) {
-      throw new Error(`Failed to create branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to create branch: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Commit changes to branch
    */
-  private async commitChangesToBranch(branchName: string, files: string[], commitMessage: string): Promise<void> {
+  private async commitChangesToBranch(
+    branchName: string,
+    files: string[],
+    commitMessage: string
+  ): Promise<void> {
     try {
       // Checkout the branch
       await execAsync(`git checkout ${branchName}`);
@@ -168,7 +190,9 @@ class AutomatedPRService {
 
       console.log(`Committed and pushed changes to ${branchName}`);
     } catch (error) {
-      throw new Error(`Failed to commit changes: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to commit changes: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -187,7 +211,9 @@ class AutomatedPRService {
     }
 
     // Extract owner and repo from git remote
-    const { stdout: remoteUrl } = await execAsync('git config --get remote.origin.url');
+    const { stdout: remoteUrl } = await execAsync(
+      'git config --get remote.origin.url'
+    );
     const match = remoteUrl.match(/github\.com[:/](.+?)\/(.+?)(\.git)?$/);
     if (!match) {
       throw new Error('Could not parse GitHub repository information');
@@ -196,20 +222,23 @@ class AutomatedPRService {
     const [, owner, repo] = match;
 
     // Create PR using GitHub API
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `token ${githubToken}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: params.title,
-        body: params.body,
-        head: params.head,
-        base: params.base,
-      }),
-    });
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/pulls`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `token ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: params.title,
+          body: params.body,
+          head: params.head,
+          base: params.base,
+        }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.text();
@@ -234,14 +263,14 @@ class AutomatedPRService {
    * Get PR request by ID
    */
   getPRRequest(prId: string): PRRequest | undefined {
-    return this.prRequests.find(pr => pr.id === prId);
+    return this.prRequests.find((pr) => pr.id === prId);
   }
 
   /**
    * Get PR requests by status
    */
   getPRRequestsByStatus(status: PRRequest['status']): PRRequest[] {
-    return this.prRequests.filter(pr => pr.status === status);
+    return this.prRequests.filter((pr) => pr.status === status);
   }
 
   /**
@@ -250,13 +279,16 @@ class AutomatedPRService {
   getPRStatistics() {
     return {
       total: this.prRequests.length,
-      pending: this.prRequests.filter(pr => pr.status === 'pending').length,
-      creating: this.prRequests.filter(pr => pr.status === 'creating').length,
-      created: this.prRequests.filter(pr => pr.status === 'created').length,
-      failed: this.prRequests.filter(pr => pr.status === 'failed').length,
-      successRate: this.prRequests.length > 0
-        ? (this.prRequests.filter(pr => pr.status === 'created').length / this.prRequests.length) * 100
-        : 0,
+      pending: this.prRequests.filter((pr) => pr.status === 'pending').length,
+      creating: this.prRequests.filter((pr) => pr.status === 'creating').length,
+      created: this.prRequests.filter((pr) => pr.status === 'created').length,
+      failed: this.prRequests.filter((pr) => pr.status === 'failed').length,
+      successRate:
+        this.prRequests.length > 0
+          ? (this.prRequests.filter((pr) => pr.status === 'created').length /
+              this.prRequests.length) *
+            100
+          : 0,
     };
   }
 
@@ -277,7 +309,10 @@ class AutomatedPRService {
    */
   private async savePRData(): Promise<void> {
     try {
-      await fs.writeFile(this.PR_FILE, JSON.stringify(this.prRequests, null, 2));
+      await fs.writeFile(
+        this.PR_FILE,
+        JSON.stringify(this.prRequests, null, 2)
+      );
     } catch (error) {
       console.error('Error saving PR data:', error);
     }
@@ -309,7 +344,9 @@ export function getPRRequest(prId: string): PRRequest | undefined {
   return prService.getPRRequest(prId);
 }
 
-export function getPRRequestsByStatus(status: PRRequest['status']): PRRequest[] {
+export function getPRRequestsByStatus(
+  status: PRRequest['status']
+): PRRequest[] {
   return prService.getPRRequestsByStatus(status);
 }
 

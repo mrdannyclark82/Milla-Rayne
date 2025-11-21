@@ -29,6 +29,7 @@ The system now includes **Hugging Face MCP** for enhanced model interaction capa
 ### What is MCP?
 
 Model Context Protocol provides a standardized interface for interacting with AI models, offering:
+
 - **Unified API**: Consistent interface across different model types
 - **Advanced Features**: Text generation, image generation, model listing, and status checking
 - **Fallback Support**: Automatic fallback to direct API if MCP fails
@@ -52,6 +53,7 @@ Model Context Protocol provides a standardized interface for interacting with AI
 ### MCP Endpoints
 
 #### 1. Text Generation
+
 ```
 POST /api/mcp/text-generate
 Body: {
@@ -65,6 +67,7 @@ Body: {
 ```
 
 #### 2. Image Generation
+
 ```
 POST /api/mcp/image-generate
 Body: {
@@ -78,12 +81,14 @@ Body: {
 ```
 
 #### 3. List Models
+
 ```
 GET /api/mcp/models/:task
 Example: GET /api/mcp/models/text-to-image
 ```
 
 #### 4. Check Model Status
+
 ```
 GET /api/mcp/model-status/:modelId
 Example: GET /api/mcp/model-status/philipp-zettl%2FUnfilteredAI-NSFW-gen-v2
@@ -117,6 +122,7 @@ imageService.generateImage()
 ## Usage
 
 Users can request image generation with commands like:
+
 - "create an image of..."
 - "draw a picture of..."
 - "generate an image of..."
@@ -127,6 +133,7 @@ The system will automatically detect these patterns and generate the image using
 ## Parameters
 
 ### Image Generation Parameters
+
 - `num_inference_steps`: 30 (quality vs speed tradeoff)
 - `guidance_scale`: 7.5 (how closely to follow the prompt)
 - `negative_prompt`: Optional (what to avoid in the image)
@@ -134,6 +141,7 @@ The system will automatically detect these patterns and generate the image using
 - `height`: Optional (image height in pixels)
 
 ### Text Generation Parameters
+
 - `maxNewTokens`: 500 (maximum tokens to generate)
 - `temperature`: 0.7 (randomness, 0-1)
 - `topP`: 0.95 (nucleus sampling)
@@ -145,6 +153,7 @@ These can be adjusted when calling the API or in `server/huggingfaceMcpService.t
 ## Error Handling
 
 The service handles:
+
 - Missing API key (returns helpful error message)
 - Model loading delays (automatic retry with backoff)
 - API errors (detailed error messages)
@@ -183,6 +192,7 @@ Response messages maintain Milla's companion personality, ensuring all interacti
 ### Service Initialization
 
 The MCP service is initialized as a singleton on first use:
+
 ```typescript
 import { getHuggingFaceMCPService } from './huggingfaceMcpService';
 
@@ -214,17 +224,22 @@ curl http://localhost:5000/api/mcp/model-status/philipp-zettl%2FUnfilteredAI-NSF
 ## Troubleshooting
 
 ### MCP Service Not Available
+
 If you see "Hugging Face MCP service not configured":
+
 - Verify `HUGGINGFACE_API_KEY` is set in `.env`
 - Restart the server after adding the API key
 
 ### Image Generation Fails
+
 - Check if the model is loaded (may take 10-30 seconds on first request)
 - Verify your API key has the correct permissions
 - Check server logs for detailed error messages
 
 ### Fallback to Direct API
+
 If MCP consistently falls back to direct API:
+
 - This is normal behavior when MCP has issues
 - The service will still work via the fallback mechanism
 - Check logs for MCP-specific errors

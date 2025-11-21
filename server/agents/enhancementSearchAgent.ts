@@ -4,7 +4,10 @@ import fs from 'fs/promises';
 
 class EnhancementSearchAgent extends BaseAgent {
   constructor() {
-    super('enhancement', 'An agent that searches for potential enhancements for the Milla Rayne project.');
+    super(
+      'enhancement',
+      'An agent that searches for potential enhancements for the Milla Rayne project.'
+    );
   }
 
   protected async executeInternal(task: string): Promise<string> {

@@ -1,6 +1,6 @@
 /**
  * User Interaction Analytics Service
- * 
+ *
  * Tracks user interactions, analyzes patterns, and identifies areas for improvement.
  * This service measures Milla's success based on user engagement and interaction quality.
  */
@@ -55,7 +55,11 @@ class UserInteractionAnalyticsService {
   private interactions: UserInteraction[] = [];
   private patterns: Map<string, InteractionPattern> = new Map();
   private suggestions: ImprovementSuggestion[] = [];
-  private readonly ANALYTICS_FILE = path.join(process.cwd(), 'memory', 'user_analytics.json');
+  private readonly ANALYTICS_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'user_analytics.json'
+  );
   private readonly MAX_INTERACTIONS_STORED = 10000;
 
   async initialize(): Promise<void> {
@@ -66,7 +70,9 @@ class UserInteractionAnalyticsService {
   /**
    * Track a new user interaction
    */
-  async trackInteraction(interaction: Omit<UserInteraction, 'id' | 'timestamp'>): Promise<void> {
+  async trackInteraction(
+    interaction: Omit<UserInteraction, 'id' | 'timestamp'>
+  ): Promise<void> {
     const newInteraction: UserInteraction = {
       ...interaction,
       id: `int_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -77,7 +83,9 @@ class UserInteractionAnalyticsService {
 
     // Keep only recent interactions to prevent memory bloat
     if (this.interactions.length > this.MAX_INTERACTIONS_STORED) {
-      this.interactions = this.interactions.slice(-this.MAX_INTERACTIONS_STORED);
+      this.interactions = this.interactions.slice(
+        -this.MAX_INTERACTIONS_STORED
+      );
     }
 
     // Update patterns
@@ -103,17 +111,25 @@ class UserInteractionAnalyticsService {
 
     if (existing) {
       existing.usageCount++;
-      existing.successRate = ((existing.successRate * (existing.usageCount - 1)) + (interaction.success ? 1 : 0)) / existing.usageCount;
-      
+      existing.successRate =
+        (existing.successRate * (existing.usageCount - 1) +
+          (interaction.success ? 1 : 0)) /
+        existing.usageCount;
+
       if (interaction.duration) {
-        existing.averageDuration = ((existing.averageDuration * (existing.usageCount - 1)) + interaction.duration) / existing.usageCount;
+        existing.averageDuration =
+          (existing.averageDuration * (existing.usageCount - 1) +
+            interaction.duration) /
+          existing.usageCount;
       }
-      
+
       if (interaction.userSatisfaction) {
         const prevAvg = existing.userSatisfactionAvg || 3;
-        existing.userSatisfactionAvg = ((prevAvg * (existing.usageCount - 1)) + interaction.userSatisfaction) / existing.usageCount;
+        existing.userSatisfactionAvg =
+          (prevAvg * (existing.usageCount - 1) + interaction.userSatisfaction) /
+          existing.usageCount;
       }
-      
+
       existing.lastUsed = interaction.timestamp;
     } else {
       this.patterns.set(feature, {
@@ -132,14 +148,17 @@ class UserInteractionAnalyticsService {
    */
   private async analyzeForImprovements(): Promise<void> {
     const recentInteractions = this.interactions.slice(-100);
-    
+
     // Identify features with low success rates
     for (const [feature, pattern] of this.patterns.entries()) {
       if (pattern.successRate < 0.7 && pattern.usageCount > 5) {
         const existingSuggestion = this.suggestions.find(
-          s => s.type === 'bug_fix' && s.description.includes(feature) && s.status !== 'completed'
+          (s) =>
+            s.type === 'bug_fix' &&
+            s.description.includes(feature) &&
+            s.status !== 'completed'
         );
-        
+
         if (!existingSuggestion) {
           this.suggestions.push({
             id: `sug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -147,8 +166,8 @@ class UserInteractionAnalyticsService {
             priority: pattern.successRate < 0.5 ? 'critical' : 'high',
             description: `Improve reliability of feature: ${feature} (current success rate: ${(pattern.successRate * 100).toFixed(1)}%)`,
             basedOnInteractions: recentInteractions
-              .filter(i => i.feature === feature && !i.success)
-              .map(i => i.id)
+              .filter((i) => i.feature === feature && !i.success)
+              .map((i) => i.id)
               .slice(-5),
             estimatedImpact: 10 - Math.floor(pattern.successRate * 10),
             createdAt: Date.now(),
@@ -160,9 +179,12 @@ class UserInteractionAnalyticsService {
       // Identify slow features
       if (pattern.averageDuration > 5000 && pattern.usageCount > 5) {
         const existingSuggestion = this.suggestions.find(
-          s => s.type === 'performance' && s.description.includes(feature) && s.status !== 'completed'
+          (s) =>
+            s.type === 'performance' &&
+            s.description.includes(feature) &&
+            s.status !== 'completed'
         );
-        
+
         if (!existingSuggestion) {
           this.suggestions.push({
             id: `sug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -170,10 +192,13 @@ class UserInteractionAnalyticsService {
             priority: pattern.averageDuration > 10000 ? 'high' : 'medium',
             description: `Optimize performance of feature: ${feature} (avg response time: ${(pattern.averageDuration / 1000).toFixed(2)}s)`,
             basedOnInteractions: recentInteractions
-              .filter(i => i.feature === feature)
-              .map(i => i.id)
+              .filter((i) => i.feature === feature)
+              .map((i) => i.id)
               .slice(-5),
-            estimatedImpact: Math.min(10, Math.floor(pattern.averageDuration / 1000)),
+            estimatedImpact: Math.min(
+              10,
+              Math.floor(pattern.averageDuration / 1000)
+            ),
             createdAt: Date.now(),
             status: 'identified',
           });
@@ -187,11 +212,18 @@ class UserInteractionAnalyticsService {
       .slice(0, 5);
 
     for (const pattern of topFeatures) {
-      if (pattern.userSatisfactionAvg && pattern.userSatisfactionAvg < 4 && pattern.usageCount > 10) {
+      if (
+        pattern.userSatisfactionAvg &&
+        pattern.userSatisfactionAvg < 4 &&
+        pattern.usageCount > 10
+      ) {
         const existingSuggestion = this.suggestions.find(
-          s => s.type === 'feature_enhancement' && s.description.includes(pattern.feature) && s.status !== 'completed'
+          (s) =>
+            s.type === 'feature_enhancement' &&
+            s.description.includes(pattern.feature) &&
+            s.status !== 'completed'
         );
-        
+
         if (!existingSuggestion) {
           this.suggestions.push({
             id: `sug_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -199,8 +231,8 @@ class UserInteractionAnalyticsService {
             priority: 'medium',
             description: `Enhance popular feature: ${pattern.feature} (user satisfaction: ${pattern.userSatisfactionAvg.toFixed(1)}/5)`,
             basedOnInteractions: recentInteractions
-              .filter(i => i.feature === pattern.feature)
-              .map(i => i.id)
+              .filter((i) => i.feature === pattern.feature)
+              .map((i) => i.id)
               .slice(-5),
             estimatedImpact: Math.floor((5 - pattern.userSatisfactionAvg) * 2),
             createdAt: Date.now(),
@@ -219,29 +251,45 @@ class UserInteractionAnalyticsService {
    */
   getSuccessMetrics(): MillaSuccessMetrics {
     const recentInteractions = this.interactions.slice(-1000);
-    const successfulInteractions = recentInteractions.filter(i => i.success).length;
+    const successfulInteractions = recentInteractions.filter(
+      (i) => i.success
+    ).length;
     const totalInteractions = recentInteractions.length;
-    
-    const avgResponseTime = recentInteractions
-      .filter(i => i.duration)
-      .reduce((sum, i) => sum + (i.duration || 0), 0) / recentInteractions.filter(i => i.duration).length || 0;
 
-    const userSatInteractions = recentInteractions.filter(i => i.userSatisfaction);
-    const userSatisfactionScore = userSatInteractions.length > 0
-      ? userSatInteractions.reduce((sum, i) => sum + (i.userSatisfaction || 0), 0) / userSatInteractions.length
-      : 0;
+    const avgResponseTime =
+      recentInteractions
+        .filter((i) => i.duration)
+        .reduce((sum, i) => sum + (i.duration || 0), 0) /
+        recentInteractions.filter((i) => i.duration).length || 0;
+
+    const userSatInteractions = recentInteractions.filter(
+      (i) => i.userSatisfaction
+    );
+    const userSatisfactionScore =
+      userSatInteractions.length > 0
+        ? userSatInteractions.reduce(
+            (sum, i) => sum + (i.userSatisfaction || 0),
+            0
+          ) / userSatInteractions.length
+        : 0;
 
     const featuresUsed = this.patterns.size;
-    const errorsEncountered = recentInteractions.filter(i => i.type === 'error').length;
-    const improvementsSuggested = this.suggestions.filter(s => s.status === 'identified').length;
-    const improvementsImplemented = this.suggestions.filter(s => s.status === 'completed').length;
+    const errorsEncountered = recentInteractions.filter(
+      (i) => i.type === 'error'
+    ).length;
+    const improvementsSuggested = this.suggestions.filter(
+      (s) => s.status === 'identified'
+    ).length;
+    const improvementsImplemented = this.suggestions.filter(
+      (s) => s.status === 'completed'
+    ).length;
 
     // Calculate engagement trend
     const oldInteractions = this.interactions.slice(-2000, -1000);
     const oldCount = oldInteractions.length;
     const newCount = recentInteractions.length;
     let userEngagementTrend: 'increasing' | 'stable' | 'decreasing' = 'stable';
-    
+
     if (newCount > oldCount * 1.1) {
       userEngagementTrend = 'increasing';
     } else if (newCount < oldCount * 0.9) {
@@ -265,28 +313,37 @@ class UserInteractionAnalyticsService {
    * Get interaction patterns
    */
   getInteractionPatterns(): InteractionPattern[] {
-    return Array.from(this.patterns.values())
-      .sort((a, b) => b.usageCount - a.usageCount);
+    return Array.from(this.patterns.values()).sort(
+      (a, b) => b.usageCount - a.usageCount
+    );
   }
 
   /**
    * Get improvement suggestions
    */
-  getImprovementSuggestions(status?: ImprovementSuggestion['status']): ImprovementSuggestion[] {
+  getImprovementSuggestions(
+    status?: ImprovementSuggestion['status']
+  ): ImprovementSuggestion[] {
     if (status) {
-      return this.suggestions.filter(s => s.status === status);
+      return this.suggestions.filter((s) => s.status === status);
     }
     return [...this.suggestions].sort((a, b) => {
       const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-      return priorityOrder[b.priority] - priorityOrder[a.priority] || b.estimatedImpact - a.estimatedImpact;
+      return (
+        priorityOrder[b.priority] - priorityOrder[a.priority] ||
+        b.estimatedImpact - a.estimatedImpact
+      );
     });
   }
 
   /**
    * Update suggestion status
    */
-  async updateSuggestionStatus(suggestionId: string, status: ImprovementSuggestion['status']): Promise<boolean> {
-    const suggestion = this.suggestions.find(s => s.id === suggestionId);
+  async updateSuggestionStatus(
+    suggestionId: string,
+    status: ImprovementSuggestion['status']
+  ): Promise<boolean> {
+    const suggestion = this.suggestions.find((s) => s.id === suggestionId);
     if (suggestion) {
       suggestion.status = status;
       await this.saveAnalytics();
@@ -304,7 +361,7 @@ class UserInteractionAnalyticsService {
       const parsed = JSON.parse(data);
       this.interactions = parsed.interactions || [];
       this.suggestions = parsed.suggestions || [];
-      
+
       // Rebuild patterns map
       if (parsed.patterns) {
         this.patterns = new Map(Object.entries(parsed.patterns));
@@ -340,7 +397,9 @@ export async function initializeUserAnalytics(): Promise<void> {
   await analyticsService.initialize();
 }
 
-export function trackUserInteraction(interaction: Omit<UserInteraction, 'id' | 'timestamp'>): Promise<void> {
+export function trackUserInteraction(
+  interaction: Omit<UserInteraction, 'id' | 'timestamp'>
+): Promise<void> {
   return analyticsService.trackInteraction(interaction);
 }
 
@@ -352,10 +411,15 @@ export function getInteractionPatterns(): InteractionPattern[] {
   return analyticsService.getInteractionPatterns();
 }
 
-export function getImprovementSuggestions(status?: ImprovementSuggestion['status']): ImprovementSuggestion[] {
+export function getImprovementSuggestions(
+  status?: ImprovementSuggestion['status']
+): ImprovementSuggestion[] {
   return analyticsService.getImprovementSuggestions(status);
 }
 
-export function updateSuggestionStatus(suggestionId: string, status: ImprovementSuggestion['status']): Promise<boolean> {
+export function updateSuggestionStatus(
+  suggestionId: string,
+  status: ImprovementSuggestion['status']
+): Promise<boolean> {
   return analyticsService.updateSuggestionStatus(suggestionId, status);
 }
