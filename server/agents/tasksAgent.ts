@@ -80,10 +80,7 @@ async function handleTask(task: AgentTask): Promise<any> {
 
     const parsed = schema.parse(payload || {});
 
-    const result = await completeTask(
-      parsed.userId || userId,
-      parsed.taskId
-    );
+    const result = await completeTask(parsed.userId || userId, parsed.taskId);
 
     if (!result.success) {
       throw new Error(result.error || result.message);

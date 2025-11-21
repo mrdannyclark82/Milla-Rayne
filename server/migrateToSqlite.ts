@@ -40,7 +40,9 @@ async function migrateMemories() {
     try {
       messages = JSON.parse(fileContent);
       if (!Array.isArray(messages)) {
-        console.warn('memories.txt parsed as JSON but is not an array — falling back to legacy parsing');
+        console.warn(
+          'memories.txt parsed as JSON but is not an array — falling back to legacy parsing'
+        );
         messages = null;
       }
     } catch (jsonErr) {
@@ -67,13 +69,20 @@ async function migrateMemories() {
 
       if (legacyMessages.length > 0) {
         messages = legacyMessages;
-        console.log(`Legacy parse: extracted ${legacyMessages.length} timestamped messages`);
+        console.log(
+          `Legacy parse: extracted ${legacyMessages.length} timestamped messages`
+        );
       } else {
         // As a last resort, split into chunks separated by two newlines and
         // treat each chunk as a message. This preserves as much content as possible.
-        const chunks = fileContent.split(/\n\s*\n+/).map((c) => c.trim()).filter(Boolean);
+        const chunks = fileContent
+          .split(/\n\s*\n+/)
+          .map((c) => c.trim())
+          .filter(Boolean);
         if (chunks.length === 0) {
-          console.error('memories.txt appears empty after trimming — nothing to migrate');
+          console.error(
+            'memories.txt appears empty after trimming — nothing to migrate'
+          );
           return;
         }
         messages = chunks.map((chunk) => ({
@@ -81,7 +90,9 @@ async function migrateMemories() {
           role: 'user',
           timestamp: new Date().toISOString(),
         }));
-        console.log(`Legacy parse: converted ${chunks.length} text chunks into messages`);
+        console.log(
+          `Legacy parse: converted ${chunks.length} text chunks into messages`
+        );
       }
     }
 
@@ -155,7 +166,8 @@ async function migrateMemories() {
           const r = String(msg.role).toLowerCase();
           if (r === 'assistant') return 'Milla';
           if (r === 'user') return 'Danny Ray';
-          if (r.includes('milla') || r.includes('danny') || r.includes('ray')) return msg.role;
+          if (r.includes('milla') || r.includes('danny') || r.includes('ray'))
+            return msg.role;
           return 'Danny Ray';
         })();
 

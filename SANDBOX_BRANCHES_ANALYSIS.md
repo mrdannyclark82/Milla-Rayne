@@ -5,6 +5,7 @@
 The repository contains **8 sandbox branches** in total:
 
 ### 1. sandbox/message-history_1762900870809
+
 - **Purpose**: Message history feature development
 - **Latest Commit**: 10d2e6e - "Merge pull request #191 from mrdannyclark82/copilot/integrate-zkp-decentralized-vault"
 - **Key Features**:
@@ -17,12 +18,14 @@ The repository contains **8 sandbox branches** in total:
   - Memory service enhancements
 
 ### 2. sandbox/real-time-chat_1762900867630
+
 - **Purpose**: Real-time chat functionality
 - **Latest Commit**: 10d2e6e (identical to message-history branch)
 - **Status**: **IDENTICAL to sandbox/message-history_1762900870809**
 - Both branches point to the same commit and have the same code
 
 ### 3. sandbox/test-sandbox_1762852736031
+
 - **Purpose**: Testing environment and stabilization
 - **Latest Commit**: aed8bc9 - "docs: add final stabilization & launch readiness completion summary"
 - **Key Features**:
@@ -34,7 +37,8 @@ The repository contains **8 sandbox branches** in total:
   - AI-powered code fix generation
   - Callback wrapper fixes
 
-### 4-9. sandbox/test-sandbox_1762974283374, _1762974384933, _1762974535101, _1762974668554, _1762974731646, _1762974860827
+### 4-9. sandbox/test-sandbox_1762974283374, \_1762974384933, \_1762974535101, \_1762974668554, \_1762974731646, \_1762974860827
+
 - **Purpose**: Multiple test sandbox instances
 - **Latest Commit**: a5d7e90 - "fix: replace OpenRouter Grok with OpenAI for GitHub repository analysis"
 - **Status**: **ALL IDENTICAL** - All point to the same commit as the main branch
@@ -43,9 +47,11 @@ The repository contains **8 sandbox branches** in total:
 ## Key Differences Between Branch Groups
 
 ### Group 1: Advanced Feature Branches
+
 **Branches**: sandbox/message-history_1762900870809, sandbox/real-time-chat_1762900867630
 
 **Differences from main** (~43 files changed, 18,474 insertions/deletions):
+
 - **Removed documentation files**:
   - DECENTRALIZATION_PERSONA_COMPLETE.md
   - FINAL_STABILIZATION_LAUNCH_COMPLETE.md
@@ -69,8 +75,8 @@ The repository contains **8 sandbox branches** in total:
   - server/repositoryAnalysisService.ts (updated)
 
 - **Test files removed**:
-  - server/__tests__/agentComms.test.ts
-  - server/__tests__/performance.test.ts
+  - server/**tests**/agentComms.test.ts
+  - server/**tests**/performance.test.ts
 
 - **Memory/data changes**:
   - memory/vector_store.json (removed)
@@ -79,17 +85,21 @@ The repository contains **8 sandbox branches** in total:
   - memory/feature_discovery.json (updated)
 
 ### Group 2: Stabilization Branch
+
 **Branch**: sandbox/test-sandbox_1762852736031
 
 **Differences from main** (~27 files changed, 14,707 insertions/deletions):
+
 - Similar to Group 1 but with fewer changes
 - Keeps some services that Group 1 removes
 - More focused on stabilization and cleanup
 
 ### Group 3: Base Testing Branches
-**Branches**: sandbox/test-sandbox_1762974283374, _1762974384933, _1762974535101, _1762974668554, _1762974731646, _1762974860827
+
+**Branches**: sandbox/test-sandbox_1762974283374, \_1762974384933, \_1762974535101, \_1762974668554, \_1762974731646, \_1762974860827
 
 **Differences from main**: **NONE**
+
 - All are identical to the main branch
 - Appear to be placeholder or test branches
 - Created at different timestamps (indicated by the numeric suffix)
@@ -97,6 +107,7 @@ The repository contains **8 sandbox branches** in total:
 ## Branch Purposes by Timestamp Pattern
 
 The numeric suffixes appear to be Unix timestamps (milliseconds since epoch):
+
 - **1762852736031**: November 11, 2025 09:18 UTC (oldest test-sandbox)
 - **1762900867630**: November 11, 2025 22:41 UTC (real-time-chat)
 - **1762900870809**: November 11, 2025 22:41 UTC (message-history)
@@ -109,12 +120,10 @@ The numeric suffixes appear to be Unix timestamps (milliseconds since epoch):
 
 ## Recommendations
 
-1. **Cleanup candidates**: 
+1. **Cleanup candidates**:
    - The 6 identical test-sandbox branches from mid-November can likely be deleted as they contain no unique changes
-   
 2. **Feature development active**:
    - sandbox/message-history_1762900870809 and sandbox/real-time-chat_1762900867630 are actively used and contain significant feature work
-   
 3. **Merge consideration**:
    - sandbox/test-sandbox_1762852736031 contains stabilization work that may be ready for review/merge
 

@@ -280,7 +280,8 @@ export async function reviewCodeWithGemini(
   if (!process.env.OPENROUTER_API_KEY) {
     return {
       success: false,
-      error: 'OpenRouter API key is not configured. Please set OPENROUTER_API_KEY in your environment.',
+      error:
+        'OpenRouter API key is not configured. Please set OPENROUTER_API_KEY in your environment.',
     };
   }
 
@@ -362,7 +363,7 @@ Provide your review in this JSON format:
     }
 
     const content = data.choices[0].message.content;
-    
+
     // Parse JSON response
     let review;
     try {
@@ -383,7 +384,10 @@ Provide your review in this JSON format:
     console.error('OpenRouter Gemini code review error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error during code review',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during code review',
     };
   }
 }
@@ -405,27 +409,27 @@ export function formatCodeReviewResponse(
 
   const { review } = result;
   let response = `## 💻 Code Review (${language || 'Code'})\n\n`;
-  
+
   response += `**Overall Score:** ${review.overallScore}/10\n\n`;
   response += `**Summary:** ${review.summary}\n\n`;
 
   if (review.positives && review.positives.length > 0) {
     response += `### ✨ What's Good:\n`;
-    review.positives.forEach(positive => {
+    review.positives.forEach((positive) => {
       response += `- ${positive}\n`;
     });
     response += `\n`;
   }
 
   if (review.issues && review.issues.length > 0) {
-    const critical = review.issues.filter(i => i.severity === 'critical');
-    const high = review.issues.filter(i => i.severity === 'high');
-    const medium = review.issues.filter(i => i.severity === 'medium');
-    const low = review.issues.filter(i => i.severity === 'low');
+    const critical = review.issues.filter((i) => i.severity === 'critical');
+    const high = review.issues.filter((i) => i.severity === 'high');
+    const medium = review.issues.filter((i) => i.severity === 'medium');
+    const low = review.issues.filter((i) => i.severity === 'low');
 
     if (critical.length > 0) {
       response += `### 🚨 Critical Issues:\n`;
-      critical.forEach(issue => {
+      critical.forEach((issue) => {
         response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
         response += `  💡 ${issue.suggestion}\n`;
       });
@@ -434,7 +438,7 @@ export function formatCodeReviewResponse(
 
     if (high.length > 0) {
       response += `### ⚠️ High Priority:\n`;
-      high.forEach(issue => {
+      high.forEach((issue) => {
         response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
         response += `  💡 ${issue.suggestion}\n`;
       });
@@ -443,7 +447,7 @@ export function formatCodeReviewResponse(
 
     if (medium.length > 0) {
       response += `### 📝 Medium Priority:\n`;
-      medium.forEach(issue => {
+      medium.forEach((issue) => {
         response += `- **${issue.type}**${issue.line ? ` (line ${issue.line})` : ''}: ${issue.description}\n`;
         response += `  💡 ${issue.suggestion}\n`;
       });
@@ -452,7 +456,7 @@ export function formatCodeReviewResponse(
 
     if (low.length > 0) {
       response += `### 💡 Suggestions:\n`;
-      low.forEach(issue => {
+      low.forEach((issue) => {
         response += `- ${issue.description} - ${issue.suggestion}\n`;
       });
     }
@@ -472,10 +476,14 @@ export async function generateCodeEmbedding(
   code: string,
   language?: string
 ): Promise<CodeEmbeddingResult> {
-  if (!process.env.OPENROUTER_GEMINI_API_KEY && !process.env.OPENROUTER_API_KEY) {
+  if (
+    !process.env.OPENROUTER_GEMINI_API_KEY &&
+    !process.env.OPENROUTER_API_KEY
+  ) {
     return {
       success: false,
-      error: 'OpenRouter API key is not configured. Please set OPENROUTER_GEMINI_API_KEY or OPENROUTER_API_KEY in your environment.',
+      error:
+        'OpenRouter API key is not configured. Please set OPENROUTER_GEMINI_API_KEY or OPENROUTER_API_KEY in your environment.',
     };
   }
 
@@ -483,25 +491,26 @@ export async function generateCodeEmbedding(
     // Prepare the code with language context
     const input = language ? `${language}:\n${code}` : code;
 
-    const response = await fetch(
-      'https://openrouter.ai/api/v1/embeddings',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY}`,
-          'Content-Type': 'application/json',
-          'X-Title': 'Milla Rayne AI Assistant - Code Embeddings',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-embedding-001',
-          input: input,
-        }),
-      }
-    );
+    const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_GEMINI_API_KEY || process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'X-Title': 'Milla Rayne AI Assistant - Code Embeddings',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-embedding-001',
+        input: input,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('OpenRouter Gemini embedding API error:', response.status, errorData);
+      console.error(
+        'OpenRouter Gemini embedding API error:',
+        response.status,
+        errorData
+      );
 
       return {
         success: false,
@@ -527,7 +536,10 @@ export async function generateCodeEmbedding(
     console.error('OpenRouter Gemini embedding error:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error during embedding generation',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during embedding generation',
     };
   }
 }
@@ -574,24 +586,28 @@ export async function findSimilarCode(
 ): Promise<Array<{ code: string; similarity: number; metadata?: any }>> {
   // Generate embedding for query code
   const queryEmbeddingResult = await generateCodeEmbedding(queryCode, language);
-  
+
   if (!queryEmbeddingResult.success || !queryEmbeddingResult.embedding) {
-    console.error('Failed to generate query embedding:', queryEmbeddingResult.error);
+    console.error(
+      'Failed to generate query embedding:',
+      queryEmbeddingResult.error
+    );
     return [];
   }
 
   // Generate embeddings for all code in collection and calculate similarities
-  const results: Array<{ code: string; similarity: number; metadata?: any }> = [];
+  const results: Array<{ code: string; similarity: number; metadata?: any }> =
+    [];
 
   for (const item of codeCollection) {
     const embeddingResult = await generateCodeEmbedding(item.code, language);
-    
+
     if (embeddingResult.success && embeddingResult.embedding) {
       const similarity = calculateCodeSimilarity(
         queryEmbeddingResult.embedding,
         embeddingResult.embedding
       );
-      
+
       results.push({
         code: item.code,
         similarity,
@@ -601,9 +617,5 @@ export async function findSimilarCode(
   }
 
   // Sort by similarity (highest first) and return top K
-  return results
-    .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, topK);
+  return results.sort((a, b) => b.similarity - a.similarity).slice(0, topK);
 }
-
-

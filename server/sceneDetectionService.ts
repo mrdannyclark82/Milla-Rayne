@@ -356,14 +356,14 @@ export function getSceneContextSettings(sceneContext: SceneContext): string {
 /**
  * Projected user state based on sensor data
  */
-export type ProjectedState = 
-  | 'active'      // High motion, moving around
-  | 'working'     // At desk, moderate activity
-  | 'relaxing'    // Low motion, settled
-  | 'sleeping'    // Minimal motion, night time
-  | 'away'        // No presence detected
-  | 'exercising'  // High motion + elevated heart rate
-  | 'cooking'     // Kitchen location + activity
+export type ProjectedState =
+  | 'active' // High motion, moving around
+  | 'working' // At desk, moderate activity
+  | 'relaxing' // Low motion, settled
+  | 'sleeping' // Minimal motion, night time
+  | 'away' // No presence detected
+  | 'exercising' // High motion + elevated heart rate
+  | 'cooking' // Kitchen location + activity
   | 'unknown';
 
 export interface ProjectedStateContext {
@@ -381,10 +381,10 @@ export interface ProjectedStateContext {
 /**
  * P3.2: Infer user's projected state from sensor data
  * Maps raw sensor readings to meaningful activity states
- * 
+ *
  * @param sensorData - Raw sensor data from mobile/smart home
  * @returns Projected state with confidence and context
- * 
+ *
  * STUB: Uses simple heuristics - in production would use ML model
  */
 export function inferProjectedState(
@@ -393,23 +393,23 @@ export function inferProjectedState(
   const factors: string[] = [];
   let state: ProjectedState = 'unknown';
   let confidence = 0.5;
-  
+
   // Analyze motion patterns
   const motion = sensorData.motion?.detected || false;
   const motionLevel = sensorData.motion?.level || 0;
-  
+
   // Analyze location
   const location = sensorData.location || 'unknown';
-  
+
   // Analyze time of day
   const hour = new Date().getHours();
   const isNight = hour >= 22 || hour < 6;
   const isMorning = hour >= 6 && hour < 10;
   const isEvening = hour >= 18 && hour < 22;
-  
+
   // STUB: Simple rule-based inference
   // TODO: Replace with ML model trained on user patterns
-  
+
   if (!motion && isNight) {
     state = 'sleeping';
     confidence = 0.9;
@@ -439,10 +439,10 @@ export function inferProjectedState(
     confidence = 0.85;
     factors.push('No presence detected', 'No motion');
   }
-  
+
   // Suggest scene adjustments based on state
   let suggestedSceneAdjustment;
-  
+
   switch (state) {
     case 'sleeping':
       suggestedSceneAdjustment = {
@@ -473,10 +473,12 @@ export function inferProjectedState(
       };
       break;
   }
-  
-  console.log(`🔮 [Scene] Inferred state: ${state} (${(confidence * 100).toFixed(0)}% confidence)`);
+
+  console.log(
+    `🔮 [Scene] Inferred state: ${state} (${(confidence * 100).toFixed(0)}% confidence)`
+  );
   console.log(`🔮 [Scene] Factors: ${factors.join(', ')}`);
-  
+
   return {
     state,
     confidence,
@@ -495,13 +497,13 @@ export function startProjectedStateMonitoring(
   intervalMs: number = 30000 // Check every 30 seconds
 ): NodeJS.Timeout {
   console.log('🔮 [Scene] Starting projected state monitoring');
-  
+
   const interval = setInterval(async () => {
     try {
       // Get current sensor data
       const { getSmartHomeSensorData } = await import('./smartHomeService');
       const sensorData = await getSmartHomeSensorData();
-      
+
       if (sensorData) {
         const projectedState = inferProjectedState(sensorData);
         callback(projectedState);
@@ -510,7 +512,7 @@ export function startProjectedStateMonitoring(
       console.error('Error in projected state monitoring:', error);
     }
   }, intervalMs);
-  
+
   return interval;
 }
 
@@ -521,4 +523,3 @@ export function stopProjectedStateMonitoring(interval: NodeJS.Timeout): void {
   clearInterval(interval);
   console.log('🔮 [Scene] Stopped projected state monitoring');
 }
-

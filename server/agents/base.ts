@@ -32,7 +32,7 @@ export abstract class BaseAgent implements Agent {
   public readonly name: string;
   public readonly description: string;
   protected logs: string[] = [];
-  
+
   constructor(name: string, description: string) {
     this.name = name;
     this.description = description;
@@ -41,11 +41,14 @@ export abstract class BaseAgent implements Agent {
   /**
    * Protected logging method for agent operations
    */
-  protected log(message: string, level: 'info' | 'warn' | 'error' = 'info'): void {
+  protected log(
+    message: string,
+    level: 'info' | 'warn' | 'error' = 'info'
+  ): void {
     const timestamp = new Date().toISOString();
     const logEntry = `[${timestamp}] [${this.name}] [${level.toUpperCase()}] ${message}`;
     this.logs.push(logEntry);
-    
+
     // Also log to console with appropriate level
     switch (level) {
       case 'error':
@@ -66,7 +69,7 @@ export abstract class BaseAgent implements Agent {
     const errorMessage = `Error in ${context}: ${error.message}`;
     this.log(errorMessage, 'error');
     this.log(`Stack trace: ${error.stack}`, 'error');
-    
+
     return {
       success: false,
       error: errorMessage,
@@ -96,7 +99,7 @@ export abstract class BaseAgent implements Agent {
     const startTime = Date.now();
     this.clearLogs();
     this.log(`Starting execution for task: ${task.substring(0, 100)}...`);
-    
+
     try {
       const result = await this.executeInternal(task);
       const executionTime = Date.now() - startTime;
@@ -105,7 +108,7 @@ export abstract class BaseAgent implements Agent {
     } catch (error) {
       const executionTime = Date.now() - startTime;
       this.log(`Execution failed after ${executionTime}ms`, 'error');
-      
+
       // P2.4: Report failure to SCPA for self-correction
       try {
         const { reportAgentFailure } = await import('../metacognitiveService');
@@ -118,7 +121,7 @@ export abstract class BaseAgent implements Agent {
       } catch (reportError) {
         console.error('Failed to report agent failure to SCPA:', reportError);
       }
-      
+
       throw error;
     }
   }

@@ -210,14 +210,21 @@ export class SqliteStorage implements IStorage {
     // column is present. SQLite doesn't support DROP COLUMN easily, but ADD COLUMN
     // is supported and harmless if the column already exists.
     try {
-      const msgCols = this.db.prepare("PRAGMA table_info('messages')").all() as { name: string }[];
+      const msgCols = this.db
+        .prepare("PRAGMA table_info('messages')")
+        .all() as { name: string }[];
       const hasDisplayRole = msgCols.some((c) => c.name === 'display_role');
       if (!hasDisplayRole) {
-        console.log('sqlite: migrating messages table to add display_role column');
+        console.log(
+          'sqlite: migrating messages table to add display_role column'
+        );
         this.db.exec(`ALTER TABLE messages ADD COLUMN display_role TEXT`);
       }
     } catch (err) {
-      console.warn('sqlite: warning while ensuring messages.display_role column', err);
+      console.warn(
+        'sqlite: warning while ensuring messages.display_role column',
+        err
+      );
     }
 
     // Create sessions table for tracking conversation sessions
@@ -1379,27 +1386,27 @@ export class SqliteStorage implements IStorage {
   // ========================================================================
   // P3.4: CRDT (Conflict-free Replicated Data Type) Placeholder
   // ========================================================================
-  
+
   /**
    * P3.4: Merge operation for CRDT-based distributed synchronization
-   * 
+   *
    * This is where CRDT logic would be implemented for decentralized
    * data synchronization across multiple devices without conflicts.
-   * 
+   *
    * CRDT Types to Consider:
    * - LWW (Last-Write-Wins) Register: For simple fields with timestamps
    * - OR-Set (Observed-Remove Set): For add/remove collections
    * - G-Counter: For increment-only counters
    * - PN-Counter: For increment/decrement counters
    * - RGA (Replicated Growable Array): For ordered lists
-   * 
+   *
    * Implementation Steps (TODO):
    * 1. Add vector clock or Lamport timestamp to each record
    * 2. Track operation history with causality
    * 3. Implement merge function for each data type
    * 4. Handle concurrent updates deterministically
    * 5. Propagate changes to other replicas
-   * 
+   *
    * Example Schema Changes Needed:
    * ```sql
    * ALTER TABLE messages ADD COLUMN vector_clock TEXT;
@@ -1415,7 +1422,7 @@ export class SqliteStorage implements IStorage {
    *   timestamp INTEGER
    * );
    * ```
-   * 
+   *
    * @param localData - Data from this device
    * @param remoteData - Data from remote device
    * @returns Merged data with conflicts resolved
@@ -1424,21 +1431,21 @@ export class SqliteStorage implements IStorage {
     console.log('📡 [CRDT] Merge operation called (STUB)');
     console.log('📡 [CRDT] Local entries:', Object.keys(localData).length);
     console.log('📡 [CRDT] Remote entries:', Object.keys(remoteData).length);
-    
+
     // STUB: In production, implement actual CRDT merge logic
     // For now, return a simple last-write-wins merge
-    
+
     const merged = { ...localData };
-    
+
     for (const [key, remoteValue] of Object.entries(remoteData)) {
       const localValue = localData[key];
-      
+
       // TODO: Replace with proper CRDT merge based on type
       // - For LWW: Compare timestamps, keep newer
       // - For OR-Set: Union of additions, apply removals
       // - For Counters: Sum increments, handle decrements
       // - For RGA: Merge ordered lists preserving causality
-      
+
       if (!localValue) {
         // New entry from remote
         merged[key] = remoteValue;
@@ -1452,11 +1459,15 @@ export class SqliteStorage implements IStorage {
         console.log(`📡 [CRDT] Kept local entry: ${key}`);
       }
     }
-    
-    console.log('📡 [CRDT] Merge complete:', Object.keys(merged).length, 'entries');
+
+    console.log(
+      '📡 [CRDT] Merge complete:',
+      Object.keys(merged).length,
+      'entries'
+    );
     return merged;
   }
-  
+
   /**
    * P3.4: Helper to determine if remote value should be kept (STUB)
    * In production, would use vector clocks or Lamport timestamps
@@ -1464,15 +1475,16 @@ export class SqliteStorage implements IStorage {
   private shouldKeepRemoteValue(localValue: any, remoteValue: any): boolean {
     // STUB: Simple timestamp comparison
     // TODO: Implement proper causality checking with vector clocks
-    
+
     const localTimestamp = localValue.timestamp || localValue.updated_at || 0;
-    const remoteTimestamp = remoteValue.timestamp || remoteValue.updated_at || 0;
-    
+    const remoteTimestamp =
+      remoteValue.timestamp || remoteValue.updated_at || 0;
+
     // LWW (Last-Write-Wins) strategy
     if (remoteTimestamp > localTimestamp) {
       return true;
     }
-    
+
     // If timestamps equal, use deterministic tie-breaking
     // (e.g., higher site_id wins)
     if (remoteTimestamp === localTimestamp) {
@@ -1480,17 +1492,19 @@ export class SqliteStorage implements IStorage {
       const remoteSiteId = remoteValue.site_id || '';
       return remoteSiteId > localSiteId;
     }
-    
+
     return false;
   }
-  
+
   /**
    * P3.4: Sync state with remote replica (STUB)
    * Would be called periodically or on connection to sync devices
    */
-  async syncWithReplica(replicaUrl: string): Promise<{ success: boolean; synced: number }> {
+  async syncWithReplica(
+    replicaUrl: string
+  ): Promise<{ success: boolean; synced: number }> {
     console.log(`📡 [CRDT] Syncing with replica: ${replicaUrl} (STUB)`);
-    
+
     // TODO: Implement actual sync protocol
     // 1. Get local vector clock
     // 2. Send to remote replica
@@ -1498,7 +1512,7 @@ export class SqliteStorage implements IStorage {
     // 4. Apply CRDT merge for each operation
     // 5. Send local operations that remote is missing
     // 6. Update vector clock
-    
+
     // STUB: Return mock success
     return {
       success: true,
@@ -1506,4 +1520,3 @@ export class SqliteStorage implements IStorage {
     };
   }
 }
-

@@ -1,6 +1,6 @@
 /**
  * Metacognitive Service
- * 
+ *
  * This service implements a meta-agent that monitors long-running task results
  * against the user's high-level goals and injects feedback to prevent "goal drift"
  * or misaligned execution.
@@ -33,7 +33,7 @@ export interface TaskAlignment {
 
 /**
  * Monitor task alignment with user's long-term goals
- * 
+ *
  * @param task - The agent task to monitor
  * @returns FeedbackCommand if misalignment detected, null otherwise
  */
@@ -44,38 +44,46 @@ export async function monitorTaskAlignment(
     // Get user profile with goals
     const userId = task.metadata?.userId || 'default-user';
     const profile = await getProfile(userId);
-    
+
     // If no profile or insufficient data, skip alignment check
     if (!profile || !profile.interests || profile.interests.length === 0) {
-      console.log('[Metacognitive] Insufficient user profile data for alignment check');
+      console.log(
+        '[Metacognitive] Insufficient user profile data for alignment check'
+      );
       return null;
     }
-    
+
     // Only check tasks that are in progress or completed
     if (!task.status || !['in_progress', 'completed'].includes(task.status)) {
       return null;
     }
-    
+
     // Construct prompt for LLM to assess alignment
     const alignmentPrompt = buildAlignmentPrompt(task, profile);
-    
+
     // Call LLM to assess alignment
     const response = await generateGeminiResponse(alignmentPrompt);
-    
+
     if (!response.success) {
-      console.error('[Metacognitive] Failed to assess alignment:', response.error);
+      console.error(
+        '[Metacognitive] Failed to assess alignment:',
+        response.error
+      );
       return null;
     }
-    
+
     // Parse the LLM response to extract alignment assessment
     const alignment = parseAlignmentResponse(response.content);
-    
+
     // Return feedback if misalignment detected
     if (!alignment.aligned && alignment.feedback) {
-      console.log('[Metacognitive] Misalignment detected:', alignment.feedback.message);
+      console.log(
+        '[Metacognitive] Misalignment detected:',
+        alignment.feedback.message
+      );
       return alignment.feedback;
     }
-    
+
     return null;
   } catch (error) {
     console.error('[Metacognitive] Error monitoring task alignment:', error);
@@ -88,7 +96,7 @@ export async function monitorTaskAlignment(
  */
 function buildAlignmentPrompt(task: AgentTask, profile: UserProfile): string {
   const userGoals = extractUserGoals(profile);
-  
+
   return `You are a metacognitive agent monitoring task execution for alignment with user goals.
 
 USER PROFILE:
@@ -137,7 +145,7 @@ function extractUserGoals(profile: UserProfile): string {
   const prefs = Object.entries(profile.preferences || {})
     .map(([key, value]) => `${key}: ${value}`)
     .join(', ');
-  
+
   return prefs ? `${interests}. Preferences: ${prefs}` : interests;
 }
 
@@ -156,20 +164,23 @@ function parseAlignmentResponse(response: string): TaskAlignment {
         analysis: response,
       };
     }
-    
+
     const parsed = JSON.parse(jsonMatch[0]);
-    
+
     return {
       aligned: parsed.aligned !== false,
       confidence: parsed.confidence || 0.5,
       analysis: parsed.reasoning || response,
-      feedback: parsed.feedback ? {
-        type: parsed.feedback.type || 'warning',
-        message: parsed.feedback.message || 'Potential misalignment detected',
-        suggestedAction: parsed.feedback.suggestedAction,
-        confidence: parsed.feedback.confidence || 0.5,
-        reasoning: parsed.reasoning || '',
-      } : undefined,
+      feedback: parsed.feedback
+        ? {
+            type: parsed.feedback.type || 'warning',
+            message:
+              parsed.feedback.message || 'Potential misalignment detected',
+            suggestedAction: parsed.feedback.suggestedAction,
+            confidence: parsed.feedback.confidence || 0.5,
+            reasoning: parsed.reasoning || '',
+          }
+        : undefined,
     };
   } catch (error) {
     console.error('[Metacognitive] Error parsing alignment response:', error);
@@ -225,7 +236,7 @@ const scpaQueue: AgentFailureContext[] = [];
 /**
  * P2.4: Report agent failure to metacognitive service for SCPA processing
  * Routes critical failures to the coding agent for self-correction
- * 
+ *
  * @param error - The error that occurred
  * @param context - Context about the failure (agent, task, etc.)
  * @returns Promise that resolves when failure is queued for processing
@@ -236,7 +247,7 @@ export async function reportAgentFailure(
 ): Promise<void> {
   const errorMessage = error instanceof Error ? error.message : error;
   const stackTrace = error instanceof Error ? error.stack : undefined;
-  
+
   const failureContext: AgentFailureContext = {
     agentName: context.agentName || 'unknown',
     taskId: context.taskId || `task_${Date.now()}`,
@@ -247,31 +258,38 @@ export async function reportAgentFailure(
     stackTrace,
     previousAttempts: context.previousAttempts || [],
   };
-  
-  console.error(`🚨 [SCPA] Agent failure reported: ${failureContext.agentName}`);
+
+  console.error(
+    `🚨 [SCPA] Agent failure reported: ${failureContext.agentName}`
+  );
   console.error(`🚨 [SCPA] Error: ${errorMessage}`);
   console.error(`🚨 [SCPA] Task ID: ${failureContext.taskId}`);
-  
+
   // Add to SCPA queue for processing
   scpaQueue.push(failureContext);
-  
+
   // TODO: In production, implement priority queue based on:
   // - Severity of error
   // - Number of attempts
   // - Impact on user experience
   // - Time since last failure
-  
+
   // Log for monitoring
-  console.log(`🔧 [SCPA] Failure queued for self-correction (queue size: ${scpaQueue.length})`);
-  
+  console.log(
+    `🔧 [SCPA] Failure queued for self-correction (queue size: ${scpaQueue.length})`
+  );
+
   // Check if this is a critical/recurring failure
-  const isCritical = failureContext.attemptCount > 2 || 
-                    errorMessage.includes('critical') ||
-                    errorMessage.includes('fatal');
-  
+  const isCritical =
+    failureContext.attemptCount > 2 ||
+    errorMessage.includes('critical') ||
+    errorMessage.includes('fatal');
+
   if (isCritical) {
-    console.error(`🚨 [SCPA] CRITICAL failure detected - immediate attention required`);
-    
+    console.error(
+      `🚨 [SCPA] CRITICAL failure detected - immediate attention required`
+    );
+
     // TODO: In production:
     // 1. Trigger immediate notification to admin
     // 2. Create high-priority task for coding agent
@@ -279,12 +297,12 @@ export async function reportAgentFailure(
     // await notifyAdminCriticalFailure(failureContext);
     // await createUrgentFixTask(failureContext);
   }
-  
+
   // Enqueue task for coding agent to generate fix
   try {
     const { addTask } = await import('./agents/taskStorage');
     const { v4: uuidv4 } = await import('uuid');
-    
+
     const fixTaskId = uuidv4();
     await addTask({
       id: fixTaskId,
@@ -299,7 +317,7 @@ export async function reportAgentFailure(
         attemptCount: failureContext.attemptCount,
       },
     });
-    
+
     console.log(`✅ [SCPA] Fix task created for coding agent: ${fixTaskId}`);
   } catch (taskError) {
     console.error(`❌ [SCPA] Failed to create fix task:`, taskError);
@@ -316,14 +334,17 @@ export function getSCPAQueueStatus(): {
 } {
   const now = Date.now();
   const criticalFailures = scpaQueue.filter(
-    f => f.attemptCount > 2 || 
-    (typeof f.error === 'string' && (f.error.includes('critical') || f.error.includes('fatal')))
+    (f) =>
+      f.attemptCount > 2 ||
+      (typeof f.error === 'string' &&
+        (f.error.includes('critical') || f.error.includes('fatal')))
   ).length;
-  
-  const oldestTimestamp = scpaQueue.length > 0 
-    ? Math.min(...scpaQueue.map(f => f.timestamp))
-    : null;
-  
+
+  const oldestTimestamp =
+    scpaQueue.length > 0
+      ? Math.min(...scpaQueue.map((f) => f.timestamp))
+      : null;
+
   return {
     queueSize: scpaQueue.length,
     oldestFailure: oldestTimestamp ? now - oldestTimestamp : null,
@@ -339,4 +360,3 @@ export function clearSCPAQueue(): void {
   scpaQueue.length = 0;
   console.log(`🧹 [SCPA] Queue cleared: ${clearedCount} items removed`);
 }
-

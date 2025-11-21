@@ -4,7 +4,9 @@
 // Usage: node scripts/check-callback.js <URL>
 const url = process.argv[2] || process.env.CALLBACK_ENDPOINT;
 if (!url) {
-  console.error('No callback endpoint provided. Usage: node scripts/check-callback.js <URL> or set CALLBACK_ENDPOINT env var.');
+  console.error(
+    'No callback endpoint provided. Usage: node scripts/check-callback.js <URL> or set CALLBACK_ENDPOINT env var.'
+  );
   process.exit(2);
 }
 (async () => {
@@ -18,13 +20,18 @@ if (!url) {
         fetchFn = undiciFetch;
         console.log('Using undici.fetch for diagnostics');
       } catch (err) {
-        console.warn('No global fetch and no undici found; falling back to http(s) via builtin modules');
+        console.warn(
+          'No global fetch and no undici found; falling back to http(s) via builtin modules'
+        );
       }
     }
     if (typeof fetchFn === 'function') {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10_000);
-      const res = await fetchFn(url, { method: 'HEAD', signal: controller.signal });
+      const res = await fetchFn(url, {
+        method: 'HEAD',
+        signal: controller.signal,
+      });
       clearTimeout(timeout);
       console.log('HEAD status:', res.status, res.statusText);
       console.log('Headers:');
@@ -56,7 +63,10 @@ if (!url) {
       req.end();
     }
   } catch (err) {
-    console.error('Diagnostic script error:', err && err.stack ? err.stack : err);
+    console.error(
+      'Diagnostic script error:',
+      err && err.stack ? err.stack : err
+    );
     process.exit(1);
   }
 })();
@@ -85,4 +95,3 @@ try {
   console.error('❌ Error loading callback-wrapper:', err.message);
   process.exit(1);
 }
-

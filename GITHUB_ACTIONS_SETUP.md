@@ -57,6 +57,7 @@ Recommended settings for the `main` branch:
 #### Option B: Using GitHub Comments (Token-less)
 
 If you don't want to use a token, Codecov can work without it for public repositories:
+
 1. Remove the `token` line from workflow files
 2. Codecov will post comments on PRs automatically
 
@@ -69,6 +70,7 @@ Dependabot is already configured via `.github/dependabot.yml`. To customize:
 3. Commit changes
 
 Current settings:
+
 - **npm**: Daily updates
 - **GitHub Actions**: Weekly updates
 
@@ -77,6 +79,7 @@ Current settings:
 ### For Basic CI/CD (No Secrets Needed)
 
 The basic CI/CD workflows work without any secrets:
+
 - ✅ CI workflow (linting, testing, building)
 - ✅ PR Checks workflow
 - ✅ CodeQL security scanning
@@ -91,26 +94,32 @@ Add `CODECOV_TOKEN` as described above for enhanced coverage reporting.
 Add these secrets when you're ready to deploy:
 
 #### Heroku Deployment
+
 - `HEROKU_API_KEY`: Get from Heroku Account Settings
 - `HEROKU_EMAIL`: Your Heroku account email
 
 #### Railway Deployment
+
 - `RAILWAY_TOKEN`: Get from Railway dashboard
 
 #### VPS/Server Deployment
+
 - `VPS_SSH_KEY`: Private SSH key for server access
 - `VPS_HOST`: Server hostname or IP address
 - `VPS_USER`: SSH username
 
 #### Other Services
+
 - `CODECOV_TOKEN`: Coverage reporting token (optional)
 
 ## 📊 Available Workflows
 
 ### 1. CI Workflow
+
 **File:** `.github/workflows/ci.yml`
 **Trigger:** Push to main, Pull requests to main
 **What it does:**
+
 - Tests on Node.js 18.x and 20.x
 - Runs linter and formatter
 - Runs TypeScript type checking
@@ -119,9 +128,11 @@ Add these secrets when you're ready to deploy:
 - Uploads coverage to Codecov
 
 ### 2. PR Checks Workflow
+
 **File:** `.github/workflows/pr-checks.yml`
 **Trigger:** Pull request events
 **What it does:**
+
 - Detailed linting and formatting checks
 - TypeScript type checking
 - Full test suite with coverage
@@ -131,34 +142,42 @@ Add these secrets when you're ready to deploy:
 - Secret scanning
 
 ### 3. CodeQL Security Scanning
+
 **File:** `.github/workflows/codeql.yml`
 **Trigger:** Push, PRs, weekly schedule
 **What it does:**
+
 - Scans for security vulnerabilities
 - Analyzes JavaScript/TypeScript and Python code
 - Posts results to Security tab
 
 ### 4. Build and Release
+
 **File:** `.github/workflows/release.yml`
-**Trigger:** Git tags (v*.*.*), manual dispatch
+**Trigger:** Git tags (v*.*.\*), manual dispatch
 **What it does:**
+
 - Builds production artifacts
 - Creates GitHub releases
 - Builds and publishes Docker images
 - Generates release notes
 
 ### 5. Deployment
+
 **File:** `.github/workflows/deploy.yml`
 **Trigger:** Push to main (staging), manual (production)
 **What it does:**
+
 - Deploys to staging automatically
 - Deploys to production manually
 - Supports multiple platforms (Heroku, Railway, VPS)
 
 ### 6. Prevent Large Files
+
 **File:** `.github/workflows/prevent-large-files.yml`
 **Trigger:** Pull requests
 **What it does:**
+
 - Checks for files larger than 5MB
 - Prevents accidental large file commits
 
@@ -175,6 +194,7 @@ Docker images are automatically published to GHCR when you create a release:
 3. No additional secrets needed (uses `GITHUB_TOKEN`)
 
 Access images:
+
 ```bash
 docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
 docker pull ghcr.io/mrdannyclark82/milla-rayne:v1.0.0
@@ -192,6 +212,7 @@ docker pull ghcr.io/mrdannyclark82/milla-rayne:v1.0.0
 ### Check Status Badges
 
 Add these badges to your README (already added):
+
 ```markdown
 [![CI](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CI/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/mrdannyclark82/Milla-Rayne/branch/main/graph/badge.svg)](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
@@ -264,6 +285,7 @@ npm run build
 ### Workflow Fails on TypeScript Check
 
 The project has pre-existing TypeScript errors. The workflow uses `continue-on-error: true` to not block CI. To fix:
+
 ```bash
 npm run check
 # Fix reported errors
@@ -272,6 +294,7 @@ npm run check
 ### Coverage Upload Fails
 
 If Codecov uploads fail:
+
 1. Verify `CODECOV_TOKEN` is set correctly
 2. Check Codecov service status
 3. Review workflow logs for details
@@ -280,6 +303,7 @@ If Codecov uploads fail:
 ### Docker Build Fails
 
 Common issues:
+
 - Missing dependencies: Check Dockerfile
 - Large files: Review .dockerignore
 - Build errors: Test locally with `docker build -t test .`
@@ -296,15 +320,17 @@ Common issues:
 ### Customize Code Coverage Thresholds
 
 Edit `codecov.yml`:
+
 ```yaml
 coverage:
   status:
     project:
       default:
-        target: 80%  # Change this
+        target: 80% # Change this
 ```
 
 Edit `vitest.config.server.ts`:
+
 ```typescript
 coverage: {
   lines: 80,      // Change these
@@ -317,10 +343,11 @@ coverage: {
 ### Add More Test Environments
 
 Edit `.github/workflows/ci.yml`:
+
 ```yaml
 strategy:
   matrix:
-    node-version: [18.x, 20.x, 22.x]  # Add more versions
+    node-version: [18.x, 20.x, 22.x] # Add more versions
 ```
 
 ### Enable Auto-Merge for Dependabot

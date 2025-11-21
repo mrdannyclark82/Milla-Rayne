@@ -18,12 +18,7 @@
   "sort": ["source-order"],
   "categorizeByGroup": true,
   "defaultCategory": "Other",
-  "categoryOrder": [
-    "Services",
-    "Agents",
-    "Utilities",
-    "*"
-  ],
+  "categoryOrder": ["Services", "Agents", "Utilities", "*"],
   "navigation": {
     "includeCategories": true,
     "includeGroups": true

@@ -15,7 +15,9 @@ async function sendCallback(url, body = undefined, options = {}) {
       fetchFn = undiciFetch;
     } catch (e) {
       // no fetch available
-      throw new Error('No global fetch and undici not installed; cannot send callback');
+      throw new Error(
+        'No global fetch and undici not installed; cannot send callback'
+      );
     }
   }
 
@@ -25,7 +27,8 @@ async function sendCallback(url, body = undefined, options = {}) {
     throw new TypeError('url must be a string');
   }
 
-  const controller = new (global.AbortController || require('abort-controller'))();
+  const controller = new (global.AbortController ||
+    require('abort-controller'))();
   const timeoutMs = options.timeout || DEFAULT_TIMEOUT_MS;
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -40,8 +43,17 @@ async function sendCallback(url, body = undefined, options = {}) {
     const res = await fetchFn(url, fetchOptions);
     clearTimeout(timer);
     let text = '';
-    try { text = await (res.text ? res.text() : Promise.resolve('')); } catch (_) { text = ''; }
-    return { ok: res.ok, status: res.status, statusText: res.statusText, body: text };
+    try {
+      text = await (res.text ? res.text() : Promise.resolve(''));
+    } catch (_) {
+      text = '';
+    }
+    return {
+      ok: res.ok,
+      status: res.status,
+      statusText: res.statusText,
+      body: text,
+    };
   } catch (err) {
     clearTimeout(timer);
     // Re-throw with more context

@@ -1,7 +1,10 @@
 import { getAgent } from './registry';
 import { AgentTask, updateTask } from './taskStorage';
 import { logAuditEvent } from './auditLog';
-import { monitorTaskAlignment, formatFeedbackForContext } from '../metacognitiveService';
+import {
+  monitorTaskAlignment,
+  formatFeedbackForContext,
+} from '../metacognitiveService';
 
 /**
  * Simple in-process worker that pulls tasks from caller and executes them.
@@ -61,7 +64,7 @@ export async function runTask(task: AgentTask): Promise<void> {
       updatedAt: new Date().toISOString(),
     });
     await logAuditEvent(task.taskId, task.agent, task.action, 'completed');
-    
+
     // Monitor task alignment with user goals (metacognitive loop)
     try {
       const updatedTask = await updateTask(task.taskId, { result });
@@ -81,12 +84,18 @@ export async function runTask(task: AgentTask): Promise<void> {
               },
             },
           });
-          console.log(`[Metacognitive] Feedback recorded for task ${task.taskId}:`, feedback.message);
+          console.log(
+            `[Metacognitive] Feedback recorded for task ${task.taskId}:`,
+            feedback.message
+          );
         }
       }
     } catch (metacognitiveError) {
       // Don't fail the task if metacognitive monitoring fails
-      console.error('[Metacognitive] Error monitoring task alignment:', metacognitiveError);
+      console.error(
+        '[Metacognitive] Error monitoring task alignment:',
+        metacognitiveError
+      );
     }
   } catch (err: any) {
     console.error('Worker error running task', task.taskId, err);
@@ -113,7 +122,7 @@ export async function runTask(task: AgentTask): Promise<void> {
 export function getTaskFeedback(task: AgentTask): string | null {
   const feedback = task.metadata?.metacognitiveFeedback;
   if (!feedback) return null;
-  
+
   return formatFeedbackForContext({
     type: feedback.type,
     message: feedback.message,

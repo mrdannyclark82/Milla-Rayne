@@ -39,7 +39,8 @@ export const config = {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     // Accept either GOOGLE_REDIRECT_URI (preferred) or the older GOOGLE_OAUTH_REDIRECT_URI
-    redirectUri: process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URI,
+    redirectUri:
+      process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URI,
   },
   smartHome: {
     enableIntegration: process.env.ENABLE_SMART_HOME === 'true',
@@ -85,7 +86,8 @@ export const config = {
   // Feature flags and global settings
   enableDevTalk: process.env.ENABLE_DEV_TALK === 'true',
   enablePredictiveUpdates: process.env.ENABLE_PREDICTIVE_UPDATES === 'true',
-  enableProactiveRepositoryManagement: process.env.ENABLE_PROACTIVE_REPOSITORY_MANAGEMENT !== 'false', // default true
+  enableProactiveRepositoryManagement:
+    process.env.ENABLE_PROACTIVE_REPOSITORY_MANAGEMENT !== 'false', // default true
   enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
 };

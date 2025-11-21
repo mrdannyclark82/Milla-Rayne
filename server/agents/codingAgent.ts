@@ -32,7 +32,10 @@ export interface CodeFix {
 
 class CodingAgent extends BaseAgent {
   constructor() {
-    super('coding', 'An agent that can write and understand code, perform automated bug fixes, and create pull requests.');
+    super(
+      'coding',
+      'An agent that can write and understand code, perform automated bug fixes, and create pull requests.'
+    );
   }
 
   protected async executeInternal(task: string): Promise<string> {
@@ -226,7 +229,9 @@ Please provide:
 Format your response as JSON with keys: description, changes, reasoning`;
 
       // Use OpenRouter service that's already configured
-      const { generateOpenRouterResponse } = await import('../openrouterService');
+      const { generateOpenRouterResponse } = await import(
+        '../openrouterService'
+      );
 
       const result = await generateOpenRouterResponse(
         prompt,
@@ -254,9 +259,13 @@ Format your response as JSON with keys: description, changes, reasoning`;
       }
 
       return {
-        description: aiResponse.description || `Fix for ${issue.issueType}: ${issue.description}`,
+        description:
+          aiResponse.description ||
+          `Fix for ${issue.issueType}: ${issue.description}`,
         files: issue.affectedFiles,
-        changes: aiResponse.changes || `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
+        changes:
+          aiResponse.changes ||
+          `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
       };
     } catch (error) {
       console.error('Error generating AI fix, using fallback:', error);
@@ -308,7 +317,7 @@ export const codingAgent = new CodingAgent();
 /**
  * P2.5: Generate fix for agent failure (STUB)
  * This would analyze the error and generate code to fix it
- * 
+ *
  * @param failureContext - Context about the agent failure
  * @returns Mock code patch object
  */
@@ -324,18 +333,18 @@ export async function generateFix(failureContext: any): Promise<{
 }> {
   console.log(`🔧 [SCPA] Generating fix for ${failureContext.agentName}`);
   console.log(`🔧 [SCPA] Error: ${failureContext.error}`);
-  
+
   // STUB: In production, this would:
   // 1. Analyze the error stack trace
   // 2. Locate the failing code
   // 3. Use LLM to understand the bug
   // 4. Generate a code fix
   // 5. Create test cases to verify the fix
-  
+
   // Mock fix generation based on error pattern
   const errorStr = String(failureContext.error);
   let mockFix: any;
-  
+
   if (errorStr.includes('undefined') || errorStr.includes('null')) {
     mockFix = {
       files: [`server/agents/${failureContext.agentName}.ts`],
@@ -397,10 +406,10 @@ try {
       testPlan: 'Test error scenarios, verify proper logging and fallback',
     };
   }
-  
+
   console.log(`✅ [SCPA] Mock fix generated for ${failureContext.agentName}`);
   console.log(`📝 [SCPA] Fix description: ${mockFix.description}`);
-  
+
   // TODO: In production:
   // 1. Actually modify the file with the fix
   // 2. Run tests in sandbox environment
@@ -412,7 +421,7 @@ try {
   // if (testResults.passed) {
   //   await createPRForSandbox(sandbox);
   // }
-  
+
   return {
     success: true,
     patch: mockFix,
@@ -426,7 +435,7 @@ try {
 export async function applyFixToCodebase(patch: any): Promise<boolean> {
   console.log(`🔧 [SCPA] Applying fix to codebase (STUB)`);
   console.log(`📁 [SCPA] Files to modify: ${patch.files.join(', ')}`);
-  
+
   // STUB: Would actually modify files here
   // TODO: Use fs to read/write files with the patch
   // for (const file of patch.files) {
@@ -434,7 +443,7 @@ export async function applyFixToCodebase(patch: any): Promise<boolean> {
   //   const updated = applyPatch(content, patch.changes);
   //   await fs.writeFile(file, updated);
   // }
-  
+
   console.log(`✅ [SCPA] Fix applied successfully (STUB)`);
   return true;
 }

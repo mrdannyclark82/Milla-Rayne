@@ -42,6 +42,9 @@ memory/merged_memories.txt
 memory/*.csv
 memory/audio_messages/
 memory/pr_memories/
+memory/agent_tasks.json
+memory/milla_tokens.json
+memory/sandbox_environments.json
 
 # SQLite database files (may contain sensitive data)
 *.db

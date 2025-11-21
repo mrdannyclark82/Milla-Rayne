@@ -1,5 +1,9 @@
 import { parseCalendarCommand } from './gemini';
-import { sanitizePromptInput, sanitizeEmail, sanitizeUrl } from './sanitization';
+import {
+  sanitizePromptInput,
+  sanitizeEmail,
+  sanitizeUrl,
+} from './sanitization';
 
 export interface ParsedCommand {
   service: 'calendar' | 'gmail' | 'youtube' | 'profile' | null;
@@ -78,9 +82,11 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
         if (email) result.entities.to = email;
       }
       const subjectMatch = lowerMessage.match(/subject (.*?)(?:and body|$)/);
-      if (subjectMatch) result.entities.subject = sanitizePromptInput(subjectMatch[1].trim());
+      if (subjectMatch)
+        result.entities.subject = sanitizePromptInput(subjectMatch[1].trim());
       const bodyMatch = lowerMessage.match(/body (.*)/);
-      if (bodyMatch) result.entities.body = sanitizePromptInput(bodyMatch[1].trim());
+      if (bodyMatch)
+        result.entities.body = sanitizePromptInput(bodyMatch[1].trim());
     }
   }
 
@@ -182,11 +188,15 @@ export async function parseCommand(message: string): Promise<ParsedCommand> {
   else if (lowerMessage.startsWith('my name is')) {
     result.service = 'profile';
     result.action = 'update';
-    result.entities.name = sanitizePromptInput(sanitizedMessage.substring('my name is'.length).trim());
+    result.entities.name = sanitizePromptInput(
+      sanitizedMessage.substring('my name is'.length).trim()
+    );
   } else if (lowerMessage.startsWith('i like')) {
     result.service = 'profile';
     result.action = 'update';
-    result.entities.interest = sanitizePromptInput(sanitizedMessage.substring('i like'.length).trim());
+    result.entities.interest = sanitizePromptInput(
+      sanitizedMessage.substring('i like'.length).trim()
+    );
   }
 
   return result;

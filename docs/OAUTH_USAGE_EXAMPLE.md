@@ -24,18 +24,22 @@ The server will start on `http://localhost:5000`
 ## 3. Connect Google Account
 
 ### Option A: Browser
+
 Open your browser and navigate to:
+
 ```
 http://localhost:5000/oauth/google
 ```
 
 ### Option B: Using curl
+
 ```bash
 # This will show the redirect URL
 curl -L http://localhost:5000/oauth/google
 ```
 
 You'll be redirected to Google's consent screen where you can:
+
 1. Sign in to your Google account
 2. Review the permissions Milla is requesting:
    - Google Calendar access
@@ -44,11 +48,13 @@ You'll be redirected to Google's consent screen where you can:
 3. Click "Allow"
 
 After granting consent, you'll be redirected back to:
+
 ```
 http://localhost:5000/oauth/callback?code=4/0A...
 ```
 
 The callback will:
+
 1. Exchange the authorization code for tokens
 2. Encrypt and store the tokens in the database
 3. Show a success page
@@ -60,6 +66,7 @@ curl http://localhost:5000/api/oauth/status
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -76,13 +83,11 @@ Once connected, Milla can use the browser integration service with your Google a
 ### Example: Add Note to Google Keep
 
 In your application code:
+
 ```typescript
 import { addNoteToKeep } from './server/browserIntegrationService';
 
-const result = await addNoteToKeep(
-  'Grocery List',
-  'Milk, Eggs, Bread, Butter'
-);
+const result = await addNoteToKeep('Grocery List', 'Milk, Eggs, Bread, Butter');
 
 console.log(result.message);
 // Output: "I've added a note to your Google Keep: 'Grocery List'"
@@ -110,9 +115,10 @@ Simply talk to Milla:
 
 **User:** "Add a note to remind me to buy groceries"
 
-**Milla:** "*smiles* Of course, love! I've added that note to your Google Keep."
+**Milla:** "_smiles_ Of course, love! I've added that note to your Google Keep."
 
 Behind the scenes:
+
 1. AI detects "add note" request
 2. Calls `addNoteToKeep()` function
 3. Service retrieves valid OAuth token
@@ -126,11 +132,13 @@ Behind the scenes:
 Tokens are automatically refreshed when they expire. No manual intervention needed!
 
 When you call any browser integration function:
+
 ```typescript
 const result = await addNoteToKeep('Test', 'Content');
 ```
 
 The service will:
+
 1. Check if token is expired (or expiring soon)
 2. If expired, automatically refresh using refresh token
 3. Update database with new token
@@ -145,6 +153,7 @@ curl -X POST http://localhost:5000/api/oauth/refresh
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -161,6 +170,7 @@ curl -X DELETE http://localhost:5000/api/oauth/disconnect
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -169,24 +179,27 @@ curl -X DELETE http://localhost:5000/api/oauth/disconnect
 ```
 
 This will:
+
 1. Delete all stored tokens from database
 2. Require re-authentication for future Google operations
 
 ## 9. Error Handling
 
 ### Not Connected
+
 If user tries to use Google services without connecting:
 
 ```typescript
 const result = await addNoteToKeep('Test', 'Content');
 
 if (!result.success && result.data?.needsAuth) {
-  console.log("Please connect your Google account first");
-  console.log("Visit: http://localhost:5000/oauth/google");
+  console.log('Please connect your Google account first');
+  console.log('Visit: http://localhost:5000/oauth/google');
 }
 ```
 
 ### Token Expired (No Refresh Token)
+
 If refresh token is missing or invalid:
 
 ```json
@@ -305,6 +318,7 @@ npx tsx scripts/test-oauth-service.ts
 ```
 
 Expected output:
+
 ```
 🧪 Testing OAuth Service...
 
@@ -334,5 +348,6 @@ Expected output:
 **Ready to use!** 🎉
 
 For production deployment, update the redirect URI in both:
+
 1. Your `.env` file: `GOOGLE_OAUTH_REDIRECT_URI=https://yourdomain.com/oauth/callback`
 2. Google Cloud Console OAuth credentials

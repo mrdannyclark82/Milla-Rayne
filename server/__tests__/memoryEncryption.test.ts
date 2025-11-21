@@ -227,7 +227,10 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
       expect(isHomomorphicallyEncrypted(encrypted.context!)).toBe(true);
 
       // Step 2: Search without decryption
-      const searchResult = await searchEncryptedContext(encrypted, 'Springfield');
+      const searchResult = await searchEncryptedContext(
+        encrypted,
+        'Springfield'
+      );
       expect(searchResult.matches).toBe(true);
 
       // Step 3: Decrypt for authorized access
@@ -286,7 +289,9 @@ describe('Memory Service - Homomorphic Encryption Integration', () => {
         },
       ];
 
-      const processed = await Promise.all(entries.map(entry => encryptSensitiveMemoryFields(entry)));
+      const processed = await Promise.all(
+        entries.map((entry) => encryptSensitiveMemoryFields(entry))
+      );
 
       // First and third should not be encrypted
       expect(isHomomorphicallyEncrypted(processed[0].context!)).toBe(false);

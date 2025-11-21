@@ -20,7 +20,9 @@ describe('Agent Worker with Metacognitive Integration', () => {
     const mockAgent = {
       name: 'TestAgent',
       description: 'Test agent',
-      handleTask: vi.fn().mockResolvedValue({ success: true, data: 'test result' }),
+      handleTask: vi
+        .fn()
+        .mockResolvedValue({ success: true, data: 'test result' }),
     };
 
     const task: AgentTask = {
@@ -36,15 +38,23 @@ describe('Agent Worker with Metacognitive Integration', () => {
     };
 
     vi.mocked(registry.getAgent).mockReturnValue(mockAgent as any);
-    vi.mocked(taskStorage.updateTask).mockResolvedValue({ ...task, status: 'completed' } as any);
-    vi.mocked(metacognitiveService.monitorTaskAlignment).mockResolvedValue(null);
+    vi.mocked(taskStorage.updateTask).mockResolvedValue({
+      ...task,
+      status: 'completed',
+    } as any);
+    vi.mocked(metacognitiveService.monitorTaskAlignment).mockResolvedValue(
+      null
+    );
 
     await runTask(task);
 
     // Verify task was completed
-    expect(taskStorage.updateTask).toHaveBeenCalledWith(task.taskId, expect.objectContaining({
-      status: 'completed',
-    }));
+    expect(taskStorage.updateTask).toHaveBeenCalledWith(
+      task.taskId,
+      expect.objectContaining({
+        status: 'completed',
+      })
+    );
 
     // Verify metacognitive monitoring was called
     expect(metacognitiveService.monitorTaskAlignment).toHaveBeenCalled();
@@ -78,8 +88,13 @@ describe('Agent Worker with Metacognitive Integration', () => {
     };
 
     vi.mocked(registry.getAgent).mockReturnValue(mockAgent as any);
-    vi.mocked(taskStorage.updateTask).mockResolvedValue({ ...task, status: 'completed' } as any);
-    vi.mocked(metacognitiveService.monitorTaskAlignment).mockResolvedValue(feedback);
+    vi.mocked(taskStorage.updateTask).mockResolvedValue({
+      ...task,
+      status: 'completed',
+    } as any);
+    vi.mocked(metacognitiveService.monitorTaskAlignment).mockResolvedValue(
+      feedback
+    );
 
     await runTask(task);
 
@@ -119,7 +134,10 @@ describe('Agent Worker with Metacognitive Integration', () => {
     };
 
     vi.mocked(registry.getAgent).mockReturnValue(mockAgent as any);
-    vi.mocked(taskStorage.updateTask).mockResolvedValue({ ...task, status: 'completed' } as any);
+    vi.mocked(taskStorage.updateTask).mockResolvedValue({
+      ...task,
+      status: 'completed',
+    } as any);
     vi.mocked(metacognitiveService.monitorTaskAlignment).mockRejectedValue(
       new Error('Metacognitive service unavailable')
     );

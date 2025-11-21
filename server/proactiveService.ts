@@ -504,10 +504,10 @@ export async function executeReasoningChain(
   }
 ): Promise<ReasoningChain> {
   console.log(`🧠 Starting reasoning chain for goal: "${goal}"`);
-  
+
   const steps: ReasoningStep[] = [];
   let currentConfidence = 1.0;
-  
+
   // Step 1: Analyze the goal and context
   steps.push({
     step: 1,
@@ -515,16 +515,16 @@ export async function executeReasoningChain(
     confidence: 0.9,
     timestamp: Date.now(),
   });
-  
+
   // Step 2: Consider potential approaches
   const approaches = await considerApproaches(goal, context);
   steps.push({
     step: 2,
-    thought: `Identified ${approaches.length} potential approaches: ${approaches.map(a => a.name).join(', ')}`,
+    thought: `Identified ${approaches.length} potential approaches: ${approaches.map((a) => a.name).join(', ')}`,
     confidence: 0.85,
     timestamp: Date.now(),
   });
-  
+
   // Step 3: Evaluate risks and benefits
   const evaluation = await evaluateApproaches(approaches, context);
   steps.push({
@@ -534,9 +534,9 @@ export async function executeReasoningChain(
     confidence: evaluation.best.score,
     timestamp: Date.now(),
   });
-  
+
   currentConfidence = evaluation.best.score;
-  
+
   // Step 4: Self-correction - verify the decision
   const verification = await verifySafety(evaluation.best, context);
   steps.push({
@@ -545,15 +545,15 @@ export async function executeReasoningChain(
     confidence: verification.confidence,
     timestamp: Date.now(),
   });
-  
+
   currentConfidence = Math.min(currentConfidence, verification.confidence);
-  
+
   // Step 5: Final decision with confidence threshold
   const needsApproval = currentConfidence < 0.7; // Require approval if confidence < 70%
   const finalDecision = needsApproval
     ? `Awaiting user approval for: ${evaluation.best.name}`
     : `Proceeding with: ${evaluation.best.name}`;
-  
+
   steps.push({
     step: 5,
     thought: needsApproval
@@ -563,9 +563,11 @@ export async function executeReasoningChain(
     confidence: currentConfidence,
     timestamp: Date.now(),
   });
-  
-  console.log(`✅ Reasoning chain complete. Confidence: ${(currentConfidence * 100).toFixed(1)}%`);
-  
+
+  console.log(
+    `✅ Reasoning chain complete. Confidence: ${(currentConfidence * 100).toFixed(1)}%`
+  );
+
   return {
     goal,
     steps,
@@ -597,7 +599,7 @@ async function considerApproaches(
       description: 'Wait for a natural moment to engage',
     },
   ];
-  
+
   return approaches;
 }
 
@@ -611,13 +613,13 @@ async function evaluateApproaches(
   best: { name: string; description: string; score: number };
   alternatives: Array<{ name: string; description: string; score: number }>;
 }> {
-  const scored = approaches.map(approach => ({
+  const scored = approaches.map((approach) => ({
     ...approach,
     score: Math.random() * 0.3 + 0.7, // Score between 0.7-1.0 for demo
   }));
-  
+
   scored.sort((a, b) => b.score - a.score);
-  
+
   return {
     best: scored[0],
     alternatives: scored.slice(1),
@@ -634,7 +636,7 @@ async function verifySafety(
   // Check if the approach is safe and appropriate
   const isSafe = approach.score > 0.6;
   const confidence = isSafe ? approach.score * 0.95 : approach.score * 0.5;
-  
+
   return {
     thought: isSafe
       ? `Verified approach is safe and appropriate`
@@ -652,11 +654,11 @@ export async function executeWithSelfCorrection(
   params: any
 ): Promise<{ success: boolean; result?: any; correction?: string }> {
   console.log(`⚡ Executing action with self-correction: ${action}`);
-  
+
   try {
     // Pre-execution validation
     const validation = await validateExecution(action, params);
-    
+
     if (!validation.valid) {
       console.log(`❌ Pre-execution validation failed: ${validation.reason}`);
       return {
@@ -664,13 +666,13 @@ export async function executeWithSelfCorrection(
         correction: validation.reason,
       };
     }
-    
+
     // Execute the action (placeholder - actual implementation would call specific functions)
     const result = await performAction(action, params);
-    
+
     // Post-execution validation
     const postValidation = await validateResult(result);
-    
+
     if (!postValidation.valid) {
       console.log(`⚠️ Post-execution validation failed, attempting correction`);
       const corrected = await correctExecution(action, params, result);
@@ -680,7 +682,7 @@ export async function executeWithSelfCorrection(
         correction: corrected.correctionApplied,
       };
     }
-    
+
     console.log(`✅ Action executed successfully with validation`);
     return {
       success: true,
@@ -710,14 +712,14 @@ async function validateExecution(
     'search_memory',
     'proactive_reach_out',
   ];
-  
+
   if (!allowedActions.includes(action)) {
     return {
       valid: false,
       reason: `Action "${action}" is not in allowed list`,
     };
   }
-  
+
   return { valid: true };
 }
 
@@ -741,11 +743,13 @@ async function performAction(action: string, params: any): Promise<any> {
 /**
  * Validate the result of an action
  */
-async function validateResult(result: any): Promise<{ valid: boolean; reason?: string }> {
+async function validateResult(
+  result: any
+): Promise<{ valid: boolean; reason?: string }> {
   if (!result) {
     return { valid: false, reason: 'No result returned' };
   }
-  
+
   return { valid: true };
 }
 
@@ -758,11 +762,11 @@ async function correctExecution(
   previousResult: any
 ): Promise<{ success: boolean; result?: any; correctionApplied: string }> {
   console.log(`🔧 Attempting to correct execution for action: ${action}`);
-  
+
   // Apply correction strategy based on action type
   const correctedParams = { ...params, retryCount: 1 };
   const correctedResult = await performAction(action, correctedParams);
-  
+
   return {
     success: true,
     result: correctedResult,

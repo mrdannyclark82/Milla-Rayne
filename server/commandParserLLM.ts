@@ -80,16 +80,16 @@ function preprocessIntent(message: string): Partial<ParsedCommand> | null {
     /(?:add|create|schedule|set up|make)\s+(?:a\s+|an\s+)?(.+?)\s+(?:on|for|at)\s+(.+)/i,
     /(?:remind me about|don't let me forget)\s+(.+?)(?:\s+on\s+(.+))?/i,
   ];
-  
+
   for (const pattern of calendarAddPatterns) {
     const match = lower.match(pattern);
     if (match) {
       const title = match[1]?.trim();
       const dateTime = match[2]?.trim();
-      
+
       if (title) {
         const entities: any = { title };
-        
+
         // Try to extract time from datetime string
         if (dateTime) {
           const timeMatch = dateTime.match(/(\d{1,2}(?::\d{2})?\s*(?:am|pm))/i);
@@ -100,11 +100,11 @@ function preprocessIntent(message: string): Partial<ParsedCommand> | null {
             entities.date = dateTime;
           }
         }
-        
-        return { 
-          service: 'calendar', 
-          action: 'add', 
-          entities 
+
+        return {
+          service: 'calendar',
+          action: 'add',
+          entities,
         };
       }
     }
@@ -116,45 +116,45 @@ function preprocessIntent(message: string): Partial<ParsedCommand> | null {
   ) {
     return { service: 'gmail', action: 'list', entities: {} };
   }
-  
+
   // Email send patterns
   const emailSendPatterns = [
     /(?:send|write|compose)\s+(?:an?\s+)?email\s+to\s+(.+?)\s+(?:about|saying|with subject)\s+(.+)/i,
     /(?:email|message)\s+(.+?)\s+(?:about|to say|saying)\s+(.+)/i,
   ];
-  
+
   for (const pattern of emailSendPatterns) {
     const match = lower.match(pattern);
     if (match) {
       const to = match[1]?.trim();
       const subject = match[2]?.trim();
-      
+
       if (to && subject) {
-        return { 
-          service: 'gmail', 
-          action: 'send', 
-          entities: { to, subject } 
+        return {
+          service: 'gmail',
+          action: 'send',
+          entities: { to, subject },
         };
       }
     }
   }
-  
+
   // Tasks/notes patterns
   const taskAddPatterns = [
     /(?:add|create|make)\s+(?:a\s+)?(?:note|task|reminder|todo)\s+(?:to\s+)?(?:remember\s+)?(?:to\s+)?(.+)/i,
     /(?:remind me to|don't forget to)\s+(.+)/i,
   ];
-  
+
   for (const pattern of taskAddPatterns) {
     const match = lower.match(pattern);
     if (match) {
       const title = match[1]?.trim();
-      
+
       if (title) {
-        return { 
-          service: 'tasks', 
-          action: 'add', 
-          entities: { title } 
+        return {
+          service: 'tasks',
+          action: 'add',
+          entities: { title },
         };
       }
     }

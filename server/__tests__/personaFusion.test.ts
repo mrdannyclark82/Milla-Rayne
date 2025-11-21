@@ -49,7 +49,10 @@ describe('PersonaFusionService', () => {
         timezone: 'America/New_York',
       });
 
-      const persona = await generateActivePersona('user123', 'Tell me about AI');
+      const persona = await generateActivePersona(
+        'user123',
+        'Tell me about AI'
+      );
 
       expect(persona.userId).toBe('user123');
       expect(persona.profile.name).toBe('Test User');

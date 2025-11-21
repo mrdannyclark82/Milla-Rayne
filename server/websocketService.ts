@@ -1,4 +1,3 @@
-
 // @ts-expect-error - ws types installed but not recognized
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
@@ -224,9 +223,9 @@ export async function setupSensorDataWebSocket(
   httpServer: Server
 ): Promise<WebSocketServer> {
   console.log('Setting up dedicated WebSocket server for sensor data...');
-  
+
   const { updateAmbientContext } = await import('./realWorldInfoService');
-  
+
   const sensorWss = new WebSocketServer({
     server: httpServer,
     path: '/ws/sensor',
@@ -245,11 +244,11 @@ export async function setupSensorDataWebSocket(
     ws.on('message', (data: Buffer) => {
       try {
         const sensorData = JSON.parse(data.toString());
-        
+
         // Validate basic structure
         if (sensorData.userId && sensorData.timestamp) {
           updateAmbientContext(sensorData.userId, sensorData);
-          
+
           // Send acknowledgment
           ws.send(
             JSON.stringify({

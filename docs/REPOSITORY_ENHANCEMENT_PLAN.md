@@ -1,4 +1,5 @@
 # 🚀 Milla Rayne Repository Enhancement Plan
+
 ## Making This the Best AI Companion System
 
 ---
@@ -15,6 +16,7 @@
 ## 📊 Current Assessment
 
 ### ✅ Strengths
+
 - Rich feature set (millAlyzer, Google integration, voice, scenes)
 - Modern tech stack (React, TypeScript, SQLite, Drizzle)
 - Good documentation (25+ MD files)
@@ -22,6 +24,7 @@
 - Active development
 
 ### ⚠️ Areas for Improvement
+
 - TypeScript errors in build
 - Limited test coverage
 - Some feature integration gaps
@@ -33,9 +36,11 @@
 ## 🎯 Priority 1: Code Quality & Stability (Week 1-2)
 
 ### 1.1 Fix TypeScript Compilation Errors ⚡ **CRITICAL**
+
 **Current Issue**: `npm run check` shows TS errors
 
 **Action Plan**:
+
 ```bash
 # Identify all errors
 npm run check > ts-errors.log 2>&1
@@ -48,6 +53,7 @@ npm run check > ts-errors.log 2>&1
 ```
 
 **Implementation**:
+
 ```typescript
 // Example fixes needed:
 - Fix malformed JSX in SettingsPanel
@@ -66,6 +72,7 @@ npm run check > ts-errors.log 2>&1
 **Target**: 70%+ coverage on critical paths
 
 **Test Strategy**:
+
 ```typescript
 // Priority test files to create:
 
@@ -95,12 +102,14 @@ npm run check > ts-errors.log 2>&1
 ```
 
 **Test Framework**:
+
 ```bash
 npm install -D @testing-library/react @testing-library/jest-dom
 npm install -D @vitest/ui
 ```
 
 **Run Tests**:
+
 ```json
 // package.json
 "scripts": {
@@ -118,6 +127,7 @@ npm install -D @vitest/ui
 **Goal**: Consistent code style
 
 **Setup**:
+
 ```bash
 # Already have eslint.config.js and prettier.config.cjs
 # Ensure they're comprehensive
@@ -127,6 +137,7 @@ npm run format
 ```
 
 **Add Pre-commit Hook**:
+
 ```bash
 npm install -D husky lint-staged
 
@@ -146,6 +157,7 @@ npm install -D husky lint-staged
 **Current Issue**: Multiple .env files, scattered config
 
 **Solution**: Centralized config management
+
 ```typescript
 // shared/config.ts
 export const config = {
@@ -157,14 +169,14 @@ export const config = {
   youtube: {
     apiKey: process.env.YOUTUBE_API_KEY,
   },
-  
+
   // Features
   features: {
     encryption: !!process.env.MEMORY_KEY,
     voiceEnabled: !!process.env.GOOGLE_CLOUD_API_KEY,
     newsMonitor: process.env.NEWS_MONITOR_AUTO_START === 'true',
   },
-  
+
   // Database
   database: {
     path: process.env.DB_PATH || './memory/milla.db',
@@ -177,6 +189,7 @@ export type Config = typeof config;
 ```
 
 **Validation**:
+
 ```typescript
 // server/validateEnv.ts
 import { z } from 'zod';
@@ -202,15 +215,16 @@ export function validateEnvironment() {
 ### 2.2 Database Performance Optimization 💾 **MEDIUM PRIORITY**
 
 **Improvements**:
+
 ```sql
 -- Add missing indexes
-CREATE INDEX IF NOT EXISTS idx_messages_userId_createdAt 
+CREATE INDEX IF NOT EXISTS idx_messages_userId_createdAt
   ON messages(userId, createdAt DESC);
 
-CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_tags 
+CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_tags
   ON youtube_knowledge_base(tags);
 
-CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_type_userId 
+CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_type_userId
   ON youtube_knowledge_base(videoType, userId);
 
 -- Enable WAL mode for better concurrency
@@ -220,6 +234,7 @@ PRAGMA cache_size=-64000; -- 64MB cache
 ```
 
 **Query Optimization**:
+
 ```typescript
 // Use prepared statements
 const getMessagesByUser = db.prepare(`
@@ -242,6 +257,7 @@ db.transaction((messages) => {
 ### 2.3 API Rate Limiting & Caching 🚦 **HIGH PRIORITY**
 
 **Implementation**:
+
 ```typescript
 // server/middleware/rateLimiter.ts
 import rateLimit from 'express-rate-limit';
@@ -249,17 +265,18 @@ import rateLimit from 'express-rate-limit';
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests, please try again later'
+  message: 'Too many requests, please try again later',
 });
 
 export const analysisLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // 20 analyses per hour
-  message: 'Analysis limit reached, please wait before analyzing more videos'
+  message: 'Analysis limit reached, please wait before analyzing more videos',
 });
 ```
 
 **Caching Layer**:
+
 ```typescript
 // server/cache/simpleCache.ts
 class SimpleCache<T> {
@@ -296,6 +313,7 @@ export const transcriptCache = new SimpleCache<string>();
 **Goal**: Make components usable from chat
 
 **Implementation**:
+
 ```typescript
 // client/src/App.tsx or main component
 import { VideoAnalysisPanel } from '@/components/VideoAnalysisPanel';
@@ -321,7 +339,7 @@ function App() {
     <div className="app-container">
       {/* Main chat interface */}
       <ChatInterface />
-      
+
       {/* Sliding panels */}
       {activePanel === 'analysis' && currentAnalysis && (
         <div className="slide-in-right">
@@ -331,7 +349,7 @@ function App() {
           />
         </div>
       )}
-      
+
       {activePanel === 'knowledge' && (
         <div className="slide-in-right">
           <KnowledgeBaseSearch
@@ -347,20 +365,23 @@ function App() {
 ```
 
 **Chat Message Handler**:
+
 ```typescript
 // Detect millAlyzer triggers in chat
 if (message.includes('analyze') && youtubeUrlMatch) {
   const videoId = extractVideoId(message);
-  
+
   // Start analysis
   const analysis = await analyzeVideo(videoId);
-  
+
   // Dispatch event
-  window.dispatchEvent(new CustomEvent('millalyzer:complete', { 
-    detail: analysis 
-  }));
-  
-  return "Analysis complete! Check the panel on the right 👉";
+  window.dispatchEvent(
+    new CustomEvent('millalyzer:complete', {
+      detail: analysis,
+    })
+  );
+
+  return 'Analysis complete! Check the panel on the right 👉';
 }
 ```
 
@@ -369,6 +390,7 @@ if (message.includes('analyze') && youtubeUrlMatch) {
 ### 3.2 YouTube Player Integration 📺 **HIGH PRIORITY**
 
 **Add "Analyze" Button**:
+
 ```typescript
 // client/src/components/YoutubePlayer.tsx
 <div className="youtube-player-controls">
@@ -393,9 +415,10 @@ if (message.includes('analyze') && youtubeUrlMatch) {
 ```
 
 **Timestamp Click to Seek**:
+
 ```typescript
 // In VideoAnalysisPanel
-<button 
+<button
   className="timestamp-link"
   onClick={() => {
     // Send message to YouTube player
@@ -414,11 +437,13 @@ if (message.includes('analyze') && youtubeUrlMatch) {
 ### 3.3 Syntax Highlighting ✨ **MEDIUM PRIORITY**
 
 **Install**:
+
 ```bash
 npm install prism-react-renderer
 ```
 
 **Implementation**:
+
 ```typescript
 // client/src/components/CodeSnippetCard.tsx
 import { Highlight, themes } from 'prism-react-renderer';
@@ -448,6 +473,7 @@ import { Highlight, themes } from 'prism-react-renderer';
 ### 3.4 Export Functionality 📤 **MEDIUM PRIORITY**
 
 **Add to VideoAnalysisPanel**:
+
 ```typescript
 const exportAsMarkdown = () => {
   const markdown = `
@@ -490,16 +516,19 @@ ${cs.description}
 ### 4.1 Comprehensive README Update 📖 **HIGH PRIORITY**
 
 **Structure**:
+
 ```markdown
 # Milla Rayne - AI Companion System
 
 ## Quick Start (5 minutes)
+
 1. Clone repo
 2. Install dependencies
 3. Configure .env
 4. Run `npm run dev`
 
 ## Features
+
 - [Visual feature showcase with screenshots]
 - millAlyzer YouTube Intelligence
 - Google Calendar/Gmail Integration
@@ -507,12 +536,14 @@ ${cs.description}
 - Scene System
 
 ## Documentation
+
 - [User Guide](docs/USER_GUIDE.md)
 - [API Reference](docs/API.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## Development
+
 - [Setup Guide](docs/SETUP.md)
 - [Testing Guide](docs/TESTING.md)
 - [Deployment](docs/DEPLOYMENT.md)
@@ -523,11 +554,13 @@ ${cs.description}
 ### 4.2 API Documentation with OpenAPI 📚 **MEDIUM PRIORITY**
 
 **Install**:
+
 ```bash
 npm install swagger-jsdoc swagger-ui-express
 ```
 
 **Setup**:
+
 ```typescript
 // server/swagger.ts
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -541,9 +574,7 @@ const options = {
       version: '1.0.0',
       description: 'AI Companion System API',
     },
-    servers: [
-      { url: 'http://localhost:5000', description: 'Development' },
-    ],
+    servers: [{ url: 'http://localhost:5000', description: 'Development' }],
   },
   apis: ['./server/routes.ts', './server/**/*.ts'],
 };
@@ -555,6 +586,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 ```
 
 **Document Endpoints**:
+
 ```typescript
 /**
  * @swagger
@@ -587,6 +619,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 ### 4.3 Docker Setup 🐳 **LOW PRIORITY**
 
 **Create Dockerfile**:
+
 ```dockerfile
 # Dockerfile
 FROM node:20-alpine
@@ -611,6 +644,7 @@ CMD ["npm", "start"]
 ```
 
 **Docker Compose**:
+
 ```yaml
 # docker-compose.yml
 version: '3.8'
@@ -618,7 +652,7 @@ services:
   milla:
     build: .
     ports:
-      - "5000:5000"
+      - '5000:5000'
     environment:
       - NODE_ENV=production
     volumes:
@@ -632,6 +666,7 @@ services:
 ### 4.4 CI/CD Pipeline 🚀 **MEDIUM PRIORITY**
 
 **GitHub Actions**:
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -647,13 +682,13 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - run: npm ci
       - run: npm run check
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -667,11 +702,13 @@ jobs:
 ### 5.1 Error Tracking 🐛 **MEDIUM PRIORITY**
 
 **Install Sentry** (optional):
+
 ```bash
 npm install @sentry/node @sentry/react
 ```
 
 **Or Simple Logging**:
+
 ```typescript
 // server/logger.ts
 import winston from 'winston';
@@ -686,9 +723,11 @@ export const logger = winston.createLogger({
 });
 
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+  logger.add(
+    new winston.transports.Console({
+      format: winston.format.simple(),
+    })
+  );
 }
 ```
 
@@ -697,6 +736,7 @@ if (process.env.NODE_ENV !== 'production') {
 ### 5.2 Performance Monitoring 📈 **LOW PRIORITY**
 
 **Track Key Metrics**:
+
 ```typescript
 // server/metrics.ts
 class Metrics {
@@ -730,34 +770,39 @@ metrics.track('analysis_time_ms', Date.now() - start);
 
 ---
 
-## 🎯 Quick Wins (Do These First!) 
+## 🎯 Quick Wins (Do These First!)
 
 ### Week 1 Sprints
 
 **Monday**: Fix TypeScript Errors (4 hours)
+
 - Run `npm run check`
 - Fix syntax errors in SettingsPanel.tsx
 - Fix test file issues
 - Verify clean build
 
 **Tuesday**: Chat Integration (6 hours)
+
 - Add panel state to App
 - Implement event system
 - Connect VideoAnalysisPanel
 - Test end-to-end flow
 
 **Wednesday**: YouTube Player Integration (4 hours)
+
 - Add "Analyze" button
 - Implement loading state
 - Connect to analysis endpoint
 - Test with real video
 
 **Thursday**: Syntax Highlighting (2 hours)
+
 - Install prism-react-renderer
 - Update CodeSnippetCard
 - Test all supported languages
 
 **Friday**: Tests & Documentation (6 hours)
+
 - Write critical tests
 - Update README
 - Document new features
@@ -768,6 +813,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 ## 📋 Comprehensive Checklist
 
 ### Code Quality
+
 - [ ] Zero TypeScript compilation errors
 - [ ] ESLint passing with no warnings
 - [ ] Prettier formatting applied
@@ -775,6 +821,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 - [ ] All critical paths tested
 
 ### Features
+
 - [ ] millAlyzer integrated in chat
 - [ ] YouTube player has analyze button
 - [ ] Syntax highlighting working
@@ -782,6 +829,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 - [ ] Keyboard shortcuts implemented
 
 ### Performance
+
 - [ ] Database indexes added
 - [ ] API rate limiting implemented
 - [ ] Caching layer added
@@ -789,6 +837,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 - [ ] Load testing completed
 
 ### DevOps
+
 - [ ] README comprehensive
 - [ ] API documentation complete
 - [ ] Docker setup working
@@ -796,6 +845,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 - [ ] Monitoring in place
 
 ### Security
+
 - [ ] Environment validation
 - [ ] Input sanitization
 - [ ] CSRF protection
@@ -807,6 +857,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 ## 🎊 Success Metrics
 
 ### Technical Metrics
+
 - **Build Time**: < 30 seconds
 - **Test Coverage**: > 70%
 - **TypeScript Errors**: 0
@@ -814,6 +865,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 - **Lighthouse Score**: > 90
 
 ### User Metrics
+
 - **Analysis Success Rate**: > 95%
 - **Average Response Time**: < 2 seconds
 - **Feature Discovery**: > 80% users try millAlyzer
@@ -827,6 +879,7 @@ metrics.track('analysis_time_ms', Date.now() - start);
 This plan transforms Milla Rayne from a feature-rich prototype into a **production-grade AI companion system**. Each phase builds on the previous, creating a polished, maintainable, and scalable codebase.
 
 **Priority Order**:
+
 1. Fix TypeScript errors (blocks everything)
 2. Chat/Player integration (enables features)
 3. Tests (prevents regressions)

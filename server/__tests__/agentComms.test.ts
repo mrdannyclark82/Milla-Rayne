@@ -105,7 +105,9 @@ describe('Agent Communication Service', () => {
         args: {},
       };
 
-      expect(() => validateExternalCommand(command)).toThrow('Command target is required');
+      expect(() => validateExternalCommand(command)).toThrow(
+        'Command target is required'
+      );
     });
 
     it('should throw error for missing command', () => {
@@ -115,7 +117,9 @@ describe('Agent Communication Service', () => {
         args: {},
       };
 
-      expect(() => validateExternalCommand(command)).toThrow('Command name is required');
+      expect(() => validateExternalCommand(command)).toThrow(
+        'Command name is required'
+      );
     });
 
     it('should throw error for invalid args', () => {
@@ -125,7 +129,9 @@ describe('Agent Communication Service', () => {
         args: null,
       };
 
-      expect(() => validateExternalCommand(command)).toThrow('Command args must be an object');
+      expect(() => validateExternalCommand(command)).toThrow(
+        'Command args must be an object'
+      );
     });
   });
 
@@ -197,8 +203,8 @@ describe('Agent Communication Service', () => {
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
         args: { account: 'checking' },
-        metadata: { 
-          priority: 'high', 
+        metadata: {
+          priority: 'high',
           timeout: 5000,
           requestId: 'a2a-test-001',
         },
@@ -212,13 +218,13 @@ describe('Agent Communication Service', () => {
       expect(response).toHaveProperty('statusCode');
       expect(response).toHaveProperty('data');
       expect(response).toHaveProperty('metadata');
-      
+
       // Verify response follows A2A protocol standards
       expect(response.success).toBe(true);
       expect(response.statusCode).toBe('OK');
       expect(response.metadata?.executionTime).toBeGreaterThanOrEqual(0);
       expect(response.metadata?.timestamp).toBeDefined();
-      
+
       // Verify data payload is correctly structured
       expect(response.data).toHaveProperty('balance');
       expect(response.data).toHaveProperty('currency');
@@ -245,11 +251,11 @@ describe('Agent Communication Service', () => {
       ];
 
       const responses = await Promise.all(
-        commands.map(cmd => dispatchExternalCommand(cmd))
+        commands.map((cmd) => dispatchExternalCommand(cmd))
       );
 
       // All responses should follow the same structure
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response).toHaveProperty('success');
         expect(response).toHaveProperty('statusCode');
         expect(response).toHaveProperty('data');
@@ -262,7 +268,7 @@ describe('Agent Communication Service', () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_TRANSACTIONS',
-        args: { 
+        args: {
           account: 'checking',
           startDate: '2025-01-01',
           endDate: '2025-01-31',
@@ -273,7 +279,7 @@ describe('Agent Communication Service', () => {
 
       expect(response.success).toBe(true);
       expect(response.data).toBeDefined();
-      
+
       // Verify complex data structures are preserved
       if (Array.isArray(response.data.transactions)) {
         expect(response.data.transactions).toBeInstanceOf(Array);
@@ -299,11 +305,11 @@ describe('Agent Communication Service', () => {
 
     it('should verify agent status before dispatching commands', async () => {
       const agentName = 'FinanceAgent';
-      
+
       // Check agent status
       const status = await getAgentStatus(agentName);
       expect(status.available).toBe(true);
-      
+
       // If available, dispatch command
       if (status.available) {
         const command: ExternalAgentCommand = {
@@ -311,7 +317,7 @@ describe('Agent Communication Service', () => {
           command: 'GET_BALANCE',
           args: { account: 'checking' },
         };
-        
+
         const response = await dispatchExternalCommand(command);
         expect(response.success).toBe(true);
       }
@@ -330,7 +336,9 @@ describe('Agent Communication Service', () => {
       const measuredTime = endTime - startTime;
 
       expect(response.metadata?.executionTime).toBeDefined();
-      expect(response.metadata?.executionTime).toBeLessThanOrEqual(measuredTime + 10); // Allow 10ms tolerance
+      expect(response.metadata?.executionTime).toBeLessThanOrEqual(
+        measuredTime + 10
+      ); // Allow 10ms tolerance
     });
 
     it('should support concurrent external agent requests', async () => {
@@ -342,7 +350,9 @@ describe('Agent Communication Service', () => {
       }));
 
       const responses = await Promise.all(
-        commands.map(cmd => dispatchExternalCommand(cmd as ExternalAgentCommand))
+        commands.map((cmd) =>
+          dispatchExternalCommand(cmd as ExternalAgentCommand)
+        )
       );
 
       // All requests should complete successfully

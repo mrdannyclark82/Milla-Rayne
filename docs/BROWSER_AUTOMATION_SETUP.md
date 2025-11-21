@@ -7,7 +7,9 @@ If you're seeing `{"success":true,"connected":false,"provider":null,"expiresAt":
 ### The Solution (3 Steps)
 
 #### 1. Verify Your Environment Variables
+
 Make sure your `.env` file (NOT `.env.example`) has these values:
+
 ```env
 GOOGLE_CLIENT_ID=your_actual_client_id_here
 GOOGLE_CLIENT_SECRET=your_actual_client_secret_here
@@ -16,11 +18,13 @@ MEMORY_KEY=your_64_character_hex_key_here
 ```
 
 **Generate MEMORY_KEY if you haven't:**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 #### 2. Complete the OAuth Flow
+
 Having the credentials in `.env` is only step 1. You **must** complete the OAuth flow to get access tokens:
 
 ```bash
@@ -32,6 +36,7 @@ http://localhost:5000/oauth/google
 ```
 
 This will:
+
 1. Redirect you to Google's consent screen
 2. Ask you to grant permissions for Calendar and Keep
 3. Redirect back to your app with tokens
@@ -40,11 +45,13 @@ This will:
 **You should see:** "Successfully connected to Google!" page
 
 #### 3. Verify Connection
+
 ```bash
 curl http://localhost:5000/api/oauth/status
 ```
 
 **You should now see:**
+
 ```json
 {
   "success": true,
@@ -59,6 +66,7 @@ curl http://localhost:5000/api/oauth/status
 ## 🌐 Browser Automation Features
 
 Once connected, Milla can:
+
 - **Open websites** for you in a browser
 - **Add events to Google Calendar**
 - **Create notes in Google Keep**
@@ -67,6 +75,7 @@ Once connected, Milla can:
 
 1. **Python 3** installed
 2. **Playwright** installed:
+
 ```bash
 pip install playwright
 playwright install chromium
@@ -75,11 +84,13 @@ playwright install chromium
 ### How It Works
 
 When you ask Milla to:
+
 - "Open YouTube for me"
 - "Add a dentist appointment to my calendar for Tuesday at 2pm"
 - "Create a note reminding me to buy groceries"
 
 The system will:
+
 1. Get your valid OAuth token from the database
 2. Spawn a Python process running `browser.py`
 3. Pass the access token via environment variable
@@ -109,15 +120,17 @@ python3 browser.py add_note '{"title":"Test Note","content":"This is a test"}'
 ### Expected Output
 
 **Success:**
+
 ```json
 {
   "success": true,
   "message": "Successfully added calendar event: Test Event",
-  "data": {"title": "Test Event", "date": "2025-10-20", "time": "14:00"}
+  "data": { "title": "Test Event", "date": "2025-10-20", "time": "14:00" }
 }
 ```
 
 **No Token:**
+
 ```json
 {
   "success": false,
@@ -134,9 +147,11 @@ python3 browser.py add_note '{"title":"Test Note","content":"This is a test"}'
 **Problem:** Server logs show "Google OAuth credentials not configured"
 
 **Solution:**
+
 1. Verify `.env` file exists (not just `.env.example`)
 2. Restart the server after updating `.env`
 3. Check environment variable loading:
+
 ```bash
 # In your server code, add:
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set');
@@ -146,8 +161,9 @@ console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set
 
 **Problem:** `/api/oauth/status` returns `connected: false`
 
-**Solution:** 
+**Solution:**
 You haven't completed the OAuth flow. Navigate to:
+
 ```
 http://localhost:5000/oauth/google
 ```
@@ -157,6 +173,7 @@ http://localhost:5000/oauth/google
 **Problem:** Calendar events or webpage navigation don't work
 
 **Checklist:**
+
 - [ ] Playwright installed: `pip install playwright`
 - [ ] Chromium browser installed: `playwright install chromium`
 - [ ] OAuth flow completed (status shows connected:true)
@@ -164,6 +181,7 @@ http://localhost:5000/oauth/google
 - [ ] browser.py executable: `python3 browser.py navigate '{"url":"https://google.com"}'`
 
 **Common Error:** `ModuleNotFoundError: No module named 'playwright'`
+
 ```bash
 # Install playwright
 pip install playwright
@@ -176,11 +194,13 @@ playwright install chromium
 **Problem:** Command succeeds but event doesn't appear in Google Calendar
 
 **Possible Causes:**
+
 1. Google Calendar selectors may have changed (Google updates UI frequently)
 2. Authentication may not be properly set
 3. Calendar may be loading slowly
 
 **Debug Steps:**
+
 1. Run browser.py with `headless=False` to see what's happening:
    - Edit `browser.py` line where `BrowserAgentTool` is created
    - Change `headless=True` to `headless=False`
