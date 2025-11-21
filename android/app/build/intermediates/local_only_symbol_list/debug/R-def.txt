@@ -1,0 +1,12 @@
+R_DEF: Internal format may change without notice
+local
+string api_base_url
+string app_name
+string error_connection
+string error_generic
+string loading
+string retry
+string scene_context_format
+string send
+string type_message_hint
+style Theme.Milla
