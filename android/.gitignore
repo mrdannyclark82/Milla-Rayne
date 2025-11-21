@@ -60,4 +60,3 @@ lint-baseline.xml
 # Android Profiling
 *.hprof
 # Large ML model files
-gemma.tflite
