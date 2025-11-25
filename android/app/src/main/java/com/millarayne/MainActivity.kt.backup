@@ -100,64 +100,35 @@ class ChatViewModel : ViewModel() {
                 _isLoading.value = true
                 _error.value = null
 
-                // Validate input
-                if (content.isBlank()) {
-                    _error.value = "Message cannot be empty"
-                    return@launch
-                }
-
                 // Save user message
                 val userMessage = Message(
-                    content = content.trim(),
+                    content = content,
                     role = "user",
                     timestamp = System.currentTimeMillis()
                 )
-
-                try {
-                    messageDao.insertMessage(userMessage)
-                } catch (dbException: Exception) {
-                    android.util.Log.e("ChatViewModel", "Failed to save user message to database", dbException)
-                    _error.value = "Failed to save message locally: ${dbException.localizedMessage ?: "Database error"}"
-                    return@launch
-                }
+                messageDao.insertMessage(userMessage)
 
                 // Send to API
-                val request = ChatRequest(message = content.trim())
-                val response = try {
-                    MillaApiClient.apiService.sendMessage(request)
-                } catch (networkException: Exception) {
-                    android.util.Log.e("ChatViewModel", "Network request failed", networkException)
-                    throw networkException
-                }
+                val request = ChatRequest(message = content)
+                val response = MillaApiClient.apiService.sendMessage(request)
 
                 if (response.isSuccessful) {
                     val chatResponse = response.body()
-                    if (chatResponse != null && chatResponse.response.isNotBlank()) {
+                    if (chatResponse != null) {
                         // Save assistant message
                         val assistantMessage = Message(
                             content = chatResponse.response,
                             role = "assistant",
                             timestamp = System.currentTimeMillis()
                         )
-                        try {
-                            messageDao.insertMessage(assistantMessage)
-                        } catch (dbException: Exception) {
-                            android.util.Log.e("ChatViewModel", "Failed to save assistant message to database", dbException)
-                            _error.value = "Message sent but failed to save response locally: ${dbException.localizedMessage ?: "Database error"}"
-                            return@launch
-                        }
-                    } else {
-                        _error.value = "Received empty response from server"
+                        messageDao.insertMessage(assistantMessage)
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("ChatViewModel", "Server error: ${response.code()} - $errorBody")
-                    _error.value = "Server error: ${response.code()} - ${response.message()}"
+                    _error.value = "Server error: ${response.code()}"
                 }
             } catch (e: Exception) {
-                android.util.Log.e("ChatViewModel", "Error in sendMessage", e)
                 _error.value = when (e) {
-                    is java.net.UnknownHostException -> "Cannot reach server. Check IP address (192.168.40.117) and network connection."
+                    is java.net.UnknownHostException -> "Cannot reach server. Check IP address and network connection."
                     is java.net.ConnectException -> "Server connection refused. Make sure the server is running on port 5000."
                     is java.net.SocketTimeoutException -> "Connection timed out. Check your network and server status."
                     is retrofit2.HttpException -> "Server error (${e.code()}): ${e.message()}"
@@ -168,6 +139,7 @@ class ChatViewModel : ViewModel() {
             }
         }
     }
+
     fun clearError() {
         _error.value = null
     }

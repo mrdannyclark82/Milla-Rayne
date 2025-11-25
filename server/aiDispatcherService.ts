@@ -2,6 +2,35 @@ import {
   generateXAIResponse,
   PersonalityContext as XAIPersonalityContext,
 } from './xaiService';
+
+const responseCache = new Map<string, { response: AIResponse, timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+import {
+  generateOpenRouterResponse,
+  generateGrokResponse,
+  OpenRouterContext,
+} from './openrouterService';
+import { generateGeminiResponse } from './geminiService';
+import { storage } from './storage';
+import { config } from './config';
+import { generateOpenAIResponse } from './openaiChatService';
+import { getSemanticMemoryContext } from './memoryService';
+import { semanticSearchVideos } from './youtubeKnowledgeBase';
+import {
+  type AVRagContext,
+  enrichMessageWithAVContext,
+  validateSceneContext,
+  validateVoiceContext,
+  createAVContext,
+} from './avRagService';
+import type { VoiceAnalysisResult } from './voiceAnalysisService';
+import type { UICommand } from '../shared/schema';
+import {
+  startReasoningSession,
+  trackCommandIntent,
+  trackToolSelection,
+} from './xaiService';
 import {
   generateOpenRouterResponse,
   generateGrokResponse,
@@ -201,8 +230,11 @@ export async function dispatchAIResponse(
   traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
   // P1.5: Generate trace ID if not provided
-  const requestTraceId =
-    traceId || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const cacheKey = `${userMessage}-${JSON.stringify(context)}`;
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`🔍 [TRACE:${requestTraceId}] Cache hit for key: ${cacheKey}`);
+    return cached.response;
+  }
   console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Starting`);
   console.log(
     `🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`
@@ -564,6 +596,7 @@ export async function dispatchAIResponse(
   console.log(
     `🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Completed in ${duration}ms`
   );
+responseCache.set(cacheKey, { response, timestamp: Date.now() });
   console.log(
     `🔍 [TRACE:${requestTraceId}] Model: ${modelToUse}, Success: ${response.success}`
   );
