@@ -144,6 +144,7 @@ export function FloatingInput({
             className="w-full px-4 py-2 bg-gray-900/80 border border-gray-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400 resize-none"
             rows={2}
             disabled={isLoading}
+aria-label="Message input"
           />
           <div className="flex gap-2 items-center">
             {isMobile && MobileVoiceControls && cancelListening ? (
@@ -163,6 +164,7 @@ export function FloatingInput({
                 }}
                 variant={isListening ? 'default' : 'outline'}
                 disabled={isLoading}
+aria-label="Message input"
                 title="Click to speak"
                 className={isListening ? 'animate-pulse' : ''}
                 size={getButtonSize()}
@@ -197,6 +199,7 @@ export function FloatingInput({
                 }}
                 variant={isRecording ? 'destructive' : 'outline'}
                 disabled={isLoading}
+aria-label="Message input"
                 title={isRecording ? 'Stop recording' : 'Start recording'}
                 size={getButtonSize()}
                 aria-label={isRecording ? 'Stop recording' : 'Start recording'}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { lazy, Suspense } from 'react';
 import { voiceService } from '@/services/voiceService';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -9,7 +10,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
-import { YoutubePlayerWithActiveListening } from '@/components/YoutubePlayerWithActiveListening';
+const YoutubePlayerWithActiveListening = lazy(() => import('@/components/YoutubePlayerWithActiveListening'));
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
 import {
@@ -297,6 +298,7 @@ function App() {
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
           <YoutubePlayerWithActiveListening
+<Suspense fallback={<div>Loading video player...</div>}>
             videoId={youtubeVideoId || undefined}
             videos={youtubeVideos || undefined}
             onClose={() => {
@@ -313,6 +315,7 @@ function App() {
             }}
           />
         )}
+</Suspense>
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
           style={{

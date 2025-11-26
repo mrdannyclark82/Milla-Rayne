@@ -26,6 +26,7 @@
   "dependencies": {
     "@ai-sdk/xai": "^2.0.20",
     "@anthropic-ai/sdk": "^0.68.0",
+    "@google/gemini-cli": "^0.17.1",
     "@google/genai": "^1.16.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
@@ -111,6 +112,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "prism-react-renderer": "^2.4.1",
+    "python": "^0.0.4",
     "react": "^19.2.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.0",
