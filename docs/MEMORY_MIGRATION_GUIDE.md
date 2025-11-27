@@ -7,13 +7,16 @@ The Milla Rayne application has been upgraded from a file-based memory system (m
 ## New Features
 
 ### 1. SQLite Database
+
 - **Location**: `memory/milla.db`
 - **Performance**: Faster queries with indexed lookups
 - **Reliability**: ACID-compliant transactions
 - **Scalability**: Can handle millions of messages efficiently
 
 ### 2. Session Tracking
+
 The new system automatically tracks conversation sessions:
+
 - **Session ID**: Unique identifier for each conversation session
 - **Start/End Times**: Precise timestamps for session duration
 - **Message Count**: Number of messages in each session
@@ -21,14 +24,18 @@ The new system automatically tracks conversation sessions:
 - **Auto-segmentation**: Sessions are automatically split after 30+ minute gaps
 
 ### 3. Usage Patterns
+
 The system now tracks usage patterns to help Milla understand Danny Ray's habits:
+
 - **Day of Week**: Which days are most active
 - **Hour of Day**: Preferred conversation times
 - **Session Frequency**: How often conversations occur
 - **Message Volume**: Average messages per session
 
 ### 4. Enhanced Memory Schema
+
 Each message now includes:
+
 - Unique ID
 - Content
 - Role (user/assistant)
@@ -40,22 +47,28 @@ Each message now includes:
 ## Migration Process
 
 ### Prerequisites
+
 - Node.js and npm installed
 - Existing `memory/memories.txt` file (optional)
 
 ### Step 1: Install Dependencies
+
 The SQLite dependency has already been installed:
+
 ```bash
 npm install
 ```
 
 ### Step 2: Run Migration Script
+
 To migrate your existing memories.txt to SQLite:
+
 ```bash
 npx tsx server/migrateToSqlite.ts
 ```
 
 This will:
+
 1. Read all messages from `memory/memories.txt`
 2. Create the SQLite database at `memory/milla.db`
 3. Create sessions based on message timestamps (30+ minute gaps = new session)
@@ -64,13 +77,16 @@ This will:
 6. Display migration statistics
 
 ### Step 3: Verify Migration
+
 The migration script will output:
+
 - Number of messages migrated
 - Number of sessions created
 - Session statistics (average length, frequency)
 - Top 5 usage patterns
 
 Example output:
+
 ```
 === Migration Complete ===
 Successfully migrated: 1500 messages
@@ -90,6 +106,7 @@ Wednesday at 19:00 - 7 sessions, 252 messages
 ```
 
 ### Step 4: Start the Application
+
 ```bash
 npm run dev
 ```
@@ -101,6 +118,7 @@ The application will now automatically use the SQLite database.
 ### Session Management
 
 #### Start a New Session
+
 ```
 POST /api/session/start
 Body: { "userId": "default-user" }
@@ -108,6 +126,7 @@ Response: { "success": true, "session": { "sessionId": "...", "startTime": "..."
 ```
 
 #### End Current Session
+
 ```
 POST /api/session/end
 Body: { "sessionId": "...", "lastMessages": ["msg1", "msg2"] }
@@ -115,6 +134,7 @@ Response: { "success": true }
 ```
 
 #### Get Session Statistics
+
 ```
 GET /api/session/stats?userId=default-user
 Response: {
@@ -130,6 +150,7 @@ Response: {
 ```
 
 #### Get Usage Patterns
+
 ```
 GET /api/usage-patterns?userId=default-user
 Response: {
@@ -152,15 +173,17 @@ If you need to rollback to the file-based system:
 
 1. Stop the application
 2. Edit `server/storage.ts`:
+
    ```typescript
    // Change from:
-   import { SqliteStorage, type IStorage } from "./sqliteStorage";
+   import { SqliteStorage, type IStorage } from './sqliteStorage';
    export const storage: IStorage = new SqliteStorage();
-   
+
    // To:
-   import { FileStorage, type IStorage } from "./fileStorage";
+   import { FileStorage, type IStorage } from './fileStorage';
    export const storage: IStorage = new FileStorage();
    ```
+
 3. Restart the application
 
 Your original `memories.txt` file is backed up during migration as:
@@ -177,19 +200,25 @@ Your original `memories.txt` file is backed up during migration as:
 ## Maintenance
 
 ### Database Backup
+
 Regular backups are recommended:
+
 ```bash
 cp memory/milla.db memory/milla.db.backup-$(date +%Y%m%d)
 ```
 
 ### Database Size
+
 Monitor database size:
+
 ```bash
 ls -lh memory/milla.db
 ```
 
 ### Vacuum (Optional)
+
 To optimize database size:
+
 ```bash
 sqlite3 memory/milla.db "VACUUM;"
 ```
@@ -197,15 +226,18 @@ sqlite3 memory/milla.db "VACUUM;"
 ## Troubleshooting
 
 ### Migration Fails
+
 - Check that `memory/memories.txt` exists and is valid JSON
 - Ensure write permissions to the `memory/` directory
 - Check disk space availability
 
 ### Database Locked
+
 - Ensure only one instance of the application is running
 - Close any SQLite browser tools
 
 ### Voice Features Not Working
+
 - Ensure your browser supports Web Speech API
 - Grant microphone permissions when prompted
 - Use Chrome, Edge, or Safari (Firefox has limited support)
@@ -213,6 +245,7 @@ sqlite3 memory/milla.db "VACUUM;"
 ## Future Enhancements
 
 The SQLite system is designed to support:
+
 - Multi-user support with separate memory spaces
 - Advanced analytics and insights
 - Memory search and filtering

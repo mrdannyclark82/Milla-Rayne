@@ -1,6 +1,6 @@
 /**
  * Input Sanitization and Validation Utilities
- * 
+ *
  * This module provides robust sanitization and validation functions to prevent:
  * - Prompt injection attacks
  * - XSS attacks
@@ -46,7 +46,7 @@ export function sanitizePromptInput(input: string): string {
 
   // Trim excessive whitespace
   sanitized = sanitized.trim();
-  
+
   // Limit overall length to prevent resource exhaustion
   const MAX_LENGTH = 50000;
   if (sanitized.length > MAX_LENGTH) {
@@ -60,7 +60,7 @@ export function sanitizePromptInput(input: string): string {
  * Sanitize HTML content to prevent XSS
  * Removes dangerous HTML tags and attributes
  * Uses a more robust approach to handle edge cases
- * 
+ *
  * NOTE: For production use, consider using a dedicated HTML sanitization library
  * like DOMPurify or sanitize-html which handle edge cases more thoroughly.
  * This implementation uses regex which has known limitations with HTML parsing.
@@ -74,16 +74,16 @@ export function sanitizeHtml(html: string): string {
   // This is the safest approach when HTML rendering is not required
   // lgtm[js/incomplete-multi-character-sanitization] - intentionally removing all tags
   let sanitized = html.replace(/<[^>]*>/g, '');
-  
+
   // Remove any remaining javascript: and vbscript: protocols
   sanitized = sanitized.replace(/javascript:/gi, '');
   sanitized = sanitized.replace(/vbscript:/gi, '');
   sanitized = sanitized.replace(/data:/gi, '');
-  
+
   // Remove event handler patterns that might remain after tag stripping
   // lgtm[js/incomplete-multi-character-sanitization] - all tags already removed
   sanitized = sanitized.replace(/on\w+\s*=/gi, '');
-  
+
   return sanitized;
 }
 
@@ -97,20 +97,20 @@ export function sanitizePath(path: string): string {
 
   // Remove null bytes
   let sanitized = path.replace(/\0/g, '');
-  
+
   // Remove path traversal patterns
   sanitized = sanitized.replace(/\.\./g, '');
   sanitized = sanitized.replace(/\.\//, '');
-  
+
   // Remove leading slashes to prevent absolute path access
   sanitized = sanitized.replace(/^\/+/, '');
-  
+
   // Remove backslashes (Windows path separators)
   sanitized = sanitized.replace(/\\/g, '/');
-  
+
   // Remove multiple consecutive slashes
   sanitized = sanitized.replace(/\/+/g, '/');
-  
+
   return sanitized;
 }
 
@@ -131,10 +131,14 @@ export function sanitizeEmail(email: string): string | null {
 /**
  * Validate and sanitize usernames
  */
-export const usernameSchema = z.string()
+export const usernameSchema = z
+  .string()
   .min(3, 'Username must be at least 3 characters')
   .max(50, 'Username must be at most 50 characters')
-  .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens');
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Username can only contain letters, numbers, underscores, and hyphens'
+  );
 
 export function sanitizeUsername(username: string): string | null {
   try {
@@ -155,12 +159,12 @@ export function sanitizeSqlString(input: string): string {
 
   // Escape single quotes
   let sanitized = input.replace(/'/g, "''");
-  
+
   // Remove SQL comment markers
   sanitized = sanitized.replace(/--/g, '');
   sanitized = sanitized.replace(/\/\*/g, '');
   sanitized = sanitized.replace(/\*\//g, '');
-  
+
   return sanitized;
 }
 
@@ -186,12 +190,12 @@ export function sanitizeUrl(url: string): string | null {
   try {
     const validated = urlSchema.parse(url.trim());
     const parsed = new URL(validated);
-    
+
     // Only allow http and https protocols
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       return null;
     }
-    
+
     return validated;
   } catch {
     return null;
@@ -209,13 +213,13 @@ export function sanitizeCommandInput(input: string): string {
   // Remove shell metacharacters that could be used for command injection
   const dangerousChars = /[;&|`$(){}[\]<>\\!]/g;
   let sanitized = input.replace(dangerousChars, '');
-  
+
   // Remove newlines and carriage returns
   sanitized = sanitized.replace(/[\r\n]/g, ' ');
-  
+
   // Trim excessive whitespace
   sanitized = sanitized.trim().replace(/\s+/g, ' ');
-  
+
   return sanitized;
 }
 
@@ -229,7 +233,10 @@ export interface RateLimitConfig {
 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
-export function checkRateLimit(identifier: string, config: RateLimitConfig): boolean {
+export function checkRateLimit(
+  identifier: string,
+  config: RateLimitConfig
+): boolean {
   const now = Date.now();
   const record = rateLimitStore.get(identifier);
 
@@ -280,7 +287,9 @@ export function validateInput(
       const issues = (error as any).issues || [];
       return {
         valid: false,
-        error: issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', '),
+        error: issues
+          .map((e: any) => `${e.path.join('.')}: ${e.message}`)
+          .join(', '),
       };
     }
     return { valid: false, error: 'Validation failed' };

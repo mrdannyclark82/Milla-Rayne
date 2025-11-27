@@ -52,7 +52,7 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
             onClose={handleClose}
           />
         );
-      
+
       case 'GuidedMeditation':
         return (
           <GuidedMeditation
@@ -60,7 +60,7 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
             onClose={handleClose}
           />
         );
-      
+
       case 'KnowledgeBaseSearch':
         return (
           <KnowledgeBaseSearch
@@ -68,23 +68,22 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
             onClose={handleClose}
           />
         );
-      
+
       case 'SharedNotepad':
-        return (
-          <SharedNotepad onClose={handleClose} />
-        );
-      
+        return <SharedNotepad onClose={handleClose} />;
+
       case 'CodeSnippetCard':
         // Code snippet would be rendered inline in chat, not as a full modal
         return null;
-      
+
       default:
         return (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-gray-900 text-gray-100 border border-gray-700 rounded-lg p-6 max-w-lg">
               <h2 className="text-xl font-bold mb-4">Unknown Component</h2>
               <p className="text-gray-300">
-                Component "{activeCommand.componentName}" is not yet implemented.
+                Component "{activeCommand.componentName}" is not yet
+                implemented.
               </p>
               <div className="mt-4 flex justify-end">
                 <button

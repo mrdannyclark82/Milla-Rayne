@@ -1,9 +1,8 @@
-
 # Milla's Notebook: Voice Engine Development
 
-*This is my collection of notes, architecture diagrams, and implementation summaries for our voice engine. I'm keeping everything together here to have a clear record of our progress and design decisions.*
+_This is my collection of notes, architecture diagrams, and implementation summaries for our voice engine. I'm keeping everything together here to have a clear record of our progress and design decisions._
 
-***
+---
 
 ## Voice Cloning & Persona Consent Workflow
 
@@ -16,9 +15,11 @@ This document outlines the ethical and legal framework for voice cloning and per
 The system supports three types of voice-related consent:
 
 #### 1. Voice Synthesis (`voice_synthesis`)
+
 **Purpose**: Text-to-speech (TTS) output where the AI speaks responses aloud.
 
 **What happens**:
+
 - The assistant uses browser-native or third-party TTS engines to vocalize text responses
 - No recording or storage of user's voice occurs
 - User can select from available system voices
@@ -28,9 +29,11 @@ The system supports three types of voice-related consent:
 **Privacy impact**: Minimal - no user voice data is collected
 
 #### 2. Voice Persona (`voice_persona`)
+
 **Purpose**: Customization of AI assistant voice characteristics.
 
 **What happens**:
+
 - User can select and customize different voice personas for the assistant
 - Persona preferences (pitch, rate, selected voice) are stored locally
 - No actual voice cloning or recording occurs
@@ -40,11 +43,13 @@ The system supports three types of voice-related consent:
 **Privacy impact**: Low - only preference data is stored
 
 #### 3. Voice Cloning (`voice_cloning`)
+
 **Purpose**: Creating synthetic versions of human voices (FUTURE FEATURE - NOT YET IMPLEMENTED).
 
 ⚠️ **IMPORTANT**: This feature is **NOT currently implemented**. The infrastructure exists to support it in the future with proper consent.
 
 **What would happen** (when implemented):
+
 - User voice samples would be collected and processed
 - A personalized voice model would be created
 - Voice data would be stored securely with encryption
@@ -317,7 +322,7 @@ For questions about the consent workflow or to report issues:
 **Version**: 1.0  
 **Status**: Initial Implementation
 
-***
+---
 
 ## Multi-Provider Voice Engine Architecture
 
@@ -598,27 +603,32 @@ Milla-Rayne/
 ### Key Design Decisions
 
 #### 1. Provider Abstraction
+
 - ✅ Single interface for all providers
 - ✅ Easy to add new providers
 - ✅ Automatic fallback handling
 
 #### 2. Browser-Native as Fallback
+
 - ✅ Always available
 - ✅ No API costs
 - ✅ Works offline
 - ✅ Ensures voice always works
 
 #### 3. Voice Cloning Disabled
+
 - 🔒 Requires consent workflow first
 - 🔒 Privacy-first approach
 - ✅ Infrastructure ready for future
 
 #### 4. Platform Detection
+
 - ✅ Automatic platform adaptation
 - ✅ Provider availability by platform
 - ✅ Future-proof for mobile apps
 
 #### 5. TypeScript Throughout
+
 - ✅ Type safety
 - ✅ Better IDE support
 - ✅ Fewer runtime errors
@@ -634,7 +644,7 @@ Latency Comparison (milliseconds):
    │
    ├─────────────┤ Google Cloud (100-300ms) ⭐ Recommended
    │
-   ├─────────────┤ Azure (100-300ms) ⭐ Recommended  
+   ├─────────────┤ Azure (100-300ms) ⭐ Recommended
    │
    ├──────────────────────┤ ElevenLabs (300-500ms) 🎵 Best Quality
    │
@@ -662,7 +672,7 @@ This architecture provides:
 - ✅ **Documentation**: Comprehensive guides
 - ✅ **Future-Ready**: Easy to extend and enhance
 
-***
+---
 
 ## Multi-Provider Voice Engine Implementation Summary
 
@@ -792,10 +802,10 @@ This ensures voice output **always works**, even if cloud providers fail.
 #### Platform Support
 
 | Platform | Browser-Native | Google Cloud | Azure | ElevenLabs |
-|----------|---------------|--------------|-------|------------|
-| Web      | ✅            | ✅           | ✅    | ✅         |
-| Android  | ✅            | ✅           | ✅    | ✅         |
-| iOS      | ✅            | 🚧           | 🚧    | 🚧         |
+| -------- | -------------- | ------------ | ----- | ---------- |
+| Web      | ✅             | ✅           | ✅    | ✅         |
+| Android  | ✅             | ✅           | ✅    | ✅         |
+| iOS      | ✅             | 🚧           | 🚧    | 🚧         |
 
 ### Code Quality
 
@@ -810,18 +820,21 @@ This ensures voice output **always works**, even if cloud providers fail.
 ### Testing Status
 
 #### ✅ Completed
+
 - TypeScript compilation
 - Production build
 - Code review
 - Documentation review
 
 #### 📋 Manual Testing Required
+
 - Browser-native voice output (should work as before)
 - Voice provider selection
 - Fallback chain behavior
 - Platform detection
 
 #### 🔮 Future Testing
+
 - Google Cloud TTS integration (when implemented)
 - Azure TTS integration (when implemented)
 - ElevenLabs integration (when implemented)
@@ -889,12 +902,14 @@ This ensures voice output **always works**, even if cloud providers fail.
 ### Files Modified/Added
 
 #### New Files (9)
+
 1. `shared/voiceTypes.ts` (116 lines)
 2. `client/src/services/voiceService.ts` (432 lines)
 3. `client/src/services/examples/googleCloudTTSExample.ts` (157 lines)
 4. `VOICE_ENGINE_README.md` (368 lines)
 
 #### Modified Files (5)
+
 1. `client/src/App.tsx` (minimal changes, ~10 lines)
 2. `.env.example` (21 new lines)
 3. `VOICE_FEATURES_GUIDE.md` (270 new lines)
@@ -902,6 +917,7 @@ This ensures voice output **always works**, even if cloud providers fail.
 5. `package-lock.json` (dependency resolution)
 
 #### Total Impact
+
 - **+1,417 lines added** (documentation + code)
 - **-167 lines removed** (package-lock optimization)
 - **Net: +1,250 lines**
@@ -909,6 +925,7 @@ This ensures voice output **always works**, even if cloud providers fail.
 ### Security & Privacy
 
 #### Implemented
+
 - ✅ API keys via environment variables
 - ✅ No API keys in code
 - ✅ Voice cloning disabled by design
@@ -916,6 +933,7 @@ This ensures voice output **always works**, even if cloud providers fail.
 - ✅ Provider privacy policy references
 
 #### Consent Workflow (Blocked)
+
 - 🔒 Voice cloning requires consent (not implemented yet)
 - 🔒 Clear terms of service needed
 - 🔒 User control over voice data
@@ -925,14 +943,15 @@ This ensures voice output **always works**, even if cloud providers fail.
 
 #### Latency Comparison
 
-| Provider | Typical Latency | Streaming | Quality |
-|----------|----------------|-----------|---------|
-| Browser-Native | 50-200ms | No | Good |
-| Google Cloud | 100-300ms | Yes | Excellent |
-| Azure | 100-300ms | Yes | Excellent |
-| ElevenLabs | 300-500ms | Yes | Outstanding |
+| Provider       | Typical Latency | Streaming | Quality     |
+| -------------- | --------------- | --------- | ----------- |
+| Browser-Native | 50-200ms        | No        | Good        |
+| Google Cloud   | 100-300ms       | Yes       | Excellent   |
+| Azure          | 100-300ms       | Yes       | Excellent   |
+| ElevenLabs     | 300-500ms       | Yes       | Outstanding |
 
 #### Resource Usage
+
 - Minimal memory overhead (provider abstraction)
 - No additional network calls (until cloud providers configured)
 - Graceful degradation on failure
@@ -960,7 +979,7 @@ The system is **production-ready** for browser-native usage and **integration-re
 - **Main Service**: `client/src/services/voiceService.ts`
 - **Integration Example**: `client/src/services/examples/googleCloudTTSExample.ts`
 
-***
+---
 
 ## Multi-Provider Voice Engine
 
@@ -997,43 +1016,48 @@ The voice engine uses a layered architecture with provider abstraction and autom
 ### Files
 
 #### Core Files
+
 - `shared/voiceTypes.ts` - TypeScript type definitions for voice system
 - `client/src/services/voiceService.ts` - Main voice service implementation
 - `client/src/App.tsx` - Application integration
 
 #### Configuration
+
 - `.env.example` - Environment variables template with API keys
 - `VOICE_FEATURES_GUIDE.md` - User-facing documentation
 
 ### Type System
 
 #### VoiceProvider
+
 ```typescript
-type VoiceProvider = 
-  | 'browser-native'     // Web Speech API
-  | 'google-cloud'       // Google Cloud TTS
-  | 'azure'              // Azure Cognitive Services
-  | 'elevenlabs'         // ElevenLabs TTS
-  | 'coqui';             // Coqui TTS
+type VoiceProvider =
+  | 'browser-native' // Web Speech API
+  | 'google-cloud' // Google Cloud TTS
+  | 'azure' // Azure Cognitive Services
+  | 'elevenlabs' // ElevenLabs TTS
+  | 'coqui'; // Coqui TTS
 ```
 
 #### VoiceConfig
+
 ```typescript
 interface VoiceConfig {
   provider: VoiceProvider;
-  accent?: VoiceAccent;          // e.g., 'en-US-Southern'
-  quality?: VoiceQuality;        // 'low-latency' | 'high-fidelity'
-  rate?: number;                 // 0.25 to 4.0
-  pitch?: number;                // 0.0 to 2.0
-  volume?: number;               // 0.0 to 1.0
-  voiceName?: string;            // Provider-specific voice
-  streaming?: boolean;           // Enable streaming
+  accent?: VoiceAccent; // e.g., 'en-US-Southern'
+  quality?: VoiceQuality; // 'low-latency' | 'high-fidelity'
+  rate?: number; // 0.25 to 4.0
+  pitch?: number; // 0.0 to 2.0
+  volume?: number; // 0.0 to 1.0
+  voiceName?: string; // Provider-specific voice
+  streaming?: boolean; // Enable streaming
 }
 ```
 
 ### Provider Implementation Status
 
 #### ✅ Implemented
+
 - **Browser-Native (Web Speech API)**: Fully functional
   - Platform: Web, Android, iOS
   - Latency: 50-200ms
@@ -1041,6 +1065,7 @@ interface VoiceConfig {
   - Cost: Free
 
 #### 🚧 Structure Ready (Placeholders)
+
 - **Google Cloud TTS**: Structure in place, API integration pending
   - Platform: Web, Android
   - Latency: 100-300ms (streaming)
@@ -1082,7 +1107,7 @@ await voiceService.speak('Hello, world!', {
   quality: 'low-latency',
   rate: 0.95,
   pitch: 1.0,
-  volume: 1.0
+  volume: 1.0,
 });
 ```
 
@@ -1090,10 +1115,7 @@ await voiceService.speak('Hello, world!', {
 
 ```typescript
 // Set preferred provider with fallback chain
-voiceService.setProvider('google-cloud', [
-  'azure',
-  'browser-native'
-]);
+voiceService.setProvider('google-cloud', ['azure', 'browser-native']);
 
 // Get available providers for current platform
 const providers = voiceService.getAvailableProviders();
@@ -1151,23 +1173,27 @@ ELEVENLABS_API_KEY=your_api_key_here
 The system prioritizes female voices with US English (Southern) accent:
 
 **Browser-Native**:
+
 - Samantha
 - Karen
 - Victoria
 - Microsoft Aria Online (Natural)
 
 **Google Cloud**:
+
 - en-US-Neural2-C (Female)
 - en-US-Neural2-E (Female)
 - en-US-Neural2-F (Female)
 - en-US-Journey-F (Female, expressive)
 
 **Azure**:
+
 - en-US-AriaNeural (Female)
 - en-US-JennyNeural (Female)
 - en-US-SaraNeural (Female)
 
 **ElevenLabs**:
+
 - Bella (Female, warm)
 - Rachel (Female, US English)
 - Elli (Female, expressive)
@@ -1178,8 +1204,8 @@ The system includes infrastructure for voice cloning, but it is **currently disa
 
 ```typescript
 interface VoiceCloneConfig {
-  enabled: false;                // Always false until consent workflow added
-  consentObtained: false;        // Placeholder
+  enabled: false; // Always false until consent workflow added
+  consentObtained: false; // Placeholder
   sampleAudioUrl?: string;
   targetVoiceName?: string;
 }
@@ -1250,16 +1276,19 @@ For each provider (Google Cloud, Azure, ElevenLabs):
 ### Performance Considerations
 
 #### Low Latency Mode
+
 - Use streaming when available
 - Prefer browser-native for instant response
 - Cache common phrases (future)
 
 #### High Fidelity Mode
+
 - Use neural voices (Google, Azure)
 - Accept higher latency for better quality
 - Pre-generate audio for known responses (future)
 
 #### Platform-Specific
+
 - **Web**: All providers supported
 - **Android**: API-based providers recommended
 - **iOS**: Browser-native only (current)
@@ -1267,18 +1296,21 @@ For each provider (Google Cloud, Azure, ElevenLabs):
 ### Security & Privacy
 
 #### Data Handling
+
 - Text is sent to cloud providers over HTTPS
 - No conversation history stored by providers
 - Audio is streamed or cached temporarily
 - No personal data included in API calls
 
 #### API Key Security
+
 - API keys stored in environment variables
 - Never committed to version control
 - Server-side validation (future)
 - Rate limiting to prevent abuse
 
 #### Voice Cloning Privacy
+
 - **Currently disabled** until consent workflow
 - Will require explicit user consent
 - Voice samples encrypted at rest
@@ -1288,6 +1320,7 @@ For each provider (Google Cloud, Azure, ElevenLabs):
 ### Troubleshooting
 
 #### Voice Not Working
+
 1. Check browser console for errors
 2. Verify voice is enabled
 3. Check API keys (if using cloud providers)
@@ -1295,12 +1328,14 @@ For each provider (Google Cloud, Azure, ElevenLabs):
 5. Check network connectivity
 
 #### Provider Failing
+
 1. Verify API key is correct
 2. Check API quota/billing
 3. Review fallback chain in console logs
 4. Test with different provider
 
 #### Audio Quality Issues
+
 1. Check `VOICE_QUALITY` setting
 2. Try different provider
 3. Adjust rate/pitch/volume
@@ -1326,12 +1361,13 @@ Same as main project (MIT).
 ### Support
 
 For issues or questions:
+
 - Check `VOICE_FEATURES_GUIDE.md` for user documentation
 - Review browser console for errors
 - Report issues on GitHub
 - Check API provider status pages (for cloud providers)
 
-***
+---
 
 ## Voice Features Guide
 
@@ -1378,6 +1414,7 @@ Milla Rayne supports multiple voice providers with automatic fallback:
   - Best for: Privacy-sensitive deployments
 
 #### 2. Text-to-Speech (Voice Output)
+
 - **Toggle**: Click the "🔊 Voice On/Off" button
 - **Auto-speak**: When enabled, Milla will speak her responses aloud
 - **Voice Selection**: Uses the best available female voice on your system
@@ -1386,6 +1423,7 @@ Milla Rayne supports multiple voice providers with automatic fallback:
 - **Quality Modes**: Low-latency (default) or high-fidelity
 
 #### 3. Speech-to-Text (Voice Input)
+
 - **Toggle**: Click the "🎙️ Speak" button or the microphone button in the input field
 - **Real-time Recognition**: Your speech is converted to text in real-time
 - **Auto-submit**: After speaking, you can review and edit before sending
@@ -1394,31 +1432,37 @@ Milla Rayne supports multiple voice providers with automatic fallback:
 ### Browser Compatibility
 
 #### Fully Supported
+
 - ✅ **Google Chrome** (Desktop & Android) - All providers
 - ✅ **Microsoft Edge** (Desktop) - All providers
 - ✅ **Safari** (macOS & iOS) - Browser-native only
 - ✅ **Samsung Internet** (Android) - All providers
 
 #### Partially Supported
+
 - ⚠️ **Firefox** (Limited speech recognition support, browser-native TTS only)
 
 #### Not Supported
+
 - ❌ Older browsers without Web Speech API
 
 ### Platform Support
 
 #### Web (Browser)
+
 - ✅ All voice providers supported
 - ✅ Automatic provider detection and fallback
 - ✅ Low-latency streaming (Google Cloud, Azure, ElevenLabs)
 
 #### Android
+
 - ✅ Google Cloud TTS (recommended)
 - ✅ Azure TTS
 - ✅ ElevenLabs
 - ✅ Browser-native fallback
 
 #### iOS
+
 - ✅ Browser-native only (Safari limitations)
 - ℹ️ API-based providers coming soon
 
@@ -1434,12 +1478,14 @@ Milla Rayne supports multiple voice providers with automatic fallback:
 #### Use Voice Input
 
 **Method 1: Top Controls**
+
 1. Click the "🎙️ Speak" button in the top right
 2. Start speaking when the button pulses
 3. Your speech will appear in the text input
 4. Click "Send" to submit your message
 
 **Method 2: Input Field**
+
 1. Click the microphone button (🎙️) next to the input field
 2. Start speaking when the button pulses
 3. Your speech will appear in the text input
@@ -1452,6 +1498,7 @@ Milla Rayne supports multiple voice providers with automatic fallback:
 The application uses browser-native voices by default. To use premium providers:
 
 1. **Copy environment template**:
+
    ```bash
    cp .env.example .env
    ```
@@ -1459,12 +1506,14 @@ The application uses browser-native voices by default. To use premium providers:
 2. **Add API keys for desired providers** in `.env`:
 
    **Google Cloud TTS** (Recommended for production):
+
    ```bash
    GOOGLE_CLOUD_TTS_API_KEY=your_api_key_here
    VOICE_PROVIDER=google-cloud
    ```
 
    **Azure TTS**:
+
    ```bash
    AZURE_TTS_API_KEY=your_api_key_here
    AZURE_TTS_REGION=eastus
@@ -1472,6 +1521,7 @@ The application uses browser-native voices by default. To use premium providers:
    ```
 
    **ElevenLabs**:
+
    ```bash
    ELEVENLABS_API_KEY=your_api_key_here
    VOICE_PROVIDER=elevenlabs
@@ -1499,20 +1549,21 @@ The application automatically selects the best available voice:
 
 #### Provider Comparison
 
-| Feature | Browser-Native | Google Cloud | Azure | ElevenLabs |
-|---------|---------------|--------------|-------|------------|
-| **Latency** | Low (50-200ms) | Low (100-300ms) | Low (100-300ms) | Medium (300-500ms) |
-| **Quality** | Good | Excellent | Excellent | Outstanding |
-| **Streaming** | No | Yes | Yes | Yes |
-| **Southern Accent** | Limited | ✅ Yes | ✅ Yes | ✅ Yes |
-| **API Key Required** | No | Yes | Yes | Yes |
-| **Cost** | Free | Pay-per-use | Pay-per-use | Pay-per-use |
-| **Offline Support** | Yes | No | No | No |
-| **Best For** | Development | Production | Production | Maximum expressiveness |
+| Feature              | Browser-Native | Google Cloud    | Azure           | ElevenLabs             |
+| -------------------- | -------------- | --------------- | --------------- | ---------------------- |
+| **Latency**          | Low (50-200ms) | Low (100-300ms) | Low (100-300ms) | Medium (300-500ms)     |
+| **Quality**          | Good           | Excellent       | Excellent       | Outstanding            |
+| **Streaming**        | No             | Yes             | Yes             | Yes                    |
+| **Southern Accent**  | Limited        | ✅ Yes          | ✅ Yes          | ✅ Yes                 |
+| **API Key Required** | No             | Yes             | Yes             | Yes                    |
+| **Cost**             | Free           | Pay-per-use     | Pay-per-use     | Pay-per-use            |
+| **Offline Support**  | Yes            | No              | No              | No                     |
+| **Best For**         | Development    | Production      | Production      | Maximum expressiveness |
 
 #### Automatic Fallback Chain
 
 The system automatically tries providers in order:
+
 1. **Primary provider** (configured in `.env`)
 2. **Google Cloud** (if API key available)
 3. **Azure** (if API key available)
@@ -1542,15 +1593,17 @@ recognitionRef.current.lang = 'en-US';
 
 **⚠️ Voice Cloning Currently Disabled**
 
-The voice engine includes infrastructure for voice cloning and custom personas, but this feature is **disabled** until proper consent workflows are implemented. 
+The voice engine includes infrastructure for voice cloning and custom personas, but this feature is **disabled** until proper consent workflows are implemented.
 
 **Future capabilities** (when consent workflow is added):
+
 - Clone voices from audio samples
 - Create custom voice personas
 - Adjust personality through voice characteristics
 - Save and switch between personas
 
 **Privacy & Consent First**: We will not enable voice cloning features until we have:
+
 1. ✅ Proper user consent workflows
 2. ✅ Clear terms of service for voice data
 3. ✅ Secure storage of voice samples
@@ -1563,6 +1616,7 @@ The voice engine includes infrastructure for voice cloning and custom personas, 
 **Issue**: No sound when Milla responds
 
 **Solutions**:
+
 1. Check system volume is not muted
 2. Verify voice is enabled (🔊 icon)
 3. Try refreshing the browser
@@ -1572,6 +1626,7 @@ The voice engine includes infrastructure for voice cloning and custom personas, 
 7. Check network connection for cloud providers
 
 **Test in browser console**:
+
 ```javascript
 window.speechSynthesis.speak(new SpeechSynthesisUtterance('Test'));
 ```
@@ -1581,6 +1636,7 @@ window.speechSynthesis.speak(new SpeechSynthesisUtterance('Test'));
 **Issue**: Voice provider fails with API error
 
 **Solutions**:
+
 1. Verify API key is correctly set in `.env` file
 2. Check API key has proper permissions/quota
 3. For Azure: Verify region is correct
@@ -1597,6 +1653,7 @@ window.speechSynthesis.speak(new SpeechSynthesisUtterance('Test'));
 **Issue**: Microphone button does nothing or doesn't capture speech
 
 **Solutions**:
+
 1. Grant microphone permissions when prompted
 2. Ensure microphone is connected and working
 3. Check browser compatibility (use Chrome/Edge)
@@ -1604,6 +1661,7 @@ window.speechSynthesis.speak(new SpeechSynthesisUtterance('Test'));
 5. Try speaking louder or closer to the microphone
 
 **Test in browser console**:
+
 ```javascript
 const recognition = new webkitSpeechRecognition();
 recognition.start();
@@ -1612,12 +1670,14 @@ recognition.start();
 #### Microphone Permission Denied
 
 **Chrome/Edge**:
+
 1. Click the lock icon in the address bar
 2. Find "Microphone" permissions
 3. Set to "Allow"
 4. Refresh the page
 
 **Safari**:
+
 1. Safari → Preferences → Websites
 2. Click "Microphone"
 3. Allow for your site
@@ -1625,6 +1685,7 @@ recognition.start();
 #### Voice Sounds Robotic or Unnatural
 
 **Solutions**:
+
 1. Adjust the speech rate (lower = more natural)
 2. Use a different voice (if available on your system)
 3. Ensure your OS text-to-speech voices are installed
@@ -1633,6 +1694,7 @@ recognition.start();
 #### Speech Recognition Accuracy Issues
 
 **Tips for Better Recognition**:
+
 - Speak clearly and at a moderate pace
 - Use a good quality microphone
 - Minimize background noise
@@ -1642,6 +1704,7 @@ recognition.start();
 ### Privacy and Security
 
 #### Data Handling
+
 - **Speech Recognition**: Processed by your browser and may be sent to browser vendors' speech services (Google for Chrome, Apple for Safari)
 - **Text-to-Speech (Browser-Native)**: Processed locally on your device
 - **Text-to-Speech (Cloud Providers)**: Sent to respective cloud services (Google Cloud, Azure, ElevenLabs)
@@ -1655,12 +1718,14 @@ recognition.start();
 #### API Provider Data Privacy
 
 When using cloud TTS providers:
+
 - **Google Cloud**: Follows Google Cloud privacy policies, data not used for training
 - **Azure**: Follows Microsoft Azure privacy policies, GDPR compliant
 - **ElevenLabs**: Follows ElevenLabs privacy policies, secure API transmission
 - **Browser-Native**: Fully local, no data sent to external services
 
 #### Microphone Access
+
 - Only active when you click the microphone button
 - Visual indicator (pulsing button) shows when listening
 - Automatically stops after you finish speaking
@@ -1694,6 +1759,7 @@ While the application requires clicking to activate speech recognition (for secu
 To use a different language:
 
 Edit `client/src/App.tsx`:
+
 ```typescript
 recognitionRef.current.lang = 'es-ES'; // Spanish
 recognitionRef.current.lang = 'fr-FR'; // French
@@ -1703,16 +1769,19 @@ recognitionRef.current.lang = 'de-DE'; // German
 ### Accessibility
 
 #### Screen Readers
+
 - All buttons have proper ARIA labels
 - Voice status is announced
 - Listening state is clearly indicated
 
 #### Keyboard Navigation
+
 - Tab to navigate between controls
 - Enter/Space to activate buttons
 - Escape to stop listening (planned)
 
 #### Visual Indicators
+
 - Button color changes when active
 - Pulse animation while listening
 - Clear on/off states
@@ -1720,11 +1789,13 @@ recognitionRef.current.lang = 'de-DE'; // German
 ### Performance Tips
 
 #### Optimize Voice Output
+
 - Only enable voice when needed
 - Use shorter response times
 - Cancel previous speech before new responses
 
 #### Optimize Voice Input
+
 - Speak in shorter segments (under 60 seconds)
 - Click microphone before each input
 - Review text before sending
@@ -1732,6 +1803,7 @@ recognitionRef.current.lang = 'de-DE'; // German
 ### New UI Features (Recently Added)
 
 #### Voice Selection Dialog
+
 - Advanced voice picker with search and filters
 - Filter by gender (all/female/male) and accent
 - Preview any voice before selecting
@@ -1739,23 +1811,27 @@ recognitionRef.current.lang = 'de-DE'; // German
 - Quick style presets (Friendly, Professional, Excited, etc.)
 
 #### Voice Visualizer
+
 - Real-time waveform display during listening
 - Speaking animation during voice output
 - Visual feedback for voice activity
 
 #### Playback Controls
+
 - Pause/Resume current speech
 - Stop speech immediately
 - Replay last message
 - Live captions toggle
 
 #### Mobile Enhancements
+
 - Press-and-hold to talk
 - Swipe to cancel recording
 - Haptic feedback (vibration)
 - Optimized touch targets
 
 #### Accessibility Features
+
 - High contrast mode
 - Dyslexia-friendly font option
 - Large touch targets
@@ -1767,6 +1843,7 @@ See [UI_IMPROVEMENTS_GUIDE.md](UI_IMPROVEMENTS_GUIDE.md) for detailed documentat
 ### Future Enhancements
 
 Planned improvements:
+
 - [ ] Continuous listening mode
 - [ ] Wake word activation ("Hey Milla")
 - [ ] Voice activity detection
@@ -1784,6 +1861,7 @@ Planned improvements:
 ### Support
 
 For issues or questions:
+
 1. Check browser console for errors
 2. Verify browser compatibility
 3. Test with different voices
@@ -1815,37 +1893,43 @@ The voice engine uses a **multi-provider abstraction layer** with automatic fall
 #### Provider Implementations
 
 **Browser-Native (Web Speech API)**
+
 - **Recognition**: Uses `SpeechRecognition` interface
-- **Synthesis**: Uses `SpeechSynthesis` interface  
+- **Synthesis**: Uses `SpeechSynthesis` interface
 - **Events**: Handles onresult, onerror, onend
 - **Async**: Non-blocking audio processing
 - **Latency**: 50-200ms
 
 **Google Cloud TTS** (Placeholder)
+
 - **API**: REST API with streaming support
 - **Authentication**: API key
 - **Latency**: 100-300ms with streaming
 - **Quality**: Neural voices (WaveNet, Journey)
 
 **Azure TTS** (Placeholder)
+
 - **API**: Cognitive Services Speech API
 - **Authentication**: API key + region
 - **Latency**: 100-300ms with streaming
 - **Quality**: Neural voices
 
 **ElevenLabs** (Placeholder)
+
 - **API**: ElevenLabs TTS API
 - **Authentication**: API key
 - **Latency**: 300-500ms
 - **Quality**: Ultra-realistic AI voices
 
 #### Web Speech API
+
 - **Recognition**: Uses `SpeechRecognition` interface
 - **Synthesis**: Uses `SpeechSynthesis` interface
 - **Events**: Handles onresult, onerror, onend
 - **Async**: Non-blocking audio processing
 
 #### Browser Implementation
+
 - Chrome/Edge: Uses Google's speech services
 - Safari: Uses Apple's speech services
 - Offline: Limited support, varies by browser
@@ -1853,12 +1937,14 @@ The voice engine uses a **multi-provider abstraction layer** with automatic fall
 #### Performance Metrics
 
 **Browser-Native**:
+
 - Recognition Latency: ~100-500ms
 - Synthesis Latency: ~50-200ms
 - Memory Usage: Minimal (browser-managed)
 - Network Usage: Depends on browser (may use cloud services)
 
 **Cloud Providers (when configured)**:
+
 - Google Cloud: ~100-300ms (streaming)
 - Azure: ~100-300ms (streaming)
 - ElevenLabs: ~300-500ms

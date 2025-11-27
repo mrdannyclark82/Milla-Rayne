@@ -708,7 +708,7 @@ export async function triggerServerEvolution(): Promise<
 
 /**
  * A/B Testing for Adaptive Personas
- * 
+ *
  * This system manages A/B testing of different LLM persona configurations
  * to objectively determine which personality style yields better user outcomes.
  */
@@ -767,7 +767,8 @@ const defaultPersonas: PersonaConfig[] = [
     id: 'persona_pragmatic',
     name: 'Pragmatic',
     style: 'pragmatic',
-    systemPromptModifier: 'Be direct, efficient, and solution-focused. Prioritize practical outcomes.',
+    systemPromptModifier:
+      'Be direct, efficient, and solution-focused. Prioritize practical outcomes.',
     temperature: 0.3,
     responseLength: 'concise',
     toneAdjustments: {
@@ -780,7 +781,8 @@ const defaultPersonas: PersonaConfig[] = [
     id: 'persona_empathetic',
     name: 'Empathetic',
     style: 'empathetic',
-    systemPromptModifier: 'Be warm, supportive, and emotionally attuned. Show understanding and care.',
+    systemPromptModifier:
+      'Be warm, supportive, and emotionally attuned. Show understanding and care.',
     temperature: 0.7,
     responseLength: 'moderate',
     toneAdjustments: {
@@ -793,7 +795,8 @@ const defaultPersonas: PersonaConfig[] = [
     id: 'persona_strategic',
     name: 'Strategic',
     style: 'strategic',
-    systemPromptModifier: 'Think long-term, consider multiple perspectives, and provide thoughtful analysis.',
+    systemPromptModifier:
+      'Think long-term, consider multiple perspectives, and provide thoughtful analysis.',
     temperature: 0.5,
     responseLength: 'detailed',
     toneAdjustments: {
@@ -806,7 +809,8 @@ const defaultPersonas: PersonaConfig[] = [
     id: 'persona_creative',
     name: 'Creative',
     style: 'creative',
-    systemPromptModifier: 'Be imaginative, explore novel ideas, and think outside the box.',
+    systemPromptModifier:
+      'Be imaginative, explore novel ideas, and think outside the box.',
     temperature: 0.9,
     responseLength: 'moderate',
     toneAdjustments: {
@@ -822,16 +826,19 @@ const defaultPersonas: PersonaConfig[] = [
  */
 export function initializePersonaABTesting(): void {
   console.log('[PersonaAB] Initializing A/B testing system...');
-  
+
   // Load default personas
-  defaultPersonas.forEach(persona => {
+  defaultPersonas.forEach((persona) => {
     personaConfigs.set(persona.id, persona);
   });
-  
+
   // Set default active persona (balanced)
-  currentActivePersona = personaConfigs.get('persona_empathetic') || defaultPersonas[1];
-  
-  console.log(`[PersonaAB] Loaded ${personaConfigs.size} persona configurations`);
+  currentActivePersona =
+    personaConfigs.get('persona_empathetic') || defaultPersonas[1];
+
+  console.log(
+    `[PersonaAB] Loaded ${personaConfigs.size} persona configurations`
+  );
   console.log(`[PersonaAB] Active persona: ${currentActivePersona.name}`);
 }
 
@@ -844,13 +851,13 @@ export function startPersonaABTest(
 ): PersonaABTest {
   const personaA = personaConfigs.get(personaAId);
   const personaB = personaConfigs.get(personaBId);
-  
+
   if (!personaA || !personaB) {
     throw new Error('Invalid persona IDs');
   }
-  
+
   const testId = `abtest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
+
   const test: PersonaABTest = {
     testId,
     startedAt: Date.now(),
@@ -863,12 +870,12 @@ export function startPersonaABTest(
     status: 'active',
     confidence: 0,
   };
-  
+
   activePersonaTests.set(testId, test);
-  
+
   console.log(`[PersonaAB] Started A/B test: ${testId}`);
   console.log(`[PersonaAB] Testing ${personaA.name} vs ${personaB.name}`);
-  
+
   return test;
 }
 
@@ -878,16 +885,16 @@ export function startPersonaABTest(
 export function getActivePersonaConfig(): PersonaConfig {
   // In A/B test mode, alternate between personas
   const activeTests = Array.from(activePersonaTests.values()).filter(
-    test => test.status === 'active'
+    (test) => test.status === 'active'
   );
-  
+
   if (activeTests.length > 0) {
     // Alternate between test personas (50/50 split)
     const test = activeTests[0];
     const usePersonaA = Math.random() < 0.5;
     return usePersonaA ? test.personaA : test.personaB;
   }
-  
+
   return currentActivePersona || defaultPersonas[1];
 }
 
@@ -911,19 +918,23 @@ export async function recordPersonaTestResult(
     outcome,
     userFeedback,
   };
-  
+
   // Find active test using this persona
   for (const test of activePersonaTests.values()) {
     if (test.status !== 'active') continue;
-    
+
     if (test.personaA.id === personaId) {
       test.results.personaA.push(result);
-      console.log(`[PersonaAB] Recorded result for Persona A: ${test.personaA.name}`);
+      console.log(
+        `[PersonaAB] Recorded result for Persona A: ${test.personaA.name}`
+      );
     } else if (test.personaB.id === personaId) {
       test.results.personaB.push(result);
-      console.log(`[PersonaAB] Recorded result for Persona B: ${test.personaB.name}`);
+      console.log(
+        `[PersonaAB] Recorded result for Persona B: ${test.personaB.name}`
+      );
     }
-    
+
     // Check if we have enough data to determine winner
     await evaluateABTest(test.testId);
   }
@@ -935,34 +946,34 @@ export async function recordPersonaTestResult(
 async function evaluateABTest(testId: string): Promise<void> {
   const test = activePersonaTests.get(testId);
   if (!test || test.status !== 'active') return;
-  
+
   const resultsA = test.results.personaA;
   const resultsB = test.results.personaB;
-  
+
   // Need at least 20 results per persona for statistical significance
   if (resultsA.length < 20 || resultsB.length < 20) {
     return;
   }
-  
+
   // Calculate average metrics
   const avgA = calculateAverageMetrics(resultsA);
   const avgB = calculateAverageMetrics(resultsB);
-  
+
   // Calculate composite score (weighted average)
-  const scoreA = 
+  const scoreA =
     avgA.taskCompletionRate * 0.4 +
     avgA.userSatisfactionScore * 0.4 +
     avgA.engagementLevel * 0.2;
-  
-  const scoreB = 
+
+  const scoreB =
     avgB.taskCompletionRate * 0.4 +
     avgB.userSatisfactionScore * 0.4 +
     avgB.engagementLevel * 0.2;
-  
+
   // Determine winner (require at least 10% improvement)
   const improvementThreshold = 0.1;
   const difference = Math.abs(scoreA - scoreB);
-  
+
   if (difference < improvementThreshold) {
     test.winner = 'tie';
     test.confidence = 0.5;
@@ -973,18 +984,24 @@ async function evaluateABTest(testId: string): Promise<void> {
     test.winner = 'B';
     test.confidence = Math.min(difference / improvementThreshold, 1.0);
   }
-  
+
   // If confidence > 0.8, complete the test
   if (test.confidence >= 0.8) {
     test.status = 'completed';
-    
-    const winningPersona = test.winner === 'A' ? test.personaA : 
-                          test.winner === 'B' ? test.personaB : null;
-    
+
+    const winningPersona =
+      test.winner === 'A'
+        ? test.personaA
+        : test.winner === 'B'
+          ? test.personaB
+          : null;
+
     if (winningPersona) {
       currentActivePersona = winningPersona;
       console.log(`[PersonaAB] ✅ Test ${testId} completed!`);
-      console.log(`[PersonaAB] Winner: ${winningPersona.name} (confidence: ${(test.confidence * 100).toFixed(1)}%)`);
+      console.log(
+        `[PersonaAB] Winner: ${winningPersona.name} (confidence: ${(test.confidence * 100).toFixed(1)}%)`
+      );
       console.log(`[PersonaAB] Setting as active persona`);
     }
   }
@@ -993,7 +1010,9 @@ async function evaluateABTest(testId: string): Promise<void> {
 /**
  * Calculate average metrics from test results
  */
-function calculateAverageMetrics(results: PersonaTestResult[]): PersonaTestResult['metrics'] {
+function calculateAverageMetrics(
+  results: PersonaTestResult[]
+): PersonaTestResult['metrics'] {
   if (results.length === 0) {
     return {
       taskCompletionRate: 0,
@@ -1002,19 +1021,24 @@ function calculateAverageMetrics(results: PersonaTestResult[]): PersonaTestResul
       engagementLevel: 0,
     };
   }
-  
-  const sum = results.reduce((acc, result) => ({
-    taskCompletionRate: acc.taskCompletionRate + result.metrics.taskCompletionRate,
-    userSatisfactionScore: acc.userSatisfactionScore + result.metrics.userSatisfactionScore,
-    responseTime: acc.responseTime + result.metrics.responseTime,
-    engagementLevel: acc.engagementLevel + result.metrics.engagementLevel,
-  }), {
-    taskCompletionRate: 0,
-    userSatisfactionScore: 0,
-    responseTime: 0,
-    engagementLevel: 0,
-  });
-  
+
+  const sum = results.reduce(
+    (acc, result) => ({
+      taskCompletionRate:
+        acc.taskCompletionRate + result.metrics.taskCompletionRate,
+      userSatisfactionScore:
+        acc.userSatisfactionScore + result.metrics.userSatisfactionScore,
+      responseTime: acc.responseTime + result.metrics.responseTime,
+      engagementLevel: acc.engagementLevel + result.metrics.engagementLevel,
+    }),
+    {
+      taskCompletionRate: 0,
+      userSatisfactionScore: 0,
+      responseTime: 0,
+      engagementLevel: 0,
+    }
+  );
+
   return {
     taskCompletionRate: sum.taskCompletionRate / results.length,
     userSatisfactionScore: sum.userSatisfactionScore / results.length,
@@ -1028,7 +1052,7 @@ function calculateAverageMetrics(results: PersonaTestResult[]): PersonaTestResul
  */
 export function getActivePersonaABTests(): PersonaABTest[] {
   return Array.from(activePersonaTests.values()).filter(
-    test => test.status === 'active'
+    (test) => test.status === 'active'
   );
 }
 
@@ -1037,19 +1061,18 @@ export function getActivePersonaABTests(): PersonaABTest[] {
  */
 export function getPersonaABTestStats() {
   const tests = Array.from(activePersonaTests.values());
-  const activeTests = tests.filter(t => t.status === 'active');
-  const completedTests = tests.filter(t => t.status === 'completed');
-  
+  const activeTests = tests.filter((t) => t.status === 'active');
+  const completedTests = tests.filter((t) => t.status === 'completed');
+
   return {
     totalTests: tests.length,
     activeTests: activeTests.length,
     completedTests: completedTests.length,
     currentPersona: currentActivePersona?.name || 'Unknown',
-    availablePersonas: Array.from(personaConfigs.values()).map(p => ({
+    availablePersonas: Array.from(personaConfigs.values()).map((p) => ({
       id: p.id,
       name: p.name,
       style: p.style,
     })),
   };
 }
-

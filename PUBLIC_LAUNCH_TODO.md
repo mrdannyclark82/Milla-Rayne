@@ -38,17 +38,18 @@ The following API keys were found in committed files and MUST be rotated:
 Since sensitive data was in the repository:
 
 - [ ] **Option A**: Use BFG Repo-Cleaner to remove sensitive data from history
+
   ```bash
   # Install BFG
   brew install bfg  # or download from https://rtyley.github.io/bfg-repo-cleaner/
-  
+
   # Clone a fresh copy
   git clone --mirror https://github.com/mrdannyclark82/Milla-Rayne.git
-  
+
   # Remove sensitive files
   bfg --delete-files .env.save* Milla-Rayne.git
   bfg --delete-files memories.txt Milla-Rayne.git
-  
+
   # Clean and force push
   cd Milla-Rayne.git
   git reflog expire --expire=now --all && git gc --prune=now --aggressive
@@ -245,6 +246,7 @@ Once the repository is public:
 ## 📚 Reference Documents
 
 For detailed information, refer to:
+
 - [SECURITY_AUDIT_CHECKLIST.md](SECURITY_AUDIT_CHECKLIST.md) - Detailed security information
 - [BRANCH_CLEANUP_GUIDE.md](BRANCH_CLEANUP_GUIDE.md) - Branch management details
 - [REPOSITORY_ENHANCEMENT_GUIDE.md](REPOSITORY_ENHANCEMENT_GUIDE.md) - Marketing and growth strategies
@@ -256,6 +258,7 @@ For detailed information, refer to:
 ## 🆘 Need Help?
 
 If you're unsure about any step:
+
 1. Review the detailed guide documents above
 2. Check GitHub's documentation
 3. Ask in developer communities (Stack Overflow, Reddit)

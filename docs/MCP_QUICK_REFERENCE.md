@@ -47,6 +47,7 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 **Endpoint**: `POST /api/mcp/image-generate`
 
 **Request**:
+
 ```json
 {
   "prompt": "A beautiful sunset over mountains",
@@ -61,6 +62,7 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -73,6 +75,7 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 **Endpoint**: `POST /api/mcp/text-generate`
 
 **Request**:
+
 ```json
 {
   "prompt": "Write a short story about a robot",
@@ -86,6 +89,7 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -98,10 +102,12 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 **Endpoint**: `GET /api/mcp/models/:task`
 
 **Examples**:
+
 - `GET /api/mcp/models/text-to-image`
 - `GET /api/mcp/models/text-generation`
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -118,11 +124,13 @@ HUGGINGFACE_MODEL=philipp-zettl/UnfilteredAI-NSFW-gen-v2
 **Endpoint**: `GET /api/mcp/model-status/:modelId`
 
 **Example**:
+
 ```
 GET /api/mcp/model-status/philipp-zettl%2FUnfilteredAI-NSFW-gen-v2
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -143,14 +151,11 @@ const mcpService = getHuggingFaceMCPService();
 ### Generate an Image
 
 ```typescript
-const result = await mcpService.generateImage(
-  'A beautiful landscape',
-  {
-    numInferenceSteps: 30,
-    guidanceScale: 7.5,
-    negativePrompt: 'ugly, blurry'
-  }
-);
+const result = await mcpService.generateImage('A beautiful landscape', {
+  numInferenceSteps: 30,
+  guidanceScale: 7.5,
+  negativePrompt: 'ugly, blurry',
+});
 
 if (result.success) {
   console.log('Image URL:', result.imageUrl);
@@ -162,14 +167,11 @@ if (result.success) {
 ### Generate Text
 
 ```typescript
-const result = await mcpService.generateText(
-  'Write a poem about the ocean',
-  {
-    maxNewTokens: 200,
-    temperature: 0.8,
-    topP: 0.9
-  }
-);
+const result = await mcpService.generateText('Write a poem about the ocean', {
+  maxNewTokens: 200,
+  temperature: 0.8,
+  topP: 0.9,
+});
 
 if (result.success) {
   console.log('Generated text:', result.text);
@@ -192,28 +194,29 @@ console.log('Model ready:', isReady);
 
 ### Image Generation Options
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `numInferenceSteps` | number | 30 | Quality vs speed (10-50) |
-| `guidanceScale` | number | 7.5 | Prompt adherence (1-20) |
-| `negativePrompt` | string | - | What to avoid |
-| `width` | number | - | Image width (px) |
-| `height` | number | - | Image height (px) |
+| Parameter           | Type   | Default | Description              |
+| ------------------- | ------ | ------- | ------------------------ |
+| `numInferenceSteps` | number | 30      | Quality vs speed (10-50) |
+| `guidanceScale`     | number | 7.5     | Prompt adherence (1-20)  |
+| `negativePrompt`    | string | -       | What to avoid            |
+| `width`             | number | -       | Image width (px)         |
+| `height`            | number | -       | Image height (px)        |
 
 ### Text Generation Options
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `maxNewTokens` | number | 500 | Max tokens to generate |
-| `temperature` | number | 0.7 | Randomness (0-1) |
-| `topP` | number | 0.95 | Nucleus sampling (0-1) |
-| `topK` | number | 50 | Top-k sampling |
-| `repetitionPenalty` | number | 1.1 | Penalize repetition |
-| `doSample` | boolean | true | Enable sampling |
+| Parameter           | Type    | Default | Description            |
+| ------------------- | ------- | ------- | ---------------------- |
+| `maxNewTokens`      | number  | 500     | Max tokens to generate |
+| `temperature`       | number  | 0.7     | Randomness (0-1)       |
+| `topP`              | number  | 0.95    | Nucleus sampling (0-1) |
+| `topK`              | number  | 50      | Top-k sampling         |
+| `repetitionPenalty` | number  | 1.1     | Penalize repetition    |
+| `doSample`          | boolean | true    | Enable sampling        |
 
 ## cURL Examples
 
 ### Generate Image
+
 ```bash
 curl -X POST http://localhost:5000/api/mcp/image-generate \
   -H "Content-Type: application/json" \
@@ -227,6 +230,7 @@ curl -X POST http://localhost:5000/api/mcp/image-generate \
 ```
 
 ### Generate Text
+
 ```bash
 curl -X POST http://localhost:5000/api/mcp/text-generate \
   -H "Content-Type: application/json" \
@@ -240,11 +244,13 @@ curl -X POST http://localhost:5000/api/mcp/text-generate \
 ```
 
 ### List Models
+
 ```bash
 curl http://localhost:5000/api/mcp/models/text-to-image
 ```
 
 ### Check Model Status
+
 ```bash
 curl http://localhost:5000/api/mcp/model-status/philipp-zettl%2FUnfilteredAI-NSFW-gen-v2
 ```
@@ -261,6 +267,7 @@ All endpoints return consistent error responses:
 ```
 
 Common errors:
+
 - **503**: MCP service not configured (missing API key)
 - **400**: Bad request (missing required parameters)
 - **500**: Server error (API failure, network issue)
@@ -295,19 +302,25 @@ This ensures high availability even if MCP has issues.
 ## Troubleshooting
 
 ### Service Not Available
+
 ```
 Error: Hugging Face MCP service not configured
 ```
+
 **Solution**: Verify `HUGGINGFACE_API_KEY` is set in `.env`
 
 ### Model Loading
+
 ```
 Error: Model is currently loading. Please try again in a moment.
 ```
+
 **Solution**: Wait 10-30 seconds and retry (cold start)
 
 ### Import Errors
+
 If you see module import errors, ensure you're using the correct extension:
+
 ```typescript
 // Correct
 import { getHuggingFaceMCPService } from './huggingfaceMcpService.ts';

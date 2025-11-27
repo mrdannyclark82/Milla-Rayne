@@ -27,23 +27,23 @@ jobs:
     environment:
       name: staging
       url: https://staging.milla-rayne.app
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: npm
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build application
         run: npm run build
         env:
           NODE_ENV: production
-      
+
       - name: Deploy to staging
         run: |
           echo "Deployment logic here"
@@ -53,7 +53,7 @@ jobs:
           echo "- Railway: railway up"
           echo "- Vercel: vercel --prod"
           echo "- Custom server: rsync or scp to staging server"
-      
+
       - name: Run smoke tests
         run: |
           echo "Running smoke tests against staging environment"
@@ -68,28 +68,28 @@ jobs:
       name: production
       url: https://milla-rayne.app
     needs: []
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: npm
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build application
         run: npm run build
         env:
           NODE_ENV: production
-      
+
       - name: Deploy to production
         run: |
           echo "Deployment logic here"
           echo "This is where you would deploy to your production environment"
-      
+
       - name: Run smoke tests
         run: |
           echo "Running smoke tests against production environment"
@@ -103,15 +103,15 @@ jobs:
     environment:
       name: heroku
       url: https://milla-rayne.herokuapp.com
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.13.15
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: "milla-rayne"
+          heroku_app_name: 'milla-rayne'
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
 
   # Example: Deploy to Railway
@@ -122,13 +122,13 @@ jobs:
     environment:
       name: railway
       url: https://milla-rayne.railway.app
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - name: Install Railway CLI
         run: npm install -g @railway/cli
-      
+
       - name: Deploy to Railway
         run: railway up
         env:
@@ -142,28 +142,28 @@ jobs:
     environment:
       name: vps
       url: https://milla-rayne.example.com
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-node@v6
         with:
           node-version: '20.x'
-      
+
       - name: Build application
         run: |
           npm ci
           npm run build
-      
+
       - name: Deploy to VPS via SSH
         uses: easingthemes/ssh-deploy@v5
         with:
           SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.VPS_HOST }}
           REMOTE_USER: ${{ secrets.VPS_USER }}
-          SOURCE: "dist/"
-          TARGET: "/var/www/milla-rayne/"
-      
+          SOURCE: 'dist/'
+          TARGET: '/var/www/milla-rayne/'
+
       - name: Restart application on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -179,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [deploy-staging]
     if: always()
-    
+
     steps:
       - name: Send notification
         run: |
@@ -196,23 +196,23 @@ jobs:
       contents: write
       pages: write
       id-token: write
-    
+
     steps:
       - uses: actions/checkout@v5
-      
+
       - uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: npm
-      
+
       - name: Install dependencies
         run: |
           npm ci
           npm install -D typedoc
-      
+
       - name: Generate TypeDoc documentation
         run: npm run docs:generate
-      
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -223,7 +223,7 @@ jobs:
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           commit_message: 'docs: update API documentation'
-      
+
       - name: Add deployment summary
         run: |
           echo "## 📚 Documentation Deployed" >> $GITHUB_STEP_SUMMARY

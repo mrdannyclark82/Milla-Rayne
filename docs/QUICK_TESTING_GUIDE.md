@@ -3,6 +3,7 @@
 ## 🚀 Quick Start (5 minutes)
 
 ### Option 1: Test the Interactive Demo
+
 1. Open `SCENE_DEMO.html` in any web browser
 2. Use the controls on the right to test features:
    - Change **Time of Day** (dawn/day/dusk/night)
@@ -14,7 +15,9 @@
 4. Hover over "Adaptive Scene" badge in bottom-left to see scene info
 
 ### Option 2: Test the Full Application
+
 1. Build and run the application:
+
    ```bash
    npm install
    npm run build
@@ -55,6 +58,7 @@
 ## 📋 What to Look For
 
 ### ✅ Expected Behavior (Scene Working Correctly)
+
 - [ ] Left 2/3 of screen has an animated gradient background
 - [ ] Background colors change based on current time of day
 - [ ] Background colors change when mood is adjusted
@@ -65,6 +69,7 @@
 - [ ] All settings update the scene in real-time
 
 ### ❌ Issues to Report (Scene Not Working)
+
 - [ ] Left 2/3 shows a static image (milla_new.jpg)
 - [ ] No gradient or animated background visible
 - [ ] Scene Settings dialog is missing controls
@@ -74,12 +79,14 @@
 ## 🎨 Visual Expectations
 
 ### Time of Day Colors
+
 - **Dawn (5am-8am):** Soft pinks, oranges, yellows (sunrise colors)
 - **Day (8am-5pm):** Light blues, sky blues, bright colors
 - **Dusk (5pm-8pm):** Warm oranges, purples, reds (sunset colors)
 - **Night (8pm-5am):** Dark blues, purples, blacks (night sky)
 
 ### Mood Colors
+
 - **Calm:** Cool blues, purples, serene tones
 - **Energetic:** Bright pinks, oranges, vibrant colors
 - **Romantic:** Warm pinks, reds, soft romantic colors
@@ -89,26 +96,34 @@
 ## 🐛 Common Issues & Solutions
 
 ### "I don't see any background animation"
+
 **Check:**
+
 1. Is "Adaptive Background" enabled in Scene Settings?
 2. Is "Reduced Motion" disabled in your OS settings?
 3. Check browser console for errors
 4. Try refreshing the page
 
 ### "The background is a static image"
+
 **Fix:**
+
 1. Open Scene Settings
 2. Ensure "Adaptive Background" is set to "Enabled"
 3. Clear browser cache and reload
 
 ### "Parallax doesn't work"
+
 **Check:**
+
 1. Is Parallax Intensity > 0 in Scene Settings?
 2. Are you moving mouse over the LEFT 2/3 of screen?
 3. Is your GPU tier low? (Parallax auto-disables on low GPU)
 
 ### "I don't see any particles"
+
 **Check:**
+
 1. Is Particle Density set to something other than "off"?
 2. Is your GPU tier low? (Particles auto-disable on low GPU)
 3. Try increasing particle density to "high"
@@ -116,16 +131,19 @@
 ## 📱 Testing on Different Devices
 
 ### Desktop (Chrome/Firefox/Safari)
+
 - Full features should work
 - Parallax, particles, animations all active
 - Scene Settings fully functional
 
 ### Mobile/Tablet
+
 - Background should render (may auto-downgrade quality)
 - Touch events should work normally
 - Settings should be accessible
 
 ### Low-End Devices
+
 - Scene should auto-detect low GPU tier
 - Parallax and particles auto-disabled
 - Static or minimal animations shown
@@ -133,6 +151,7 @@
 ## 🔍 Debug Mode
 
 ### Enable Dev Debug Overlay
+
 1. Open Scene Settings
 2. Scroll to bottom
 3. Toggle "Dev Debug Overlay" to ON
@@ -148,6 +167,7 @@
    - FPS counter (toggle available)
 
 ### Scene Info Indicator (Always Available)
+
 - Hover over the "Adaptive Scene" badge in bottom-left
 - Shows current scene context without opening settings
 - Non-intrusive way to verify scene is active
@@ -155,6 +175,7 @@
 ## 📊 Performance Check
 
 Open browser DevTools (F12) and check:
+
 - **Performance tab:** FPS should be 30-60
 - **Memory tab:** No significant leaks over time
 - **Console tab:** No error messages
@@ -183,6 +204,7 @@ Open browser DevTools (F12) and check:
 ## 🎯 Summary
 
 The adaptive scene system should:
+
 1. Be visible by default (no configuration needed)
 2. Respond to time of day automatically
 3. Allow mood customization via settings

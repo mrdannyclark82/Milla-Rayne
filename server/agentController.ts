@@ -1,4 +1,9 @@
-import { Agent, BaseAgent, AgentExecutionResult, AgentExecutionContext } from './agents/base';
+import {
+  Agent,
+  BaseAgent,
+  AgentExecutionResult,
+  AgentExecutionContext,
+} from './agents/base';
 
 /**
  * Agent Controller - Manages agent registration and dispatch
@@ -6,7 +11,10 @@ import { Agent, BaseAgent, AgentExecutionResult, AgentExecutionContext } from '.
  */
 class AgentController {
   private agents: Map<string, BaseAgent> = new Map();
-  private executionMetrics: Map<string, { successCount: number; failureCount: number; avgTime: number }> = new Map();
+  private executionMetrics: Map<
+    string,
+    { successCount: number; failureCount: number; avgTime: number }
+  > = new Map();
 
   /**
    * Register an agent (must extend BaseAgent)
@@ -15,19 +23,29 @@ class AgentController {
     if (!(agent instanceof BaseAgent)) {
       throw new Error(`Agent '${agent.name}' must extend BaseAgent class`);
     }
-    
+
     this.agents.set(agent.name, agent);
-    this.executionMetrics.set(agent.name, { successCount: 0, failureCount: 0, avgTime: 0 });
+    this.executionMetrics.set(agent.name, {
+      successCount: 0,
+      failureCount: 0,
+      avgTime: 0,
+    });
     console.log(`✅ Agent registered: ${agent.name} - ${agent.description}`);
   }
 
   /**
    * Dispatch task to agent with proper error handling and metrics
    */
-  async dispatch(agentName: string, task: string, context?: Partial<AgentExecutionContext>): Promise<string> {
+  async dispatch(
+    agentName: string,
+    task: string,
+    context?: Partial<AgentExecutionContext>
+  ): Promise<string> {
     const agent = this.agents.get(agentName);
     if (!agent) {
-      throw new Error(`Agent '${agentName}' not found. Available agents: ${Array.from(this.agents.keys()).join(', ')}`);
+      throw new Error(
+        `Agent '${agentName}' not found. Available agents: ${Array.from(this.agents.keys()).join(', ')}`
+      );
     }
 
     const startTime = Date.now();
@@ -41,21 +59,26 @@ class AgentController {
     try {
       // Execute agent with context
       const result = await agent.execute(task);
-      
+
       // Update metrics
       const executionTime = Date.now() - startTime;
       this.updateMetrics(agentName, true, executionTime);
-      
-      console.log(`✅ Agent '${agentName}' completed task in ${executionTime}ms`);
+
+      console.log(
+        `✅ Agent '${agentName}' completed task in ${executionTime}ms`
+      );
       return result;
     } catch (error) {
       // Update failure metrics
       const executionTime = Date.now() - startTime;
       this.updateMetrics(agentName, false, executionTime);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error(`❌ Agent '${agentName}' failed after ${executionTime}ms: ${errorMessage}`);
-      
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error(
+        `❌ Agent '${agentName}' failed after ${executionTime}ms: ${errorMessage}`
+      );
+
       // Re-throw with agent context
       throw new Error(`Agent '${agentName}' execution failed: ${errorMessage}`);
     }
@@ -64,7 +87,11 @@ class AgentController {
   /**
    * Update agent execution metrics
    */
-  private updateMetrics(agentName: string, success: boolean, executionTime: number): void {
+  private updateMetrics(
+    agentName: string,
+    success: boolean,
+    executionTime: number
+  ): void {
     const metrics = this.executionMetrics.get(agentName);
     if (!metrics) return;
 
@@ -75,10 +102,11 @@ class AgentController {
     }
 
     // Update average execution time (exponential moving average)
-    metrics.avgTime = metrics.avgTime === 0 
-      ? executionTime 
-      : (metrics.avgTime * 0.8 + executionTime * 0.2);
-    
+    metrics.avgTime =
+      metrics.avgTime === 0
+        ? executionTime
+        : metrics.avgTime * 0.8 + executionTime * 0.2;
+
     this.executionMetrics.set(agentName, metrics);
   }
 
@@ -111,9 +139,14 @@ class AgentController {
     this.executionMetrics.forEach((metrics, agentName) => {
       allMetrics[agentName] = {
         ...metrics,
-        successRate: metrics.successCount + metrics.failureCount > 0
-          ? (metrics.successCount / (metrics.successCount + metrics.failureCount) * 100).toFixed(2) + '%'
-          : 'N/A'
+        successRate:
+          metrics.successCount + metrics.failureCount > 0
+            ? (
+                (metrics.successCount /
+                  (metrics.successCount + metrics.failureCount)) *
+                100
+              ).toFixed(2) + '%'
+            : 'N/A',
       };
     });
     return allMetrics;

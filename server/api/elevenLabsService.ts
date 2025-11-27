@@ -38,11 +38,14 @@ export async function generateElevenLabsSpeech(
   const cachedFile = speechCache.get(cacheKey);
   if (cachedFile) {
     console.log(`Voice cache hit for text: "${text.substring(0, 50)}..."`);
-    
+
     // Verify file still exists
     const audioDir = path.resolve(process.cwd(), 'client', 'public', 'audio');
-    const audioFilePath = path.join(audioDir, cachedFile.replace('/audio/', ''));
-    
+    const audioFilePath = path.join(
+      audioDir,
+      cachedFile.replace('/audio/', '')
+    );
+
     if (fs.existsSync(audioFilePath)) {
       return cachedFile;
     } else {
@@ -95,7 +98,7 @@ export async function generateElevenLabsSpeech(
   fs.writeFileSync(audioFilePath, audioBuffer);
 
   const publicUrl = `/audio/${audioFileName}`;
-  
+
   // Store in cache
   speechCache.set(cacheKey, publicUrl);
 

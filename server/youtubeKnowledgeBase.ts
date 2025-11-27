@@ -78,23 +78,19 @@ export async function saveToKnowledgeBase(
   try {
     const saved = await storage.saveYoutubeKnowledge(knowledgeEntry);
     console.log(`✅ Saved video "${analysis.title}" to knowledge base`);
-    
+
     // Add to vector database for semantic search
     const vectorContent = buildVectorContent(analysis);
-    await vectorDB.addContent(
-      `youtube:${analysis.videoId}`,
-      vectorContent,
-      {
-        type: 'youtube',
-        timestamp: new Date().toISOString(),
-        userId,
-        videoId: analysis.videoId,
-        title: analysis.title,
-        videoType: analysis.type,
-      }
-    );
+    await vectorDB.addContent(`youtube:${analysis.videoId}`, vectorContent, {
+      type: 'youtube',
+      timestamp: new Date().toISOString(),
+      userId,
+      videoId: analysis.videoId,
+      title: analysis.title,
+      videoType: analysis.type,
+    });
     console.log(`✅ Added video to vector database for semantic search`);
-    
+
     return saved;
   } catch (error) {
     console.error('Error saving to knowledge base:', error);
@@ -111,25 +107,25 @@ function buildVectorContent(analysis: VideoAnalysis): string {
     `Summary: ${analysis.summary}`,
     `Type: ${analysis.type}`,
   ];
-  
+
   if (analysis.keyPoints && analysis.keyPoints.length > 0) {
     parts.push(`Key Points: ${analysis.keyPoints.join('. ')}`);
   }
-  
+
   if (analysis.codeSnippets && analysis.codeSnippets.length > 0) {
     const snippets = analysis.codeSnippets
-      .map(s => `${s.language}: ${s.description}`)
+      .map((s) => `${s.language}: ${s.description}`)
       .join('. ');
     parts.push(`Code: ${snippets}`);
   }
-  
+
   if (analysis.cliCommands && analysis.cliCommands.length > 0) {
     const commands = analysis.cliCommands
-      .map(c => `${c.command} - ${c.description}`)
+      .map((c) => `${c.command} - ${c.description}`)
       .join('. ');
     parts.push(`Commands: ${commands}`);
   }
-  
+
   return parts.join('\n');
 }
 
@@ -535,11 +531,14 @@ export async function semanticSearchVideos(
 
     // Retrieve full video details for each result
     const videos: Array<{ video: YoutubeKnowledge; similarity: number }> = [];
-    
+
     for (const result of results) {
       const videoId = result.entry.metadata.videoId;
       if (videoId) {
-        const video = await storage.getYoutubeKnowledgeByVideoId(videoId, userId);
+        const video = await storage.getYoutubeKnowledgeByVideoId(
+          videoId,
+          userId
+        );
         if (video) {
           videos.push({
             video,

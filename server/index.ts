@@ -44,13 +44,17 @@ export async function initApp() {
   app.use(limiter);
 
   // P1.4: Strict CORS Policy - Only allow trusted origins
-  const trustedOrigins = process.env.TRUSTED_ORIGINS 
+  const trustedOrigins = process.env.TRUSTED_ORIGINS
     ? process.env.TRUSTED_ORIGINS.split(',')
-    : ['http://localhost:5000', 'http://localhost:5173', 'http://127.0.0.1:5000'];
+    : [
+        'http://localhost:5000',
+        'http://localhost:5173',
+        'http://127.0.0.1:5000',
+      ];
 
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-    
+
     // Check if origin is trusted
     if (origin && trustedOrigins.includes(origin)) {
       res.header('Access-Control-Allow-Origin', origin);
@@ -61,7 +65,7 @@ export async function initApp() {
     } else {
       console.warn(`⚠️  Blocked CORS request from untrusted origin: ${origin}`);
     }
-    
+
     res.header(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, DELETE, OPTIONS'
@@ -88,10 +92,12 @@ export async function initApp() {
     let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
     // P1.5: Distributed Tracing - Generate unique trace ID for request
-    const traceId = req.headers['x-trace-id'] as string || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const traceId =
+      (req.headers['x-trace-id'] as string) ||
+      `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     req.headers['x-trace-id'] = traceId;
     res.setHeader('X-Trace-Id', traceId);
-    
+
     console.log(`🔍 [TRACE:${traceId}] ${req.method} ${path} - Started`);
 
     const originalResJson = res.json;
@@ -161,32 +167,46 @@ export async function initApp() {
   initializeAIUpdatesScheduler();
 
   // Initialize Proactive Repository Ownership System
-  const { initializeUserAnalytics } = await import('./userInteractionAnalyticsService');
+  const { initializeUserAnalytics } = await import(
+    './userInteractionAnalyticsService'
+  );
   await initializeUserAnalytics();
 
-  const { initializeSandboxEnvironment } = await import('./sandboxEnvironmentService');
+  const { initializeSandboxEnvironment } = await import(
+    './sandboxEnvironmentService'
+  );
   await initializeSandboxEnvironment();
 
-  const { initializeFeatureDiscovery } = await import('./featureDiscoveryService');
+  const { initializeFeatureDiscovery } = await import(
+    './featureDiscoveryService'
+  );
   await initializeFeatureDiscovery();
 
   const { initializeTokenIncentive } = await import('./tokenIncentiveService');
   await initializeTokenIncentive();
 
-  const { initializeProactiveManager } = await import('./proactiveRepositoryManagerService');
+  const { initializeProactiveManager } = await import(
+    './proactiveRepositoryManagerService'
+  );
   await initializeProactiveManager();
 
   // Initialize Enhanced Features
   const { initializeAutomatedPR } = await import('./automatedPRService');
   await initializeAutomatedPR();
 
-  const { initializeUserSurveys } = await import('./userSatisfactionSurveyService');
+  const { initializeUserSurveys } = await import(
+    './userSatisfactionSurveyService'
+  );
   await initializeUserSurveys();
 
-  const { initializePerformanceProfiling } = await import('./performanceProfilingService');
+  const { initializePerformanceProfiling } = await import(
+    './performanceProfilingService'
+  );
   await initializePerformanceProfiling();
 
-  console.log('✅ Proactive Repository Ownership System initialized (with enhancements)');
+  console.log(
+    '✅ Proactive Repository Ownership System initialized (with enhancements)'
+  );
 
   // Register agents
   agentController.registerAgent(codingAgent);
@@ -195,19 +215,19 @@ export async function initApp() {
   // Register Milla supervisor agent
   const { millaAgent } = await import('./agents/millaAgent');
   agentController.registerAgent(millaAgent);
-  
+
   // Register CalendarAgent for calendar operations
   await import('./agents/calendarAgent'); // Self-registers via registry
   console.log('✅ CalendarAgent registered and ready');
-  
+
   // Register TasksAgent for Google Tasks operations
   await import('./agents/tasksAgent'); // Self-registers via registry
   console.log('✅ TasksAgent registered and ready');
-  
-  // Register EmailAgent for email operations  
+
+  // Register EmailAgent for email operations
   await import('./agents/emailAgent'); // Self-registers via registry
   console.log('✅ EmailAgent registered and ready');
-  
+
   // Register YouTubeAgent for video analysis
   await import('./agents/youtubeAgent'); // Self-registers via registry
   console.log('✅ YouTubeAgent registered and ready');

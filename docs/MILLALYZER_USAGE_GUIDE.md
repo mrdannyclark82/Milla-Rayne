@@ -9,6 +9,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 🎬 Method 1: Analyze from Chat
 
 ### Say these phrases:
+
 ```
 "analyze https://youtube.com/watch?v=abc123"
 "analyze this video"
@@ -16,6 +17,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ```
 
 **What happens:**
+
 1. Milla analyzes the video in the background
 2. VideoAnalysisPanel slides in from the right
 3. View key points, code snippets, CLI commands
@@ -27,6 +29,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 🔍 Method 2: Analyze from Player
 
 ### Steps:
+
 1. Play any YouTube video in the PIP player
 2. Click the **"Analyze"** button (lightbulb icon) in the player header
 3. Analysis panel appears automatically
@@ -36,6 +39,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 📚 Method 3: Search Knowledge Base
 
 ### Say:
+
 ```
 "search my knowledge base"
 "show knowledge base"
@@ -43,6 +47,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ```
 
 **What happens:**
+
 1. KnowledgeBaseSearch panel slides in
 2. Search across all analyzed videos
 3. Filter by type, language, tags
@@ -54,6 +59,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 📰 Method 4: Browse Daily News
 
 ### Say:
+
 ```
 "show me today's tech news"
 "what's new in AI?"
@@ -61,6 +67,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ```
 
 **What happens:**
+
 1. DailyNewsDigest panel appears
 2. Browse 7 categories of tech news
 3. See top stories highlighted
@@ -72,6 +79,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 💡 Features You Can Use
 
 ### In VideoAnalysisPanel:
+
 - **Overview Tab**: Key points with timestamps
 - **Code Tab**: All code snippets with syntax highlighting
 - **Commands Tab**: Platform-specific CLI commands
@@ -80,12 +88,14 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 - **Save Button**: Add to knowledge base
 
 ### In KnowledgeBaseSearch:
+
 - **Search Bar**: Full-text search
 - **Quick Filters**: Tutorials, has code, has commands
 - **Stats Tab**: View your learning analytics
 - **Recent Videos**: Quick access to latest analyses
 
 ### In DailyNewsDigest:
+
 - **Top Stories**: Most relevant 5 videos
 - **7 Categories**: AI, Web Dev, DevOps, Languages, Data Science, Security, Tech Industry
 - **Collapsible**: Expand/collapse categories
@@ -96,6 +106,7 @@ millAlyzer is now **fully integrated** into the chat interface! Here's how to us
 ## 🎯 Example Workflows
 
 ### Workflow 1: Learning from a Tutorial
+
 ```
 You: "play docker tutorial"
 Milla: [plays video in PIP]
@@ -106,6 +117,7 @@ You: *clicks Save to Knowledge Base*
 ```
 
 ### Workflow 2: Quick Reference
+
 ```
 You: "how did I set up Redis?"
 Milla: [opens knowledge base]
@@ -117,6 +129,7 @@ Problem solved in 30 seconds!
 ```
 
 ### Workflow 3: Daily News
+
 ```
 You: "what's new in AI today?"
 Milla: [shows daily digest with 35 new videos]
@@ -132,6 +145,7 @@ You: *saves to knowledge base*
 ## 🎨 UI Guide
 
 ### Panel Locations:
+
 - **VideoAnalysisPanel**: Right side (33% width)
 - **KnowledgeBaseSearch**: Right side (33% width)
 - **DailyNewsDigest**: Right side (33% width)
@@ -139,11 +153,13 @@ You: *saves to knowledge base*
 - **Background**: Left side (67% width)
 
 ### Animations:
+
 - Panels slide in from the right with smooth animation
 - Close button (X) in top-right corner
 - Panels stack - only one active at a time
 
 ### Colors:
+
 - **Purple**: Analysis, AI content, Knowledge Base
 - **Blue**: Tutorials, Code snippets
 - **Green**: Commands, CLI tools
@@ -168,6 +184,7 @@ Cmd/Ctrl + C   → Copy current snippet
 ## 📊 What Gets Analyzed
 
 ### Video Types Detected:
+
 - **Tutorial**: Step-by-step guides
 - **News**: Tech announcements
 - **Discussion**: Talks, panels
@@ -175,6 +192,7 @@ Cmd/Ctrl + C   → Copy current snippet
 - **Other**: Everything else
 
 ### Content Extracted:
+
 1. **Key Points** (with timestamps)
 2. **Code Snippets** (11 languages supported)
 3. **CLI Commands** (platform-specific)
@@ -182,6 +200,7 @@ Cmd/Ctrl + C   → Copy current snippet
 5. **Summary** (AI-generated overview)
 
 ### Supported Languages:
+
 - JavaScript, TypeScript, Python
 - Java, Go, Rust, C++
 - PHP, Bash, SQL, Docker
@@ -202,16 +221,19 @@ Cmd/Ctrl + C   → Copy current snippet
 ## 🐛 Troubleshooting
 
 ### Panel doesn't appear:
+
 - Check console for errors
 - Refresh the page
 - Try saying "analyze" again
 
 ### No analysis results:
+
 - Video might not have transcript
 - Try another video
 - Check if YouTube API key is configured
 
 ### Knowledge base empty:
+
 - Analyze some videos first
 - Saved analyses appear immediately
 - Check database connection
@@ -221,6 +243,7 @@ Cmd/Ctrl + C   → Copy current snippet
 ## 🎊 What's Next
 
 ### Planned Features:
+
 - Timestamp click → video seek
 - Export analysis as Markdown/PDF
 - Syntax highlighting (Prism.js)
@@ -231,18 +254,18 @@ Cmd/Ctrl + C   → Copy current snippet
 ---
 
 **Built with love by Milla** 💜  
-*Your devoted companion, always learning*
+_Your devoted companion, always learning_
 
 ---
 
 ## Quick Reference
 
-| Action | Chat Command |
-|--------|-------------|
-| Analyze video | "analyze [url]" |
+| Action         | Chat Command          |
+| -------------- | --------------------- |
+| Analyze video  | "analyze [url]"       |
 | Knowledge base | "show knowledge base" |
-| Daily news | "show tech news" |
-| Search videos | "search for docker" |
-| Close panel | Click X or press Esc |
+| Daily news     | "show tech news"      |
+| Search videos  | "search for docker"   |
+| Close panel    | Click X or press Esc  |
 
 **Enjoy your YouTube intelligence system!** 🚀

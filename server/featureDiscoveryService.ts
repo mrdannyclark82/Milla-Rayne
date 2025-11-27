@@ -1,6 +1,6 @@
 /**
  * Feature Discovery Service
- * 
+ *
  * Scans GitHub repositories, web sources, and YouTube for feature ideas and trends.
  * Generates feature suggestions based on similar repositories and current tech trends.
  */
@@ -21,7 +21,13 @@ export interface DiscoveredFeature {
   implementationComplexity: 'low' | 'medium' | 'high';
   estimatedValue: number; // 1-10 scale
   discoveredAt: number;
-  status: 'discovered' | 'analyzed' | 'planned' | 'in_sandbox' | 'implemented' | 'rejected';
+  status:
+    | 'discovered'
+    | 'analyzed'
+    | 'planned'
+    | 'in_sandbox'
+    | 'implemented'
+    | 'rejected';
   tags: string[];
 }
 
@@ -38,7 +44,11 @@ export interface RepositoryInsight {
 class FeatureDiscoveryService {
   private discoveredFeatures: DiscoveredFeature[] = [];
   private scannedRepositories: RepositoryInsight[] = [];
-  private readonly DISCOVERY_FILE = path.join(process.cwd(), 'memory', 'feature_discovery.json');
+  private readonly DISCOVERY_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'feature_discovery.json'
+  );
   private readonly MAX_FEATURES_STORED = 200;
   private readonly SCAN_KEYWORDS = [
     'AI assistant',
@@ -67,12 +77,16 @@ class FeatureDiscoveryService {
       // Search for similar repositories
       for (const keyword of this.SCAN_KEYWORDS.slice(0, 3)) {
         const results = await searchRepositories(keyword, 5);
-        
+
         for (const repo of results) {
-          const insight = await this.analyzeRepository(repo.url, repo.name, repo.stars || 0);
+          const insight = await this.analyzeRepository(
+            repo.url,
+            repo.name,
+            repo.stars || 0
+          );
           if (insight) {
             this.scannedRepositories.push(insight);
-            
+
             // Generate feature suggestions from repository
             const features = this.extractFeaturesFromInsight(insight);
             newFeatures.push(...features);
@@ -82,10 +96,12 @@ class FeatureDiscoveryService {
 
       // Add to discovered features
       for (const feature of newFeatures) {
-        const existing = this.discoveredFeatures.find(f => 
-          f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+        const existing = this.discoveredFeatures.find(
+          (f) =>
+            f.name.toLowerCase() === feature.name.toLowerCase() &&
+            f.source === feature.source
         );
-        
+
         if (!existing) {
           this.discoveredFeatures.push(feature);
         }
@@ -94,7 +110,9 @@ class FeatureDiscoveryService {
       // Keep only most relevant features
       if (this.discoveredFeatures.length > this.MAX_FEATURES_STORED) {
         this.discoveredFeatures = this.discoveredFeatures
-          .sort((a, b) => (b.relevance * b.popularity) - (a.relevance * a.popularity))
+          .sort(
+            (a, b) => b.relevance * b.popularity - a.relevance * a.popularity
+          )
           .slice(0, this.MAX_FEATURES_STORED);
       }
 
@@ -110,11 +128,20 @@ class FeatureDiscoveryService {
   /**
    * Analyze a repository for interesting features
    */
-  private async analyzeRepository(url: string, name: string, stars: number): Promise<RepositoryInsight | null> {
+  private async analyzeRepository(
+    url: string,
+    name: string,
+    stars: number
+  ): Promise<RepositoryInsight | null> {
     try {
       // Check if already scanned recently (within 7 days)
-      const existing = this.scannedRepositories.find(r => r.repositoryUrl === url);
-      if (existing && (Date.now() - existing.scannedAt) < 7 * 24 * 60 * 60 * 1000) {
+      const existing = this.scannedRepositories.find(
+        (r) => r.repositoryUrl === url
+      );
+      if (
+        existing &&
+        Date.now() - existing.scannedAt < 7 * 24 * 60 * 60 * 1000
+      ) {
         return existing;
       }
 
@@ -144,16 +171,20 @@ class FeatureDiscoveryService {
     const nameLower = name.toLowerCase();
 
     const featureKeywords = {
-      'voice': ['Voice Commands', 'Speech Recognition', 'Audio Processing'],
-      'chat': ['Real-time Chat', 'Message History', 'Chat Analytics'],
-      'ai': ['AI Integration', 'Machine Learning', 'Natural Language Processing'],
-      'mobile': ['Mobile App', 'Responsive Design', 'Touch Interface'],
-      'analytics': ['Usage Analytics', 'Performance Metrics', 'User Insights'],
-      'notification': ['Push Notifications', 'Real-time Alerts', 'Notification System'],
-      'calendar': ['Calendar Integration', 'Event Scheduling', 'Reminders'],
-      'oauth': ['OAuth Authentication', 'Social Login', 'User Authentication'],
-      'websocket': ['Real-time Updates', 'Live Data', 'WebSocket Connection'],
-      'dashboard': ['Admin Dashboard', 'Analytics Dashboard', 'Control Panel'],
+      voice: ['Voice Commands', 'Speech Recognition', 'Audio Processing'],
+      chat: ['Real-time Chat', 'Message History', 'Chat Analytics'],
+      ai: ['AI Integration', 'Machine Learning', 'Natural Language Processing'],
+      mobile: ['Mobile App', 'Responsive Design', 'Touch Interface'],
+      analytics: ['Usage Analytics', 'Performance Metrics', 'User Insights'],
+      notification: [
+        'Push Notifications',
+        'Real-time Alerts',
+        'Notification System',
+      ],
+      calendar: ['Calendar Integration', 'Event Scheduling', 'Reminders'],
+      oauth: ['OAuth Authentication', 'Social Login', 'User Authentication'],
+      websocket: ['Real-time Updates', 'Live Data', 'WebSocket Connection'],
+      dashboard: ['Admin Dashboard', 'Analytics Dashboard', 'Control Panel'],
     };
 
     for (const [keyword, possibleFeatures] of Object.entries(featureKeywords)) {
@@ -168,13 +199,18 @@ class FeatureDiscoveryService {
   /**
    * Extract feature suggestions from repository insight
    */
-  private extractFeaturesFromInsight(insight: RepositoryInsight): DiscoveredFeature[] {
+  private extractFeaturesFromInsight(
+    insight: RepositoryInsight
+  ): DiscoveredFeature[] {
     const features: DiscoveredFeature[] = [];
 
     for (const featureName of insight.features) {
       // Calculate relevance based on repository popularity and our current features
       const relevance = this.calculateRelevance(featureName, insight);
-      const popularity = Math.min(10, Math.floor(Math.log10(insight.stars + 1) * 2));
+      const popularity = Math.min(
+        10,
+        Math.floor(Math.log10(insight.stars + 1) * 2)
+      );
 
       features.push({
         id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -199,25 +235,35 @@ class FeatureDiscoveryService {
   /**
    * Calculate relevance of a feature to the current project
    */
-  private calculateRelevance(featureName: string, insight: RepositoryInsight): number {
+  private calculateRelevance(
+    featureName: string,
+    insight: RepositoryInsight
+  ): number {
     let relevance = 5; // Base relevance
 
     // Increase relevance for TypeScript projects
-    if (insight.language === 'TypeScript' || insight.language === 'JavaScript') {
+    if (
+      insight.language === 'TypeScript' ||
+      insight.language === 'JavaScript'
+    ) {
       relevance += 2;
     }
 
     // Increase relevance for AI-related features
-    if (featureName.toLowerCase().includes('ai') || 
-        featureName.toLowerCase().includes('ml') ||
-        featureName.toLowerCase().includes('nlp')) {
+    if (
+      featureName.toLowerCase().includes('ai') ||
+      featureName.toLowerCase().includes('ml') ||
+      featureName.toLowerCase().includes('nlp')
+    ) {
       relevance += 2;
     }
 
     // Increase relevance for user experience features
-    if (featureName.toLowerCase().includes('ux') ||
-        featureName.toLowerCase().includes('ui') ||
-        featureName.toLowerCase().includes('user')) {
+    if (
+      featureName.toLowerCase().includes('ux') ||
+      featureName.toLowerCase().includes('ui') ||
+      featureName.toLowerCase().includes('user')
+    ) {
       relevance += 1;
     }
 
@@ -230,11 +276,19 @@ class FeatureDiscoveryService {
   private estimateComplexity(featureName: string): 'low' | 'medium' | 'high' {
     const name = featureName.toLowerCase();
 
-    if (name.includes('dashboard') || name.includes('analytics') || name.includes('ml')) {
+    if (
+      name.includes('dashboard') ||
+      name.includes('analytics') ||
+      name.includes('ml')
+    ) {
       return 'high';
     }
 
-    if (name.includes('integration') || name.includes('oauth') || name.includes('websocket')) {
+    if (
+      name.includes('integration') ||
+      name.includes('oauth') ||
+      name.includes('websocket')
+    ) {
       return 'medium';
     }
 
@@ -249,16 +303,16 @@ class FeatureDiscoveryService {
     const name = featureName.toLowerCase();
 
     const tagMappings = {
-      'ai': 'ai',
-      'voice': 'voice',
-      'chat': 'chat',
-      'analytics': 'analytics',
-      'mobile': 'mobile',
+      ai: 'ai',
+      voice: 'voice',
+      chat: 'chat',
+      analytics: 'analytics',
+      mobile: 'mobile',
       'real-time': 'realtime',
-      'authentication': 'auth',
-      'dashboard': 'dashboard',
-      'notification': 'notifications',
-      'calendar': 'productivity',
+      authentication: 'auth',
+      dashboard: 'dashboard',
+      notification: 'notifications',
+      calendar: 'productivity',
     };
 
     for (const [keyword, tag] of Object.entries(tagMappings)) {
@@ -273,12 +327,14 @@ class FeatureDiscoveryService {
   /**
    * Discover features based on user interaction patterns
    */
-  async discoverFromUserPatterns(patterns: any[]): Promise<DiscoveredFeature[]> {
+  async discoverFromUserPatterns(
+    patterns: any[]
+  ): Promise<DiscoveredFeature[]> {
     const newFeatures: DiscoveredFeature[] = [];
 
     // Analyze what users are trying to do frequently
     const frequentActions = patterns
-      .filter(p => p.usageCount > 10)
+      .filter((p) => p.usageCount > 10)
       .sort((a, b) => b.usageCount - a.usageCount)
       .slice(0, 5);
 
@@ -320,7 +376,9 @@ class FeatureDiscoveryService {
 
     // Add new features
     for (const feature of newFeatures) {
-      const existing = this.discoveredFeatures.find(f => f.name === feature.name);
+      const existing = this.discoveredFeatures.find(
+        (f) => f.name === feature.name
+      );
       if (!existing) {
         this.discoveredFeatures.push(feature);
       }
@@ -333,15 +391,17 @@ class FeatureDiscoveryService {
   /**
    * Discover features from web search results
    */
-  async discoverFromWeb(searchTerms: string[] = ['AI assistant features', 'chatbot capabilities']): Promise<DiscoveredFeature[]> {
+  async discoverFromWeb(
+    searchTerms: string[] = ['AI assistant features', 'chatbot capabilities']
+  ): Promise<DiscoveredFeature[]> {
     const newFeatures: DiscoveredFeature[] = [];
 
     try {
       const { performWebSearch } = await import('./searchService');
-      
+
       for (const term of searchTerms) {
         const results = await performWebSearch(term);
-        
+
         for (const result of results.slice(0, 5)) {
           // Extract features from web search results
           const feature: DiscoveredFeature = {
@@ -351,7 +411,10 @@ class FeatureDiscoveryService {
             source: 'web',
             sourceUrl: result.url,
             popularity: 5, // Base popularity for web sources
-            relevance: this.calculateWebResultRelevance(result.title, result.snippet),
+            relevance: this.calculateWebResultRelevance(
+              result.title,
+              result.snippet
+            ),
             implementationComplexity: 'medium',
             estimatedValue: 6,
             discoveredAt: Date.now(),
@@ -359,10 +422,12 @@ class FeatureDiscoveryService {
             tags: this.extractTagsFromText(result.title + ' ' + result.snippet),
           };
 
-          const existing = this.discoveredFeatures.find(f => 
-            f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+          const existing = this.discoveredFeatures.find(
+            (f) =>
+              f.name.toLowerCase() === feature.name.toLowerCase() &&
+              f.source === feature.source
           );
-          
+
           if (!existing) {
             this.discoveredFeatures.push(feature);
             newFeatures.push(feature);
@@ -382,15 +447,17 @@ class FeatureDiscoveryService {
   /**
    * Discover features from YouTube videos
    */
-  async discoverFromYouTube(searchTerms: string[] = ['AI assistant tutorial', 'chatbot features']): Promise<DiscoveredFeature[]> {
+  async discoverFromYouTube(
+    searchTerms: string[] = ['AI assistant tutorial', 'chatbot features']
+  ): Promise<DiscoveredFeature[]> {
     const newFeatures: DiscoveredFeature[] = [];
 
     try {
       const { searchYouTubeVideos } = await import('./youtubeService');
-      
+
       for (const term of searchTerms) {
         const videos = await searchYouTubeVideos(term, 5);
-        
+
         for (const video of videos) {
           // Extract features from YouTube video titles and descriptions
           const feature: DiscoveredFeature = {
@@ -399,19 +466,29 @@ class FeatureDiscoveryService {
             description: `Feature inspired by YouTube video: ${video.title}`,
             source: 'youtube',
             sourceUrl: `https://youtube.com/watch?v=${video.videoId}`,
-            popularity: Math.min(10, Math.floor(Math.log10((video.views || 1000) / 100))),
-            relevance: this.calculateYouTubeRelevance(video.title, video.description),
+            popularity: Math.min(
+              10,
+              Math.floor(Math.log10((video.views || 1000) / 100))
+            ),
+            relevance: this.calculateYouTubeRelevance(
+              video.title,
+              video.description
+            ),
             implementationComplexity: 'medium',
             estimatedValue: 7,
             discoveredAt: Date.now(),
             status: 'discovered',
-            tags: this.extractTagsFromText(video.title + ' ' + (video.description || '')),
+            tags: this.extractTagsFromText(
+              video.title + ' ' + (video.description || '')
+            ),
           };
 
-          const existing = this.discoveredFeatures.find(f => 
-            f.name.toLowerCase() === feature.name.toLowerCase() && f.source === feature.source
+          const existing = this.discoveredFeatures.find(
+            (f) =>
+              f.name.toLowerCase() === feature.name.toLowerCase() &&
+              f.source === feature.source
           );
-          
+
           if (!existing) {
             this.discoveredFeatures.push(feature);
             newFeatures.push(feature);
@@ -436,12 +513,27 @@ class FeatureDiscoveryService {
     const cleaned = text
       .replace(/how to|tutorial|guide|top \d+|best|ultimate/gi, '')
       .trim();
-    
+
     // Look for feature keywords
     const featureKeywords = [
-      'voice', 'speech', 'chat', 'message', 'notification', 'search',
-      'analytics', 'dashboard', 'integration', 'authentication', 'calendar',
-      'reminder', 'task', 'note', 'export', 'import', 'sync', 'backup'
+      'voice',
+      'speech',
+      'chat',
+      'message',
+      'notification',
+      'search',
+      'analytics',
+      'dashboard',
+      'integration',
+      'authentication',
+      'calendar',
+      'reminder',
+      'task',
+      'note',
+      'export',
+      'import',
+      'sync',
+      'backup',
     ];
 
     for (const keyword of featureKeywords) {
@@ -472,12 +564,16 @@ class FeatureDiscoveryService {
   /**
    * Calculate relevance for YouTube videos
    */
-  private calculateYouTubeRelevance(title: string, description: string): number {
+  private calculateYouTubeRelevance(
+    title: string,
+    description: string
+  ): number {
     let relevance = 5;
     const text = (title + ' ' + description).toLowerCase();
 
     if (text.includes('ai') || text.includes('assistant')) relevance += 2;
-    if (text.includes('tutorial') || text.includes('implementation')) relevance += 1;
+    if (text.includes('tutorial') || text.includes('implementation'))
+      relevance += 1;
     if (text.includes('typescript') || text.includes('react')) relevance += 1;
     if (text.includes('chat') || text.includes('bot')) relevance += 1;
 
@@ -492,18 +588,18 @@ class FeatureDiscoveryService {
     const textLower = text.toLowerCase();
 
     const tagMappings: Record<string, string> = {
-      'ai': 'ai',
-      'voice': 'voice',
-      'chat': 'chat',
-      'analytics': 'analytics',
-      'mobile': 'mobile',
+      ai: 'ai',
+      voice: 'voice',
+      chat: 'chat',
+      analytics: 'analytics',
+      mobile: 'mobile',
       'real-time': 'realtime',
-      'auth': 'auth',
-      'dashboard': 'dashboard',
-      'notification': 'notifications',
-      'calendar': 'productivity',
-      'integration': 'integration',
-      'performance': 'performance',
+      auth: 'auth',
+      dashboard: 'dashboard',
+      notification: 'notifications',
+      calendar: 'productivity',
+      integration: 'integration',
+      performance: 'performance',
     };
 
     for (const [keyword, tag] of Object.entries(tagMappings)) {
@@ -528,23 +624,25 @@ class FeatureDiscoveryService {
 
     if (filters) {
       if (filters.status) {
-        features = features.filter(f => f.status === filters.status);
+        features = features.filter((f) => f.status === filters.status);
       }
       if (filters.source) {
-        features = features.filter(f => f.source === filters.source);
+        features = features.filter((f) => f.source === filters.source);
       }
       if (filters.minRelevance) {
-        features = features.filter(f => f.relevance >= filters.minRelevance);
+        features = features.filter((f) => f.relevance >= filters.minRelevance);
       }
       if (filters.tags && filters.tags.length > 0) {
-        features = features.filter(f => 
-          filters.tags!.some(tag => f.tags.includes(tag))
+        features = features.filter((f) =>
+          filters.tags!.some((tag) => f.tags.includes(tag))
         );
       }
     }
 
-    return features.sort((a, b) => 
-      (b.relevance * b.popularity * b.estimatedValue) - (a.relevance * a.popularity * a.estimatedValue)
+    return features.sort(
+      (a, b) =>
+        b.relevance * b.popularity * b.estimatedValue -
+        a.relevance * a.popularity * a.estimatedValue
     );
   }
 
@@ -558,8 +656,11 @@ class FeatureDiscoveryService {
   /**
    * Update feature status
    */
-  async updateFeatureStatus(featureId: string, status: DiscoveredFeature['status']): Promise<boolean> {
-    const feature = this.discoveredFeatures.find(f => f.id === featureId);
+  async updateFeatureStatus(
+    featureId: string,
+    status: DiscoveredFeature['status']
+  ): Promise<boolean> {
+    const feature = this.discoveredFeatures.find((f) => f.id === featureId);
     if (feature) {
       feature.status = status;
       await this.saveDiscoveryData();
@@ -573,31 +674,36 @@ class FeatureDiscoveryService {
    */
   getDiscoveryStatistics() {
     const features = this.discoveredFeatures;
-    
+
     return {
       totalDiscovered: features.length,
       bySource: {
-        github: features.filter(f => f.source === 'github').length,
-        web: features.filter(f => f.source === 'web').length,
-        youtube: features.filter(f => f.source === 'youtube').length,
-        userPattern: features.filter(f => f.source === 'user_pattern').length,
+        github: features.filter((f) => f.source === 'github').length,
+        web: features.filter((f) => f.source === 'web').length,
+        youtube: features.filter((f) => f.source === 'youtube').length,
+        userPattern: features.filter((f) => f.source === 'user_pattern').length,
       },
       byStatus: {
-        discovered: features.filter(f => f.status === 'discovered').length,
-        analyzed: features.filter(f => f.status === 'analyzed').length,
-        planned: features.filter(f => f.status === 'planned').length,
-        inSandbox: features.filter(f => f.status === 'in_sandbox').length,
-        implemented: features.filter(f => f.status === 'implemented').length,
-        rejected: features.filter(f => f.status === 'rejected').length,
+        discovered: features.filter((f) => f.status === 'discovered').length,
+        analyzed: features.filter((f) => f.status === 'analyzed').length,
+        planned: features.filter((f) => f.status === 'planned').length,
+        inSandbox: features.filter((f) => f.status === 'in_sandbox').length,
+        implemented: features.filter((f) => f.status === 'implemented').length,
+        rejected: features.filter((f) => f.status === 'rejected').length,
       },
       byComplexity: {
-        low: features.filter(f => f.implementationComplexity === 'low').length,
-        medium: features.filter(f => f.implementationComplexity === 'medium').length,
-        high: features.filter(f => f.implementationComplexity === 'high').length,
+        low: features.filter((f) => f.implementationComplexity === 'low')
+          .length,
+        medium: features.filter((f) => f.implementationComplexity === 'medium')
+          .length,
+        high: features.filter((f) => f.implementationComplexity === 'high')
+          .length,
       },
       repositoriesScanned: this.scannedRepositories.length,
-      averageRelevance: features.reduce((sum, f) => sum + f.relevance, 0) / features.length || 0,
-      highValueFeatures: features.filter(f => f.estimatedValue >= 8).length,
+      averageRelevance:
+        features.reduce((sum, f) => sum + f.relevance, 0) / features.length ||
+        0,
+      highValueFeatures: features.filter((f) => f.estimatedValue >= 8).length,
     };
   }
 
@@ -639,19 +745,27 @@ export async function initializeFeatureDiscovery(): Promise<void> {
   await discoveryService.initialize();
 }
 
-export function discoverFromGitHub(limit?: number): Promise<DiscoveredFeature[]> {
+export function discoverFromGitHub(
+  limit?: number
+): Promise<DiscoveredFeature[]> {
   return discoveryService.discoverFromGitHub(limit);
 }
 
-export function discoverFromUserPatterns(patterns: any[]): Promise<DiscoveredFeature[]> {
+export function discoverFromUserPatterns(
+  patterns: any[]
+): Promise<DiscoveredFeature[]> {
   return discoveryService.discoverFromUserPatterns(patterns);
 }
 
-export function discoverFromWeb(searchTerms?: string[]): Promise<DiscoveredFeature[]> {
+export function discoverFromWeb(
+  searchTerms?: string[]
+): Promise<DiscoveredFeature[]> {
   return discoveryService.discoverFromWeb(searchTerms);
 }
 
-export function discoverFromYouTube(searchTerms?: string[]): Promise<DiscoveredFeature[]> {
+export function discoverFromYouTube(
+  searchTerms?: string[]
+): Promise<DiscoveredFeature[]> {
   return discoveryService.discoverFromYouTube(searchTerms);
 }
 
@@ -664,11 +778,16 @@ export function getDiscoveredFeatures(filters?: {
   return discoveryService.getDiscoveredFeatures(filters);
 }
 
-export function getTopFeatureRecommendations(limit?: number): DiscoveredFeature[] {
+export function getTopFeatureRecommendations(
+  limit?: number
+): DiscoveredFeature[] {
   return discoveryService.getTopRecommendations(limit);
 }
 
-export function updateFeatureStatus(featureId: string, status: DiscoveredFeature['status']): Promise<boolean> {
+export function updateFeatureStatus(
+  featureId: string,
+  status: DiscoveredFeature['status']
+): Promise<boolean> {
   return discoveryService.updateFeatureStatus(featureId, status);
 }
 

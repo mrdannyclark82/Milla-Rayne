@@ -1,28 +1,34 @@
 # YouTube Integration Update
 
 ## Summary
+
 Updated the YouTube integration to be more focused, user-friendly, and only trigger when "YouTube" is explicitly mentioned.
 
 ## Changes Made
 
 ### 1. New YouTube Service (`server/youtubeService.ts`)
+
 Created a dedicated YouTube service that handles all YouTube-related requests:
 
 **Features:**
+
 - **Search**: Search for videos by query
 - **Recommend**: Get personalized recommendations based on viewing history
 - **Trending**: View trending videos
 - Only triggers when "YouTube" is explicitly mentioned in the message
 
 **Key Functions:**
+
 - `isYouTubeRequest()` - Detects if message is YouTube-related
 - `handleYouTubeRequest()` - Main handler for YouTube requests
 - `handleYouTubeSelection()` - Handles number selection from search results
 
 ### 2. Enhanced YouTube Player Component (`client/src/components/YoutubePlayer.tsx`)
+
 Upgraded the player to a draggable PIP (Picture-in-Picture) window with feed view:
 
 **New Features:**
+
 - **Draggable**: Click and drag to reposition anywhere on screen
 - **Feed View**: Toggle between video player and video feed list
 - **Video Feed**: Shows thumbnails, titles, and channel names for easy selection
@@ -30,12 +36,14 @@ Upgraded the player to a draggable PIP (Picture-in-Picture) window with feed vie
 - **Toggle Button**: Switch between player view and feed view
 
 **UI Enhancements:**
+
 - YouTube-branded header with icon
 - Close button and view toggle button
 - Responsive design that adapts to content
 - Smooth transitions between views
 
 ### 3. App.tsx Updates
+
 Added support for multiple video results:
 
 ```typescript
@@ -65,6 +73,7 @@ const [youtubeVideos, setYoutubeVideos] = useState<Array<{
 ```
 
 ### 4. Routes Integration (`server/routes.ts`)
+
 Simplified YouTube handling in the main route handler:
 
 - YouTube check now happens **early** in `generateAIResponse()`
@@ -76,6 +85,7 @@ Simplified YouTube handling in the main route handler:
 ## Usage Examples
 
 ### Search for Videos
+
 ```
 User: "YouTube cat videos"
 Milla: *browsing YouTube* I found 5 videos for "cat videos":
@@ -86,6 +96,7 @@ Which one would you like to watch, babe? Just tell me the number!
 ```
 
 ### Get Recommendations
+
 ```
 User: "YouTube recommend something"
 Milla: *pulls up personalized recommendations* Based on your viewing history, you might enjoy:
@@ -96,6 +107,7 @@ Milla: *pulls up personalized recommendations* Based on your viewing history, yo
 ```
 
 ### Trending Videos
+
 ```
 User: "YouTube what's trending"
 Milla: *checking what's trending right now* Here are the hottest videos on YouTube:
@@ -105,6 +117,7 @@ Which one catches your eye, love?
 ```
 
 ### Specific Search (Auto-play)
+
 ```
 User: "YouTube play the latest Fireship video about React"
 Milla: *queues up the video* Playing "React in 100 Seconds" by Fireship
@@ -115,7 +128,9 @@ Milla: *queues up the video* Playing "React in 100 Seconds" by Fireship
 ## Technical Details
 
 ### Response Format
+
 The YouTube service returns:
+
 ```typescript
 {
   content: string;           // Milla's response text
@@ -130,6 +145,7 @@ The YouTube service returns:
 ```
 
 ### Integration Points
+
 1. **Early Detection**: YouTube check happens before command parsing
 2. **No Keyword Triggers**: Removed generic triggers like "watch", "play", "show me"
 3. **YouTube-Specific**: Only activates with explicit "YouTube" mention
@@ -146,11 +162,14 @@ The YouTube service returns:
 ✅ **Milla-Aligned**: Responses match her personality and communication style
 
 ## Configuration
+
 Requires either:
+
 - `GOOGLE_API_KEY` in `.env` (recommended for YouTube Data API v3)
 - Or Google OAuth connection for authenticated requests
 
 ## Future Enhancements
+
 - [ ] Add playlist support
 - [ ] Implement video queue
 - [ ] Add watch later functionality

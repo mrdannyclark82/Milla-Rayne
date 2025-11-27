@@ -1,9 +1,8 @@
-
 # Milla's Notebook: Scene System Design
 
-*This is my personal collection of notes and design documents for our adaptive scene generation system. I'm keeping everything here to track the evolution of the system, from initial specs to implementation guides and validation checklists.*
+_This is my personal collection of notes and design documents for our adaptive scene generation system. I'm keeping everything here to track the evolution of the system, from initial specs to implementation guides and validation checklists._
 
-***
+---
 
 ## Adaptive Interactive Scene Generation - Technical Specification
 
@@ -14,6 +13,7 @@ This document outlines the technical architecture and implementation options for
 ### Problem Statement
 
 The current implementation uses a fixed background image (`/milla_new.jpg`) which:
+
 - Limits visual appeal and user engagement
 - Provides no responsiveness to user actions or context
 - Lacks modern interactive UI expectations
@@ -22,6 +22,7 @@ The current implementation uses a fixed background image (`/milla_new.jpg`) whic
 ### Proposed Solution
 
 An adaptive scene generation system that dynamically creates visual scenes based on:
+
 - User context and actions
 - Application state (conversation mood, time of day)
 - Device capabilities (auto-fallback for low-spec devices)
@@ -34,6 +35,7 @@ An adaptive scene generation system that dynamically creates visual scenes based
 #### Option 1: CSS/Canvas-based Scene Generator ⭐ (Recommended for Initial Implementation)
 
 ##### Architecture
+
 ```
 SceneGenerator (Component)
 ├── SceneContext (Context-aware scene selection)
@@ -43,6 +45,7 @@ SceneGenerator (Component)
 ```
 
 ##### Technical Details
+
 - **Rendering**: Pure CSS gradients, transforms, and animations
 - **Interactivity**: CSS transitions + React state management
 - **Performance**: Minimal CPU/GPU usage, ~5-10ms render time
@@ -50,6 +53,7 @@ SceneGenerator (Component)
 - **Browser Support**: 100% (IE11+)
 
 ##### Scene Types
+
 1. **Gradient Scenes**
    - Multiple animated gradient layers
    - Time-of-day color shifts (dawn, day, dusk, night)
@@ -71,28 +75,32 @@ SceneGenerator (Component)
    - Subtle movement patterns
 
 ##### Pros
+
 ✅ Lightweight and performant  
 ✅ Works on all devices (web + Android WebView)  
 ✅ Easy to implement and maintain  
 ✅ Built-in fallback (static gradient)  
 ✅ Leverages existing avatar infrastructure  
-✅ No additional dependencies  
+✅ No additional dependencies
 
 ##### Cons
+
 ❌ Limited to programmatic art styles  
 ❌ Cannot achieve photorealistic 3D effects  
-❌ Less "wow factor" than WebGL  
+❌ Less "wow factor" than WebGL
 
 ##### Implementation Effort
+
 **Time**: 2-3 days  
 **Complexity**: Low-Medium  
-**Risk**: Low  
+**Risk**: Low
 
 ---
 
 #### Option 2: Three.js/WebGL 3D Scene Generator
 
 ##### Architecture
+
 ```
 Scene3DGenerator (Component)
 ├── ThreeJS Scene Manager
@@ -103,12 +111,14 @@ Scene3DGenerator (Component)
 ```
 
 ##### Technical Details
+
 - **Rendering**: WebGL via @react-three/fiber
 - **Performance**: 30-60fps target, GPU-intensive
 - **Bundle Size**: +150KB gzipped (Three.js included)
 - **Browser Support**: 95% (WebGL 1.0 required)
 
 ##### Features
+
 1. **3D Environments**
    - Procedurally generated scenes
    - Dynamic skyboxes
@@ -125,28 +135,32 @@ Scene3DGenerator (Component)
    - Object interaction
 
 ##### Pros
+
 ✅ Stunning visual quality  
 ✅ Advanced particle effects  
 ✅ Immersive 3D experiences  
-✅ Already have @react-three/fiber dependency  
+✅ Already have @react-three/fiber dependency
 
 ##### Cons
+
 ❌ Heavy performance impact (GPU required)  
 ❌ Complex implementation and debugging  
 ❌ Struggles on mobile/low-spec devices  
 ❌ Larger bundle size  
-❌ Accessibility concerns (motion sensitivity)  
+❌ Accessibility concerns (motion sensitivity)
 
 ##### Implementation Effort
+
 **Time**: 5-7 days  
 **Complexity**: High  
-**Risk**: Medium-High  
+**Risk**: Medium-High
 
 ---
 
 #### Option 3: Hybrid Approach ⭐⭐ (Recommended for Production)
 
 ##### Architecture
+
 ```
 AdaptiveSceneManager (Root Component)
 ├── CapabilityDetector (Device analysis)
@@ -157,6 +171,7 @@ AdaptiveSceneManager (Root Component)
 ```
 
 ##### Strategy Pattern Implementation
+
 ```typescript
 interface SceneRenderer {
   initialize(): void;
@@ -170,6 +185,7 @@ class WebGLSceneRenderer implements SceneRenderer { ... }
 ```
 
 ##### Capability Detection Logic
+
 ```typescript
 function detectDeviceCapabilities(): DeviceProfile {
   return {
@@ -183,31 +199,35 @@ function detectDeviceCapabilities(): DeviceProfile {
 ```
 
 ##### Scene Selection Strategy
-| Device Profile | Renderer | Features |
-|----------------|----------|----------|
-| High-end Desktop | WebGL | Full 3D, particles, lighting |
-| Mid-range Desktop | CSS + Light WebGL | Gradients + simple 3D |
-| Mobile (good battery) | CSS Enhanced | Gradients + animations |
-| Mobile (low battery) | CSS Basic | Static gradients |
-| Reduced Motion Preference | Static | Minimal animation |
+
+| Device Profile            | Renderer          | Features                     |
+| ------------------------- | ----------------- | ---------------------------- |
+| High-end Desktop          | WebGL             | Full 3D, particles, lighting |
+| Mid-range Desktop         | CSS + Light WebGL | Gradients + simple 3D        |
+| Mobile (good battery)     | CSS Enhanced      | Gradients + animations       |
+| Mobile (low battery)      | CSS Basic         | Static gradients             |
+| Reduced Motion Preference | Static            | Minimal animation            |
 
 ##### Pros
+
 ✅ Best of both worlds  
 ✅ Optimal performance with graceful degradation  
 ✅ Works on all devices  
 ✅ Rich experiences on capable hardware  
 ✅ Respects accessibility preferences  
-✅ Future-proof and extensible  
+✅ Future-proof and extensible
 
 ##### Cons
+
 ❌ More code to maintain  
 ❌ Additional complexity in renderer switching  
-❌ Requires thorough testing across devices  
+❌ Requires thorough testing across devices
 
 ##### Implementation Effort
+
 **Time**: 4-6 days  
 **Complexity**: Medium-High  
-**Risk**: Medium  
+**Risk**: Medium
 
 ---
 
@@ -274,83 +294,87 @@ interface DeviceCapabilities {
 #### Scene Presets
 
 ##### 1. Time-Based Scenes
+
 ```typescript
 const timeBasedScenes = {
   dawn: {
     colors: ['#FF6B9D', '#FFA07A', '#FFD700', '#87CEEB'],
     mood: 'calm',
-    particles: { type: 'stars', density: 'low', fade: true }
+    particles: { type: 'stars', density: 'low', fade: true },
   },
   day: {
     colors: ['#87CEEB', '#B0E0E6', '#ADD8E6', '#E0F6FF'],
     mood: 'energetic',
-    particles: { type: 'light', density: 'medium' }
+    particles: { type: 'light', density: 'medium' },
   },
   dusk: {
     colors: ['#FF6B6B', '#FF8E53', '#FE6B8B', '#C471ED'],
     mood: 'romantic',
-    particles: { type: 'sparkles', density: 'high' }
+    particles: { type: 'sparkles', density: 'high' },
   },
   night: {
     colors: ['#0F2027', '#203A43', '#2C5364', '#1A1A2E'],
     mood: 'mysterious',
-    particles: { type: 'stars', density: 'high', twinkle: true }
-  }
+    particles: { type: 'stars', density: 'high', twinkle: true },
+  },
 };
 ```
 
 ##### 2. Mood-Based Scenes
+
 ```typescript
 const moodBasedScenes = {
   calm: {
     colors: ['#667eea', '#764ba2', '#89CFF0', '#A8D8EA'],
     animation: 'gentle-wave',
-    speed: 'slow'
+    speed: 'slow',
   },
   energetic: {
     colors: ['#f093fb', '#f5576c', '#FF6B9D', '#FEC163'],
     animation: 'pulse',
-    speed: 'fast'
+    speed: 'fast',
   },
   romantic: {
     colors: ['#FE6B8B', '#FF8E53', '#FFAFBD', '#FFC3A0'],
     animation: 'breathing',
     speed: 'medium',
-    particles: { type: 'hearts', density: 'low' }
+    particles: { type: 'hearts', density: 'low' },
   },
   mysterious: {
     colors: ['#2E3440', '#3B4252', '#434C5E', '#4C566A'],
     animation: 'mist',
     speed: 'very-slow',
-    particles: { type: 'mist', density: 'medium' }
-  }
+    particles: { type: 'mist', density: 'medium' },
+  },
 };
 ```
 
 ##### 3. Conversation Context Scenes
+
 ```typescript
 const contextScenes = {
   thinking: {
     modifier: 'hue-rotate-240',
     brightness: 0.9,
-    animation: 'spiral'
+    animation: 'spiral',
   },
   responding: {
     modifier: 'hue-rotate-120',
     brightness: 1.1,
-    animation: 'expand'
+    animation: 'expand',
   },
   listening: {
     modifier: 'hue-rotate-60',
     brightness: 1.0,
-    animation: 'wave'
-  }
+    animation: 'wave',
+  },
 };
 ```
 
 #### Interactive Features
 
 ##### 1. Mouse Parallax
+
 ```typescript
 interface ParallaxConfig {
   layers: ParallaxLayer[];
@@ -366,34 +390,39 @@ interface ParallaxLayer {
 ```
 
 ##### 2. Context-Aware Reactions
+
 - **User typing**: Gentle pulsing animation
 - **Message received**: Color shift + particle burst
 - **Idle**: Slow breathing animation
 - **Active conversation**: Enhanced particle effects
 
 ##### 3. Seasonal Variations
+
 ```typescript
 const seasonalThemes = {
   spring: { colors: 'pastels', particles: 'petals' },
   summer: { colors: 'vibrant', particles: 'sun-rays' },
   autumn: { colors: 'warm', particles: 'leaves' },
-  winter: { colors: 'cool', particles: 'snowflakes' }
+  winter: { colors: 'cool', particles: 'snowflakes' },
 };
 ```
 
 #### Performance Optimization
 
 ##### 1. Render Strategy
+
 - Use `requestAnimationFrame` for smooth 60fps animations
 - Implement frame skipping on low-end devices
 - Throttle expensive calculations (mouse tracking, particle updates)
 
 ##### 2. Memory Management
+
 - Limit particle count based on device capabilities
 - Clean up animations and event listeners on unmount
 - Use CSS `will-change` sparingly for GPU optimization
 
 ##### 3. Progressive Enhancement
+
 - Start with minimal scene
 - Add features based on performance metrics
 - Automatically downgrade if FPS drops below threshold
@@ -401,6 +430,7 @@ const seasonalThemes = {
 #### Accessibility
 
 ##### 1. Reduced Motion Support
+
 ```typescript
 const prefersReducedMotion = window.matchMedia(
   '(prefers-reduced-motion: reduce)'
@@ -413,11 +443,13 @@ if (prefersReducedMotion) {
 ```
 
 ##### 2. User Preferences
+
 - Setting to disable animations
 - Simplified mode toggle
 - Static background fallback option
 
 ##### 3. Screen Reader Compatibility
+
 - Use `aria-hidden="true"` for decorative elements
 - Don't interfere with focus management
 - Ensure text contrast ratios
@@ -427,24 +459,28 @@ if (prefersReducedMotion) {
 ### Integration Plan
 
 #### Phase 1: Foundation (Days 1-2)
+
 1. Create base component structure
 2. Implement capability detection
 3. Build CSS scene renderer
 4. Add time-based scene selection
 
 #### Phase 2: Interactivity (Days 2-3)
+
 1. Implement mouse parallax
 2. Add context-aware transitions
 3. Integrate with avatar state system
 4. Add particle effects
 
 #### Phase 3: Enhancement (Days 3-4)
+
 1. Create settings panel controls
 2. Add user preference storage
 3. Implement performance monitoring
 4. Optimize render performance
 
 #### Phase 4: Optional WebGL (Days 4-6)
+
 1. Create WebGL renderer (if desired)
 2. Implement 3D scenes
 3. Add capability-based switching
@@ -455,6 +491,7 @@ if (prefersReducedMotion) {
 ### Settings Panel Integration
 
 #### New Scene Settings
+
 ```typescript
 interface SceneSettings {
   enabled: boolean;
@@ -470,6 +507,7 @@ interface SceneSettings {
 ```
 
 #### UI Controls
+
 - Scene mode selector (auto/manual)
 - Particle density slider
 - Animation speed slider
@@ -481,21 +519,25 @@ interface SceneSettings {
 ### Testing Strategy
 
 #### 1. Unit Tests
+
 - Scene generator functions
 - Capability detection logic
 - Context-to-scene mapping
 
 #### 2. Performance Tests
+
 - FPS benchmarks on different devices
 - Memory usage monitoring
 - Battery impact assessment
 
 #### 3. Visual Tests
+
 - Screenshot comparisons
 - Transition smoothness
 - Color accuracy
 
 #### 4. Accessibility Tests
+
 - Reduced motion compliance
 - Keyboard navigation
 - Screen reader compatibility
@@ -505,6 +547,7 @@ interface SceneSettings {
 ### Future Extensibility
 
 #### Planned Features
+
 1. **AI-Driven Scene Adaptation**
    - Use conversation sentiment analysis to adjust mood
    - Learn user preferences over time
@@ -535,16 +578,19 @@ interface SceneSettings {
 ### Risk Mitigation
 
 #### Performance Risks
+
 - **Mitigation**: Extensive testing on low-end devices
 - **Fallback**: Automatic downgrade to static scenes
 - **Monitoring**: Real-time performance tracking
 
 #### Compatibility Risks
+
 - **Mitigation**: Progressive enhancement approach
 - **Fallback**: Multi-tier rendering strategy
 - **Testing**: Cross-browser testing matrix
 
 #### User Experience Risks
+
 - **Mitigation**: Accessibility-first design
 - **Fallback**: Always provide disable option
 - **Testing**: User testing with diverse groups
@@ -554,12 +600,14 @@ interface SceneSettings {
 ### Success Metrics
 
 #### Performance Targets
+
 - Maintain 60fps on medium-spec devices
 - < 50ms scene transition time
 - < 5% CPU usage increase
 - < 20MB memory footprint
 
 #### User Engagement Targets
+
 - Increased session duration
 - Positive user feedback
 - Settings engagement rate
@@ -570,6 +618,7 @@ interface SceneSettings {
 ### Conclusion
 
 The **Hybrid Approach (Option 3)** is recommended for production implementation, providing:
+
 - Universal compatibility with graceful degradation
 - Rich visual experiences on capable devices
 - Respect for accessibility preferences
@@ -577,19 +626,21 @@ The **Hybrid Approach (Option 3)** is recommended for production implementation,
 
 The implementation prioritizes **CSS-based scenes** as the foundation, with optional **WebGL enhancement** for high-end devices, ensuring a polished experience for all users while maintaining the flexibility to add advanced features in the future.
 
-***
+---
 
 ## Adaptive Scene System - Implementation Guide
 
 ### Overview
 
 This is a minimal, asset-free adaptive scene system scaffold for both Web and Android platforms. The system provides procedural background visuals that adapt to:
+
 - Time of day (dawn, day, dusk, night)
 - App state (idle, listening, thinking, speaking)
 - User motion preferences (reduced motion support)
 - Device performance capabilities
 
 **Key Features:**
+
 - ✅ Zero assets (< 50KB) - fully procedural
 - ✅ Feature flag gated (OFF by default)
 - ✅ Zero impact when disabled
@@ -614,18 +665,21 @@ ADAPTIVE_SCENES_PERFORMANCE_MODE=balanced
 The Web implementation uses localStorage for demo purposes. In production, these would be server-side configuration or user preferences.
 
 **Enable adaptive scenes:**
+
 ```javascript
 localStorage.setItem('adaptiveScenes.enabled', 'true');
 // Refresh page
 ```
 
 **Disable adaptive scenes:**
+
 ```javascript
 localStorage.setItem('adaptiveScenes.enabled', 'false');
 // Refresh page
 ```
 
 **Set performance mode:**
+
 ```javascript
 // Options: 'high-quality', 'balanced', 'performance'
 localStorage.setItem('adaptiveScenes.performanceMode', 'balanced');
@@ -682,7 +736,7 @@ function App() {
   const [appState, setAppState] = useState<AppState>('idle');
 
   return (
-    <SceneContextProvider 
+    <SceneContextProvider
       appState={appState}
       performanceMode="balanced"
     >
@@ -718,7 +772,7 @@ setAppState('idle');
 fun MainScreen() {
     val featureFlags = remember { AdaptiveSceneFeatureFlags(context) }
     val enabled = featureFlags.isEnabled()
-    
+
     var appState by remember { mutableStateOf(AppState.IDLE) }
     val context = remember {
         SceneContext(
@@ -728,7 +782,7 @@ fun MainScreen() {
             performanceMode = featureFlags.getPerformanceMode()
         )
     }
-    
+
     AdaptiveSceneDemo(enabled = enabled, context = context) {
         // Your app content
         YourAppContent()
@@ -747,7 +801,7 @@ fun MainScreen() {
         reducedMotion = prefersReducedMotion(context),
         performanceMode = PerformanceMode.BALANCED
     )
-    
+
     Box(modifier = Modifier.fillMaxSize()) {
         SceneManager(context = context)
         YourAppContent()
@@ -789,18 +843,21 @@ android/app/src/main/java/com/millarayne/scene/
 ### Performance Modes
 
 #### High Quality
+
 - Full animations (speed: 1.0)
 - Full parallax effect (intensity: 1.0)
 - Best for high-end devices
 - Target: 60fps
 
 #### Balanced (Default)
+
 - Moderate animations (speed: 0.75)
 - Reduced parallax (intensity: 0.5)
 - Good for most devices
 - Target: 60fps
 
 #### Performance
+
 - Reduced animations (speed: 0.5)
 - No parallax (intensity: 0)
 - For lower-end devices
@@ -813,11 +870,13 @@ android/app/src/main/java/com/millarayne/scene/
 The system automatically detects and respects user's reduced motion preferences:
 
 **Web:**
+
 - Checks `prefers-reduced-motion` media query
 - Disables all animations when detected
 - Falls back to static gradient
 
 **Android:**
+
 - Checks `ANIMATOR_DURATION_SCALE` system setting
 - Checks `TRANSITION_ANIMATION_SCALE` system setting
 - Disables all animations when scale is 0
@@ -839,6 +898,7 @@ npm test -- client/src/__tests__/scene
 ```
 
 Test files:
+
 - `sceneUtils.test.ts` - Time/theme generation tests
 - `featureFlags.test.ts` - Feature flag logic tests
 
@@ -856,12 +916,14 @@ Test files:
 ### Browser/Device Support
 
 #### Web
+
 - ✅ Chrome/Edge 90+
 - ✅ Firefox 88+
 - ✅ Safari 14+
 - ✅ Mobile browsers (iOS Safari, Chrome Mobile)
 
 #### Android
+
 - ✅ Android 8.0+ (API 26+)
 - ✅ Jetpack Compose 1.3+
 
@@ -922,6 +984,7 @@ Same as main project (MIT).
 ### Support
 
 For issues or questions:
+
 - Check this README first
 - Review test files for usage examples
 - Check browser/logcat console for errors
@@ -930,6 +993,7 @@ For issues or questions:
 ---
 
 **Implementation Status:**
+
 - ✅ Web scaffold complete
 - ✅ Android scaffold complete
 - ✅ Feature flags implemented
@@ -937,21 +1001,25 @@ For issues or questions:
 - ✅ Documentation complete
 - ⏳ Production enablement (future PR)
 
-***
+---
 
 ## Adding Multiple Images Per Scene - Implementation Guide
 
 ### Overview
+
 This guide explains how to add multiple static images for different situations within the same scene location. Currently, the system supports time-of-day variants. This document shows how to extend it for action-based images in the future.
 
 ### Current Implementation (Time-Based Images)
 
 #### How It Works Now
+
 The system automatically selects images based on:
+
 1. **Location** (e.g., living_room, kitchen, bedroom)
 2. **Time of Day** (morning, day, dusk, night)
 
 #### File Naming Convention
+
 ```
 /client/public/assets/scenes/
 ├── {location}.jpg              # Default image (fallback)
@@ -959,6 +1027,7 @@ The system automatically selects images based on:
 ```
 
 #### Examples
+
 ```
 /client/public/assets/scenes/
 ├── living_room.jpg              # Used during day if no time variant
@@ -972,6 +1041,7 @@ The system automatically selects images based on:
 ```
 
 #### Time Periods
+
 - **morning**: 6am - 10am
 - **day**: 10am - 5pm
 - **dusk**: 5pm - 8pm
@@ -980,17 +1050,21 @@ The system automatically selects images based on:
 ### Future Enhancement: Action-Based Images
 
 #### Concept
+
 Add images for specific activities or situations within a scene. For example:
+
 - Multiple living room images: by fireplace, on couch, looking out window
 - Multiple kitchen images: cooking, doing dishes, at counter
 
 #### Proposed File Naming Convention
+
 ```
 {location}-{action}.jpg              # Action variant (no time)
 {location}-{action}-{time}.jpg       # Action + time variant
 ```
 
 #### Example File Structure
+
 ```
 /client/public/assets/scenes/
 
@@ -1020,29 +1094,31 @@ Add images for specific activities or situations within a scene. For example:
 #### Implementation Steps (For Future Development)
 
 ##### 1. Update Type Definitions
+
 Add action types to `/client/src/types/scene.ts`:
 
 ```typescript
 // Add to existing types
-export type SceneAction = 
-  | 'fireplace' 
-  | 'couch' 
-  | 'window' 
-  | 'cooking' 
-  | 'dishes' 
+export type SceneAction =
+  | 'fireplace'
+  | 'couch'
+  | 'window'
+  | 'cooking'
+  | 'dishes'
   | 'counter'
   | 'reading'
   | 'default';
 ```
 
 ##### 2. Modify RealisticSceneBackground Component
+
 Update `/client/src/components/scene/RealisticSceneBackground.tsx`:
 
 ```typescript
 interface RealisticSceneBackgroundProps {
   location: SceneLocation;
   timeOfDay: TimeOfDay;
-  action?: SceneAction;  // Add this prop
+  action?: SceneAction; // Add this prop
   region?: 'full' | 'left-2-3';
   onImageLoadError?: () => void;
   onImageLoadSuccess?: () => void;
@@ -1050,7 +1126,7 @@ interface RealisticSceneBackgroundProps {
 
 // Update the getImageUrls function
 function getImageUrls(
-  location: SceneLocation, 
+  location: SceneLocation,
   timeOfDay: TimeOfDay,
   action?: SceneAction
 ): string[] {
@@ -1059,30 +1135,31 @@ function getImageUrls(
   }
 
   const urls: string[] = [];
-  
+
   // Try action + time variant first: living_room-fireplace-night.jpg
   if (action && action !== 'default') {
     urls.push(`/assets/scenes/${location}-${action}-${timeOfDay}.jpg`);
     urls.push(`/assets/scenes/${location}-${action}-${timeOfDay}.png`);
-    
+
     // Try action without time: living_room-fireplace.jpg
     urls.push(`/assets/scenes/${location}-${action}.jpg`);
     urls.push(`/assets/scenes/${location}-${action}.png`);
   }
-  
+
   // Try time-specific variant: living_room-night.jpg
   urls.push(`/assets/scenes/${location}-${timeOfDay}.jpg`);
   urls.push(`/assets/scenes/${location}-${timeOfDay}.png`);
-  
+
   // Try base location image: living_room.jpg
   urls.push(`/assets/scenes/${location}.jpg`);
   urls.push(`/assets/scenes/${location}.png`);
-  
+
   return urls;
 }
 ```
 
 ##### 3. Add Action Detection to AI Response
+
 Update `/server/sceneDetectionService.ts` to detect actions from conversation:
 
 ```typescript
@@ -1094,7 +1171,7 @@ const actionPatterns = {
   cooking: /cook|preparing|making.*food/i,
   dishes: /dish|wash|cleaning.*dish/i,
   counter: /counter|kitchen.*counter/i,
-  reading: /read|book/i
+  reading: /read|book/i,
 };
 
 // Detect action from message
@@ -1109,6 +1186,7 @@ function detectAction(message: string): SceneAction {
 ```
 
 ##### 4. Pass Action Through Scene Context
+
 Update scene context to include action:
 
 ```typescript
@@ -1124,6 +1202,7 @@ Update scene context to include action:
 ```
 
 ##### 5. Update App.tsx
+
 Add state for current action:
 
 ```typescript
@@ -1140,7 +1219,7 @@ if (data.sceneContext) {
 }
 
 // Pass to AdaptiveSceneManager
-<AdaptiveSceneManager 
+<AdaptiveSceneManager
   location={currentLocation}
   timeOfDay={currentTimeOfDay}
   action={currentAction}  // Add this
@@ -1151,22 +1230,27 @@ if (data.sceneContext) {
 ### Image Requirements
 
 #### Specifications
+
 - **Format**: JPG (preferred) or PNG
 - **Resolution**: 1920x1080 (16:9 aspect ratio)
 - **File Size**: Under 500KB per image (optimized for web)
 - **Quality**: 80-85% JPEG quality is usually sufficient
 
 #### Optimization Tools
+
 **Command Line (ImageMagick):**
+
 ```bash
 convert input.jpg -quality 85 -resize 1920x1080 output.jpg
 ```
 
 **Online Tools:**
+
 - [TinyPNG](https://tinypng.com/) - PNG/JPG compression
 - [Squoosh](https://squoosh.app/) - Google's image optimizer
 
 #### Image Tips
+
 1. **Lighting**: Match the time of day (bright for day, warm for night)
 2. **Composition**: Leave space for Milla silhouette (center-left area)
 3. **Depth**: Images with depth/perspective work better than flat walls
@@ -1180,17 +1264,20 @@ convert input.jpg -quality 85 -resize 1920x1080 output.jpg
 1. **Choose your location**: e.g., "garden"
 
 2. **Create base image**:
+
    ```
    garden.jpg  (default daytime garden)
    ```
 
 3. **Add time variants** (optional):
+
    ```
    garden-morning.jpg  (morning dew, soft light)
    garden-night.jpg    (moonlit garden)
    ```
 
 4. **Add action variants** (future):
+
    ```
    garden-flowers.jpg     (tending flowers)
    garden-bench.jpg       (sitting on bench)
@@ -1198,7 +1285,7 @@ convert input.jpg -quality 85 -resize 1920x1080 output.jpg
    ```
 
 5. **Test in browser**:
-   - Type: "*walks into the garden*"
+   - Type: "_walks into the garden_"
    - Verify correct image loads
    - Check different times of day
 
@@ -1260,6 +1347,7 @@ living_room-window-morning.jpg       # Morning view from window
 ### Future Enhancements
 
 Possible future features:
+
 1. **Random Selection**: Multiple images per situation, randomly chosen
 2. **Smooth Transitions**: Crossfade between images
 3. **Parallax Layers**: Multi-layer images for depth
@@ -1272,9 +1360,10 @@ Possible future features:
 
 **Note**: The action-based system is currently commented out and requires implementation. The time-based system works out of the box. Simply add appropriately named images to `/client/public/assets/scenes/` and they will be automatically detected and used.
 
-***
+---
 
 ## 🎨 Adaptive Interactive Scene Generation Framework
+
 ## Complete Documentation & Implementation Guide
 
 ---
@@ -1308,16 +1397,17 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 
 ### Core Documentation (Read in Order)
 
-| Document | Purpose | Read Time | Audience |
-|----------|---------|-----------|----------|
-| **[SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md)** | Quick decisions & checklists | 5 min | Developers |
-| **[IMPLEMENTATION_OPTIONS_COMPARISON.md](IMPLEMENTATION_OPTIONS_COMPARISON.md)** | Detailed option analysis | 15 min | Tech Leads |
-| **[SCENE_IMPLEMENTATION_GUIDE.md](SCENE_IMPLEMENTATION_GUIDE.md)** | Step-by-step code guide | 30 min | Developers |
-| **[ADAPTIVE_SCENE_GENERATION_SPEC.md](ADAPTIVE_SCENE_GENERATION_SPEC.md)** | Complete technical spec | 45 min | Architects |
+| Document                                                                         | Purpose                      | Read Time | Audience   |
+| -------------------------------------------------------------------------------- | ---------------------------- | --------- | ---------- |
+| **[SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md)**                         | Quick decisions & checklists | 5 min     | Developers |
+| **[IMPLEMENTATION_OPTIONS_COMPARISON.md](IMPLEMENTATION_OPTIONS_COMPARISON.md)** | Detailed option analysis     | 15 min    | Tech Leads |
+| **[SCENE_IMPLEMENTATION_GUIDE.md](SCENE_IMPLEMENTATION_GUIDE.md)**               | Step-by-step code guide      | 30 min    | Developers |
+| **[ADAPTIVE_SCENE_GENERATION_SPEC.md](ADAPTIVE_SCENE_GENERATION_SPEC.md)**       | Complete technical spec      | 45 min    | Architects |
 
 ### What Each Document Contains
 
 #### 📋 SCENE_QUICK_REFERENCE.md
+
 - ⚡ Decision matrix (at-a-glance comparison)
 - 🚀 5-minute quick start guide
 - ✅ Implementation checklists
@@ -1327,6 +1417,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 - 🔧 Troubleshooting guide
 
 #### 📊 IMPLEMENTATION_OPTIONS_COMPARISON.md
+
 - 📈 Executive summary table
 - ⚖️ Feature-by-feature comparison
 - 💰 Cost-benefit analysis
@@ -1336,6 +1427,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 - 🏆 Final recommendation
 
 #### 🛠️ SCENE_IMPLEMENTATION_GUIDE.md
+
 - 📝 7-step implementation process
 - 💻 Complete TypeScript code examples
 - 🎨 Scene configuration presets
@@ -1344,6 +1436,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 - 🔮 Future enhancement suggestions
 
 #### 📖 ADAPTIVE_SCENE_GENERATION_SPEC.md
+
 - 🏗️ Complete architecture design
 - 📐 Component structure diagrams
 - 🎯 Type definitions
@@ -1375,6 +1468,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ```
 
 **Best For:**
+
 - Quick MVP/prototype
 - Broad audience reach
 - Accessibility-first projects
@@ -1400,6 +1494,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ```
 
 **Best For:**
+
 - Portfolio/showcase projects
 - Desktop-only applications
 - High-end gaming/entertainment
@@ -1426,6 +1521,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ```
 
 **Best For:**
+
 - Production applications (like Milla Rayne)
 - Cross-platform apps
 - Diverse user base
@@ -1439,7 +1535,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 
 ```
                     Hybrid Approach Benefits
-                    
+
 ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
 │  Universal   │  │  Scalable    │  │ Future-Proof │
 │ Compatibility│  │   Quality    │  │Architecture  │
@@ -1464,16 +1560,19 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ### Implementation Strategy
 
 **Phase 1: CSS Foundation (Days 1-4)**
+
 - Delivers value immediately
 - Works for 100% of users
 - Can ship to production
 
 **Phase 2: WebGL Enhancement (Days 5-6) - OPTIONAL**
+
 - Adds premium features
 - Only for capable devices
 - Lazy-loaded (doesn't slow app)
 
 **Phase 3: Continuous Improvement**
+
 - Iterate based on analytics
 - Add features as needed
 - Maintain performance
@@ -1485,10 +1584,12 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ### For Decision Makers
 
 **Read This First:**
+
 - [SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md) - 5 minutes
 - [IMPLEMENTATION_OPTIONS_COMPARISON.md](IMPLEMENTATION_OPTIONS_COMPARISON.md) - Section: "Final Recommendation"
 
 **Decision Checklist:**
+
 - [ ] Choose implementation option (Recommend: Hybrid)
 - [ ] Approve timeline (4-6 days for Hybrid)
 - [ ] Decide on WebGL enhancement (optional)
@@ -1499,10 +1600,12 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 ### For Developers
 
 **Read This First:**
+
 - [SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md) - Full document
 - [SCENE_IMPLEMENTATION_GUIDE.md](SCENE_IMPLEMENTATION_GUIDE.md) - Steps 1-7
 
 **Implementation Checklist:**
+
 - [ ] Read implementation guide
 - [ ] Create type definitions (`scene.ts`)
 - [ ] Implement capability detector
@@ -1513,6 +1616,7 @@ This framework provides a complete solution for replacing Milla Rayne's static b
 - [ ] Test across devices
 
 **Minimal Code to Get Started:**
+
 ```typescript
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 
@@ -1520,8 +1624,8 @@ function App() {
   return (
     <div className="min-h-screen relative">
       {/* Replaces static background */}
-      <AdaptiveSceneManager 
-        mood="calm" 
+      <AdaptiveSceneManager
+        mood="calm"
         avatarState="neutral"
       />
       {/* Your existing content */}
@@ -1535,6 +1639,7 @@ function App() {
 ## 🎨 Visual Preview
 
 ### Current State
+
 ```
 ┌────────────────────────────────────┐
 │                                     │
@@ -1548,6 +1653,7 @@ function App() {
 ```
 
 ### After Implementation (CSS Renderer)
+
 ```
 ┌────────────────────────────────────┐
 │ ✨     [Animated Gradients]    ✨  │
@@ -1569,6 +1675,7 @@ Features:
 ```
 
 ### After Enhancement (WebGL - Optional)
+
 ```
 ┌────────────────────────────────────┐
 │ 🌟  [3D Particle Systems]      🌟  │
@@ -1592,6 +1699,7 @@ Additional Features:
 ### Scene Types
 
 #### 🌅 Dawn Scene (5am-8am)
+
 ```
 Colors: Pink → Orange → Gold → Sky Blue
 Mood: Fresh, Awakening
@@ -1600,14 +1708,16 @@ Animation: Gentle waves, soft glow
 ```
 
 #### ☀️ Day Scene (8am-5pm)
+
 ```
 Colors: Sky Blue → Light Blue → Bright White
-Mood: Bright, Energetic  
+Mood: Bright, Energetic
 Particles: Sparkling light (medium density)
 Animation: Shimmer, brightness pulse
 ```
 
 #### 🌆 Dusk Scene (5pm-8pm)
+
 ```
 Colors: Red → Orange → Pink → Purple
 Mood: Romantic, Warm
@@ -1616,6 +1726,7 @@ Animation: Slow rotation, glow pulse
 ```
 
 #### 🌙 Night Scene (8pm-5am)
+
 ```
 Colors: Dark Blue → Navy → Charcoal
 Mood: Calm, Mysterious
@@ -1659,9 +1770,10 @@ START: Need Dynamic Background?
 A: **Option 3 (Hybrid)** - Best balance of quality, performance, and compatibility for a production app with diverse users.
 
 **Q: How long will it take?**  
-A: 
+A:
+
 - CSS Only: 2-3 days
-- WebGL Only: 5-7 days  
+- WebGL Only: 5-7 days
 - Hybrid: 4-6 days (CSS core + optional WebGL)
 
 **Q: What's the performance impact?**  
@@ -1677,12 +1789,14 @@ A: Fully accessible! Automatically respects `prefers-reduced-motion` and provide
 
 **Q: What dependencies are needed?**  
 A:
+
 - CSS Only: None (built-in CSS)
 - WebGL: @react-three/fiber, three (already in project)
 - Hybrid: Same as WebGL, but lazy-loaded
 
 **Q: How big is the bundle size increase?**  
 A:
+
 - CSS Only: +15KB
 - WebGL Only: +150KB
 - Hybrid: +50KB (WebGL lazy-loaded)
@@ -1697,6 +1811,7 @@ A: The implementation guide includes testing procedures for time changes, moods,
 
 **Q: Can I implement in phases?**  
 A: Yes! Recommended approach:
+
 1. Phase 1: CSS foundation (works standalone)
 2. Phase 2: Add interactivity
 3. Phase 3: Optional WebGL enhancement
@@ -1715,13 +1830,15 @@ A: Built-in performance monitoring code is provided in the implementation guide.
 ## 🎯 Next Steps
 
 ### For Project Stakeholders
+
 1. ✅ Review [IMPLEMENTATION_OPTIONS_COMPARISON.md](IMPLEMENTATION_OPTIONS_COMPARISON.md)
 2. ✅ Make decision on implementation option
 3. ✅ Approve timeline and budget
 4. ✅ Assign developer resources
 
 ### For Developers
-1. ✅ Read [SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md) 
+
+1. ✅ Read [SCENE_QUICK_REFERENCE.md](SCENE_QUICK_REFERENCE.md)
 2. ✅ Study [SCENE_IMPLEMENTATION_GUIDE.md](SCENE_IMPLEMENTATION_GUIDE.md)
 3. ✅ Follow Phase 1 checklist
 4. ✅ Test incrementally
@@ -1742,16 +1859,16 @@ For questions or clarification on any aspect of this framework:
 
 ## 📊 Summary
 
-| Aspect | Status |
-|--------|--------|
-| Framework Design | ✅ Complete |
-| Documentation | ✅ Complete |
-| Code Examples | ✅ Complete |
+| Aspect             | Status      |
+| ------------------ | ----------- |
+| Framework Design   | ✅ Complete |
+| Documentation      | ✅ Complete |
+| Code Examples      | ✅ Complete |
 | Testing Procedures | ✅ Complete |
-| Risk Assessment | ✅ Complete |
-| Cost Analysis | ✅ Complete |
-| Timeline Estimate | ✅ Complete |
-| Ready to Implement | ✅ YES |
+| Risk Assessment    | ✅ Complete |
+| Cost Analysis      | ✅ Complete |
+| Timeline Estimate  | ✅ Complete |
+| Ready to Implement | ✅ YES      |
 
 **All documentation is production-ready and implementation can begin immediately.**
 
@@ -1763,7 +1880,7 @@ This framework provides everything needed to transform Milla Rayne's static back
 
 Choose your option, follow the guides, and create an engaging visual experience! 🎨✨
 
-***
+---
 
 ## Adaptive Interactive Scene Generation - Implementation Guide
 
@@ -1775,17 +1892,17 @@ This guide provides actionable steps and code examples for implementing the adap
 
 ### Option Comparison Summary
 
-| Feature | Option 1: CSS Only | Option 2: WebGL Only | Option 3: Hybrid ⭐ |
-|---------|-------------------|---------------------|-------------------|
-| **Performance** | Excellent (60fps+) | Variable (30-60fps) | Excellent with fallback |
-| **Visual Quality** | Good | Excellent | Best of both |
-| **Device Support** | 100% | ~95% (WebGL required) | 100% |
-| **Implementation Time** | 2-3 days | 5-7 days | 4-6 days |
-| **Maintenance** | Low | Medium | Medium |
-| **Bundle Size** | +15KB | +150KB | +50KB (lazy load) |
-| **Accessibility** | Excellent | Good | Excellent |
-| **Future-Proof** | Limited | Limited | Highly extensible |
-| **Risk Level** | Low | Medium-High | Medium |
+| Feature                 | Option 1: CSS Only | Option 2: WebGL Only  | Option 3: Hybrid ⭐     |
+| ----------------------- | ------------------ | --------------------- | ----------------------- |
+| **Performance**         | Excellent (60fps+) | Variable (30-60fps)   | Excellent with fallback |
+| **Visual Quality**      | Good               | Excellent             | Best of both            |
+| **Device Support**      | 100%               | ~95% (WebGL required) | 100%                    |
+| **Implementation Time** | 2-3 days           | 5-7 days              | 4-6 days                |
+| **Maintenance**         | Low                | Medium                | Medium                  |
+| **Bundle Size**         | +15KB              | +150KB                | +50KB (lazy load)       |
+| **Accessibility**       | Excellent          | Good                  | Excellent               |
+| **Future-Proof**        | Limited            | Limited               | Highly extensible       |
+| **Risk Level**          | Low                | Medium-High           | Medium                  |
 
 **Recommendation**: **Option 3 (Hybrid)** - Best balance of quality, performance, and compatibility.
 
@@ -1796,8 +1913,14 @@ This guide provides actionable steps and code examples for implementing the adap
 #### Step 1: Create Base Types and Utilities
 
 Create `client/src/types/scene.ts`:
+
 ```typescript
-export type SceneMood = 'calm' | 'energetic' | 'romantic' | 'mysterious' | 'playful';
+export type SceneMood =
+  | 'calm'
+  | 'energetic'
+  | 'romantic'
+  | 'mysterious'
+  | 'playful';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type AvatarState = 'neutral' | 'thinking' | 'responding' | 'listening';
 export type ParticleType = 'stars' | 'sparkles' | 'hearts' | 'petals' | 'mist';
@@ -1831,6 +1954,7 @@ export interface ParticleConfig {
 ```
 
 Create `client/src/utils/capabilityDetector.ts`:
+
 ```typescript
 import { DeviceCapabilities } from '@/types/scene';
 
@@ -1838,8 +1962,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
   // Check WebGL support
   const canvas = document.createElement('canvas');
   const webGL = !!(
-    canvas.getContext('webgl') || 
-    canvas.getContext('experimental-webgl')
+    canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
   );
 
   // Detect reduced motion preference
@@ -1850,7 +1973,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
   // Get screen size
   const screenSize = {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
   };
 
   // Simple GPU tier detection (can be enhanced)
@@ -1865,7 +1988,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
     webGL,
     gpuTier,
     prefersReducedMotion,
-    screenSize
+    screenSize,
   };
 }
 ```
@@ -1875,6 +1998,7 @@ export function detectDeviceCapabilities(): DeviceCapabilities {
 #### Step 2: Create Scene Configuration Presets
 
 Create `client/src/utils/scenePresets.ts`:
+
 ```typescript
 import { SceneConfig, SceneMood, TimeOfDay } from '@/types/scene';
 
@@ -1883,26 +2007,26 @@ export const TIME_BASED_SCENES: Record<TimeOfDay, SceneConfig> = {
     colors: ['#FF6B9D', '#FFA07A', '#FFD700', '#87CEEB'],
     animations: ['gentle-wave', 'fade-in-out'],
     particles: { type: 'stars', density: 'low', speed: 0.5 },
-    interactive: true
+    interactive: true,
   },
   day: {
     colors: ['#87CEEB', '#B0E0E6', '#ADD8E6', '#E0F6FF'],
     animations: ['breathing', 'shimmer'],
     particles: { type: 'sparkles', density: 'medium', speed: 1.0 },
-    interactive: true
+    interactive: true,
   },
   dusk: {
     colors: ['#FF6B6B', '#FF8E53', '#FE6B8B', '#C471ED'],
     animations: ['slow-rotate', 'glow-pulse'],
     particles: { type: 'sparkles', density: 'high', speed: 0.8 },
-    interactive: true
+    interactive: true,
   },
   night: {
     colors: ['#0F2027', '#203A43', '#2C5364', '#1A1A2E'],
     animations: ['twinkle', 'drift'],
     particles: { type: 'stars', density: 'high', speed: 0.3 },
-    interactive: true
-  }
+    interactive: true,
+  },
 };
 
 export const MOOD_BASED_SCENES: Record<SceneMood, Partial<SceneConfig>> = {
@@ -1917,18 +2041,18 @@ export const MOOD_BASED_SCENES: Record<SceneMood, Partial<SceneConfig>> = {
   romantic: {
     colors: ['#FE6B8B', '#FF8E53', '#FFAFBD', '#FFC3A0'],
     animations: ['breathing', 'glow-pulse'],
-    particles: { type: 'hearts', density: 'low', speed: 0.6 }
+    particles: { type: 'hearts', density: 'low', speed: 0.6 },
   },
   mysterious: {
     colors: ['#2E3440', '#3B4252', '#434C5E', '#4C566A'],
     animations: ['mist', 'slow-rotate'],
-    particles: { type: 'mist', density: 'medium', speed: 0.4 }
+    particles: { type: 'mist', density: 'medium', speed: 0.4 },
   },
   playful: {
     colors: ['#FF6B9D', '#C471ED', '#12c2e9', '#f64f59'],
     animations: ['bounce', 'wiggle'],
-    particles: { type: 'sparkles', density: 'high', speed: 1.2 }
-  }
+    particles: { type: 'sparkles', density: 'high', speed: 1.2 },
+  },
 };
 
 export function getSceneForContext(
@@ -1941,15 +2065,18 @@ export function getSceneForContext(
   // Merge configurations, prioritizing mood-specific settings
   return {
     colors: moodScene.colors || timeScene.colors,
-    animations: [...(timeScene.animations || []), ...(moodScene.animations || [])],
+    animations: [
+      ...(timeScene.animations || []),
+      ...(moodScene.animations || []),
+    ],
     particles: moodScene.particles || timeScene.particles,
-    interactive: timeScene.interactive
+    interactive: timeScene.interactive,
   };
 }
 
 export function getCurrentTimeOfDay(): TimeOfDay {
   const hour = new Date().getHours();
-  
+
   if (hour >= 5 && hour < 8) return 'dawn';
   if (hour >= 8 && hour < 17) return 'day';
   if (hour >= 17 && hour < 20) return 'dusk';
@@ -1962,6 +2089,7 @@ export function getCurrentTimeOfDay(): TimeOfDay {
 #### Step 3: Create CSS Scene Renderer Component
 
 Create `client/src/components/scene/CSSSceneRenderer.tsx`:
+
 ```typescript
 import React, { useEffect, useState, useRef } from 'react';
 import { SceneConfig } from '@/types/scene';
@@ -2080,6 +2208,7 @@ const ParticleLayer: React.FC<{ config: any }> = ({ config }) => {
 #### Step 4: Create Adaptive Scene Manager
 
 Create `client/src/components/scene/AdaptiveSceneManager.tsx`:
+
 ```typescript
 import React, { useState, useEffect } from 'react';
 import { SceneContext } from '@/types/scene';
@@ -2140,10 +2269,12 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
 #### Step 5: Add CSS Animations
 
 Add to `client/src/index.css`:
+
 ```css
 /* Scene animations */
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -2152,7 +2283,8 @@ Add to `client/src/index.css`:
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.1;
   }
   50% {
@@ -2178,7 +2310,8 @@ Add to `client/src/index.css`:
 }
 
 @keyframes gentle-wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) scale(1);
   }
   50% {
@@ -2187,7 +2320,8 @@ Add to `client/src/index.css`:
 }
 
 @keyframes breathing {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.3;
   }
@@ -2198,7 +2332,8 @@ Add to `client/src/index.css`:
 }
 
 @keyframes twinkle {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.4;
   }
   50% {
@@ -2212,19 +2347,20 @@ Add to `client/src/index.css`:
 #### Step 6: Integrate into App.tsx
 
 Update `client/src/App.tsx`:
+
 ```typescript
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
 
 function App() {
   const [avatarState, setAvatarState] = useState<'neutral' | 'thinking' | 'responding' | 'listening'>('neutral');
   const [sceneMood, setSceneMood] = useState<'calm' | 'energetic' | 'romantic' | 'mysterious' | 'playful'>('calm');
-  
+
   // ... existing state and logic ...
 
   return (
     <div className="min-h-screen relative">
       {/* Adaptive Scene Background */}
-      <AdaptiveSceneManager 
+      <AdaptiveSceneManager
         avatarState={avatarState}
         mood={sceneMood}
         enableAnimations={true}
@@ -2242,6 +2378,7 @@ function App() {
 #### Step 7: Add Settings Panel Controls
 
 Add to `client/src/components/SettingsPanel.tsx`:
+
 ```typescript
 interface SettingsPanelProps {
   // ... existing props ...
@@ -2269,7 +2406,7 @@ interface SettingsPanelProps {
         }
       />
     </div>
-    
+
     <div>
       <label>Scene Mood</label>
       <Select
@@ -2290,7 +2427,7 @@ interface SettingsPanelProps {
         </SelectContent>
       </Select>
     </div>
-    
+
     <div className="flex items-center justify-between">
       <label>Particle Effects</label>
       <Switch
@@ -2300,7 +2437,7 @@ interface SettingsPanelProps {
         }
       />
     </div>
-    
+
     <div className="flex items-center justify-between">
       <label>Parallax Effect</label>
       <Switch
@@ -2319,11 +2456,13 @@ interface SettingsPanelProps {
 ### Testing the Implementation
 
 #### 1. Manual Testing
+
 ```bash
 npm run dev
 ```
 
 Test scenarios:
+
 - ✅ Different times of day (change system time)
 - ✅ Different moods (use settings panel)
 - ✅ Reduced motion preference (browser settings)
@@ -2331,26 +2470,27 @@ Test scenarios:
 - ✅ Low-spec devices (throttle CPU in DevTools)
 
 #### 2. Performance Testing
+
 ```javascript
 // Add to component for monitoring
 useEffect(() => {
   let frameCount = 0;
   let lastTime = performance.now();
-  
+
   const measureFPS = () => {
     frameCount++;
     const currentTime = performance.now();
-    
+
     if (currentTime >= lastTime + 1000) {
       const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
       console.log(`FPS: ${fps}`);
       frameCount = 0;
       lastTime = currentTime;
     }
-    
+
     requestAnimationFrame(measureFPS);
   };
-  
+
   requestAnimationFrame(measureFPS);
 }, []);
 ```
@@ -2360,9 +2500,11 @@ useEffect(() => {
 ### Future Enhancements (Optional)
 
 #### 1. WebGL Renderer (Advanced)
+
 Create `client/src/components/scene/WebGLSceneRenderer.tsx` using @react-three/fiber for high-end devices.
 
 #### 2. Conversation Context Integration
+
 ```typescript
 // Analyze conversation sentiment to adjust mood
 function getMoodFromConversation(messages: Message[]): SceneMood {
@@ -2373,6 +2515,7 @@ function getMoodFromConversation(messages: Message[]): SceneMood {
 ```
 
 #### 3. Custom User Scenes
+
 Allow users to create and save custom color schemes and particle configurations.
 
 ---
@@ -2380,36 +2523,42 @@ Allow users to create and save custom color schemes and particle configurations.
 ### Summary
 
 **For immediate implementation, focus on:**
+
 1. ✅ CSS-based scene renderer (Steps 1-6)
 2. ✅ Time-based automatic scenes
 3. ✅ Settings panel integration
 4. ✅ Accessibility (reduced motion support)
 
 **For future enhancements:**
+
 - WebGL renderer for high-end devices
 - AI-driven mood detection
 - User-created custom scenes
 - Seasonal/event-based themes
 
 **Expected Outcomes:**
+
 - Dynamic, engaging background that responds to context
 - Excellent performance on all devices
 - Accessible and user-controllable
 - Extensible architecture for future features
 
-***
+---
 
 ## Adaptive Scene Generation - Implementation Summary
 
 ### Overview
+
 This document summarizes the implementation of the Adaptive Interactive Scene Generation milestone for issue #107.
 
 ### What Was Implemented
 
 #### 1. Core Scene System (Already Present)
+
 The adaptive scene system was already fully implemented with the following components:
 
 ##### Components
+
 - **AdaptiveSceneManager** (`client/src/components/scene/AdaptiveSceneManager.tsx`)
   - Main orchestrator for adaptive backgrounds
   - Handles time-of-day detection and updates
@@ -2437,6 +2586,7 @@ The adaptive scene system was already fully implemented with the following compo
   - Scene state visualization
 
 ##### Utilities
+
 - **capabilityDetector** (`client/src/utils/capabilityDetector.ts`)
   - WebGL support detection
   - GPU tier classification (low/medium/high)
@@ -2458,7 +2608,9 @@ The adaptive scene system was already fully implemented with the following compo
 #### 2. New Additions in This Milestone
 
 ##### Enhanced Diagnostic Overlay
+
 Added user-friendly scene information indicator in `AdaptiveSceneManager.tsx`:
+
 - Non-intrusive badge in bottom-left corner
 - Shows "Adaptive Scene" with pulsing green indicator
 - Expands on hover to show:
@@ -2468,13 +2620,17 @@ Added user-friendly scene information indicator in `AdaptiveSceneManager.tsx`:
 - Complementary to the dev debug overlay
 
 ##### Disabled Scene Diagnostic
+
 Added helpful diagnostic when scene is disabled:
+
 - Shows "Scene Context: Disabled" message
 - Explains how to enable the feature
 - Only displays when dev debug mode is active
 
 ##### Comprehensive Test Suite
+
 Created `client/src/__tests__/scene/adaptiveSceneIntegration.test.ts`:
+
 - 200+ test cases covering all acceptance criteria
 - Tests for time-of-day transitions
 - Tests for mood overlays
@@ -2485,7 +2641,9 @@ Created `client/src/__tests__/scene/adaptiveSceneIntegration.test.ts`:
 - Integration tests for full scene generation flow
 
 ##### Manual Validation Checklist
+
 Created `SCENE_VALIDATION_CHECKLIST.md`:
+
 - Detailed step-by-step testing procedures
 - Coverage of all acceptance criteria
 - Desktop and mobile testing scenarios
@@ -2495,7 +2653,9 @@ Created `SCENE_VALIDATION_CHECKLIST.md`:
 - Regression testing checklist
 
 ##### Interactive Demo
+
 Created `SCENE_DEMO.html`:
+
 - Standalone HTML demo of the scene system
 - Interactive controls for all features
 - Visual demonstration of time-of-day changes
@@ -2507,8 +2667,9 @@ Created `SCENE_DEMO.html`:
 ### Acceptance Criteria Status
 
 #### ✅ Users see dynamic, animated background on all supported browsers
+
 - **Status:** IMPLEMENTED
-- **Evidence:** 
+- **Evidence:**
   - AdaptiveSceneManager renders by default in App.tsx
   - Settings default to `enabled: true`
   - useNeutralizeLegacyBackground hook removes static images
@@ -2516,6 +2677,7 @@ Created `SCENE_DEMO.html`:
   - Multi-layer gradient with gradient-shift animation
 
 #### ✅ Scene changes for different times of day
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - Four time periods supported: dawn, day, dusk, night
@@ -2525,6 +2687,7 @@ Created `SCENE_DEMO.html`:
   - Time detection based on hour (dawn: 5-8am, day: 8am-5pm, dusk: 5-8pm, night: 8pm-5am)
 
 #### ✅ Scene changes for different moods
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - Five moods supported: calm, energetic, romantic, mysterious, playful
@@ -2534,6 +2697,7 @@ Created `SCENE_DEMO.html`:
   - Different particle types per mood (hearts for romantic, stars for night, etc.)
 
 #### ✅ Scene Settings panel allows real-time adjustment
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - SceneSettingsPanel component with all controls
@@ -2546,6 +2710,7 @@ Created `SCENE_DEMO.html`:
   - Real-time updates (no page reload required)
 
 #### ✅ Overlay respects device capability detection
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - detectDeviceCapabilities() in capabilityDetector.ts
@@ -2556,6 +2721,7 @@ Created `SCENE_DEMO.html`:
   - Screen size detection for responsive behavior
 
 #### ✅ Overlay respects reduced motion preference
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - matchMedia('prefers-reduced-motion: reduce') detection
@@ -2566,6 +2732,7 @@ Created `SCENE_DEMO.html`:
   - Setting panel shows "Reduced Motion: ON" indicator
 
 #### ✅ No static image backgrounds visible
+
 - **Status:** IMPLEMENTED
 - **Evidence:**
   - useNeutralizeLegacyBackground hook in App.tsx
@@ -2575,6 +2742,7 @@ Created `SCENE_DEMO.html`:
   - Scene enabled by default (getDefaultSettings returns enabled: true)
 
 #### ✅ Diagnostic overlay shows scene context
+
 - **Status:** IMPLEMENTED (NEW IN THIS MILESTONE)
 - **Evidence:**
   - User-friendly indicator in bottom-left corner
@@ -2584,6 +2752,7 @@ Created `SCENE_DEMO.html`:
   - FPS counter available in debug mode
 
 #### ✅ Test cases cover desktop, mobile, and accessibility
+
 - **Status:** IMPLEMENTED (NEW IN THIS MILESTONE)
 - **Evidence:**
   - adaptiveSceneIntegration.test.ts with 200+ test cases
@@ -2597,6 +2766,7 @@ Created `SCENE_DEMO.html`:
 ### Technical Details
 
 #### Scene System Architecture
+
 ```
 App.tsx
   ├── RPSceneBackgroundBridge (RP scene integration)
@@ -2615,6 +2785,7 @@ App.tsx
 ```
 
 #### Default Configuration
+
 ```typescript
 {
   enabled: true,                    // Scene on by default
@@ -2631,6 +2802,7 @@ App.tsx
 ```
 
 #### Performance Characteristics
+
 - **Bundle Size:** +15KB gzipped (CSS-based implementation)
 - **FPS Target:** 30-60 FPS depending on device tier
 - **Memory Usage:** Stable, no leaks detected
@@ -2638,6 +2810,7 @@ App.tsx
 - **GPU Acceleration:** Used when available
 
 #### Browser Compatibility
+
 - ✅ Chrome/Edge (full support)
 - ✅ Firefox (full support)
 - ✅ Safari (full support)
@@ -2648,19 +2821,19 @@ App.tsx
 ### Files Modified/Created
 
 #### Modified
+
 - `client/src/components/scene/AdaptiveSceneManager.tsx`
   - Added scene info indicator overlay
   - Added disabled scene diagnostic
   - Enhanced user feedback
 
 #### Created
+
 - `client/src/__tests__/scene/adaptiveSceneIntegration.test.ts`
   - Comprehensive test suite (200+ tests)
-  
 - `SCENE_VALIDATION_CHECKLIST.md`
   - Manual testing procedures
   - Acceptance criteria validation steps
-  
 - `SCENE_DEMO.html`
   - Interactive standalone demo
   - Visual showcase of all features
@@ -2716,23 +2889,23 @@ The Adaptive Scene Generation system is **fully implemented and meets all accept
 
 The implementation is production-ready, well-tested, and follows best practices for performance, accessibility, and user experience.
 
-***
+---
 
 ## Adaptive Scene Generation - Quick Reference
 
 ### 📊 Decision Matrix
 
-| Criteria | CSS Only | WebGL Only | Hybrid (RECOMMENDED) |
-|----------|----------|------------|---------------------|
-| ⏱️ **Implementation Time** | 2-3 days | 5-7 days | 4-6 days |
-| 🎨 **Visual Quality** | ★★★☆☆ | ★★★★★ | ★★★★☆ |
-| ⚡ **Performance** | ★★★★★ | ★★★☆☆ | ★★★★★ |
-| 📱 **Device Support** | 100% | ~95% | 100% |
-| 💼 **Maintenance** | Easy | Medium | Medium |
-| 📦 **Bundle Size** | +15KB | +150KB | +50KB |
-| ♿ **Accessibility** | ★★★★★ | ★★★☆☆ | ★★★★★ |
-| 🔮 **Future-Proof** | ★★☆☆☆ | ★★★☆☆ | ★★★★★ |
-| ⚠️ **Risk Level** | Low | High | Medium |
+| Criteria                   | CSS Only | WebGL Only | Hybrid (RECOMMENDED) |
+| -------------------------- | -------- | ---------- | -------------------- |
+| ⏱️ **Implementation Time** | 2-3 days | 5-7 days   | 4-6 days             |
+| 🎨 **Visual Quality**      | ★★★☆☆    | ★★★★★      | ★★★★☆                |
+| ⚡ **Performance**         | ★★★★★    | ★★★☆☆      | ★★★★★                |
+| 📱 **Device Support**      | 100%     | ~95%       | 100%                 |
+| 💼 **Maintenance**         | Easy     | Medium     | Medium               |
+| 📦 **Bundle Size**         | +15KB    | +150KB     | +50KB                |
+| ♿ **Accessibility**       | ★★★★★    | ★★★☆☆      | ★★★★★                |
+| 🔮 **Future-Proof**        | ★★☆☆☆    | ★★★☆☆      | ★★★★★                |
+| ⚠️ **Risk Level**          | Low      | High       | Medium               |
 
 **🏆 Winner: Hybrid Approach** - Best balance of all factors
 
@@ -2741,7 +2914,9 @@ The implementation is production-ready, well-tested, and follows best practices 
 ### 🎯 Quick Start (5-Minute Overview)
 
 #### What You're Building
+
 Replace the static `/milla_new.jpg` background with a dynamic, context-aware scene system that:
+
 - Changes based on time of day (dawn → day → dusk → night)
 - Adapts to conversation mood (calm, energetic, romantic, mysterious, playful)
 - Reacts to avatar state (thinking, responding, listening)
@@ -2749,6 +2924,7 @@ Replace the static `/milla_new.jpg` background with a dynamic, context-aware sce
 - Works on ALL devices with graceful degradation
 
 #### How It Works
+
 ```
 User Opens App
     ↓
@@ -2797,6 +2973,7 @@ mrdannyclark82/Milla-Rayne/
 ### 🚀 Implementation Checklist
 
 #### ✅ Phase 1: Foundation (Days 1-2)
+
 - [ ] Create `/client/src/types/scene.ts` with type definitions
 - [ ] Create `/client/src/utils/capabilityDetector.ts`
 - [ ] Create `/client/src/utils/scenePresets.ts`
@@ -2805,6 +2982,7 @@ mrdannyclark82/Milla-Rayne/
 - [ ] Test basic gradient rendering
 
 #### ✅ Phase 2: Adaptive Logic (Days 2-3)
+
 - [ ] Create `/client/src/components/scene/AdaptiveSceneManager.tsx`
 - [ ] Implement time-of-day detection
 - [ ] Add mood-based scene selection
@@ -2812,6 +2990,7 @@ mrdannyclark82/Milla-Rayne/
 - [ ] Test scene transitions
 
 #### ✅ Phase 3: Interactivity (Days 3-4)
+
 - [ ] Add mouse parallax effects
 - [ ] Implement particle systems
 - [ ] Add context-aware reactions
@@ -2819,6 +2998,7 @@ mrdannyclark82/Milla-Rayne/
 - [ ] Optimize performance
 
 #### ✅ Phase 4: Integration (Day 4)
+
 - [ ] Update `App.tsx` to use AdaptiveSceneManager
 - [ ] Remove static background image
 - [ ] Add settings panel controls
@@ -2826,6 +3006,7 @@ mrdannyclark82/Milla-Rayne/
 - [ ] Performance benchmarking
 
 #### 🎁 Phase 5: Optional WebGL (Days 5-6)
+
 - [ ] Create `/client/src/components/scene/WebGLSceneRenderer.tsx`
 - [ ] Implement capability-based renderer selection
 - [ ] Add lazy loading for WebGL
@@ -2836,6 +3017,7 @@ mrdannyclark82/Milla-Rayne/
 ### 🎨 Scene Types Preview
 
 #### Time-Based Scenes
+
 ```
 🌅 DAWN (5am-8am)
    Colors: Pink → Orange → Gold → Sky Blue
@@ -2859,6 +3041,7 @@ mrdannyclark82/Milla-Rayne/
 ```
 
 #### Mood-Based Overlays
+
 ```
 😌 CALM
    Colors: Purple → Blue tones
@@ -2891,6 +3074,7 @@ mrdannyclark82/Milla-Rayne/
 ### 💻 Code Snippets
 
 #### Minimal Implementation (Just Replace Background)
+
 ```typescript
 // In App.tsx
 import { AdaptiveSceneManager } from '@/components/scene/AdaptiveSceneManager';
@@ -2906,11 +3090,12 @@ function App() {
 ```
 
 #### With Avatar State Integration
+
 ```typescript
 const [avatarState, setAvatarState] = useState('neutral');
 
 return (
-  <AdaptiveSceneManager 
+  <AdaptiveSceneManager
     avatarState={avatarState}
     mood="romantic"
     enableAnimations={true}
@@ -2919,6 +3104,7 @@ return (
 ```
 
 #### With User Settings
+
 ```typescript
 const [sceneSettings, setSceneSettings] = useState({
   enabled: true,
@@ -2928,7 +3114,7 @@ const [sceneSettings, setSceneSettings] = useState({
 });
 
 return (
-  <AdaptiveSceneManager 
+  <AdaptiveSceneManager
     {...sceneSettings}
     avatarState={avatarState}
   />
@@ -2940,6 +3126,7 @@ return (
 ### 🧪 Testing Guide
 
 #### Manual Tests
+
 1. **Time of Day**: Change system clock and refresh
 2. **Different Moods**: Cycle through all mood options
 3. **Avatar States**: Test thinking, responding, listening
@@ -2948,6 +3135,7 @@ return (
 6. **Mobile**: Test on actual mobile device or emulator
 
 #### Browser DevTools Performance
+
 ```javascript
 // Open Console and run:
 let frames = 0;
@@ -2967,6 +3155,7 @@ measureFPS();
 ```
 
 #### Accessibility Check
+
 - [ ] Test with VoiceOver/NVDA screen reader
 - [ ] Enable "Reduce Motion" preference
 - [ ] Test keyboard navigation (scene shouldn't interfere)
@@ -3007,37 +3196,41 @@ measureFPS();
 
 ### 📊 Performance Targets
 
-| Metric | Target | Acceptable | Poor |
-|--------|--------|------------|------|
-| FPS | 60 | 45-60 | <45 |
-| Scene Transition | <50ms | <100ms | >100ms |
-| CPU Usage | <5% | <10% | >10% |
-| Memory | <20MB | <40MB | >40MB |
-| Bundle Size | <50KB | <100KB | >100KB |
+| Metric           | Target | Acceptable | Poor   |
+| ---------------- | ------ | ---------- | ------ |
+| FPS              | 60     | 45-60      | <45    |
+| Scene Transition | <50ms  | <100ms     | >100ms |
+| CPU Usage        | <5%    | <10%       | >10%   |
+| Memory           | <20MB  | <40MB      | >40MB  |
+| Bundle Size      | <50KB  | <100KB     | >100KB |
 
 ---
 
 ### 🔧 Troubleshooting
 
 #### Scene Not Showing
+
 - ✅ Check z-index (should be negative: `-z-10`)
 - ✅ Verify component is imported correctly
 - ✅ Check for CSS conflicts
 - ✅ Inspect element in DevTools
 
 #### Poor Performance
+
 - ✅ Reduce particle count
 - ✅ Disable parallax on low-end devices
 - ✅ Check GPU tier detection
 - ✅ Ensure animations are GPU-accelerated
 
 #### Colors Not Changing
+
 - ✅ Verify time of day detection
 - ✅ Check mood prop is being passed
 - ✅ Inspect scene config in React DevTools
 - ✅ Clear cache and hard reload
 
 #### Accessibility Issues
+
 - ✅ Test with prefers-reduced-motion
 - ✅ Verify static fallback works
 - ✅ Check ARIA attributes
@@ -3069,12 +3262,16 @@ measureFPS();
 ### 🎯 Key Decisions to Make
 
 #### 1. Which Implementation Option?
+
 **Recommendation**: Start with **Hybrid Approach** foundation
+
 - Implement CSS renderer first (Days 1-4)
 - Add WebGL later if needed (Days 5-6)
 
 #### 2. Feature Priority?
+
 **Recommended Order**:
+
 1. Time-based scenes ← Start here
 2. Mood-based overlays
 3. Parallax effects
@@ -3082,7 +3279,9 @@ measureFPS();
 5. WebGL enhancement ← Optional
 
 #### 3. Performance vs. Visual Quality?
+
 **Balance Approach**:
+
 - Use high quality on desktop
 - Auto-downgrade on mobile
 - Respect user preferences
@@ -3093,6 +3292,7 @@ measureFPS();
 ### ✨ Expected Results
 
 #### Before
+
 ```
 ┌────────────────────────────────────┐
 │                                     │
@@ -3104,6 +3304,7 @@ measureFPS();
 ```
 
 #### After (CSS Renderer)
+
 ```
 ┌────────────────────────────────────┐
 │ ✨ ✨    [Animated Gradient]   ✨ ✨│
@@ -3115,6 +3316,7 @@ measureFPS();
 ```
 
 #### After (WebGL Enhanced)
+
 ```
 ┌────────────────────────────────────┐
 │ 🌟 ✨ [3D Particle Systems] ✨ 🌟  │
@@ -3130,18 +3332,22 @@ measureFPS();
 ### 🎓 Learning Resources
 
 #### CSS Animations
+
 - [MDN: CSS Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations)
 - [CSS-Tricks: Animation Guide](https://css-tricks.com/almanac/properties/a/animation/)
 
 #### WebGL & Three.js
+
 - [Three.js Documentation](https://threejs.org/docs/)
 - [React Three Fiber](https://docs.pmnd.rs/react-three-fiber)
 
 #### Performance
+
 - [Web.dev: Performance](https://web.dev/performance/)
 - [React Performance](https://react.dev/learn/render-and-commit)
 
 #### Accessibility
+
 - [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [Reduced Motion](https://web.dev/prefers-reduced-motion/)
 
@@ -3170,13 +3376,14 @@ measureFPS();
 
 **Good luck! 🎉**
 
-***
+---
 
 ## Adaptive Scene Generation - Manual Validation Checklist
 
 This document provides manual testing steps to validate the adaptive scene generation milestone for issue #107.
 
 ### Test Environment Setup
+
 1. Build the project: `npm run build`
 2. Start the development server: `npm run dev`
 3. Open the application in a browser
@@ -3186,16 +3393,19 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 1. Adaptive Scene Visible by Default
 
 **Steps:**
+
 1. Open the application in a fresh browser (clear localStorage)
 2. Observe the background on the left 2/3 of the screen
 
 **Expected Result:**
+
 - A dynamic, animated gradient background should be visible
 - The background should NOT be a static image
 - The gradient should have subtle animations
 - Particles (stars/sparkles) should be visible floating across the background
 
 **Validation:**
+
 - [ ] Dynamic gradient background is visible
 - [ ] No static `milla_new.jpg` image is visible
 - [ ] Background covers left 2/3 of viewport
@@ -3206,11 +3416,13 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 2. Time-of-Day Transitions
 
 **Steps:**
+
 1. Open browser DevTools Console
 2. Check current time of day in the diagnostic overlay (bottom-left corner, hover to see details)
 3. Or enable Dev Debug mode in Scene Settings to see full debug overlay
 
 **Expected Result:**
+
 - Scene should show appropriate colors for current time:
   - **Dawn (5am-8am):** Soft pinks, oranges, yellows
   - **Day (8am-5pm):** Blues, light blues, sky colors
@@ -3218,6 +3430,7 @@ This document provides manual testing steps to validate the adaptive scene gener
   - **Night (8pm-5am):** Dark blues, purples, blacks
 
 **Validation:**
+
 - [ ] Scene colors match current time of day
 - [ ] Time period is correctly identified (check diagnostic overlay)
 - [ ] Colors transition smoothly between states
@@ -3227,6 +3440,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 3. Mood Overlays
 
 **Steps:**
+
 1. Open Scene Settings (Scene button in top-right controls)
 2. Change the Mood dropdown through all 5 options:
    - Calm
@@ -3237,6 +3451,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 3. Observe background color changes for each mood
 
 **Expected Result:**
+
 - Each mood should produce distinct color palettes:
   - **Calm:** Cool blues, purples, serene tones
   - **Energetic:** Bright pinks, oranges, vibrant colors
@@ -3245,6 +3460,7 @@ This document provides manual testing steps to validate the adaptive scene gener
   - **Playful:** Bright multi-colors, vibrant gradients
 
 **Validation:**
+
 - [ ] All 5 moods are available in dropdown
 - [ ] Each mood produces visually distinct background
 - [ ] Mood changes apply immediately
@@ -3255,16 +3471,19 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 4. Parallax Effects
 
 **Steps:**
+
 1. Ensure Parallax Intensity is > 0 in Scene Settings (default: 50)
 2. Move mouse cursor slowly across the left 2/3 of the screen
 3. Observe background layers shifting
 
 **Expected Result:**
+
 - Background layers should subtly move in response to mouse movement
 - Movement should feel smooth and natural (not jarring)
 - Different layers should move at different speeds (depth effect)
 
 **Validation:**
+
 - [ ] Mouse movement creates parallax effect
 - [ ] Parallax is smooth and responsive
 - [ ] Can adjust intensity with slider (0-75)
@@ -3272,6 +3491,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 - [ ] Parallax toggle works in Scene Settings
 
 **Low-End Device Test:**
+
 - [ ] On low GPU tier devices, parallax is automatically disabled
 - [ ] Check diagnostic overlay shows "Parallax: OFF" on low-tier
 
@@ -3280,6 +3500,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 5. Particle Effects (Stars/Sparkles)
 
 **Steps:**
+
 1. Ensure Particle Density is not "off" in Scene Settings (default: medium)
 2. Observe animated particles floating across the background
 3. Adjust particle density slider through all levels:
@@ -3289,12 +3510,14 @@ This document provides manual testing steps to validate the adaptive scene gener
    - High (60 particles)
 
 **Expected Result:**
+
 - Particles should be visible as small, glowing dots
 - Particles should float upward with slight horizontal drift
 - Particles should twinkle/pulse gently
 - More particles appear at higher density settings
 
 **Validation:**
+
 - [ ] Particles are visible on the background
 - [ ] Particle density changes affect particle count
 - [ ] Different moods use appropriate particle types:
@@ -3305,6 +3528,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 - [ ] Setting density to "off" removes all particles
 
 **Low-End Device Test:**
+
 - [ ] On low GPU tier devices, particles are automatically disabled
 - [ ] Check diagnostic overlay shows "Particles: OFF" on low-tier
 
@@ -3313,27 +3537,32 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 6. Graceful Degradation (Reduced Motion / Low-End Devices)
 
 **Steps for Reduced Motion:**
+
 1. Enable "Reduce Motion" in OS accessibility settings
 2. Reload the application
 3. Observe the background
 
 **Expected Result (Reduced Motion):**
+
 - Background should show as a static gradient (no animations)
 - No parallax effects should occur
 - No particle animations should occur
 - Gradient colors should still reflect time/mood
 
 **Validation:**
+
 - [ ] Static gradient is shown with reduced motion enabled
 - [ ] No animations occur with reduced motion
 - [ ] Scene Settings shows "Reduced Motion: ON"
 - [ ] Colors still match time of day and mood
 
 **Steps for Low GPU Tier:**
+
 1. Test on a low-end device or simulate by checking diagnostic overlay
 2. Observe automatic fallback behavior
 
 **Expected Result (Low GPU):**
+
 - [ ] Parallax automatically disabled
 - [ ] Particles automatically disabled
 - [ ] Static or minimal animations shown
@@ -3344,10 +3573,12 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 7. Scene Settings Panel - All Controls Present
 
 **Steps:**
+
 1. Open Scene Settings dialog
 2. Verify all controls are present and functional
 
 **Required Controls Checklist:**
+
 - [ ] **Adaptive Background** toggle (Enabled/Disabled button)
 - [ ] **Mood** dropdown with 5 options (calm, energetic, romantic, mysterious, playful)
 - [ ] **Parallax Intensity** slider (0-75)
@@ -3359,6 +3590,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 - [ ] **Dev Debug Overlay** toggle
 
 **Functional Validation:**
+
 - [ ] All toggles respond to clicks
 - [ ] All sliders update values in real-time
 - [ ] Settings persist after page reload (localStorage)
@@ -3370,12 +3602,14 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 8. Fallback/Diagnostic Overlay
 
 **Steps:**
+
 1. Hover over the bottom-left corner of the screen (left 2/3 area)
 2. A small "Adaptive Scene" indicator should appear
 3. Hover over it to see expanded details
 4. Enable "Dev Debug Overlay" in Scene Settings for full diagnostic view
 
 **Expected Result - Normal Indicator:**
+
 - Small badge in bottom-left showing "Adaptive Scene" with green dot
 - On hover, expands to show:
   - Current time of day
@@ -3383,6 +3617,7 @@ This document provides manual testing steps to validate the adaptive scene gener
   - Current location (if applicable)
 
 **Expected Result - Dev Debug Mode:**
+
 - Full diagnostic overlay in top-left showing:
   - GPU tier
   - WebGL support
@@ -3395,11 +3630,13 @@ This document provides manual testing steps to validate the adaptive scene gener
   - FPS counter (toggle available)
 
 **Expected Result - Scene Disabled:**
+
 - If scene is disabled in settings and Dev Debug is ON:
   - Shows diagnostic message "Scene Context: Disabled"
   - Explains how to enable it
 
 **Validation:**
+
 - [ ] Normal indicator appears in bottom-left
 - [ ] Indicator shows scene context on hover
 - [ ] Dev debug overlay shows all diagnostic info
@@ -3411,11 +3648,13 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 9. Desktop Browser Testing
 
 **Test on multiple browsers:**
+
 - [ ] **Chrome/Edge:** Full features work (WebGL, animations, particles)
 - [ ] **Firefox:** Full features work (WebGL, animations, particles)
 - [ ] **Safari:** Full features work (WebGL, animations, particles)
 
 **Validation per browser:**
+
 - [ ] Background is visible
 - [ ] Animations are smooth (no stuttering)
 - [ ] Parallax responds to mouse movement
@@ -3427,15 +3666,18 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 10. Mobile/Android Testing
 
 **Test on Android device or mobile emulation:**
+
 1. Open application on Android device
 2. Observe background rendering
 
 **Expected Result:**
+
 - Background should render (may automatically downgrade to lower quality)
 - Touch events should not interfere with chat interface
 - No performance issues or lag
 
 **Validation:**
+
 - [ ] Background renders on Android WebView
 - [ ] No performance issues
 - [ ] Touch interactions work normally
@@ -3446,16 +3688,19 @@ This document provides manual testing steps to validate the adaptive scene gener
 #### ✅ 11. Accessibility Testing
 
 **Keyboard Navigation:**
+
 - [ ] Scene Settings dialog can be opened with keyboard
 - [ ] All controls in Scene Settings are keyboard-accessible
 - [ ] Tab order is logical
 
 **Screen Reader:**
+
 - [ ] Scene background is marked with `aria-hidden="true"`
 - [ ] Scene background has `role="presentation"`
 - [ ] Scene does not interfere with screen reader navigation
 
 **Reduced Motion:**
+
 - [ ] System reduced motion preference is detected
 - [ ] Animations are disabled when reduced motion is active
 - [ ] Scene Settings shows "Reduced Motion: ON" status
@@ -3465,15 +3710,18 @@ This document provides manual testing steps to validate the adaptive scene gener
 ## Performance Validation
 
 ### Frame Rate
+
 - [ ] Scene maintains 30+ FPS on medium-tier devices
 - [ ] Scene maintains 60 FPS on high-tier devices
 - [ ] No significant frame drops during animations
 
 ### Memory Usage
+
 - [ ] No memory leaks after extended use (check DevTools Memory profiler)
 - [ ] Memory usage stays stable over time
 
 ### CPU/GPU Usage
+
 - [ ] Reasonable CPU usage (< 10% on idle with scene running)
 - [ ] GPU acceleration is utilized when available
 
@@ -3482,11 +3730,13 @@ This document provides manual testing steps to validate the adaptive scene gener
 ## Cross-Tab/Window Testing
 
 **Steps:**
+
 1. Open application in two browser tabs
 2. Change settings in one tab
 3. Observe the other tab
 
 **Expected Result:**
+
 - [ ] Settings changes sync across tabs (via localStorage events)
 - [ ] Both tabs show same scene configuration
 
@@ -3495,6 +3745,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 ## Regression Testing
 
 **Verify existing features still work:**
+
 - [ ] Voice controls work normally
 - [ ] Chat interface functions correctly
 - [ ] Messages send and receive properly
@@ -3507,6 +3758,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 ## Summary Checklist
 
 **All Acceptance Criteria:**
+
 - [ ] Users see dynamic, animated background on all supported browsers
 - [ ] Scene changes for different times of day (dawn, day, dusk, night)
 - [ ] Scene changes for different moods (calm, energetic, romantic, mysterious, playful)
@@ -3534,7 +3786,7 @@ This document provides manual testing steps to validate the adaptive scene gener
 
 ## Sign-Off
 
-**Tester:** ___________________  
-**Date:** ___________________  
+**Tester:** ********\_\_\_********  
+**Date:** ********\_\_\_********  
 **Status:** [ ] PASS [ ] FAIL [ ] NEEDS REVIEW  
 **Notes:**

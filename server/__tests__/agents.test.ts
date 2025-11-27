@@ -145,13 +145,11 @@ describe('MillaAgent', () => {
   });
 
   it('should create task from JSON instructions', async () => {
-    const mockGetAgent = vi
-      .spyOn(registry, 'getAgent')
-      .mockReturnValue({
-        name: 'EmailAgent',
-        description: 'Email agent',
-        handleTask: vi.fn(),
-      } as any);
+    const mockGetAgent = vi.spyOn(registry, 'getAgent').mockReturnValue({
+      name: 'EmailAgent',
+      description: 'Email agent',
+      handleTask: vi.fn(),
+    } as any);
 
     const instructions = JSON.stringify({
       agent: 'EmailAgent',

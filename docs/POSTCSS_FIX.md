@@ -3,6 +3,7 @@
 ## Issue
 
 Error when starting the development server:
+
 ```
 Failed to load PostCSS config: Cannot find module '@tailwindcss/postcss'
 ```
@@ -16,6 +17,7 @@ The `client/postcss.config.js` was trying to use `@tailwindcss/postcss` which wa
 Updated `client/postcss.config.js` to use the standard tailwindcss plugin:
 
 **Before:**
+
 ```javascript
 export default {
   plugins: {
@@ -26,6 +28,7 @@ export default {
 ```
 
 **After:**
+
 ```javascript
 export default {
   plugins: {
@@ -57,12 +60,14 @@ npm run dev
 ✅ **Complete and Ready**
 
 The Hugging Face MCP integration is fully implemented and working:
+
 - All service files created and validated
 - API endpoints added to routes
 - Image generation integrated into chat flow
 - Comprehensive documentation written
 
 Once dependencies are reinstalled, you can test image generation with:
+
 ```
 "generate an image of a sunset"
 ```
@@ -74,6 +79,7 @@ Once dependencies are reinstalled, you can test image generation with:
 ## Hugging Face Files (Complete)
 
 **New Files:**
+
 - `server/huggingfaceMcpService.ts`
 - `MCP_QUICK_REFERENCE.md`
 - `HUGGINGFACE_MCP_SUMMARY.md`
@@ -81,6 +87,7 @@ Once dependencies are reinstalled, you can test image generation with:
 - `test-hf-image.js`
 
 **Modified Files:**
+
 - `server/imageService.ts`
 - `server/routes.ts`
 - `HUGGINGFACE_IMAGE_SETUP.md`

@@ -8,7 +8,7 @@ services:
     container_name: milla-rayne
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - '5000:5000'
     environment:
       - NODE_ENV=production
       # Copy your API keys from .env file or set them here
@@ -44,7 +44,13 @@ services:
       # Optional: mount custom scene backgrounds
       - ./client/public/assets/scenes:/app/client/public/assets/scenes
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3

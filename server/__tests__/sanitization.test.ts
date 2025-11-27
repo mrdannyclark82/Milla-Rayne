@@ -280,10 +280,10 @@ describe('Sanitization Functions', () => {
     it('should allow requests within limit', () => {
       const identifier = 'test-user-1';
       const config = { windowMs: 60000, maxRequests: 5 };
-      
+
       const result1 = checkRateLimit(identifier, config);
       expect(result1).toBe(true);
-      
+
       const result2 = checkRateLimit(identifier, config);
       expect(result2).toBe(true);
     });
@@ -291,23 +291,23 @@ describe('Sanitization Functions', () => {
     it('should block requests exceeding limit', () => {
       const identifier = 'test-user-2';
       const config = { windowMs: 60000, maxRequests: 2 };
-      
+
       checkRateLimit(identifier, config);
       checkRateLimit(identifier, config);
       const result = checkRateLimit(identifier, config);
-      
+
       expect(result).toBe(false);
     });
 
     it('should reset after window expires', async () => {
       const identifier = 'test-user-3';
       const config = { windowMs: 100, maxRequests: 1 };
-      
+
       checkRateLimit(identifier, config);
-      
+
       // Wait for window to expire
-      await new Promise(resolve => setTimeout(resolve, 150));
-      
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const result = checkRateLimit(identifier, config);
       expect(result).toBe(true);
     });
@@ -317,7 +317,7 @@ describe('Sanitization Functions', () => {
     it('should validate data matching schema', () => {
       const schema = usernameSchema;
       const input = 'valid_user123';
-      
+
       const result = validateInput(input, schema);
       expect(result.valid).toBe(true);
       expect(result.data).toBe('valid_user123');
@@ -326,7 +326,7 @@ describe('Sanitization Functions', () => {
     it('should reject invalid data', () => {
       const schema = emailSchema;
       const input = 'not-an-email';
-      
+
       const result = validateInput(input, schema);
       expect(result.valid).toBe(false);
       expect(result.error).toBeDefined();
@@ -335,7 +335,7 @@ describe('Sanitization Functions', () => {
     it('should provide error messages', () => {
       const schema = usernameSchema;
       const input = 'ab'; // Too short
-      
+
       const result = validateInput(input, schema);
       expect(result.valid).toBe(false);
       expect(result.error).toContain('at least 3 characters');

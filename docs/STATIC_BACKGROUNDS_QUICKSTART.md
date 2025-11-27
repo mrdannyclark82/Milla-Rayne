@@ -11,16 +11,19 @@ The adaptive scene system now supports static image backgrounds for different ro
 Place image files in `/client/public/assets/scenes/` following this naming convention:
 
 **Basic format:**
+
 ```
 {location}.jpg
 ```
 
 **With time-of-day variants:**
+
 ```
 {location}-{time}.jpg
 ```
 
 Where:
+
 - `{location}` = living_room, bedroom, kitchen, bathroom, dining_room, outdoor, car, or front_door
 - `{time}` = morning, day, dusk, or night
 
@@ -48,6 +51,7 @@ Where:
 ### 4. Test It
 
 Send a roleplay message to change location:
+
 ```
 *walks into the living room*
 *goes to the kitchen*
@@ -73,6 +77,7 @@ The system tries images in this order:
 ## Image Requirements
 
 ### Recommended Specifications
+
 - **Resolution**: 1920x1080 or higher (16:9 aspect ratio)
 - **Format**: JPG (photos) or PNG (graphics with transparency)
 - **File size**: Under 500KB per image (optimize for web)
@@ -81,11 +86,13 @@ The system tries images in this order:
 ### Optimization Tips
 
 Use ImageMagick to optimize:
+
 ```bash
 convert input.jpg -quality 85 -resize 1920x1080 output.jpg
 ```
 
 Or use online tools:
+
 - [TinyPNG](https://tinypng.com/) - PNG/JPG compression
 - [Squoosh](https://squoosh.app/) - Google's image optimizer
 
@@ -93,34 +100,36 @@ Or use online tools:
 
 Based on the `SceneLocation` type:
 
-| Location | Description | Example Message |
-|----------|-------------|-----------------|
-| `living_room` | Living room, lounge | *sits in the living room* |
-| `bedroom` | Bedroom, personal space | *goes to the bedroom* |
-| `kitchen` | Kitchen, cooking area | *walks into the kitchen* |
-| `bathroom` | Bathroom | *steps into the bathroom* |
-| `dining_room` | Dining room | *enters the dining room* |
-| `outdoor` | Outside, porch, garden | *goes outside* |
-| `car` | Vehicle interior | *gets in the car* |
-| `front_door` | Entrance, doorway | *opens the front door* |
+| Location      | Description             | Example Message           |
+| ------------- | ----------------------- | ------------------------- |
+| `living_room` | Living room, lounge     | _sits in the living room_ |
+| `bedroom`     | Bedroom, personal space | _goes to the bedroom_     |
+| `kitchen`     | Kitchen, cooking area   | _walks into the kitchen_  |
+| `bathroom`    | Bathroom                | _steps into the bathroom_ |
+| `dining_room` | Dining room             | _enters the dining room_  |
+| `outdoor`     | Outside, porch, garden  | _goes outside_            |
+| `car`         | Vehicle interior        | _gets in the car_         |
+| `front_door`  | Entrance, doorway       | _opens the front door_    |
 
 ## Time-of-Day Periods
 
-| Time Period | Hours | Example Filename |
-|-------------|-------|------------------|
-| `morning` | 6am - 10am | `kitchen-morning.jpg` |
-| `day` | 10am - 5pm | `living_room-day.jpg` |
-| `dusk` | 5pm - 8pm | `outdoor-dusk.jpg` |
-| `night` | 8pm - 6am | `bedroom-night.jpg` |
+| Time Period | Hours      | Example Filename      |
+| ----------- | ---------- | --------------------- |
+| `morning`   | 6am - 10am | `kitchen-morning.jpg` |
+| `day`       | 10am - 5pm | `living_room-day.jpg` |
+| `dusk`      | 5pm - 8pm  | `outdoor-dusk.jpg`    |
+| `night`     | 8pm - 6am  | `bedroom-night.jpg`   |
 
 ## Finding Images
 
 ### Free Stock Photo Sources
+
 - [Unsplash](https://unsplash.com/) - High-quality free photos
 - [Pexels](https://pexels.com/) - Free stock photos and videos
 - [Pixabay](https://pixabay.com/) - Free images and illustrations
 
 ### Search Tips
+
 - Use specific terms: "modern living room interior", "cozy bedroom night", etc.
 - Look for images with good depth and atmosphere
 - Consider lighting that matches time of day
@@ -162,6 +171,7 @@ The system is designed to support future features:
 ### Custom Implementations
 
 Developers can extend `RealisticSceneBackground.tsx` to:
+
 - Add custom image sources (CDN, API, etc.)
 - Implement image transitions/effects
 - Add image preloading for smoother switches
@@ -205,6 +215,7 @@ Total: 9 images, approximately 2-4 MB total if optimized properly.
 ## License & Attribution
 
 When using stock photos:
+
 1. Check the license (most free stock photos are CC0 or similar)
 2. Give attribution if required
 3. Don't claim ownership of others' work

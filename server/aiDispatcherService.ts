@@ -2,6 +2,10 @@ import {
   generateXAIResponse,
   PersonalityContext as XAIPersonalityContext,
 } from './xaiService';
+
+const responseCache = new Map<string, { response: AIResponse, timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 import {
   generateOpenRouterResponse,
   generateGrokResponse,
@@ -13,12 +17,37 @@ import { config } from './config';
 import { generateOpenAIResponse } from './openaiChatService';
 import { getSemanticMemoryContext } from './memoryService';
 import { semanticSearchVideos } from './youtubeKnowledgeBase';
-import { 
-  type AVRagContext, 
+import {
+  type AVRagContext,
   enrichMessageWithAVContext,
   validateSceneContext,
   validateVoiceContext,
-  createAVContext 
+  createAVContext,
+} from './avRagService';
+import type { VoiceAnalysisResult } from './voiceAnalysisService';
+import type { UICommand } from '../shared/schema';
+import {
+  startReasoningSession,
+  trackCommandIntent,
+  trackToolSelection,
+} from './xaiService';
+import {
+  generateOpenRouterResponse,
+  generateGrokResponse,
+  OpenRouterContext,
+} from './openrouterService';
+import { generateGeminiResponse } from './geminiService';
+import { storage } from './storage';
+import { config } from './config';
+import { generateOpenAIResponse } from './openaiChatService';
+import { getSemanticMemoryContext } from './memoryService';
+import { semanticSearchVideos } from './youtubeKnowledgeBase';
+import {
+  type AVRagContext,
+  enrichMessageWithAVContext,
+  validateSceneContext,
+  validateVoiceContext,
+  createAVContext,
 } from './avRagService';
 import type { VoiceAnalysisResult } from './voiceAnalysisService';
 import type { UICommand } from '../shared/schema';
@@ -33,7 +62,11 @@ import {
   type XAIData,
 } from './xaiTracker';
 import { getAmbientContext, type AmbientContext } from './realWorldInfoService';
-import { generateActivePersona, formatPersonaForPrompt, type ActiveUserPersona } from './personaFusionService';
+import {
+  generateActivePersona,
+  formatPersonaForPrompt,
+  type ActiveUserPersona,
+} from './personaFusionService';
 
 export interface AIResponse {
   content: string;
@@ -64,31 +97,32 @@ async function enrichContextWithSemanticRetrieval(
   context: DispatchContext
 ): Promise<string> {
   const userId = context.userId || 'default-user';
-  
+
   try {
     // Get semantic memory context
     const memoryContext = await getSemanticMemoryContext(userMessage, userId);
-    
+
     // Search for relevant YouTube knowledge
     const youtubeResults = await semanticSearchVideos(userMessage, {
       userId,
       topK: 2,
       minSimilarity: 0.7,
     });
-    
+
     let enrichedContext = '';
-    
+
     if (memoryContext) {
       enrichedContext += memoryContext;
     }
-    
+
     if (youtubeResults.length > 0) {
-      const youtubeParts = youtubeResults.map((result, index) => 
-        `YouTube Knowledge ${index + 1} (${result.video.title}, relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.video.summary}`
+      const youtubeParts = youtubeResults.map(
+        (result, index) =>
+          `YouTube Knowledge ${index + 1} (${result.video.title}, relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.video.summary}`
       );
       enrichedContext += `\n\nRelevant YouTube knowledge:\n${youtubeParts.join('\n\n')}`;
     }
-    
+
     return enrichedContext;
   } catch (error) {
     console.error('Error enriching context with semantic retrieval:', error);
@@ -103,11 +137,11 @@ function buildAVRagContext(context: DispatchContext): AVRagContext | null {
   try {
     const scene = validateSceneContext(context.sceneContext);
     const voice = validateVoiceContext(context.voiceContext);
-    
+
     if (!scene && !voice) {
       return null;
     }
-    
+
     return createAVContext(scene || undefined, voice || undefined);
   } catch (error) {
     console.error('Error building A/V-RAG context:', error);
@@ -120,7 +154,7 @@ function buildAVRagContext(context: DispatchContext): AVRagContext | null {
  */
 function detectIntent(message: string): string {
   const lowerMessage = message.toLowerCase();
-  
+
   if (lowerMessage.includes('youtube') || lowerMessage.includes('video')) {
     return 'Video analysis or playback request';
   }
@@ -139,7 +173,7 @@ function detectIntent(message: string): string {
   if (lowerMessage.includes('calendar') || lowerMessage.includes('schedule')) {
     return 'Calendar or scheduling request';
   }
-  
+
   return 'General conversation';
 }
 
@@ -148,38 +182,44 @@ function detectIntent(message: string): string {
  */
 function buildAmbientContextString(ambient: AmbientContext): string {
   const parts: string[] = [];
-  
+
   // Motion state
   if (ambient.motionState && ambient.motionState !== 'unknown') {
     parts.push(`User is currently ${ambient.motionState}`);
   }
-  
+
   // Light level
   if (ambient.lightLevel !== undefined) {
-    const lightDescription = ambient.lightLevel > 70 ? 'bright' : 
-                             ambient.lightLevel > 30 ? 'moderate' : 'low';
+    const lightDescription =
+      ambient.lightLevel > 70
+        ? 'bright'
+        : ambient.lightLevel > 30
+          ? 'moderate'
+          : 'low';
     parts.push(`ambient light is ${lightDescription} (${ambient.lightLevel}%)`);
   }
-  
+
   // Battery and charging
   if (ambient.deviceContext.battery !== null) {
-    parts.push(`device battery at ${ambient.deviceContext.battery}%${ambient.deviceContext.charging ? ' (charging)' : ''}`);
+    parts.push(
+      `device battery at ${ambient.deviceContext.battery}%${ambient.deviceContext.charging ? ' (charging)' : ''}`
+    );
   }
-  
+
   // Network
   if (ambient.deviceContext.network) {
     parts.push(`connected via ${ambient.deviceContext.network}`);
   }
-  
+
   // Location (general info without revealing specific coordinates)
   if (ambient.location) {
     parts.push(`location available`);
   }
-  
+
   if (parts.length === 0) {
     return '';
   }
-  
+
   return `\n\n[Real-time Context: ${parts.join(', ')}]`;
 }
 
@@ -190,16 +230,22 @@ export async function dispatchAIResponse(
   traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
   // P1.5: Generate trace ID if not provided
-  const requestTraceId = traceId || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const cacheKey = `${userMessage}-${JSON.stringify(context)}`;
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`🔍 [TRACE:${requestTraceId}] Cache hit for key: ${cacheKey}`);
+    return cached.response;
+  }
   console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Starting`);
-  console.log(`🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`);
-  
+  console.log(
+    `🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`
+  );
+
   const startTime = Date.now();
-  
+
   // Start XAI reasoning session
   const xaiSessionId = startReasoningSession(context.userId || 'anonymous');
   console.log(`🔍 [TRACE:${requestTraceId}] XAI Session: ${xaiSessionId}`);
-  
+
   let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
   if (context.userId) {
@@ -220,7 +266,7 @@ export async function dispatchAIResponse(
   // Track command intent
   const intent = detectIntent(userMessage);
   trackCommandIntent(xaiSessionId, intent);
-  
+
   // This is where the intelligence for switching models based on context will go.
   // For now, it will primarily respect user preference, with basic contextual overrides.
 
@@ -240,7 +286,12 @@ export async function dispatchAIResponse(
 
   if (hasCodeContext && config.openrouter?.grok1ApiKey) {
     modelToUse = 'grok';
-    addReasoningStep(xaiSessionId, 'tools', 'Model Selection', 'Selected Grok for code-related query');
+    addReasoningStep(
+      xaiSessionId,
+      'tools',
+      'Model Selection',
+      'Selected Grok for code-related query'
+    );
   }
 
   // Agent command override
@@ -251,8 +302,8 @@ export async function dispatchAIResponse(
     trackToolSelection(xaiSessionId, [`Agent: ${agentName}`]);
     const { agentController } = await import('./agentController');
     const result = await agentController.dispatch(agentName, task);
-    return { 
-      content: result, 
+    return {
+      content: result,
       success: true,
       xaiSessionId,
     };
@@ -297,7 +348,10 @@ export async function dispatchAIResponse(
         `Synthesized persona for ${activePersona.profile.name}`,
         { personaSummary: activePersona.personaSummary }
       );
-      console.log('🎭 Active User Persona generated:', activePersona.personaSummary);
+      console.log(
+        '🎭 Active User Persona generated:',
+        activePersona.personaSummary
+      );
     } catch (error) {
       console.error('Error generating active persona:', error);
     }
@@ -314,18 +368,26 @@ export async function dispatchAIResponse(
       'tools',
       'Adaptive Persona Selected',
       `Using ${adaptivePersona.name} persona (${adaptivePersona.style})`,
-      { personaId: adaptivePersona.id, temperature: adaptivePersona.temperature }
+      {
+        personaId: adaptivePersona.id,
+        temperature: adaptivePersona.temperature,
+      }
     );
-    console.log(`🧠 Adaptive Persona: ${adaptivePersona.name} (temp: ${adaptivePersona.temperature})`);
+    console.log(
+      `🧠 Adaptive Persona: ${adaptivePersona.name} (temp: ${adaptivePersona.temperature})`
+    );
   } catch (error) {
     console.error('Error getting adaptive persona:', error);
   }
 
   // Enrich context with semantic retrieval (V-RAG)
   const semanticStartTime = Date.now();
-  const semanticContext = await enrichContextWithSemanticRetrieval(userMessage, context);
+  const semanticContext = await enrichContextWithSemanticRetrieval(
+    userMessage,
+    context
+  );
   const semanticEndTime = Date.now();
-  
+
   // Track memory retrieval
   if (semanticContext) {
     addReasoningStep(
@@ -336,10 +398,10 @@ export async function dispatchAIResponse(
       { processingTime: semanticEndTime - semanticStartTime }
     );
   }
-  
+
   // Build A/V-RAG context from scene and voice data
   const avContext = buildAVRagContext(context);
-  
+
   // Track A/V context if available
   if (avContext) {
     const avTools = [];
@@ -347,34 +409,36 @@ export async function dispatchAIResponse(
     if (avContext.voice) avTools.push('Voice Analysis');
     trackToolSelection(xaiSessionId, avTools);
   }
-  
+
   // Augment user message with all context layers
   let augmentedMessage = userMessage;
-  
+
   // Add Adaptive Persona System Prompt Modifier (Phase IV)
   if (adaptivePersona && adaptivePersona.systemPromptModifier) {
-    augmentedMessage = `[PERSONA DIRECTIVE]: ${adaptivePersona.systemPromptModifier}\n\n` + augmentedMessage;
+    augmentedMessage =
+      `[PERSONA DIRECTIVE]: ${adaptivePersona.systemPromptModifier}\n\n` +
+      augmentedMessage;
     console.log('✅ Enhanced with Adaptive Persona directive');
   }
-  
+
   // Add Active User Persona (if available)
   if (activePersona) {
     const personaPrompt = formatPersonaForPrompt(activePersona);
     augmentedMessage = personaPrompt + '\n\n' + augmentedMessage;
     console.log('✅ Enhanced with Active User Persona');
   }
-  
+
   // Add semantic context
   if (semanticContext) {
     augmentedMessage += `\n\n---\nContext from knowledge base:${semanticContext}`;
   }
-  
+
   // Add A/V context
   if (avContext) {
     augmentedMessage = enrichMessageWithAVContext(augmentedMessage, avContext);
     console.log('✅ Enhanced with A/V-RAG context (scene + voice)');
   }
-  
+
   // Add real-time ambient context from mobile sensors
   if (ambientContext) {
     augmentedMessage += buildAmbientContextString(ambientContext);
@@ -449,7 +513,12 @@ export async function dispatchAIResponse(
     console.log(
       'OpenAI failed (possibly rate limited), falling back to OpenRouter...'
     );
-    addReasoningStep(xaiSessionId, 'response', 'Fallback Triggered', 'Primary model failed, falling back to OpenRouter');
+    addReasoningStep(
+      xaiSessionId,
+      'response',
+      'Fallback Triggered',
+      'Primary model failed, falling back to OpenRouter'
+    );
     response = await generateOpenRouterResponse(
       augmentedMessage,
       {
@@ -463,13 +532,23 @@ export async function dispatchAIResponse(
   }
 
   // Track response generation
-  trackResponseGeneration(xaiSessionId, modelToUse || 'openai', undefined, undefined);
+  trackResponseGeneration(
+    xaiSessionId,
+    modelToUse || 'openai',
+    undefined,
+    undefined
+  );
 
   // Generate UI commands based on user message and response content
   const uiCommand = detectUICommand(userMessage, response.content || '');
   if (uiCommand) {
     response.uiCommand = uiCommand;
-    addReasoningStep(xaiSessionId, 'response', 'UI Command Detected', JSON.stringify(uiCommand));
+    addReasoningStep(
+      xaiSessionId,
+      'response',
+      'UI Command Detected',
+      JSON.stringify(uiCommand)
+    );
     console.log('✨ Generated UI command:', uiCommand);
   }
 
@@ -480,14 +559,18 @@ export async function dispatchAIResponse(
   if (adaptivePersona && context.userId) {
     const conversationEndTime = Date.now();
     const responseTime = conversationEndTime - conversationStartTime;
-    
+
     // Calculate outcome metrics
     const taskCompletionRate = response.success ? 0.95 : 0.3; // Inferred from success
     const userSatisfactionScore = response.success ? 4.0 : 2.0; // Estimated (will be updated by surveys)
-    const engagementLevel = response.content ? Math.min(response.content.length / 500, 1.0) : 0.5;
-    
+    const engagementLevel = response.content
+      ? Math.min(response.content.length / 500, 1.0)
+      : 0.5;
+
     try {
-      const { recordPersonaTestResult } = await import('./selfEvolutionService');
+      const { recordPersonaTestResult } = await import(
+        './selfEvolutionService'
+      );
       await recordPersonaTestResult(
         adaptivePersona.id,
         xaiSessionId, // Use XAI session as conversation ID
@@ -500,7 +583,9 @@ export async function dispatchAIResponse(
         },
         response.success ? 'success' : 'failure'
       );
-      console.log(`📊 Recorded persona test result for ${adaptivePersona.name}`);
+      console.log(
+        `📊 Recorded persona test result for ${adaptivePersona.name}`
+      );
     } catch (error) {
       console.error('Error recording persona test result:', error);
     }
@@ -508,8 +593,13 @@ export async function dispatchAIResponse(
 
   // P1.5: Log end of trace with duration
   const duration = Date.now() - startTime;
-  console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Completed in ${duration}ms`);
-  console.log(`🔍 [TRACE:${requestTraceId}] Model: ${modelToUse}, Success: ${response.success}`);
+  console.log(
+    `🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Completed in ${duration}ms`
+  );
+responseCache.set(cacheKey, { response, timestamp: Date.now() });
+  console.log(
+    `🔍 [TRACE:${requestTraceId}] Model: ${modelToUse}, Success: ${response.success}`
+  );
 
   return response;
 }
@@ -517,17 +607,24 @@ export async function dispatchAIResponse(
 /**
  * Detect if the user message or AI response should trigger a UI command
  */
-function detectUICommand(userMessage: string, responseContent: string): UICommand | undefined {
+function detectUICommand(
+  userMessage: string,
+  responseContent: string
+): UICommand | undefined {
   const lowerMessage = userMessage.toLowerCase();
   const lowerResponse = responseContent.toLowerCase();
-  
+
   // Detect YouTube video analysis requests
   if (
-    lowerMessage.includes('youtube') && 
-    (lowerMessage.includes('analyze') || lowerMessage.includes('video') || lowerMessage.includes('watch'))
+    lowerMessage.includes('youtube') &&
+    (lowerMessage.includes('analyze') ||
+      lowerMessage.includes('video') ||
+      lowerMessage.includes('watch'))
   ) {
     // Extract video ID if present in the message
-    const videoIdMatch = userMessage.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    const videoIdMatch = userMessage.match(
+      /(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
     if (videoIdMatch) {
       return {
         action: 'SHOW_COMPONENT',
@@ -542,7 +639,7 @@ function detectUICommand(userMessage: string, responseContent: string): UIComman
       };
     }
   }
-  
+
   // Detect meditation/relaxation requests
   if (
     lowerMessage.includes('meditat') ||
@@ -562,7 +659,7 @@ function detectUICommand(userMessage: string, responseContent: string): UIComman
       },
     };
   }
-  
+
   // Detect knowledge base search requests
   if (
     lowerMessage.includes('search') ||
@@ -582,7 +679,7 @@ function detectUICommand(userMessage: string, responseContent: string): UIComman
       },
     };
   }
-  
+
   // Detect note-taking requests
   if (
     lowerMessage.includes('note') ||
@@ -599,6 +696,6 @@ function detectUICommand(userMessage: string, responseContent: string): UIComman
       },
     };
   }
-  
+
   return undefined;
 }

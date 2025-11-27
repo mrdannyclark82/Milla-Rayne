@@ -8,9 +8,7 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Code of Conduct](https://img.shields.io/badge/Code%20of%20Conduct-✓-blue.svg)](CODE_OF_CONDUCT.md)
 
->Milla-Rayne is a pioneering digital intelligence platform, architected as an assistant. Its core design pushes the boundaries of human-computer interaction, weaving together cutting-edge AI research with hardened, production-grade systems.
-
-
+> Milla-Rayne is a pioneering digital intelligence platform, architected as an assistant. Its core design pushes the boundaries of human-computer interaction, weaving together cutting-edge AI research with hardened, production-grade systems.
 
 🌐 Architectural Zenith: Hybrid, Decentralized, and Edge-Ready
 Milla-Rayne runs on an intrinsically flexible, hybrid architecture designed for zero-latency performance and maximum reach.
@@ -22,7 +20,6 @@ Edge Processing: The native mobile application includes a local edge agent (Loca
 Trust is built into the foundation. Milla-Rayne features advanced cryptographic layers to protect user data and computational integrity.
 Zero-Knowledge State: Incorporates Homomorphic Encryption capabilities to allow the system to perform complex analyses on user data in an encrypted state, maintaining cryptographic assurance of privacy for sensitive profile details and memory artifacts.
 Hardened Repository Management: An automated system monitors the entire repository, proactively managing enhancements, security audits, and deployment integrity, ensuring a robust and continuously evolving codebase.
-
 
 ## 📑 Table of Contents
 
@@ -94,6 +91,7 @@ Hardened Repository Management: An automated system monitors the entire reposito
 ## Available Platforms
 
 ### 🌐 Web App
+
 - Modern React-based web interface with full-screen backgrounds
 - Real-time chat with adaptive scenes
 - Voice interaction support (TTS & STT)
@@ -103,6 +101,7 @@ Hardened Repository Management: An automated system monitors the entire reposito
 **Quick Start**: `npm run dev` → Open `http://localhost:5000`
 
 ### 💻 CLI
+
 - Terminal-based chat interface
 - Colorful ANSI-formatted messages
 - Conversation history viewing
@@ -113,6 +112,7 @@ Hardened Repository Management: An automated system monitors the entire reposito
 **Documentation**: [cli/README.md](cli/README.md)
 
 ### 📱 Android App
+
 - Native Android app with Material Design 3
 - Offline conversation storage with Room database
 - Beautiful gradient backgrounds
@@ -125,23 +125,27 @@ Hardened Repository Management: An automated system monitors the entire reposito
 ## ✨ Key Features
 
 ### 🔐 Privacy & Security
+
 - **Field-Level Encryption**: AES-256-GCM encryption for sensitive conversation data
 - **Local Storage**: All data stored locally with SQLite database
 - **No Cloud Lock-in**: Works with multiple AI providers or self-hosted models
 
 ### 🎨 User Experience
+
 - **Modern UI**: Beautiful chat interface with full-screen backgrounds
 - **Adaptive Scenes**: Dynamic CSS animated gradients that change with context
 - **Multi-Platform**: Web, CLI, and native Android app
 - **Real-time Chat**: Instant messaging with personality-aware responses
 
 ### 🎙️ Voice Interaction
+
 - **Multi-Provider TTS**: Support for Google Cloud, Azure, ElevenLabs, and browser-native voices
 - **Speech-to-Text**: Use your microphone for voice input
 - **Low Latency**: Optimized for natural conversation flow
 - **Automatic Fallback**: Seamless provider switching
 
 ### 🧠 Intelligence
+
 - **Enhanced Memory**: SQLite-based memory with session tracking and usage analytics
 - **Multiple AI Providers**: OpenRouter (DeepSeek, Qwen), xAI (Grok), Mistral, and more
 - **Visual Recognition**: Video analysis and face recognition capabilities
@@ -149,6 +153,7 @@ Hardened Repository Management: An automated system monitors the entire reposito
 - **Proactive Ownership**: Milla autonomously maintains and improves the repository
 
 ### 🔧 Developer Features
+
 - **Repository Analysis**: Analyze GitHub repositories for structure and quality
 - **AI Suggestions**: Automated code improvement recommendations
 - **Sandbox Testing**: Safe feature experimentation without admin tokens
@@ -281,6 +286,7 @@ docker run -p 5000:5000 --env-file .env milla-rayne
 ```
 
 **Pre-built images available:**
+
 ```bash
 docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
 ```
@@ -1046,12 +1052,14 @@ npm run test:ui
 ```
 
 **Coverage Goals:**
+
 - Lines: 80%+
 - Functions: 80%+
 - Branches: 80%+
 - Statements: 80%+
 
 View coverage reports:
+
 - Locally: `coverage/index.html`
 - Online: [Codecov Dashboard](https://codecov.io/gh/mrdannyclark82/Milla-Rayne)
 
@@ -1097,10 +1105,12 @@ docker-compose down
 Comprehensive API documentation is automatically generated from the TypeScript source code using TypeDoc and deployed to GitHub Pages with every push to the main branch.
 
 **📚 View the API Documentation:**
+
 - **Live Docs:** [https://mrdannyclark82.github.io/Milla-Rayne/api-docs/](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
 - **Status:** [![Documentation](https://img.shields.io/badge/docs-live-brightgreen)](https://mrdannyclark82.github.io/Milla-Rayne/api-docs/)
 
 The documentation includes:
+
 - ✅ Full API reference for all services and agents
 - ✅ Type definitions and interfaces
 - ✅ Function signatures and parameters
@@ -1123,6 +1133,7 @@ open docs/api/index.html
 ```
 
 The documentation is generated from TypeScript source files in:
+
 - `server/` - Backend services, agents, and APIs
 - `shared/` - Shared types and utilities
 
@@ -1168,12 +1179,14 @@ Security is a top priority for this project. If you discover a security vulnerab
 3. Allow time for the issue to be addressed before public disclosure
 
 See [SECURITY.md](SECURITY.md) for more information about:
+
 - Security features (field-level encryption, memory security)
 - Best practices for API key management
 - How to report vulnerabilities
 - Security update policy
 
 **Before making this repository public**, please review:
+
 - [SECURITY_AUDIT_CHECKLIST.md](SECURITY_AUDIT_CHECKLIST.md) - Critical security items to address
 - Rotate all exposed API keys
 - Review git history for sensitive data
@@ -1183,6 +1196,7 @@ See [SECURITY.md](SECURITY.md) for more information about:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ### What this means:
+
 - ✅ Commercial use
 - ✅ Modification
 - ✅ Distribution

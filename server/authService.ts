@@ -297,17 +297,17 @@ export async function loginOrRegisterWithGoogle(
 
 /**
  * ZKP-based authentication (Decentralized future implementation)
- * 
+ *
  * This function demonstrates how Zero-Knowledge Proof authentication would work
  * in a decentralized, self-sovereign identity system. The user proves their
  * identity without revealing sensitive PII.
- * 
+ *
  * Future Integration:
  * - This will replace traditional password-based authentication
  * - Users will prove identity ownership via ZKP instead of passwords
  * - Sensitive data remains encrypted in decentralized vault
  * - No centralized token server required
- * 
+ *
  * @param userId - User identifier
  * @param zkProof - Zero-Knowledge Proof from user
  * @returns Authentication result with session if successful
@@ -323,51 +323,53 @@ export async function loginUserWithZKP(
 }> {
   try {
     console.log(`[Auth] Attempting ZKP authentication for user: ${userId}`);
-    
+
     // Import decentralization service
     const { verifyIdentityZKP } = await import('./decentralizationService');
-    
+
     // Verify identity using Zero-Knowledge Proof
     // This checks HE-encrypted vault data without revealing PII
     const isVerified = await verifyIdentityZKP(userId, zkProof);
-    
+
     if (!isVerified) {
       console.warn(`[Auth] ZKP verification failed for user: ${userId}`);
-      return { 
-        success: false, 
-        error: 'Identity verification failed - invalid ZK proof' 
+      return {
+        success: false,
+        error: 'Identity verification failed - invalid ZK proof',
       };
     }
-    
+
     // Retrieve user record (for session creation)
     const user = await storage.getUserById(userId);
     if (!user) {
-      return { 
-        success: false, 
-        error: 'User not found' 
+      return {
+        success: false,
+        error: 'User not found',
       };
     }
-    
+
     // Generate session token (traditional approach for now)
     // In pure decentralized system, this would be a self-signed JWT
     const sessionToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(
       Date.now() + SESSION_EXPIRY_HOURS * 60 * 60 * 1000
     );
-    
+
     // Create session
     await storage.createUserSession({
       userId: user.id,
       sessionToken,
       expiresAt,
     });
-    
+
     // Update last login
     await storage.updateUserLastLogin(user.id);
-    
+
     console.log(`[Auth] ✅ ZKP authentication successful for user: ${userId}`);
-    console.log(`[Auth] Note: Verified identity without exposing PII from HE-encrypted vault`);
-    
+    console.log(
+      `[Auth] Note: Verified identity without exposing PII from HE-encrypted vault`
+    );
+
     return {
       success: true,
       user: {
@@ -379,45 +381,49 @@ export async function loginUserWithZKP(
     };
   } catch (error) {
     console.error('[Auth] ZKP authentication error:', error);
-    return { 
-      success: false, 
-      error: 'ZKP authentication failed' 
+    return {
+      success: false,
+      error: 'ZKP authentication failed',
     };
   }
 }
 
 /**
  * Conceptual hook for future decentralized authentication
- * 
+ *
  * This demonstrates how ZKP verification would integrate into the login flow:
- * 
+ *
  * 1. User generates ZK proof locally (client-side)
  * 2. Proof is sent to server instead of password
  * 3. Server verifies proof against HE-encrypted vault data
  * 4. Access granted without revealing sensitive PII
- * 
+ *
  * Benefits:
  * - No passwords stored on server
  * - User controls their identity data
  * - Verification without data exposure
  * - Decentralized, self-sovereign identity
- * 
+ *
  * Future: This would replace centralized token checks entirely
  */
 export function conceptualZKPAuthenticationFlow(): void {
   console.log('[Auth] Conceptual ZKP Authentication Flow:');
-  console.log('[Auth] 1. User creates ZK proof locally (proves identity ownership)');
+  console.log(
+    '[Auth] 1. User creates ZK proof locally (proves identity ownership)'
+  );
   console.log('[Auth] 2. Proof sent to server instead of password');
   console.log('[Auth] 3. Server verifies using verifyIdentityZKP()');
   console.log('[Auth] 4. HE-encrypted vault data checked without decryption');
   console.log('[Auth] 5. Access granted - PII never exposed');
-  console.log('[Auth] Future: Replace centralized JWT with decentralized DID tokens');
+  console.log(
+    '[Auth] Future: Replace centralized JWT with decentralized DID tokens'
+  );
 }
 
 /**
  * P1.4: OAuth Token Refresh Stub
  * Placeholder for automatic token rotation to improve security
- * 
+ *
  * In production, this would:
  * 1. Check if access token is expiring soon
  * 2. Use refresh token to get new access token
@@ -431,34 +437,34 @@ export async function refreshAccessTokenIfExpired(
 ): Promise<{ success: boolean; newAccessToken?: string; error?: string }> {
   // Stub implementation - to be completed with actual OAuth provider integration
   console.log(`[Auth] Token refresh check for user ${userId}`);
-  
+
   try {
     // TODO: Implement actual token refresh logic with OAuth provider
     // For now, return success if token exists
     if (!accessToken) {
       return { success: false, error: 'No access token provided' };
     }
-    
+
     // Mock token expiration check (in production, decode JWT and check exp claim)
     const mockTokenAge = Date.now(); // Placeholder
-    const mockTokenExpiry = mockTokenAge + (3600 * 1000); // 1 hour
+    const mockTokenExpiry = mockTokenAge + 3600 * 1000; // 1 hour
     const timeUntilExpiry = mockTokenExpiry - Date.now();
-    
+
     // Refresh if token expires in less than 5 minutes
     if (timeUntilExpiry < 5 * 60 * 1000) {
       console.log('[Auth] Token expiring soon, would refresh here');
-      
+
       // TODO: Call OAuth provider refresh endpoint
       // const newTokens = await oauthProvider.refreshToken(refreshToken);
       // await storage.updateUserSession(userId, newTokens);
-      
+
       // Return mock success for now
       return {
         success: true,
         newAccessToken: accessToken, // In production, return new token
       };
     }
-    
+
     return { success: true, newAccessToken: accessToken };
   } catch (error) {
     console.error('[Auth] Token refresh error:', error);
@@ -476,14 +482,14 @@ export async function refreshAccessTokenIfExpired(
  */
 export async function scheduleTokenRotation(): Promise<void> {
   console.log('[Auth] Starting token rotation scheduler...');
-  
+
   // TODO: Get all active sessions from storage
   // TODO: For each session, check if token needs refresh
   // TODO: Call refreshAccessTokenIfExpired for expiring tokens
-  
+
   // Stub: Log that scheduler would run
   console.log('[Auth] Token rotation scheduler initialized (stub)');
-  
+
   // In production, set up interval:
   // setInterval(async () => {
   //   const sessions = await storage.getActiveSessions();
@@ -492,5 +498,3 @@ export async function scheduleTokenRotation(): Promise<void> {
   //   }
   // }, 30 * 60 * 1000); // Every 30 minutes
 }
-
-

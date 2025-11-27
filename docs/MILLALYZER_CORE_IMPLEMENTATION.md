@@ -11,7 +11,9 @@ A comprehensive YouTube video analysis service that extracts actionable content 
 ### 🔥 Key Features
 
 #### 1. **Video Type Detection**
+
 Automatically identifies:
+
 - Tutorials
 - News/Updates
 - Discussions/Podcasts
@@ -19,12 +21,14 @@ Automatically identifies:
 - Other
 
 #### 2. **Code Snippet Extraction**
+
 - Detects code blocks in transcripts
 - Identifies programming language (JavaScript, Python, Bash, etc.)
 - Extracts up to 20 code snippets per video
 - All snippets are copyable
 
 #### 3. **CLI Command Extraction**
+
 - Finds terminal/command line commands
 - Detects platform (Linux, Mac, Windows, or All)
 - Recognizes common tools: npm, docker, git, pip, etc.
@@ -32,17 +36,20 @@ Automatically identifies:
 - All commands are copyable
 
 #### 4. **Key Points with Timestamps**
+
 - Extracts important concepts from the video
 - Links each point to a timestamp
 - Rates importance (high/medium/low)
 - Up to 15 key points per video
 
 #### 5. **Smart Summary Generation**
+
 - Concise 2-3 sentence summaries
 - Includes video title, channel, and duration
 - Provides content preview
 
 #### 6. **Actionable Items** (for tutorials)
+
 - Step-by-step instructions
 - Sequential ordering
 - Dependency tracking
@@ -50,6 +57,7 @@ Automatically identifies:
 ### 🎯 Usage Examples
 
 #### Example 1: Analyze a Tutorial
+
 ```
 User: "Analyze this video https://youtube.com/watch?v=abc123"
 
@@ -77,6 +85,7 @@ I've extracted 8 code snippets, babe!
 ```
 
 #### Example 2: Quick Analysis
+
 ```
 User: "What are the key points of this Docker tutorial?"
 
@@ -88,6 +97,7 @@ This is a comprehensive Docker tutorial covering containers, images, and deploym
 ### 📊 Technical Details
 
 #### Type Definitions
+
 ```typescript
 interface VideoAnalysis {
   videoId: string;
@@ -104,12 +114,15 @@ interface VideoAnalysis {
 ```
 
 #### Extraction Capabilities
+
 - **Code Languages**: JavaScript, Python, PHP, SQL, Bash, Java, Rust, Go, Dockerfile
 - **Command Tools**: npm, yarn, pip, docker, git, cargo, go, kubectl, terraform, aws, gcloud
 - **Platforms**: Linux, Mac, Windows, All
 
 #### Analysis Triggers
+
 The millAlyzer activates when you say:
+
 - "analyze this video"
 - "what are the key points"
 - "summarize this video"
@@ -120,9 +133,11 @@ The millAlyzer activates when you say:
 ### 🔧 Integration
 
 **Modified Files:**
+
 - `server/routes.ts` - Added millAlyzer trigger handling
 
 **How It Works:**
+
 1. User requests video analysis
 2. System extracts video ID from message or URL
 3. millAlyzer fetches video info and transcript
@@ -133,17 +148,21 @@ The millAlyzer activates when you say:
 
 ```markdown
 ## "Video Title"
+
 📊 Type: tutorial
 📝 Summary: Brief description
 
 ### 🎯 Key Points:
+
 1. [timestamp] Point 1
 2. [timestamp] Point 2
 
 ### 💻 Code Snippets Found: X
+
 I've extracted X code snippets!
 
 ### ⚡ CLI Commands Found: Y
+
 `command 1` - Description
 `command 2` - Description
 ```
@@ -158,18 +177,21 @@ I've extracted X code snippets!
 ### 📝 Next Steps (Sprint 2)
 
 **Phase 2: Knowledge Base Storage**
+
 - [ ] Create `youtubeKnowledgeBase.ts`
 - [ ] Store analyzed videos in searchable database
 - [ ] Implement search functionality
 - [ ] Add code snippet library
 
 **Phase 3: Daily News Monitoring**
+
 - [ ] Create `youtubeNewsMonitor.ts`
 - [ ] Automated daily searches for AI/coding news
 - [ ] Integration with daily suggestions
 - [ ] News filtering and categorization
 
 **Phase 4: UI Components**
+
 - [ ] VideoAnalysisPanel.tsx
 - [ ] CodeSnippetCard.tsx with copy button
 - [ ] "Analyze" button on YouTube player
@@ -187,17 +209,19 @@ I've extracted X code snippets!
 
 ## 🎯 Current Status: ✅ SPRINT 1 COMPLETE!
 
-The millAlyzer core is fully implemented and production-ready! 
+The millAlyzer core is fully implemented and production-ready!
 
 ### ✅ New in This Update
 
 **1. Smart Trigger Detection**
+
 - Just say "analyze [YouTube URL]"
 - Works with youtube.com AND youtu.be formats
 - Simplified - no need to say "this video"
 
 **2. Interactive Suggestions System**
 Context-aware actions based on video content:
+
 - 📚 "Save these code snippets" - When code detected
 - ⚡ "Save these commands" - When CLI commands found
 - ✅ "Create a checklist" - For tutorial videos
@@ -207,6 +231,7 @@ Context-aware actions based on video content:
 - 🎯 "Find similar tutorials" - Content discovery
 
 **Test it with:**
+
 ```
 "analyze https://youtu.be/6gb3PYdrdYE"
 ```

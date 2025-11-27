@@ -1,13 +1,19 @@
-import type { ExternalAgentCommand, ExternalAgentResponse } from '../shared/schema';
-import { processFinanceCommand, getFinanceAgentStatus } from './externalFinanceAgent';
+import type {
+  ExternalAgentCommand,
+  ExternalAgentResponse,
+} from '../shared/schema';
+import {
+  processFinanceCommand,
+  getFinanceAgentStatus,
+} from './externalFinanceAgent';
 
 /**
  * Agent Communication Service
- * 
+ *
  * This service provides the foundational architecture for inter-system AI communication.
  * It defines the protocol for requesting services from external AI agents and handling
  * their responses.
- * 
+ *
  * Phase IV Implementation Notes:
  * - This is a stub implementation for architectural planning
  * - In production, this would integrate with actual network protocols (HTTP, gRPC, WebSocket)
@@ -18,10 +24,10 @@ import { processFinanceCommand, getFinanceAgentStatus } from './externalFinanceA
 
 /**
  * Dispatch a command to an external AI agent system
- * 
+ *
  * @param command - The command to dispatch to the external agent
  * @returns Promise resolving to the agent's response
- * 
+ *
  * @example
  * ```typescript
  * const command: ExternalAgentCommand = {
@@ -37,7 +43,7 @@ export async function dispatchExternalCommand(
   command: ExternalAgentCommand
 ): Promise<ExternalAgentResponse> {
   const startTime = Date.now();
-  
+
   // Security check: Validate target agent against whitelist
   const allowedAgents = [
     'FinanceAgent',
@@ -46,9 +52,11 @@ export async function dispatchExternalCommand(
     'SmartHomeAgent',
     'CalendarAgent',
   ];
-  
+
   if (!allowedAgents.includes(command.target)) {
-    console.warn(`[AgentComms] ⚠️ Unauthorized agent target: ${command.target}`);
+    console.warn(
+      `[AgentComms] ⚠️ Unauthorized agent target: ${command.target}`
+    );
     return {
       success: false,
       statusCode: 'UNAUTHORIZED',
@@ -64,7 +72,7 @@ export async function dispatchExternalCommand(
       },
     };
   }
-  
+
   // Log the command for debugging and audit purposes
   console.log('[AgentComms] Dispatching external command:', {
     target: command.target,
@@ -76,27 +84,27 @@ export async function dispatchExternalCommand(
   try {
     // Route to specific external agents if available
     // In production, this would use service discovery and network protocols
-    
+
     if (command.target === 'FinanceAgent') {
       // Delegate to the Finance Agent
       console.log('[AgentComms] Routing to FinanceAgent');
       return await processFinanceCommand(command);
     }
-    
+
     // STUB IMPLEMENTATION: For other agents, use mock responses
     // In production, this would make actual network calls to external agent systems
-    
+
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // Build mock response data based on command type
     let mockData: any = null;
-    
+
     switch (command.command) {
       case 'GET_BALANCE':
         mockData = {
           account: command.args.account,
-          balance: 1500.50,
+          balance: 1500.5,
           currency: 'USD',
         };
         break;
@@ -134,10 +142,9 @@ export async function dispatchExternalCommand(
     });
 
     return response;
-
   } catch (error) {
     const executionTime = Date.now() - startTime;
-    
+
     console.error('[AgentComms] Command execution failed:', {
       target: command.target,
       command: command.command,
@@ -149,7 +156,8 @@ export async function dispatchExternalCommand(
       statusCode: 'ERROR',
       error: {
         code: 'EXECUTION_FAILED',
-        message: error instanceof Error ? error.message : 'Unknown error occurred',
+        message:
+          error instanceof Error ? error.message : 'Unknown error occurred',
         details: error,
       },
       metadata: {
@@ -163,11 +171,13 @@ export async function dispatchExternalCommand(
 
 /**
  * Validate an external agent command before dispatching
- * 
+ *
  * @param command - The command to validate
  * @returns True if valid, throws error if invalid
  */
-export function validateExternalCommand(command: ExternalAgentCommand): boolean {
+export function validateExternalCommand(
+  command: ExternalAgentCommand
+): boolean {
   if (!command.target || command.target.trim().length === 0) {
     throw new Error('Command target is required');
   }
@@ -185,7 +195,7 @@ export function validateExternalCommand(command: ExternalAgentCommand): boolean 
 
 /**
  * Get the status of an external agent system
- * 
+ *
  * @param targetAgent - Name of the external agent to check
  * @returns Promise resolving to status information
  */
@@ -195,7 +205,7 @@ export async function getAgentStatus(targetAgent: string): Promise<{
   latency?: number;
 }> {
   console.log(`[AgentComms] Checking status of agent: ${targetAgent}`);
-  
+
   // Check if it's the Finance Agent
   if (targetAgent === 'FinanceAgent') {
     try {
@@ -214,7 +224,7 @@ export async function getAgentStatus(targetAgent: string): Promise<{
       };
     }
   }
-  
+
   // STUB IMPLEMENTATION: For other agents, return mock status
   // In production, this would ping the actual agent
   return {

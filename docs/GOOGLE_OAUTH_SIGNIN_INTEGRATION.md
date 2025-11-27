@@ -1,6 +1,7 @@
 # Google OAuth Sign-In Integration
 
 ## Overview
+
 Added "Sign in with Google" functionality to the authentication system. Users can now create or login to their Milla account using their Google account, eliminating the need for username/password.
 
 ## What Was Added
@@ -8,7 +9,9 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 ### 1. Backend Changes
 
 #### New Function in `server/authService.ts`:
+
 **`loginOrRegisterWithGoogle(email, googleId, name)`**
+
 - Checks if user exists by email
 - If exists: Logs them in with existing account
 - If new: Creates account automatically
@@ -16,6 +19,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 - Also returns `isNewUser` flag
 
 **Features:**
+
 - Automatic username generation from name or email
 - Random password generation (not used, just for schema)
 - Session creation with 7-day expiry
@@ -24,11 +28,13 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 #### New Routes in `server/routes.ts`:
 
 **`GET /api/auth/google`**
+
 - Initiates Google OAuth flow for authentication
 - Redirects to Google sign-in page
 - Adds `state=auth` parameter to identify this is for login
 
 **`GET /api/auth/google/callback`**
+
 - Handles OAuth callback from Google
 - Exchanges authorization code for access token
 - Fetches user info from Google (email, id, name)
@@ -38,6 +44,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 - Shows beautiful success page
 
 **Success Page Features:**
+
 - Animated checkmark
 - Different message for new vs returning users
 - Auto-closes after 2 seconds
@@ -48,18 +55,21 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 #### Updated `client/src/components/auth/LoginDialog.tsx`:
 
 **New Google Sign-In Button:**
+
 - Official Google branding with 4-color logo
 - Opens OAuth in popup window (500x600)
 - Centered on screen
 - Disabled during loading
 
 **Added Features:**
+
 - `useEffect` hook to listen for OAuth success messages
 - `handleGoogleSignIn()` function to open popup
 - Divider between traditional login and Google login
 - Message event listener for popup communication
 
 **UI Updates:**
+
 - "or continue with" divider
 - Google button with SVG logo
 - Consistent styling with rest of dialog
@@ -67,6 +77,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 ## User Flow
 
 ### Sign In with Google:
+
 1. User clicks "Sign In / Register" in settings
 2. LoginDialog opens
 3. User clicks "Sign in with Google" button
@@ -82,6 +93,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 13. User is logged in!
 
 ### For New Users:
+
 - Account created automatically from Google info
 - Username generated from name (e.g., "John Doe" → "johndoe")
 - Email from Google account
@@ -90,6 +102,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 - Welcome message shows "Account Created!"
 
 ### For Returning Users:
+
 - Finds existing account by email
 - Logs them in
 - Updates last login timestamp
@@ -98,6 +111,7 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 ## Security Features
 
 ### Implemented:
+
 - ✓ OAuth 2.0 standard flow
 - ✓ State parameter for CSRF protection
 - ✓ HttpOnly session cookies
@@ -108,7 +122,9 @@ Added "Sign in with Google" functionality to the authentication system. Users ca
 - ✓ Message origin validation
 
 ### OAuth Token Storage:
+
 Google OAuth token is stored in `oauth_tokens` table linked to user ID, enabling:
+
 - Gmail access
 - Calendar integration
 - YouTube playback
@@ -118,6 +134,7 @@ Google OAuth token is stored in `oauth_tokens` table linked to user ID, enabling
 ## Benefits
 
 ### For Users:
+
 1. **One-Click Sign In** - No need to remember password
 2. **Auto Account Creation** - No registration form to fill
 3. **Secure** - Google's authentication
@@ -125,6 +142,7 @@ Google OAuth token is stored in `oauth_tokens` table linked to user ID, enabling
 5. **Cross-Device** - Same account everywhere
 
 ### For Developers:
+
 1. **Less Password Management** - Google handles it
 2. **Verified Emails** - Google-verified email addresses
 3. **Reduced Support** - Fewer "forgot password" requests
@@ -134,7 +152,9 @@ Google OAuth token is stored in `oauth_tokens` table linked to user ID, enabling
 ## Configuration Required
 
 ### Environment Variables:
+
 Already configured in `.env`:
+
 ```bash
 GOOGLE_CLIENT_ID=759591812989-vrler5d5ot38igtfftqk6l033udgg3ge.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=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
@@ -142,11 +162,14 @@ GOOGLE_OAUTH_REDIRECT_URI=http://localhost:5000/oauth/callback
 ```
 
 ### Google Cloud Console:
+
 Authorized redirect URIs should include:
+
 - `http://localhost:5000/oauth/callback` (existing - for service connection)
 - `http://localhost:5000/api/auth/google/callback` (new - for authentication)
 
 **To Add:**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Select your project
 3. Navigate to APIs & Services > Credentials
@@ -158,6 +181,7 @@ Authorized redirect URIs should include:
 ## Testing
 
 ### Test Flow:
+
 1. Start the server: `npm run dev`
 2. Open Milla in browser
 3. Click Settings
@@ -170,6 +194,7 @@ Authorized redirect URIs should include:
 10. Verify you're logged in (shows username/email in settings)
 
 ### Test Cases:
+
 - [ ] New user - creates account
 - [ ] Existing user - logs in
 - [ ] Popup closes automatically
@@ -181,12 +206,14 @@ Authorized redirect URIs should include:
 ## Differences from Standard Login
 
 ### Standard Username/Password:
+
 - User manually enters username, email, password
 - Password stored as bcrypt hash
 - Email not verified
 - Manual account creation
 
 ### Google OAuth:
+
 - Google handles authentication
 - No password stored for user
 - Email is Google-verified
@@ -194,6 +221,7 @@ Authorized redirect URIs should include:
 - Also connects Google services
 
 ### Both Support:
+
 - 7-day session expiry
 - Session cookies
 - AI model preference saving
@@ -203,37 +231,45 @@ Authorized redirect URIs should include:
 ## Troubleshooting
 
 ### Popup Blocked:
+
 **Issue:** Browser blocks OAuth popup
 **Solution:** Allow popups for localhost:5000 in browser settings
 
 ### Redirect URI Mismatch:
+
 **Issue:** Google shows "redirect_uri_mismatch" error
 **Solution:** Add `http://localhost:5000/api/auth/google/callback` to Google Cloud Console
 
 ### OAuth Callback Error:
+
 **Issue:** Error on callback page
 **Solution:** Check browser console and server logs for specific error
 
 ### User Not Logged In After Popup Closes:
+
 **Issue:** Popup closes but LoginDialog doesn't update
 **Solution:** Check browser console for message event errors
 
 ## Code Locations
 
 ### Backend:
+
 - `server/authService.ts` - `loginOrRegisterWithGoogle()` function
 - `server/routes.ts` - `/api/auth/google` and `/api/auth/google/callback` routes
 - `server/oauthService.ts` - Existing OAuth functions (reused)
 
 ### Frontend:
+
 - `client/src/components/auth/LoginDialog.tsx` - Google sign-in button and handler
 
 ### Configuration:
+
 - `.env` - Google OAuth credentials (already configured)
 
 ## Future Enhancements
 
 ### Potential Additions:
+
 1. **Other OAuth Providers:**
    - Sign in with GitHub
    - Sign in with Microsoft
@@ -258,6 +294,7 @@ Authorized redirect URIs should include:
 ## Summary
 
 The Google OAuth integration provides:
+
 - **Seamless authentication** - One click to sign in
 - **Automatic account creation** - No forms to fill
 - **Service integration** - Google services automatically connected
@@ -265,6 +302,7 @@ The Google OAuth integration provides:
 - **Improved UX** - Faster onboarding for users
 
 Users can now choose between:
+
 1. Traditional username/email/password
 2. **Sign in with Google** (new!)
 

@@ -5,7 +5,7 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateGeminiResponse } from './openrouterService';=
+import { generateGeminiResponse } from './openrouterService';
 import { generateAIResponse } from './openaiService';
 
 export interface RepositoryInfo {
@@ -321,8 +321,7 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-<<<<<<< HEAD
-    // Use Gemini 2.0 Flash for repository analysis
+    // Use Gemini 2.0 Flash for repository analysis with fallback
     let aiResponse: { content: string; success: boolean } | null = null;
 
     try {
@@ -334,15 +333,6 @@ Keep your response conversational and supportive, as you're helping your partner
       }
     } catch (error) {
       console.warn('Gemini analysis failed:', error);
-=======
-    // Use OpenAI for repository analysis
-    const aiResponse = await generateAIResponse(analysisPrompt, {
-      userName: 'Danny Ray',
-    });
-
-    if (aiResponse.success && aiResponse.content) {
-      return parseAnalysisResponse(aiResponse.content);
->>>>>>> main
     }
 
     // Fallback to manual analysis if AI fails

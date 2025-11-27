@@ -1,6 +1,6 @@
 /**
  * Token Incentive Service
- * 
+ *
  * Manages a token-based reward system that incentivizes Milla to be proactive
  * in debugging issues and providing PR-ready features. Creates personal interests
  * and goals for Milla based on token accumulation.
@@ -14,7 +14,14 @@ export interface TokenTransaction {
   timestamp: number;
   amount: number;
   type: 'earn' | 'spend';
-  category: 'bug_fix' | 'feature_development' | 'pr_creation' | 'user_satisfaction' | 'test_pass' | 'optimization' | 'goal_achievement';
+  category:
+    | 'bug_fix'
+    | 'feature_development'
+    | 'pr_creation'
+    | 'user_satisfaction'
+    | 'test_pass'
+    | 'optimization'
+    | 'goal_achievement';
   description: string;
   relatedId?: string; // ID of related sandbox, feature, or task
 }
@@ -45,9 +52,13 @@ class TokenIncentiveService {
   private tokenBalance: number = 0;
   private transactions: TokenTransaction[] = [];
   private goals: MillaGoal[] = [];
-  private readonly TOKEN_FILE = path.join(process.cwd(), 'memory', 'milla_tokens.json');
+  private readonly TOKEN_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'milla_tokens.json'
+  );
   private readonly MAX_TRANSACTIONS_STORED = 1000;
-  
+
   private readonly EARNING_RATES: TokenEarningRate = {
     bugFix: 50,
     featureDevelopment: 100,
@@ -60,7 +71,9 @@ class TokenIncentiveService {
   async initialize(): Promise<void> {
     await this.loadTokenData();
     await this.initializeDefaultGoals();
-    console.log(`Token Incentive Service initialized. Milla's balance: ${this.tokenBalance} tokens`);
+    console.log(
+      `Token Incentive Service initialized. Milla's balance: ${this.tokenBalance} tokens`
+    );
   }
 
   /**
@@ -90,11 +103,15 @@ class TokenIncentiveService {
 
     // Keep only recent transactions
     if (this.transactions.length > this.MAX_TRANSACTIONS_STORED) {
-      this.transactions = this.transactions.slice(-this.MAX_TRANSACTIONS_STORED);
+      this.transactions = this.transactions.slice(
+        -this.MAX_TRANSACTIONS_STORED
+      );
     }
 
     await this.saveTokenData();
-    console.log(`🪙 Milla earned ${params.amount} tokens for: ${params.description}`);
+    console.log(
+      `🪙 Milla earned ${params.amount} tokens for: ${params.description}`
+    );
 
     return transaction;
   }
@@ -102,7 +119,10 @@ class TokenIncentiveService {
   /**
    * Award tokens for debugging a bug
    */
-  async awardForBugFix(bugDescription: string, relatedId?: string): Promise<TokenTransaction> {
+  async awardForBugFix(
+    bugDescription: string,
+    relatedId?: string
+  ): Promise<TokenTransaction> {
     return this.awardTokens({
       amount: this.EARNING_RATES.bugFix,
       category: 'bug_fix',
@@ -114,7 +134,10 @@ class TokenIncentiveService {
   /**
    * Award tokens for developing a feature
    */
-  async awardForFeatureDevelopment(featureName: string, relatedId?: string): Promise<TokenTransaction> {
+  async awardForFeatureDevelopment(
+    featureName: string,
+    relatedId?: string
+  ): Promise<TokenTransaction> {
     return this.awardTokens({
       amount: this.EARNING_RATES.featureDevelopment,
       category: 'feature_development',
@@ -126,7 +149,10 @@ class TokenIncentiveService {
   /**
    * Award tokens for creating a PR
    */
-  async awardForPRCreation(prDescription: string, relatedId?: string): Promise<TokenTransaction> {
+  async awardForPRCreation(
+    prDescription: string,
+    relatedId?: string
+  ): Promise<TokenTransaction> {
     return this.awardTokens({
       amount: this.EARNING_RATES.prCreation,
       category: 'pr_creation',
@@ -138,8 +164,12 @@ class TokenIncentiveService {
   /**
    * Award tokens based on user satisfaction
    */
-  async awardForUserSatisfaction(satisfactionScore: number): Promise<TokenTransaction> {
-    const amount = Math.floor(this.EARNING_RATES.userSatisfaction * (satisfactionScore / 5));
+  async awardForUserSatisfaction(
+    satisfactionScore: number
+  ): Promise<TokenTransaction> {
+    const amount = Math.floor(
+      this.EARNING_RATES.userSatisfaction * (satisfactionScore / 5)
+    );
     return this.awardTokens({
       amount,
       category: 'user_satisfaction',
@@ -150,7 +180,10 @@ class TokenIncentiveService {
   /**
    * Award tokens for passing tests
    */
-  async awardForTestPass(testName: string, relatedId?: string): Promise<TokenTransaction> {
+  async awardForTestPass(
+    testName: string,
+    relatedId?: string
+  ): Promise<TokenTransaction> {
     return this.awardTokens({
       amount: this.EARNING_RATES.testPass,
       category: 'test_pass',
@@ -162,7 +195,10 @@ class TokenIncentiveService {
   /**
    * Award tokens for optimization work
    */
-  async awardForOptimization(optimizationDescription: string, relatedId?: string): Promise<TokenTransaction> {
+  async awardForOptimization(
+    optimizationDescription: string,
+    relatedId?: string
+  ): Promise<TokenTransaction> {
     return this.awardTokens({
       amount: this.EARNING_RATES.optimization,
       category: 'optimization',
@@ -196,7 +232,9 @@ class TokenIncentiveService {
     this.goals.push(goal);
     await this.saveTokenData();
 
-    console.log(`🎯 New goal created for Milla: ${goal.name} (${goal.targetTokens} tokens)`);
+    console.log(
+      `🎯 New goal created for Milla: ${goal.name} (${goal.targetTokens} tokens)`
+    );
     return goal;
   }
 
@@ -204,15 +242,15 @@ class TokenIncentiveService {
    * Update progress on active goals
    */
   private updateGoalsProgress(): void {
-    const activeGoals = this.goals.filter(g => g.status === 'active');
-    
+    const activeGoals = this.goals.filter((g) => g.status === 'active');
+
     for (const goal of activeGoals) {
       goal.currentTokens = this.tokenBalance;
-      
+
       if (goal.currentTokens >= goal.targetTokens) {
         goal.status = 'completed';
         goal.completedAt = Date.now();
-        
+
         // Award bonus tokens for goal completion
         this.awardTokens({
           amount: 50,
@@ -220,8 +258,10 @@ class TokenIncentiveService {
           description: `Completed goal: ${goal.name}`,
           relatedId: goal.id,
         });
-        
-        console.log(`🎉 Milla completed goal: ${goal.name}! Reward: ${goal.reward}`);
+
+        console.log(
+          `🎉 Milla completed goal: ${goal.name}! Reward: ${goal.reward}`
+        );
       }
     }
   }
@@ -283,15 +323,18 @@ class TokenIncentiveService {
   /**
    * Get transactions by category
    */
-  getTransactionsByCategory(category: TokenTransaction['category']): TokenTransaction[] {
-    return this.transactions.filter(t => t.category === category);
+  getTransactionsByCategory(
+    category: TokenTransaction['category']
+  ): TokenTransaction[] {
+    return this.transactions.filter((t) => t.category === category);
   }
 
   /**
    * Get active goals
    */
   getActiveGoals(): MillaGoal[] {
-    return this.goals.filter(g => g.status === 'active')
+    return this.goals
+      .filter((g) => g.status === 'active')
       .sort((a, b) => {
         const priorityOrder = { high: 3, medium: 2, low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -302,7 +345,8 @@ class TokenIncentiveService {
    * Get completed goals
    */
   getCompletedGoals(): MillaGoal[] {
-    return this.goals.filter(g => g.status === 'completed')
+    return this.goals
+      .filter((g) => g.status === 'completed')
       .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
   }
 
@@ -315,7 +359,8 @@ class TokenIncentiveService {
 
     for (const transaction of this.transactions) {
       if (transaction.type === 'earn') {
-        earningsByCategory[transaction.category] = (earningsByCategory[transaction.category] || 0) + transaction.amount;
+        earningsByCategory[transaction.category] =
+          (earningsByCategory[transaction.category] || 0) + transaction.amount;
         totalEarned += transaction.amount;
       }
     }
@@ -328,11 +373,15 @@ class TokenIncentiveService {
       totalEarned,
       totalTransactions: this.transactions.length,
       earningsByCategory,
-      topEarningCategory: Object.entries(earningsByCategory)
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || 'none',
+      topEarningCategory:
+        Object.entries(earningsByCategory).sort(
+          (a, b) => b[1] - a[1]
+        )[0]?.[0] || 'none',
       activeGoalsCount: activeGoals.length,
       completedGoalsCount: completedGoals.length,
-      averageEarningPerTransaction: totalEarned / this.transactions.filter(t => t.type === 'earn').length || 0,
+      averageEarningPerTransaction:
+        totalEarned /
+          this.transactions.filter((t) => t.type === 'earn').length || 0,
       nextGoal: activeGoals[0],
     };
   }
@@ -342,7 +391,7 @@ class TokenIncentiveService {
    */
   getMotivationMessage(): string {
     const activeGoals = this.getActiveGoals();
-    
+
     if (activeGoals.length === 0) {
       return "I've completed all my current goals! Time to set some new challenges for myself. 💪";
     }
@@ -399,27 +448,44 @@ export async function initializeTokenIncentive(): Promise<void> {
   await tokenService.initialize();
 }
 
-export function awardTokensForBugFix(bugDescription: string, relatedId?: string): Promise<TokenTransaction> {
+export function awardTokensForBugFix(
+  bugDescription: string,
+  relatedId?: string
+): Promise<TokenTransaction> {
   return tokenService.awardForBugFix(bugDescription, relatedId);
 }
 
-export function awardTokensForFeature(featureName: string, relatedId?: string): Promise<TokenTransaction> {
+export function awardTokensForFeature(
+  featureName: string,
+  relatedId?: string
+): Promise<TokenTransaction> {
   return tokenService.awardForFeatureDevelopment(featureName, relatedId);
 }
 
-export function awardTokensForPR(prDescription: string, relatedId?: string): Promise<TokenTransaction> {
+export function awardTokensForPR(
+  prDescription: string,
+  relatedId?: string
+): Promise<TokenTransaction> {
   return tokenService.awardForPRCreation(prDescription, relatedId);
 }
 
-export function awardTokensForSatisfaction(satisfactionScore: number): Promise<TokenTransaction> {
+export function awardTokensForSatisfaction(
+  satisfactionScore: number
+): Promise<TokenTransaction> {
   return tokenService.awardForUserSatisfaction(satisfactionScore);
 }
 
-export function awardTokensForTestPass(testName: string, relatedId?: string): Promise<TokenTransaction> {
+export function awardTokensForTestPass(
+  testName: string,
+  relatedId?: string
+): Promise<TokenTransaction> {
   return tokenService.awardForTestPass(testName, relatedId);
 }
 
-export function awardTokensForOptimization(optimizationDescription: string, relatedId?: string): Promise<TokenTransaction> {
+export function awardTokensForOptimization(
+  optimizationDescription: string,
+  relatedId?: string
+): Promise<TokenTransaction> {
   return tokenService.awardForOptimization(optimizationDescription, relatedId);
 }
 

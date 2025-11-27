@@ -1,10 +1,13 @@
 # Mobile App Integration Guide (Android)
 
 ## Overview
+
 This guide documents the integration approach for using Milla Rayne in an Android mobile application.
 
 ## Current Web Implementation
+
 The current web application provides:
+
 - Real-time chat interface with Milla
 - Voice input/output capabilities
 - Adaptive scene rendering based on location (living_room, kitchen, bedroom, etc.)
@@ -13,6 +16,7 @@ The current web application provides:
 ## Android Integration Approach
 
 ### 1. WebView Integration (Recommended for MVP)
+
 The simplest approach is to embed the web application in a WebView:
 
 ```kotlin
@@ -20,7 +24,7 @@ The simplest approach is to embed the web application in a WebView:
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         setContent {
             MillaRayneTheme {
                 WebViewScreen(url = "https://your-milla-deployment.com")
@@ -37,10 +41,10 @@ fun WebViewScreen(url: String) {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
                 settings.mediaPlaybackRequiresUserGesture = false
-                
+
                 webViewClient = WebViewClient()
                 webChromeClient = WebChromeClient()
-                
+
                 loadUrl(url)
             }
         },
@@ -50,6 +54,7 @@ fun WebViewScreen(url: String) {
 ```
 
 ### 2. Native Android App (Full Rewrite)
+
 For a fully native experience, you would need to:
 
 1. **Implement Chat UI in Jetpack Compose**
@@ -66,6 +71,7 @@ For a fully native experience, you would need to:
    - Use TextToSpeech for voice output
 
 ### 3. React Native (Hybrid Approach)
+
 Reuse the existing React components with React Native:
 
 ```bash
@@ -81,21 +87,25 @@ npm install react-native-tts
 ## Browser Integration for Google Services
 
 The application now includes browser integration capabilities for:
+
 - **Google Keep**: Add notes programmatically
 - **Google Calendar**: Create calendar events
 - **Web Browser**: Navigate to websites
 - **Web Search**: Perform searches
 
 ### Implementation Status
+
 - ✅ Browser integration service created (`server/browserIntegrationService.ts`)
 - ✅ Tool detection added to chat flow
 - ✅ Context injected into AI responses
 - ⚠️ Actual browser automation requires additional setup
 
 ### Full Browser Automation Setup (Optional)
+
 To enable actual browser automation with Google services:
 
 1. **Install Python dependencies**:
+
    ```bash
    pip install playwright
    playwright install chromium
@@ -108,9 +118,10 @@ To enable actual browser automation with Google services:
    - Store credentials securely in environment variables
 
 3. **Update browserIntegrationService.ts** to call Python script:
+
    ```typescript
    import { spawn } from 'child_process';
-   
+
    export async function executeAuthenticatedBrowserAction(
      action: string,
      params: any
@@ -119,9 +130,9 @@ To enable actual browser automation with Google services:
        const pythonProcess = spawn('python', [
          'browser.py',
          action,
-         JSON.stringify(params)
+         JSON.stringify(params),
        ]);
-       
+
        // Handle response...
      });
    }
@@ -130,14 +141,18 @@ To enable actual browser automation with Google services:
 ## Scene Focus Configuration
 
 ### Default Scene Location
+
 The default scene has been set to `'living_room'` instead of `'unknown'`:
+
 - **Client**: `client/src/App.tsx` - Line 41
 - **Server**: `server/routes.ts` - Line 30
 
 This ensures Milla always starts conversations in the living room scene, providing better context and immersion.
 
 ### Scene Stay-In Reminder
+
 The persona configuration already includes strong scene focus instructions:
+
 - Located in `shared/millaPersona.ts`
 - Part of `MILLA_ABSOLUTE_REQUIREMENTS_COMPREHENSIVE`
 - Rule #10: "STAY IN THE SCENE - When engaged in roleplay or a specific scenario, remain present in that moment without breaking into unrelated memories or long tangents"
@@ -145,21 +160,25 @@ The persona configuration already includes strong scene focus instructions:
 ## Mobile-Specific Considerations
 
 ### Voice Input/Output
+
 - Enable microphone permissions in Android manifest
 - Request permissions at runtime
 - Handle voice interruption gracefully
 
 ### Offline Support
+
 - Implement local caching for recent conversations
 - Store scene state locally
 - Provide offline fallback responses
 
 ### Performance
+
 - Optimize image loading for mobile networks
 - Implement lazy loading for scene backgrounds
 - Reduce API call frequency when possible
 
 ### Battery Optimization
+
 - Pause animations when app is in background
 - Reduce polling frequency
 - Implement efficient WebSocket connections for real-time updates

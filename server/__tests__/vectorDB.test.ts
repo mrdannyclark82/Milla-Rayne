@@ -3,7 +3,11 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { vectorDB, generateEmbedding, cosineSimilarity } from '../vectorDBService';
+import {
+  vectorDB,
+  generateEmbedding,
+  cosineSimilarity,
+} from '../vectorDBService';
 
 describe('Vector Database Service', () => {
   describe('Cosine Similarity', () => {
@@ -30,7 +34,9 @@ describe('Vector Database Service', () => {
     it('should throw error for vectors of different lengths', () => {
       const v1 = [1, 2, 3];
       const v2 = [1, 2];
-      expect(() => cosineSimilarity(v1, v2)).toThrow('Vectors must have the same length');
+      expect(() => cosineSimilarity(v1, v2)).toThrow(
+        'Vectors must have the same length'
+      );
     });
   });
 
@@ -47,10 +53,12 @@ describe('Vector Database Service', () => {
 
     it('should add content to vector database', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
-      
+
       // Mock generateEmbedding
-      vi.spyOn(await import('../vectorDBService'), 'generateEmbedding')
-        .mockResolvedValue(mockEmbedding);
+      vi.spyOn(
+        await import('../vectorDBService'),
+        'generateEmbedding'
+      ).mockResolvedValue(mockEmbedding);
 
       const success = await vectorDB.addContent(
         'test-1',
@@ -71,19 +79,17 @@ describe('Vector Database Service', () => {
 
     it('should retrieve content by ID', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
-      
-      vi.spyOn(await import('../vectorDBService'), 'generateEmbedding')
-        .mockResolvedValue(mockEmbedding);
 
-      await vectorDB.addContent(
-        'test-1',
-        'This is test content',
-        {
-          type: 'memory',
-          timestamp: new Date().toISOString(),
-          userId: 'test-user',
-        }
-      );
+      vi.spyOn(
+        await import('../vectorDBService'),
+        'generateEmbedding'
+      ).mockResolvedValue(mockEmbedding);
+
+      await vectorDB.addContent('test-1', 'This is test content', {
+        type: 'memory',
+        timestamp: new Date().toISOString(),
+        userId: 'test-user',
+      });
 
       const content = await vectorDB.getContent('test-1');
       expect(content).not.toBeNull();
@@ -93,19 +99,17 @@ describe('Vector Database Service', () => {
 
     it('should delete content by ID', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
-      
-      vi.spyOn(await import('../vectorDBService'), 'generateEmbedding')
-        .mockResolvedValue(mockEmbedding);
 
-      await vectorDB.addContent(
-        'test-1',
-        'This is test content',
-        {
-          type: 'memory',
-          timestamp: new Date().toISOString(),
-          userId: 'test-user',
-        }
-      );
+      vi.spyOn(
+        await import('../vectorDBService'),
+        'generateEmbedding'
+      ).mockResolvedValue(mockEmbedding);
+
+      await vectorDB.addContent('test-1', 'This is test content', {
+        type: 'memory',
+        timestamp: new Date().toISOString(),
+        userId: 'test-user',
+      });
 
       const deleted = await vectorDB.deleteContent('test-1');
       expect(deleted).toBe(true);
@@ -127,36 +131,31 @@ describe('Vector Database Service', () => {
     it('should find similar content based on semantic similarity', async () => {
       // Create mock embeddings that are similar
       const baseEmbedding = new Array(1536).fill(0).map(() => Math.random());
-      const similarEmbedding = baseEmbedding.map(v => v + Math.random() * 0.1);
-      
+      const similarEmbedding = baseEmbedding.map(
+        (v) => v + Math.random() * 0.1
+      );
+
       const generateEmbeddingSpy = vi.spyOn(
         await import('../vectorDBService'),
         'generateEmbedding'
       );
-      
+
       // First call for adding content
       generateEmbeddingSpy.mockResolvedValueOnce(baseEmbedding);
-      
-      await vectorDB.addContent(
-        'test-1',
-        'Machine learning is fascinating',
-        {
-          type: 'memory',
-          timestamp: new Date().toISOString(),
-          userId: 'test-user',
-        }
-      );
+
+      await vectorDB.addContent('test-1', 'Machine learning is fascinating', {
+        type: 'memory',
+        timestamp: new Date().toISOString(),
+        userId: 'test-user',
+      });
 
       // Second call for search query
       generateEmbeddingSpy.mockResolvedValueOnce(similarEmbedding);
 
-      const results = await vectorDB.semanticSearch(
-        'AI and machine learning',
-        {
-          topK: 5,
-          minSimilarity: 0.5,
-        }
-      );
+      const results = await vectorDB.semanticSearch('AI and machine learning', {
+        topK: 5,
+        minSimilarity: 0.5,
+      });
 
       expect(results.length).toBeGreaterThan(0);
       expect(results[0].entry.content).toContain('Machine learning');
@@ -164,9 +163,11 @@ describe('Vector Database Service', () => {
 
     it('should filter results by type', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
-      
-      vi.spyOn(await import('../vectorDBService'), 'generateEmbedding')
-        .mockResolvedValue(mockEmbedding);
+
+      vi.spyOn(
+        await import('../vectorDBService'),
+        'generateEmbedding'
+      ).mockResolvedValue(mockEmbedding);
 
       await vectorDB.addContent('mem-1', 'Memory content', {
         type: 'memory',
@@ -192,14 +193,14 @@ describe('Vector Database Service', () => {
     it('should respect minSimilarity threshold', async () => {
       const embedding1 = new Array(1536).fill(0).map(() => Math.random());
       const embedding2 = new Array(1536).fill(0).map(() => Math.random());
-      
+
       const generateEmbeddingSpy = vi.spyOn(
         await import('../vectorDBService'),
         'generateEmbedding'
       );
-      
+
       generateEmbeddingSpy.mockResolvedValueOnce(embedding1);
-      
+
       await vectorDB.addContent('test-1', 'Very different content', {
         type: 'memory',
         timestamp: new Date().toISOString(),
@@ -227,12 +228,14 @@ describe('Vector Database Service', () => {
     });
 
     it('should add multiple items in batch', async () => {
-      const mockEmbeddings = Array(3).fill(null).map(() =>
-        new Array(1536).fill(0).map(() => Math.random())
-      );
-      
-      vi.spyOn(await import('../vectorDBService'), 'generateEmbeddings')
-        .mockResolvedValue(mockEmbeddings);
+      const mockEmbeddings = Array(3)
+        .fill(null)
+        .map(() => new Array(1536).fill(0).map(() => Math.random()));
+
+      vi.spyOn(
+        await import('../vectorDBService'),
+        'generateEmbeddings'
+      ).mockResolvedValue(mockEmbeddings);
 
       const items = [
         {

@@ -73,11 +73,21 @@ const indexedEntriesCache = new Map<string, IndexedEntry[]>();
 const lastIndexedLengthCache = new Map<string, number>();
 
 function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
-  return entries.map(entry => ({
+  return entries.map((entry) => ({
     entry,
-    termSet: new Set(entry.searchableContent.toLowerCase().split(/\s+/).filter(w => w.length > 2)),
-    contextSet: new Set(entry.context?.toLowerCase().split(/\s+/).filter(w => w.length > 2) || []),
-    topicSet: new Set(entry.topics?.map(t => t.toLowerCase()) || []),
+    termSet: new Set(
+      entry.searchableContent
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length > 2)
+    ),
+    contextSet: new Set(
+      entry.context
+        ?.toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length > 2) || []
+    ),
+    topicSet: new Set(entry.topics?.map((t) => t.toLowerCase()) || []),
   }));
 }
 
@@ -91,98 +101,133 @@ function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
  */
 function isSensitiveContext(context?: string): boolean {
   if (!context) return false;
-  
+
   const sensitiveKeywords = [
-    'location', 'address', 'home', 'live', 'phone', 'ssn', 'social security',
-    'credit card', 'password', 'private', 'confidential', 'secret', 'personal',
-    'medical', 'health', 'diagnosis', 'financial', 'bank', 'account'
+    'location',
+    'address',
+    'home',
+    'live',
+    'phone',
+    'ssn',
+    'social security',
+    'credit card',
+    'password',
+    'private',
+    'confidential',
+    'secret',
+    'personal',
+    'medical',
+    'health',
+    'diagnosis',
+    'financial',
+    'bank',
+    'account',
   ];
-  
+
   const lowerContext = context.toLowerCase();
-  return sensitiveKeywords.some(keyword => lowerContext.includes(keyword));
+  return sensitiveKeywords.some((keyword) => lowerContext.includes(keyword));
 }
 
 /**
  * Encrypt sensitive memory fields using homomorphic encryption
  * This allows querying without decryption while maintaining privacy
  */
-export async function encryptSensitiveMemoryFields(entry: MemoryCoreEntry): Promise<MemoryCoreEntry> {
+export async function encryptSensitiveMemoryFields(
+  entry: MemoryCoreEntry
+): Promise<MemoryCoreEntry> {
   const encryptedEntry = { ...entry };
-  
+
   // Encrypt context if it contains sensitive information
   if (entry.context && isSensitiveContext(entry.context)) {
     try {
       encryptedEntry.context = await encryptHomomorphic(entry.context);
       console.log(`[Memory] Encrypted sensitive context for entry ${entry.id}`);
     } catch (error) {
-      console.error(`[Memory] Failed to encrypt context for entry ${entry.id}:`, error);
+      console.error(
+        `[Memory] Failed to encrypt context for entry ${entry.id}:`,
+        error
+      );
       // Keep original if encryption fails
     }
   }
-  
+
   return encryptedEntry;
 }
 
 /**
  * Decrypt sensitive memory fields when authorized access is needed
  */
-export async function decryptSensitiveMemoryFields(entry: MemoryCoreEntry): Promise<MemoryCoreEntry> {
+export async function decryptSensitiveMemoryFields(
+  entry: MemoryCoreEntry
+): Promise<MemoryCoreEntry> {
   const decryptedEntry = { ...entry };
-  
+
   // Decrypt context if it's encrypted
   if (entry.context && isHomomorphicallyEncrypted(entry.context)) {
     try {
       decryptedEntry.context = await decryptHomomorphic(entry.context);
     } catch (error) {
-      console.error(`[Memory] Failed to decrypt context for entry ${entry.id}:`, error);
+      console.error(
+        `[Memory] Failed to decrypt context for entry ${entry.id}:`,
+        error
+      );
       // Keep encrypted if decryption fails
     }
   }
-  
+
   return decryptedEntry;
 }
 
 /**
  * Search encrypted context fields using homomorphic query
  */
-export async function searchEncryptedContext(entry: MemoryCoreEntry, query: string): Promise<{
+export async function searchEncryptedContext(
+  entry: MemoryCoreEntry,
+  query: string
+): Promise<{
   matches: boolean;
   score: number;
 }> {
   if (!entry.context) {
     return { matches: false, score: 0 };
   }
-  
+
   // If context is encrypted, use homomorphic query
   if (isHomomorphicallyEncrypted(entry.context)) {
     try {
       const result = await queryHomomorphic(entry.context, query);
       return { matches: result.matches, score: result.score };
     } catch (error) {
-      console.error(`[Memory] Failed to query encrypted context for entry ${entry.id}:`, error);
+      console.error(
+        `[Memory] Failed to query encrypted context for entry ${entry.id}:`,
+        error
+      );
       return { matches: false, score: 0 };
     }
   }
-  
+
   // If not encrypted, use regular search
   const lowerContext = entry.context.toLowerCase();
   const lowerQuery = query.toLowerCase();
   const matches = lowerContext.includes(lowerQuery);
   const score = matches ? 1.0 : 0;
-  
+
   return { matches, score };
 }
 
 /**
  * Read memories from the local txt file in the /memory folder
  */
-export async function getMemoriesFromTxt(userId: string = 'danny-ray'): Promise<MemoryData> {
+export async function getMemoriesFromTxt(
+  userId: string = 'danny-ray'
+): Promise<MemoryData> {
   try {
     // For danny-ray, use the main memories.txt
     // For other users, would use memories_{userId}.txt
-    const filename = (userId === 'danny-ray' || userId === 'default-user') 
-      ? 'memories.txt' 
-      : `memories_${userId}.txt`;
+    const filename =
+      userId === 'danny-ray' || userId === 'default-user'
+        ? 'memories.txt'
+        : `memories_${userId}.txt`;
     const memoryPath = join(process.cwd(), 'memory', filename);
 
     // Check if file exists
@@ -352,14 +397,16 @@ const MEMORY_CORE_CACHE_TTL = 2 * 60 * 60 * 1000; // 2 hours (increased for perf
  * This function caches results per user for privacy
  * @param userId - User ID for privacy isolation (defaults to 'danny-ray')
  */
-export async function loadMemoryCore(userId: string = 'danny-ray'): Promise<MemoryCoreData> {
+export async function loadMemoryCore(
+  userId: string = 'danny-ray'
+): Promise<MemoryCoreData> {
   const startTime = Date.now();
   try {
     // Check cache first for this specific user
     const now = Date.now();
     const cachedData = memoryCoreCache.get(userId);
     const lastLoaded = memoryCoreLastLoaded.get(userId) || 0;
-    
+
     if (cachedData && now - lastLoaded < MEMORY_CORE_CACHE_TTL) {
       console.log(`Using cached Memory Core data for user: ${userId}`);
       const endTime = Date.now();
@@ -388,7 +435,9 @@ export async function loadMemoryCore(userId: string = 'danny-ray'): Promise<Memo
         return result;
       }
     } catch (error) {
-      console.log(`Failed to load memories for ${userId}, trying backup files...`);
+      console.log(
+        `Failed to load memories for ${userId}, trying backup files...`
+      );
     }
 
     // Fallback to backup files if memories.txt is not available or empty
@@ -447,7 +496,9 @@ export async function loadMemoryCore(userId: string = 'danny-ray'): Promise<Memo
     memoryCoreCache.set(userId, result);
     memoryCoreLastLoaded.set(userId, now);
 
-    console.log(`Memory Core loaded from backup for ${userId}: ${entries.length} entries`);
+    console.log(
+      `Memory Core loaded from backup for ${userId}: ${entries.length} entries`
+    );
     const endTime = Date.now();
     console.log(
       `Memory Core loaded from backup latency: ${endTime - startTime}ms`
@@ -583,7 +634,9 @@ function createMemoryEntry(
  * Load Memory Core from existing memory files
  * @param userId - User ID for privacy isolation
  */
-async function loadMemoryCoreFromExistingFiles(userId: string = 'danny-ray'): Promise<MemoryCoreData> {
+async function loadMemoryCoreFromExistingFiles(
+  userId: string = 'danny-ray'
+): Promise<MemoryCoreData> {
   try {
     const entries: MemoryCoreEntry[] = [];
     let entryId = 1;
@@ -673,28 +726,32 @@ export async function searchMemoryCore(
   // Build or update index if needed - per user
   const indexedEntries = indexedEntriesCache.get(userId);
   const lastIndexedLength = lastIndexedLengthCache.get(userId) || 0;
-  
+
   if (!indexedEntries || indexedEntries.length !== memoryCore.entries.length) {
-    console.log(`Building search index for user ${userId}: ${memoryCore.entries.length} entries...`);
+    console.log(
+      `Building search index for user ${userId}: ${memoryCore.entries.length} entries...`
+    );
     const newIndex = buildSearchIndex(memoryCore.entries);
     indexedEntriesCache.set(userId, newIndex);
     lastIndexedLengthCache.set(userId, memoryCore.entries.length);
   }
-  
+
   const userIndex = indexedEntriesCache.get(userId)!;
 
   const searchTerms = query
     .toLowerCase()
     .split(' ')
     .filter((term) => term.length > 2);
-  
+
   if (searchTerms.length === 0) {
     console.log(`No valid search terms for user ${userId} query: "${query}"`);
     return [];
   }
-  
-  console.log(`Searching ${userIndex.length} indexed entries for user ${userId} with terms: [${searchTerms.join(', ')}]`);
-  
+
+  console.log(
+    `Searching ${userIndex.length} indexed entries for user ${userId} with terms: [${searchTerms.join(', ')}]`
+  );
+
   const results: MemorySearchResult[] = [];
 
   // O(n × m) iteration with O(1) Set lookups instead of O(n × m × p)
@@ -713,7 +770,7 @@ export async function searchMemoryCore(
       }
 
       // Boost score for topic matches - O(k) where k = topics (small)
-      if ([...indexed.topicSet].some(topic => topic.includes(term))) {
+      if ([...indexed.topicSet].some((topic) => topic.includes(term))) {
         relevanceScore += 2;
       }
 
@@ -755,9 +812,13 @@ export async function searchMemoryCore(
     .sort((a, b) => b.relevanceScore - a.relevanceScore)
     .slice(0, limit);
 
-  console.log(`Found ${results.length} total matches, returning top ${sorted.length} for user ${userId}`);
+  console.log(
+    `Found ${results.length} total matches, returning top ${sorted.length} for user ${userId}`
+  );
   if (sorted.length > 0) {
-    console.log(`  Top match: score=${sorted[0].relevanceScore.toFixed(2)}, terms=[${sorted[0].matchedTerms.join(', ')}]`);
+    console.log(
+      `  Top match: score=${sorted[0].relevanceScore.toFixed(2)}, terms=[${sorted[0].matchedTerms.join(', ')}]`
+    );
   }
 
   // Cache the result
@@ -771,24 +832,29 @@ export async function searchMemoryCore(
  * @param query - Search query
  * @param userId - User ID for privacy isolation (defaults to 'danny-ray')
  */
-export async function getMemoryCoreContext(query: string, userId: string = 'danny-ray'): Promise<string> {
+export async function getMemoryCoreContext(
+  query: string,
+  userId: string = 'danny-ray'
+): Promise<string> {
   // Increased from 5 to 15 for better memory recall
   const searchResults = await searchMemoryCore(query, 15, userId);
-  
+
   // Check if query is about sandbox or testing
   const lowerQuery = query.toLowerCase();
-  const isSandboxQuery = 
+  const isSandboxQuery =
     lowerQuery.includes('sandbox') ||
     lowerQuery.includes('test') ||
     lowerQuery.includes('what have you tested') ||
     lowerQuery.includes('what did you test');
 
   let contextString = '';
-  
+
   // Add sandbox test summary if query is about testing
   if (isSandboxQuery) {
     try {
-      const { getSandboxTestSummary } = await import('./sandboxEnvironmentService');
+      const { getSandboxTestSummary } = await import(
+        './sandboxEnvironmentService'
+      );
       const sandboxSummary = getSandboxTestSummary();
       if (sandboxSummary) {
         contextString += `\n[Sandbox Testing Memory]:\n${sandboxSummary}\n`;
@@ -802,72 +868,82 @@ export async function getMemoryCoreContext(query: string, userId: string = 'dann
     return contextString || '';
   }
 
-  const contextEntries = searchResults.map((result) => {
-    const entry = result.entry;
-    let content = entry.content;
-    
-    // Filter out overly technical repository analysis - only skip if very technical
-    const technicalKeywords = [
-      'architecture is',
-      'key insights',
-      'test coverage',
-      'documentation could use',
-    ];
-    
-    const lowerContent = content.toLowerCase();
-    // Only skip if multiple technical keywords are present
-    const technicalMatches = technicalKeywords.filter(keyword => lowerContent.includes(keyword)).length;
-    if (technicalMatches >= 2) {
-      // Skip overly technical repository analysis memories
-      return null;
-    }
-    
-    // Clean up content - remove nested metadata patterns that cause display issues
-    // Remove patterns like "[Danny]: [date]" or "[Milla]: [date]" from the content
-    content = content.replace(/\[(?:Danny|Milla)\]:\s*\[[\d-]+\]/gi, '').trim();
-    
-    // Remove "User asked:" or "Milla responded:" prefixes
-    content = content.replace(/^(?:User asked|Milla responded):\s*["']?/gi, '').trim();
-    
-    // Remove JSON-like content patterns that shouldn't be in natural text
-    content = content.replace(/\[(?:Danny|Milla)\]:\s*["']?content["']?:\s*/gi, '').trim();
-    
-    // Remove trailing quotes that might be left over
-    content = content.replace(/["']$/g, '').trim();
-    
-    // If the content starts with an action asterisk or contains roleplay, keep more context
-    if (content.startsWith('*') || content.includes('*')) {
-      // Allow up to 300 chars for roleplay context
-      if (content.length > 300) {
-        const firstSentences = content.match(/^[^.!?]+[.!?]+[^.!?]*[.!?]*/);
-        if (firstSentences) {
-          content = firstSentences[0].trim();
-        } else {
-          content = content.substring(0, 300) + '...';
+  const contextEntries = searchResults
+    .map((result) => {
+      const entry = result.entry;
+      let content = entry.content;
+
+      // Filter out overly technical repository analysis - only skip if very technical
+      const technicalKeywords = [
+        'architecture is',
+        'key insights',
+        'test coverage',
+        'documentation could use',
+      ];
+
+      const lowerContent = content.toLowerCase();
+      // Only skip if multiple technical keywords are present
+      const technicalMatches = technicalKeywords.filter((keyword) =>
+        lowerContent.includes(keyword)
+      ).length;
+      if (technicalMatches >= 2) {
+        // Skip overly technical repository analysis memories
+        return null;
+      }
+
+      // Clean up content - remove nested metadata patterns that cause display issues
+      // Remove patterns like "[Danny]: [date]" or "[Milla]: [date]" from the content
+      content = content
+        .replace(/\[(?:Danny|Milla)\]:\s*\[[\d-]+\]/gi, '')
+        .trim();
+
+      // Remove "User asked:" or "Milla responded:" prefixes
+      content = content
+        .replace(/^(?:User asked|Milla responded):\s*["']?/gi, '')
+        .trim();
+
+      // Remove JSON-like content patterns that shouldn't be in natural text
+      content = content
+        .replace(/\[(?:Danny|Milla)\]:\s*["']?content["']?:\s*/gi, '')
+        .trim();
+
+      // Remove trailing quotes that might be left over
+      content = content.replace(/["']$/g, '').trim();
+
+      // If the content starts with an action asterisk or contains roleplay, keep more context
+      if (content.startsWith('*') || content.includes('*')) {
+        // Allow up to 300 chars for roleplay context
+        if (content.length > 300) {
+          const firstSentences = content.match(/^[^.!?]+[.!?]+[^.!?]*[.!?]*/);
+          if (firstSentences) {
+            content = firstSentences[0].trim();
+          } else {
+            content = content.substring(0, 300) + '...';
+          }
         }
       }
-    }
-    
-    // If content is still very long, truncate more generously
-    if (content.length > 400) {
-      // Try to find a natural break point - keep first 2-3 sentences
-      const sentences = content.match(/[^.!?]+[.!?]+/g);
-      if (sentences && sentences.length > 0) {
-        const keep = sentences.slice(0, Math.min(3, sentences.length));
-        content = keep.join(' ').trim();
-      } else {
-        content = content.substring(0, 400) + '...';
+
+      // If content is still very long, truncate more generously
+      if (content.length > 400) {
+        // Try to find a natural break point - keep first 2-3 sentences
+        const sentences = content.match(/[^.!?]+[.!?]+/g);
+        if (sentences && sentences.length > 0) {
+          const keep = sentences.slice(0, Math.min(3, sentences.length));
+          content = keep.join(' ').trim();
+        } else {
+          content = content.substring(0, 400) + '...';
+        }
       }
-    }
-    
-    // Only include if there's actual meaningful content left
-    if (content.length < 10 || content.includes('"content":')) {
-      return null;
-    }
-    
-    const speaker = entry.speaker === 'milla' ? 'Milla' : 'Danny';
-    return `[${speaker}]: ${content}`;
-  }).filter(Boolean); // Remove null entries
+
+      // Only include if there's actual meaningful content left
+      if (content.length < 10 || content.includes('"content":')) {
+        return null;
+      }
+
+      const speaker = entry.speaker === 'milla' ? 'Milla' : 'Danny';
+      return `[${speaker}]: ${content}`;
+    })
+    .filter(Boolean); // Remove null entries
 
   if (contextEntries.length > 0) {
     contextString += `\nRelevant Memory Context:\n${contextEntries.join('\n')}\n`;
@@ -942,9 +1018,10 @@ export async function updateMemories(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Use user-specific memory file
-    const filename = (userId === 'danny-ray' || userId === 'default-user') 
-      ? 'memories.txt' 
-      : `memories_${userId}.txt`;
+    const filename =
+      userId === 'danny-ray' || userId === 'default-user'
+        ? 'memories.txt'
+        : `memories_${userId}.txt`;
     const memoryPath = join(process.cwd(), 'memory', filename);
     const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
@@ -969,16 +1046,12 @@ export async function updateMemories(
 
     // Add to vector database for semantic retrieval with userId
     const memoryId = `memory:${userId}:${Date.now()}`;
-    await vectorDB.addContent(
-      memoryId,
-      `[${timestamp}] ${newMemory}`,
-      {
-        type: 'memory',
-        timestamp: new Date().toISOString(),
-        userId,
-        date: timestamp,
-      }
-    );
+    await vectorDB.addContent(memoryId, `[${timestamp}] ${newMemory}`, {
+      type: 'memory',
+      timestamp: new Date().toISOString(),
+      userId,
+      date: timestamp,
+    });
     console.log(`✅ Added memory to vector database for user: ${userId}`);
 
     return { success: true };
@@ -1022,7 +1095,7 @@ export async function semanticSearchMemories(
       userId,
     });
 
-    return results.map(result => ({
+    return results.map((result) => ({
       content: result.entry.content,
       similarity: result.similarity,
       metadata: result.entry.metadata,
@@ -1050,8 +1123,9 @@ export async function getSemanticMemoryContext(
     return '';
   }
 
-  const contextParts = results.map((result, index) => 
-    `Memory ${index + 1} (relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.content}`
+  const contextParts = results.map(
+    (result, index) =>
+      `Memory ${index + 1} (relevance: ${(result.similarity * 100).toFixed(1)}%):\n${result.content}`
   );
 
   return `\n\nRelevant memories:\n${contextParts.join('\n\n')}`;
@@ -1059,7 +1133,7 @@ export async function getSemanticMemoryContext(
 
 /**
  * Store sensitive PII with automatic HE encryption
- * 
+ *
  * @param userId - User ID
  * @param data - Sensitive data to encrypt and store
  * @returns Success status
@@ -1073,22 +1147,27 @@ export async function storeSensitiveMemory(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Encrypt sensitive fields
-    const encryptedData: { financialSummary?: string; medicalNotes?: string } = {};
-    
+    const encryptedData: { financialSummary?: string; medicalNotes?: string } =
+      {};
+
     if (data.financialSummary) {
-      encryptedData.financialSummary = await encryptHomomorphic(data.financialSummary);
+      encryptedData.financialSummary = await encryptHomomorphic(
+        data.financialSummary
+      );
       console.log('🔒 Encrypted financial summary with HE');
     }
-    
+
     if (data.medicalNotes) {
       encryptedData.medicalNotes = await encryptHomomorphic(data.medicalNotes);
       console.log('🔒 Encrypted medical notes with HE');
     }
-    
+
     // TODO: Store encrypted data (requires DB migration for new fields)
     // For now, this is a placeholder showing the architecture
-    console.log('[MemoryService] Sensitive data encrypted - DB storage pending migration');
-    
+    console.log(
+      '[MemoryService] Sensitive data encrypted - DB storage pending migration'
+    );
+
     return { success: true };
   } catch (error) {
     console.error('Error storing sensitive memory:', error);
@@ -1101,13 +1180,11 @@ export async function storeSensitiveMemory(
 
 /**
  * Retrieve sensitive PII with automatic HE decryption
- * 
+ *
  * @param userId - User ID
  * @returns Decrypted sensitive data
  */
-export async function retrieveSensitiveMemory(
-  userId: string
-): Promise<{
+export async function retrieveSensitiveMemory(userId: string): Promise<{
   financialSummary?: string;
   medicalNotes?: string;
   success: boolean;
@@ -1116,8 +1193,10 @@ export async function retrieveSensitiveMemory(
   try {
     // TODO: Retrieve from DB (requires migration for new fields)
     // For now, return empty data as placeholder
-    console.log('[MemoryService] Sensitive data retrieval - DB migration pending');
-    
+    console.log(
+      '[MemoryService] Sensitive data retrieval - DB migration pending'
+    );
+
     return {
       financialSummary: undefined,
       medicalNotes: undefined,
@@ -1134,7 +1213,7 @@ export async function retrieveSensitiveMemory(
 
 /**
  * Search encrypted sensitive data
- * 
+ *
  * @param userId - User ID
  * @param query - Search query
  * @param field - Field to search ('financialSummary' or 'medicalNotes')
@@ -1154,7 +1233,7 @@ export async function searchSensitiveMemory(
     // TODO: Retrieve from DB (requires migration for new fields)
     // For now, return no matches as placeholder
     console.log('[MemoryService] Sensitive data search - DB migration pending');
-    
+
     return {
       matches: false,
       score: 0,
@@ -1170,4 +1249,3 @@ export async function searchSensitiveMemory(
     };
   }
 }
-

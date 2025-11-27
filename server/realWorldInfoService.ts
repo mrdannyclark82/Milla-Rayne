@@ -289,13 +289,15 @@ export function updateAmbientContext(userId: string, data: SensorData): void {
       charging: data.isCharging ?? false,
       network: data.networkType ?? null,
     },
-    location: data.location ? {
-      latitude: data.location.latitude,
-      longitude: data.location.longitude,
-    } : null,
+    location: data.location
+      ? {
+          latitude: data.location.latitude,
+          longitude: data.location.longitude,
+        }
+      : null,
     nearbyDevices: data.nearbyBluetoothDevices,
   };
-  
+
   ambientContextStore.set(userId, context);
   // Use parameterized logging to avoid format string injection
   console.log('📱 Updated ambient context for user:', userId, {
@@ -310,12 +312,12 @@ export function updateAmbientContext(userId: string, data: SensorData): void {
  */
 export function getAmbientContext(userId: string): AmbientContext | null {
   const context = ambientContextStore.get(userId);
-  
+
   // Return null if context is older than 5 minutes
   if (context && Date.now() - context.lastUpdated > 5 * 60 * 1000) {
     ambientContextStore.delete(userId);
     return null;
   }
-  
+
   return context ?? null;
 }

@@ -9,7 +9,9 @@ console.log(`Starting migration scheduler (cron: ${CRON_SCHEDULE})`);
 // Run immediately once on startup if requested
 if (process.env.MIGRATION_RUN_ON_START === 'true') {
   console.log('Running migration immediately on scheduler start...');
-  migrateMemories().catch((err) => console.error('Scheduled immediate migration failed:', err));
+  migrateMemories().catch((err) =>
+    console.error('Scheduled immediate migration failed:', err)
+  );
 }
 
 // Schedule daily

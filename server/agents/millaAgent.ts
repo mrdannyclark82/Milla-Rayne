@@ -10,7 +10,10 @@ import { runTask } from './worker';
  */
 class MillaAgent extends BaseAgent {
   constructor() {
-    super('milla', 'Supervisor agent that orchestrates domain agents and task creation.');
+    super(
+      'milla',
+      'Supervisor agent that orchestrates domain agents and task creation.'
+    );
   }
 
   protected async executeInternal(task: string): Promise<string> {

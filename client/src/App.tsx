@@ -71,12 +71,12 @@ function App() {
   const [showSharedNotepad, setShowSharedNotepad] = useState(false);
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
   const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
-  
+
   // XAI Transparency state
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
   const [showXAIOverlay, setShowXAIOverlay] = useState(false);
   const [developerMode, setDeveloperMode] = useState(getDeveloperMode());
-  
+
   // Agent-Driven UI state
   const [uiCommand, setUiCommand] = useState<UICommand | null>(null);
 
@@ -501,7 +501,7 @@ function App() {
               setUiCommand({
                 action: 'SHOW_COMPONENT',
                 componentName: 'KnowledgeBaseSearch',
-                data: {}
+                data: {},
               });
             }}
             onShowYoutubeMemories={() =>

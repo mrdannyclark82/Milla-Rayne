@@ -416,7 +416,8 @@ export async function generateGeminiResponse(
     if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
       console.log('OpenRouter API key not configured for Gemini');
       return {
-        content: 'Gemini service temporarily unavailable. Please try again later.',
+        content:
+          'Gemini service temporarily unavailable. Please try again later.',
         success: false,
         error: 'OpenRouter API key not configured',
       };
@@ -484,7 +485,8 @@ export async function generateGeminiResponse(
       const errorText = await response.text();
       console.error('Gemini API error:', response.status, errorText);
       return {
-        content: 'I had trouble connecting to Gemini. Let me try another approach.',
+        content:
+          'I had trouble connecting to Gemini. Let me try another approach.',
         success: false,
         error: `API error: ${response.status}`,
       };

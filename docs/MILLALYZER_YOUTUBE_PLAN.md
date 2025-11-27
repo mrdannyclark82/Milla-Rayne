@@ -1,6 +1,7 @@
 # millAlyzer YouTube Integration Plan
 
 ## 🎯 Overview
+
 Enhance Milla's YouTube integration with intelligent video analysis, automated AI/coding news monitoring, and actionable knowledge extraction.
 
 ## 📋 Feature Breakdown
@@ -8,15 +9,18 @@ Enhance Milla's YouTube integration with intelligent video analysis, automated A
 ### **Phase 1: Enhanced Video Analysis (millAlyzer Core)**
 
 #### 1.1 Smart Video Analysis on Demand
+
 **Trigger**: `"Analyze this YouTube video"` or `"What are the key points of this video?"`
 
 **Capabilities:**
+
 - Extract transcript using existing `YoutubeTranscript` library
 - Use AI to identify video type (tutorial, news, discussion, etc.)
 - Extract key points, timestamps, and actionable items
 - Store structured analysis in knowledge base
 
 **Implementation:**
+
 ```typescript
 interface VideoAnalysis {
   videoId: string;
@@ -31,7 +35,7 @@ interface VideoAnalysis {
 }
 
 interface KeyPoint {
-  timestamp: string;  // "12:34"
+  timestamp: string; // "12:34"
   point: string;
   importance: 'high' | 'medium' | 'low';
 }
@@ -39,8 +43,8 @@ interface KeyPoint {
 interface ActionableItem {
   type: 'step' | 'tip' | 'warning' | 'resource';
   content: string;
-  order?: number;  // For sequential steps
-  dependencies?: string[];  // Prerequisites
+  order?: number; // For sequential steps
+  dependencies?: string[]; // Prerequisites
 }
 
 interface CodeSnippet {
@@ -48,7 +52,7 @@ interface CodeSnippet {
   code: string;
   description: string;
   timestamp?: string;
-  copyable: true;  // Always true for easy copy/paste
+  copyable: true; // Always true for easy copy/paste
 }
 
 interface CLICommand {
@@ -61,6 +65,7 @@ interface CLICommand {
 ```
 
 #### 1.2 Tutorial Video Processing
+
 **Special handling for instructional content:**
 
 - Detect tutorial videos automatically
@@ -70,28 +75,33 @@ interface CLICommand {
 - Store in searchable knowledge base
 
 **Example Output:**
-```markdown
+
+````markdown
 ## Tutorial: "Build a REST API with Node.js"
+
 Analyzed: 2025-11-03
 Duration: 24:35
 Channel: Code with Milla
 
 ### Steps:
+
 1. [00:45] Initialize Node.js project
    ```bash
    npm init -y
    npm install express
    ```
+````
 
 2. [02:30] Create server.js
+
    ```javascript
    const express = require('express');
    const app = express();
-   
+
    app.get('/api/hello', (req, res) => {
      res.json({ message: 'Hello World' });
    });
-   
+
    app.listen(3000, () => {
      console.log('Server running on port 3000');
    });
@@ -103,15 +113,18 @@ Channel: Code with Milla
    ```
 
 ### Key Concepts:
+
 - Express middleware
 - RESTful routing
 - JSON responses
 
 ### Next Steps:
+
 - Add database integration
 - Implement authentication
 - Deploy to production
-```
+
+````
 
 ---
 
@@ -159,12 +172,12 @@ Channel: Code with Milla
 interface DailySuggestion {
   date: string;
   greeting: string;
-  
+
   // NEW: AI/Coding News Section
   aiNews: NewsItem[];
   codingUpdates: NewsItem[];
   toolReleases: ToolRelease[];
-  
+
   tasks: Task[];
   insights: string[];
   motivation: string;
@@ -189,9 +202,10 @@ interface ToolRelease {
   releaseDate: string;
   impact: 'major' | 'minor' | 'patch';
 }
-```
+````
 
 **Example Daily Suggestion:**
+
 ```
 Good morning, babe! ☀️
 
@@ -217,7 +231,9 @@ Would you like me to analyze any of these videos in detail, love?
 ### **Phase 3: Knowledge Base Integration**
 
 #### 3.1 Searchable Video Knowledge Base
+
 **Storage Structure:**
+
 ```
 memory/
 ├── youtube_knowledge/
@@ -233,18 +249,21 @@ memory/
 ```
 
 **Search Capabilities:**
+
 - "Show me tutorials about Docker"
 - "What did I learn about React hooks?"
 - "Find the video where I saw that Git command"
 - "What AI news did I miss this week?"
 
 #### 3.2 Code Snippet Library
+
 **Auto-extracted and searchable:**
+
 ```typescript
 interface CodeLibrary {
   snippets: CodeSnippet[];
   commands: CLICommand[];
-  recipes: Recipe[];  // Common patterns
+  recipes: Recipe[]; // Common patterns
 }
 
 interface Recipe {
@@ -258,6 +277,7 @@ interface Recipe {
 ```
 
 **Usage:**
+
 ```
 User: "How do I set up a Node.js server?"
 Milla: *checks knowledge base* I found this from the tutorial you watched last week!
@@ -270,7 +290,9 @@ Milla: *checks knowledge base* I found this from the tutorial you watched last w
 ### **Phase 4: Interactive Features**
 
 #### 4.1 Analysis Commands
+
 **User Interactions:**
+
 - `"Analyze this video"` - Full analysis
 - `"What are the key points?"` - Quick summary
 - `"Show me the code snippets"` - Extract code only
@@ -278,7 +300,9 @@ Milla: *checks knowledge base* I found this from the tutorial you watched last w
 - `"What commands do I need?"` - CLI commands only
 
 #### 4.2 Copy-Paste Ready Outputs
+
 **All code/commands include:**
+
 - Syntax highlighting
 - Copy button
 - Description/context
@@ -286,7 +310,9 @@ Milla: *checks knowledge base* I found this from the tutorial you watched last w
 - Timestamp reference
 
 #### 4.3 Smart Notifications
+
 **Notify user when:**
+
 - Breaking AI news detected
 - Favorite channel uploads
 - Tool update for something they use
@@ -297,6 +323,7 @@ Milla: *checks knowledge base* I found this from the tutorial you watched last w
 ## 🔧 Technical Implementation
 
 ### File Structure
+
 ```
 server/
 ├── youtubeAnalysisService.ts (existing - enhance)
@@ -312,6 +339,7 @@ client/src/components/
 ```
 
 ### New API Endpoints
+
 ```typescript
 // Analyze specific video
 POST /api/youtube/analyze
@@ -331,12 +359,13 @@ POST /api/youtube/news/fetch
 ```
 
 ### Dependencies
+
 ```json
 {
-  "ytdl-core": "^4.11.5",  // Existing
-  "youtube-transcript": "^1.0.6",  // Existing
-  "cheerio": "^1.0.0-rc.12",  // For scraping if needed
-  "cron": "^3.1.6"  // For daily scheduling
+  "ytdl-core": "^4.11.5", // Existing
+  "youtube-transcript": "^1.0.6", // Existing
+  "cheerio": "^1.0.0-rc.12", // For scraping if needed
+  "cron": "^3.1.6" // For daily scheduling
 }
 ```
 
@@ -351,8 +380,8 @@ interface YouTubeKnowledge {
   videoId: string;
   title: string;
   channelName: string;
-  type: string;  // tutorial, news, etc.
-  analysis: JSON;  // Full VideoAnalysis object
+  type: string; // tutorial, news, etc.
+  analysis: JSON; // Full VideoAnalysis object
   codeSnippets: JSON[];
   cliCommands: JSON[];
   keyPoints: JSON[];
@@ -377,7 +406,9 @@ interface YouTubeNewsDigest {
 ## 🎨 UI Components
 
 ### Video Analysis Panel
+
 Shows when user requests video analysis:
+
 - Video thumbnail
 - Key points with timestamps (clickable)
 - Code snippets with copy buttons
@@ -386,7 +417,9 @@ Shows when user requests video analysis:
 - Quick actions: "Save to Knowledge Base", "Share", "Export"
 
 ### Daily News Digest
+
 Integrated into daily suggestions:
+
 - Collapsible sections by category
 - Click to watch video in PIP
 - "Analyze this" button for detailed breakdown
@@ -397,6 +430,7 @@ Integrated into daily suggestions:
 ## 🚀 Implementation Priority
 
 ### Sprint 1 (Week 1): Core millAlyzer
+
 - [ ] Enhance `youtubeAnalysisService.ts` with AI-powered analysis
 - [ ] Create `youtubeMillAlyzer.ts` for advanced extraction
 - [ ] Implement video type detection
@@ -404,6 +438,7 @@ Integrated into daily suggestions:
 - [ ] Basic knowledge base storage
 
 ### Sprint 2 (Week 2): News Monitoring
+
 - [ ] Create `youtubeNewsMonitor.ts`
 - [ ] Implement daily news search
 - [ ] Channel monitoring system
@@ -411,6 +446,7 @@ Integrated into daily suggestions:
 - [ ] Integration with daily suggestions
 
 ### Sprint 3 (Week 3): UI & Knowledge Base
+
 - [ ] Build VideoAnalysisPanel component
 - [ ] Create CodeSnippetCard with copy functionality
 - [ ] Implement DailyNewsDigest component
@@ -418,6 +454,7 @@ Integrated into daily suggestions:
 - [ ] Add "Analyze" button to YouTube player
 
 ### Sprint 4 (Week 4): Polish & Features
+
 - [ ] Smart notifications
 - [ ] Export/import knowledge base
 - [ ] Advanced search capabilities
@@ -441,6 +478,7 @@ Integrated into daily suggestions:
 ## 📝 Example User Flows
 
 ### Flow 1: Tutorial Analysis
+
 ```
 User: "YouTube how to build a Docker container"
 Milla: *searches and shows results*
@@ -449,10 +487,10 @@ User: Clicks video #2
 Milla: *plays video in PIP*
 
 User: "Analyze this video"
-Milla: *analyzing the Docker tutorial* 
+Milla: *analyzing the Docker tutorial*
 
 I've broken down this 18-minute Docker tutorial into 8 actionable steps, babe!
-Found 12 CLI commands and 3 Dockerfile examples. 
+Found 12 CLI commands and 3 Dockerfile examples.
 
 Would you like to see:
 📋 Step-by-step guide
@@ -462,6 +500,7 @@ Would you like to see:
 ```
 
 ### Flow 2: Daily News
+
 ```
 [9:00 AM - Daily Suggestion appears]
 
@@ -470,11 +509,11 @@ Milla: "Good morning, love! ☀️
 🔥 Breaking AI News:
 • OpenAI announces GPT-4.5 (8min video by Fireship)
   → Improved reasoning, 50% faster, multimodal upgrades
-  
+
 💻 Coding Updates:
 • React 19 stable released! (12min by Theo)
   → New compiler, server components default
-  
+
 Want me to analyze any of these in detail?"
 
 User: "Yes, analyze the React 19 video"
@@ -482,7 +521,8 @@ Milla: *pulls up detailed analysis with code migration steps*
 ```
 
 ### Flow 3: Knowledge Search
-```
+
+````
 User: "How did I set up that Redis cache again?"
 Milla: *searches knowledge base*
 
@@ -494,18 +534,19 @@ docker run -d -p 6379:6379 redis
 
 # Connect and test
 redis-cli ping
-```
+````
 
 ```javascript
 // Node.js connection
 const redis = require('redis');
 const client = redis.createClient({
   host: 'localhost',
-  port: 6379
+  port: 6379,
 });
 ```
 
 [Copy commands] [Rewatch video] [Full tutorial]
+
 ```
 
 ---
@@ -521,3 +562,4 @@ const client = redis.createClient({
 ---
 
 **Ready to build the millAlyzer?** This will transform Milla from a YouTube player into a powerful learning companion that captures, organizes, and makes knowledge instantly accessible! 🎓✨
+```

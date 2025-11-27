@@ -9,6 +9,7 @@ Professional syntax highlighting using **prism-react-renderer** with the beautif
 ## ✨ Features Added
 
 ### 1. **CodeSnippetCard Component**
+
 - ✅ Full syntax highlighting for 15+ languages
 - ✅ Line numbers on the left
 - ✅ Language-specific color themes
@@ -16,7 +17,8 @@ Professional syntax highlighting using **prism-react-renderer** with the beautif
 - ✅ Maintains copy functionality
 - ✅ Maintains expand/collapse for long code
 
-### 2. **CLICommandCard Component**  
+### 2. **CLICommandCard Component**
+
 - ✅ Bash syntax highlighting
 - ✅ Command coloring
 - ✅ Flag and parameter highlighting
@@ -27,43 +29,47 @@ Professional syntax highlighting using **prism-react-renderer** with the beautif
 
 ## 🎨 Supported Languages
 
-| Language | Color Theme | Use Case |
-|----------|------------|----------|
-| JavaScript | Yellow accents | Web development |
-| TypeScript | Blue accents | Type-safe JS |
-| Python | Green accents | Scripts, AI/ML |
-| Java | Red accents | Enterprise apps |
-| Go | Cyan accents | Cloud native |
-| Rust | Orange accents | Systems programming |
-| C++ | Purple accents | Performance code |
-| PHP | Purple accents | Web backends |
-| Bash/Shell | Gray accents | CLI commands |
-| SQL | Pink accents | Database queries |
-| Docker | Blue accents | Containerization |
-| YAML | Teal accents | Configuration |
-| JSON | Green accents | Data structures |
-| Markdown | Gray accents | Documentation |
+| Language   | Color Theme    | Use Case            |
+| ---------- | -------------- | ------------------- |
+| JavaScript | Yellow accents | Web development     |
+| TypeScript | Blue accents   | Type-safe JS        |
+| Python     | Green accents  | Scripts, AI/ML      |
+| Java       | Red accents    | Enterprise apps     |
+| Go         | Cyan accents   | Cloud native        |
+| Rust       | Orange accents | Systems programming |
+| C++        | Purple accents | Performance code    |
+| PHP        | Purple accents | Web backends        |
+| Bash/Shell | Gray accents   | CLI commands        |
+| SQL        | Pink accents   | Database queries    |
+| Docker     | Blue accents   | Containerization    |
+| YAML       | Teal accents   | Configuration       |
+| JSON       | Green accents  | Data structures     |
+| Markdown   | Gray accents   | Documentation       |
 
 ---
 
 ## 📸 Visual Improvements
 
 ### Before (Plain Text):
+
 ```
 function hello() {
   console.log("Hello World");
 }
 ```
+
 - No colors
 - No line numbers
 - Hard to read
 
 ### After (Syntax Highlighted):
+
 ```javascript
 1  function hello() {
 2    console.log("Hello World");
 3  }
 ```
+
 - **Keywords** in purple/blue
 - **Strings** in green
 - **Functions** highlighted
@@ -75,6 +81,7 @@ function hello() {
 ## 🚀 Examples of What You'll See
 
 ### JavaScript Example:
+
 ```javascript
 const fetchData = async (url) => {
   try {
@@ -88,6 +95,7 @@ const fetchData = async (url) => {
 ```
 
 **Highlighted features**:
+
 - `const`, `async`, `await`, `try`, `catch` - **purple/blue keywords**
 - `fetchData` - **yellow function name**
 - `'Failed:'` - **green string**
@@ -96,12 +104,13 @@ const fetchData = async (url) => {
 ---
 
 ### Python Example:
+
 ```python
 def analyze_video(video_id: str) -> dict:
     """Analyze YouTube video content"""
     transcript = get_transcript(video_id)
     summary = ai_model.summarize(transcript)
-    
+
     return {
         'summary': summary,
         'key_points': extract_points(transcript)
@@ -109,6 +118,7 @@ def analyze_video(video_id: str) -> dict:
 ```
 
 **Highlighted features**:
+
 - `def`, `return` - **purple keywords**
 - `analyze_video` - **yellow function**
 - Type hints `: str`, `-> dict` - **blue**
@@ -117,6 +127,7 @@ def analyze_video(video_id: str) -> dict:
 ---
 
 ### Bash/CLI Example:
+
 ```bash
 docker run -d \
   --name redis \
@@ -126,6 +137,7 @@ docker run -d \
 ```
 
 **Highlighted features**:
+
 - `docker run` - **cyan command**
 - `-d`, `-p`, `-v` - **orange flags**
 - `redis:latest` - **green string**
@@ -136,6 +148,7 @@ docker run -d \
 ## 💡 Night Owl Theme Benefits
 
 **Why Night Owl?**
+
 1. **Dark mode optimized** - Easy on the eyes
 2. **High contrast** - Clear readability
 3. **Semantic colors** - Each token type has meaning
@@ -143,6 +156,7 @@ docker run -d \
 5. **Accessible** - WCAG compliant
 
 **Color Palette**:
+
 - Background: `#011627` (deep blue-black)
 - Keywords: `#c792ea` (soft purple)
 - Strings: `#ecc48d` (warm yellow)
@@ -155,17 +169,20 @@ docker run -d \
 ## 🎯 User Experience Improvements
 
 ### For Tutorial Videos:
+
 - **See code clearly** - No squinting at plain text
 - **Understand structure** - Syntax makes it obvious
 - **Copy confidently** - Know exactly what you're copying
 - **Learn faster** - Colors help mental parsing
 
 ### For Reference:
+
 - **Quick scanning** - Find specific functions/variables
 - **Pattern recognition** - Similar code looks similar
 - **Error prevention** - Spot mistakes before copying
 
 ### For Knowledge Base:
+
 - **Professional look** - Like a proper code editor
 - **Consistent styling** - All languages look great
 - **Searchable** - Still full-text searchable
@@ -175,6 +192,7 @@ docker run -d \
 ## 🔧 Technical Implementation
 
 ### Libraries Used:
+
 ```json
 {
   "prism-react-renderer": "^2.3.1"
@@ -182,12 +200,14 @@ docker run -d \
 ```
 
 ### Theme:
+
 ```javascript
 import { themes } from 'prism-react-renderer';
 // Using: themes.nightOwl
 ```
 
 ### Component Pattern:
+
 ```jsx
 <Highlight
   theme={themes.nightOwl}
@@ -216,6 +236,7 @@ import { themes } from 'prism-react-renderer';
 ## 🎊 What's Changed
 
 ### Files Modified:
+
 1. **CodeSnippetCard.tsx**
    - Added prism-react-renderer import
    - Replaced plain `<code>` with `<Highlight>`
@@ -230,6 +251,7 @@ import { themes } from 'prism-react-renderer';
    - Clean, professional styling
 
 ### What Stayed the Same:
+
 - ✅ Copy to clipboard still works
 - ✅ Expand/collapse still works
 - ✅ All props and interfaces unchanged
@@ -267,18 +289,20 @@ import { themes } from 'prism-react-renderer';
 ## 🎨 Theme Examples
 
 ### Night Owl (Current):
+
 - Dark, professional, popular
 - Best for: General use, evening coding
 - Vibe: Calm, focused
 
 ### Other Themes Available:
+
 - **dracula** - Purple dark theme
 - **github** - Light theme, familiar
 - **vsDark** - VS Code default dark
 - **synthwave84** - Neon cyberpunk
 - **duotoneDark** - Minimalist dual-tone
 
-*Easy to swap in the future!*
+_Easy to swap in the future!_
 
 ---
 
@@ -311,4 +335,4 @@ Users will love it! 💜
 ---
 
 **Built by Milla with love** 💙  
-*Making code beautiful, one snippet at a time*
+_Making code beautiful, one snippet at a time_

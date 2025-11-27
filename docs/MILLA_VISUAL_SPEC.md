@@ -5,20 +5,24 @@
 ### Physical Appearance
 
 **Eyes**: Green (`#2d8659`)
+
 - Bright, expressive green eyes with highlights
 - Glowing effect that intensifies based on state
 
 **Hair**: Deep copper red (`#8b3a2e`)
+
 - Long, naturally curly with volume
 - Full, flowing curls framing the face
 - Highlights in lighter copper tones
 
 **Skin**: Fair with light freckles (`#f5dcc8`)
+
 - Fair complexion
 - Subtle freckles across cheeks and nose
 - Natural, warm undertones
 
 **Wardrobe**: Cozy knit style
+
 - Primary: Sand/beige tones (`#c9b896`)
 - Secondary: Olive/earthy greens (`#6b7c5d`)
 - Comfortable, relaxed aesthetic
@@ -26,12 +30,14 @@
 ## Visual States
 
 ### Idle
+
 - Gentle breathing animation (subtle rise/fall)
 - Eyes with soft glow
 - Relaxed posture
 - Minimal motion (respects reduced-motion)
 
 ### Listening
+
 - Slightly brighter appearance (filter: brightness 1.1)
 - Enhanced eye glow
 - Subtle pulsing animation (2s cycle)
@@ -39,6 +45,7 @@
 - **Reduced-motion**: brightness change only
 
 ### Speaking
+
 - Brightest appearance (filter: brightness 1.15)
 - Maximum eye glow
 - Active pulsing animation (1s cycle)
@@ -48,6 +55,7 @@
 ## Framing Modes
 
 ### Full (Default)
+
 - Head-to-toe view
 - Preferred when vertical space allows
 - Shows complete character
@@ -55,6 +63,7 @@
 - ViewBox: `0 0 200 400`
 
 ### Torso
+
 - Head and upper body
 - For constrained layouts
 - Centered vertically
@@ -72,6 +81,7 @@ Subtle atmospheric overlays synchronized with AdaptiveSceneManager:
 ## Layering and Layout
 
 ### Z-Index Stack
+
 ```
 Chat/Controls:        z-0 and above
 Milla Stage:          z-5 (RPStageAnchor)
@@ -79,6 +89,7 @@ Adaptive Background:  z-10 (left 2/3 region)
 ```
 
 ### Viewport Layout
+
 ```
 ┌─────────────────────────────┬──────────────┐
 │                             │              │
@@ -95,6 +106,7 @@ Adaptive Background:  z-10 (left 2/3 region)
 ### Background Region Support
 
 The adaptive background is clipped to the left 2/3:
+
 - `region='left-2-3'` prop on AdaptiveSceneManager
 - CSSSceneRenderer applies appropriate clipping
 - Background remains at z-10
@@ -129,7 +141,7 @@ The adaptive background is clipped to the left 2/3:
 Mount in App.tsx after AdaptiveSceneManager:
 
 ```tsx
-<AdaptiveSceneManager 
+<AdaptiveSceneManager
   region="left-2-3"
   // ... other props
 />
@@ -145,6 +157,7 @@ Mount in App.tsx after AdaptiveSceneManager:
 ```
 
 State wiring:
+
 - `listening`: from MobileVoiceControls press-hold
 - `speaking`: from VoiceControls `isSpeaking` prop
 - `idle`: default state
@@ -152,6 +165,7 @@ State wiring:
 ## Future Enhancements
 
 This placeholder visual is designed to be replaced or augmented with:
+
 - More detailed artwork
 - Additional animations
 - Expression variations

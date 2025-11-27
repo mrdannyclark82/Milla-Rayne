@@ -42,6 +42,9 @@ memory/merged_memories.txt
 memory/*.csv
 memory/audio_messages/
 memory/pr_memories/
+memory/agent_tasks.json
+memory/milla_tokens.json
+memory/sandbox_environments.json
 
 # SQLite database files (may contain sensitive data)
 *.db
@@ -78,3 +81,12 @@ client/public/assets/scenes/*.gif
 !client/public/assets/scenes/.gitkeep
 .gemini/
 gha-creds-*.json
+
+# Android build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/*.iml
+android/.DS_Store

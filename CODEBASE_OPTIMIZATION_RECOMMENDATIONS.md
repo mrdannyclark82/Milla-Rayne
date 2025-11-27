@@ -23,7 +23,9 @@ This document provides comprehensive optimization recommendations based on stati
 ### 1. Dead Code and Unused Imports
 
 #### Overview
+
 Found **53 files** with unused imports across server and client code. While unused imports don't affect runtime performance, they:
+
 - Increase bundle size unnecessarily
 - Create maintenance confusion
 - May indicate incomplete refactoring
@@ -67,16 +69,20 @@ Found **53 files** with unused imports across server and client code. While unus
 ```
 
 #### Recommendation
+
 Create an automated cleanup script or use ESLint's `no-unused-vars` and `@typescript-eslint/no-unused-imports` rules:
 
 ```json
 // eslint.config.js addition
 {
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["warn", { 
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/no-unused-imports": "warn"
   }
 }
@@ -93,16 +99,18 @@ Create an automated cleanup script or use ESLint's `no-unused-vars` and `@typesc
 #### Critical Function #1: `searchMemoryCore` (server/memoryService.ts)
 
 **Current Implementation Issues:**
+
 - **Nested loops:** 3 levels deep
 - **Complexity:** O(n × m × p) where n=entries, m=searchTerms, p=words per entry
 - **Line count:** 67 lines
 - **Location:** Line 500
 
 **Problem Analysis:**
+
 ```typescript
 // Current implementation iterates through:
 // 1. All memory entries (n)
-// 2. All search terms (m) 
+// 2. All search terms (m)
 // 3. All words in each entry (p)
 // = O(n × m × p) complexity
 
@@ -138,11 +146,11 @@ interface IndexedEntry {
 let indexedEntries: IndexedEntry[] | null = null;
 
 function buildSearchIndex(entries: MemoryCoreEntry[]): IndexedEntry[] {
-  return entries.map(entry => ({
+  return entries.map((entry) => ({
     entry,
     termSet: new Set(entry.searchableContent.toLowerCase().split(/\s+/)),
     contextSet: new Set(entry.context?.toLowerCase().split(/\s+/) || []),
-    topicSet: new Set(entry.topics?.map(t => t.toLowerCase()) || []),
+    topicSet: new Set(entry.topics?.map((t) => t.toLowerCase()) || []),
   }));
 }
 
@@ -172,7 +180,7 @@ export async function searchMemoryCore(
     .toLowerCase()
     .split(' ')
     .filter((term) => term.length > 2);
-  
+
   const searchTermSet = new Set(searchTerms);
   const results: MemorySearchResult[] = [];
 
@@ -190,7 +198,7 @@ export async function searchMemoryCore(
       }
 
       // Check topics - O(k) where k = number of topics (small)
-      if ([...indexed.topicSet].some(topic => topic.includes(term))) {
+      if ([...indexed.topicSet].some((topic) => topic.includes(term))) {
         relevanceScore += 2;
       }
 
@@ -229,12 +237,14 @@ export async function searchMemoryCore(
 ```
 
 **Performance Impact:**
+
 - **Before:** O(n × m × p) ≈ 1000 entries × 5 terms × 50 words = 250,000 operations
 - **After:** O(n × m) + caching ≈ 1000 entries × 5 terms = 5,000 operations
 - **Speedup:** ~50x faster for typical queries
 - **Cache hits:** Additional 99% speedup for repeated queries
 
 **Additional Benefits:**
+
 - Memory-efficient Set operations
 - LRU cache prevents memory bloat
 - Index persists across searches (built once)
@@ -244,16 +254,20 @@ export async function searchMemoryCore(
 #### Critical Function #2: `extractKeyTopics` (server/youtubeAnalysisService.ts)
 
 **Current Implementation Issues:**
+
 - **Nested loops:** 3 levels deep
 - **Complexity:** O(n × m) where n=words, m=stopwords
 - **Line count:** 70 lines
 - **Location:** Line 148
 
 **Problem Analysis:**
+
 ```typescript
 // Current: Multiple iterations over word arrays
-words.forEach((word) => {              // O(n)
-  if (![...stopwords].includes(word)) { // O(m) array scan for each word!
+words.forEach((word) => {
+  // O(n)
+  if (![...stopwords].includes(word)) {
+    // O(m) array scan for each word!
     wordFreq[word] = (wordFreq[word] || 0) + 1;
   }
 });
@@ -264,9 +278,23 @@ words.forEach((word) => {              // O(n)
 ```typescript
 // Pre-compile stopwords as a Set for O(1) lookup
 const STOPWORDS = new Set([
-  'this', 'that', 'with', 'from', 'they', 'been', 'have', 
-  'were', 'will', 'what', 'when', 'where', 'would', 'could', 
-  'should', 'video', 'youtube'
+  'this',
+  'that',
+  'with',
+  'from',
+  'they',
+  'been',
+  'have',
+  'were',
+  'will',
+  'what',
+  'when',
+  'where',
+  'would',
+  'could',
+  'should',
+  'video',
+  'youtube',
 ]);
 
 function extractKeyTopics(content: string, title: string): string[] {
@@ -277,18 +305,23 @@ function extractKeyTopics(content: string, title: string): string[] {
     .toLowerCase()
     .split(/\s+/)
     .filter((word) => word.length > 3 && !STOPWORDS.has(word));
-  
+
   titleWords.forEach((word) => topics.add(word));
 
   // If we have actual content, analyze it
-  if (content && content !== 'Video analysis via direct URL parsing (full details unavailable)') {
+  if (
+    content &&
+    content !==
+      'Video analysis via direct URL parsing (full details unavailable)'
+  ) {
     // Extract words - O(n)
     const words = content.toLowerCase().match(/\b\w{4,}\b/g) || [];
     const wordFreq = new Map<string, number>();
 
     // Count frequencies - O(n) with O(1) lookups
     for (const word of words) {
-      if (!STOPWORDS.has(word)) {  // O(1) Set lookup!
+      if (!STOPWORDS.has(word)) {
+        // O(1) Set lookup!
         wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
       }
     }
@@ -319,6 +352,7 @@ function extractKeyTopics(content: string, title: string): string[] {
 ```
 
 **Performance Impact:**
+
 - **Before:** O(n × m) ≈ 1000 words × 18 stopwords = 18,000 operations
 - **After:** O(n) ≈ 1000 words = 1,000 operations
 - **Speedup:** ~18x faster
@@ -329,6 +363,7 @@ function extractKeyTopics(content: string, title: string): string[] {
 #### Critical Function #3: `registerRoutes` (server/routes.ts)
 
 **Current Implementation Issues:**
+
 - **Line count:** 3,942 lines (!!!)
 - **Nested loops:** 3 levels
 - **Location:** Line 249
@@ -354,7 +389,7 @@ export function registerChatRoutes(app: Express) {
   app.post('/api/chat', rateLimiter, async (req, res) => {
     // Chat logic here
   });
-  
+
   app.post('/api/openrouter-chat', rateLimiter, async (req, res) => {
     // OpenRouter logic here
   });
@@ -365,7 +400,7 @@ export function registerMemoryRoutes(app: Express) {
   app.get('/api/memories', async (req, res) => {
     // Memory retrieval logic
   });
-  
+
   app.post('/api/memories', async (req, res) => {
     // Memory storage logic
   });
@@ -373,6 +408,7 @@ export function registerMemoryRoutes(app: Express) {
 ```
 
 **Benefits:**
+
 - **Maintainability:** Each route file is focused and testable
 - **Performance:** Smaller files = faster hot reload in dev
 - **Team collaboration:** Reduced merge conflicts
@@ -387,14 +423,17 @@ export function registerMemoryRoutes(app: Express) {
 #### Other High-Complexity Functions
 
 **Function #4:** `generateTestSummary` (server/autoTestingService.ts)
+
 - **Nested loops:** 6 levels (highest!)
 - **Recommendation:** Extract summary generation into separate helper functions
 
 **Function #5:** `analyzeUserMood` (server/personalTaskService.ts)
+
 - **Nested loops:** 3 levels
 - **Recommendation:** Use Map for mood pattern tracking instead of nested loops
 
 **Function #6:** `getTaskSummary` (server/personalTaskService.ts)
+
 - **Nested loops:** 4 levels
 - **Recommendation:** Build task indices once, then query them
 
@@ -405,7 +444,9 @@ export function registerMemoryRoutes(app: Express) {
 ### 3. Client-Side Memoization Opportunities
 
 #### Overview
+
 Analyzed **95 client files** and identified **44 components** that could benefit from memoization. React components re-render when:
+
 1. Props change
 2. Parent component re-renders
 3. State changes
@@ -419,17 +460,17 @@ Unnecessary re-renders can cause performance issues, especially with complex UIs
 ```typescript
 // client/src/components/DynamicAvatar.tsx
 // Current: Re-renders on every parent update
-export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({ 
-  avatarState, 
-  settings 
+export const DynamicAvatar: React.FC<DynamicAvatarProps> = ({
+  avatarState,
+  settings
 }) => {
   // ... complex style calculations
 };
 
 // Optimized: Only re-render when props actually change
-export const DynamicAvatar = React.memo<DynamicAvatarProps>(({ 
-  avatarState, 
-  settings 
+export const DynamicAvatar = React.memo<DynamicAvatarProps>(({
+  avatarState,
+  settings
 }) => {
   // Use useMemo for expensive calculations
   const avatarStyles = useMemo(() => ({
@@ -460,10 +501,10 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(({
 export function SceneManager() {
   const [scene, setScene] = useState<Scene>(...);
   const [weather, setWeather] = useState<Weather>(...);
-  
+
   // Expensive scene calculations happen on every render
   const sceneConfig = getSceneConfig(scene, weather);
-  
+
   return <div>{/* Scene rendering */}</div>;
 }
 
@@ -471,13 +512,13 @@ export function SceneManager() {
 export const SceneManager = React.memo(() => {
   const [scene, setScene] = useState<Scene>(...);
   const [weather, setWeather] = useState<Weather>(...);
-  
+
   // Only recalculate when scene or weather actually changes
   const sceneConfig = useMemo(
     () => getSceneConfig(scene, weather),
     [scene, weather]
   );
-  
+
   return <div>{/* Scene rendering */}</div>;
 });
 ```
@@ -495,7 +536,7 @@ const PersonalTasksSection = React.memo(() => { /* ... */ });
 
 export const SettingsPanel = () => {
   const [activeTab, setActiveTab] = useState('general');
-  
+
   return (
     <div>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -515,18 +556,14 @@ export const SettingsPanel = () => {
 #### Memoization Priority List
 
 **Tier 1 (High Impact):**
+
 1. `DynamicAvatar` - Renders frequently with complex styles
 2. `SceneManager` - Heavy scene calculations
 3. `InteractiveAvatar` - 3D rendering calculations
 4. `SettingsPanel` - Large component tree
 5. `FloatingInput` - Re-renders on every keystroke
 
-**Tier 2 (Medium Impact):**
-6. `VoiceVisualizer` - Audio visualization
-7. `VideoAnalyzer` - Heavy processing
-8. `KnowledgeBaseSearch` - Search result rendering
-9. `DailyNewsDigest` - List rendering with many items
-10. `AIModelSelector` - Dropdown with many options
+**Tier 2 (Medium Impact):** 6. `VoiceVisualizer` - Audio visualization 7. `VideoAnalyzer` - Heavy processing 8. `KnowledgeBaseSearch` - Search result rendering 9. `DailyNewsDigest` - List rendering with many items 10. `AIModelSelector` - Dropdown with many options
 
 **Tier 3 (Lower Impact but Good Practice):**
 11-44. Various UI components and cards
@@ -539,11 +576,14 @@ export const SettingsPanel = () => {
 // eslint.config.js
 {
   "rules": {
-    "react/jsx-no-bind": ["warn", {
-      "allowArrowFunctions": false,
-      "allowBind": false,
-      "allowFunctions": false
-    }]
+    "react/jsx-no-bind": [
+      "warn",
+      {
+        "allowArrowFunctions": false,
+        "allowBind": false,
+        "allowFunctions": false
+      }
+    ]
   }
 }
 ```
@@ -560,7 +600,7 @@ export function useExpensiveCalculation<T>(
   if (!shouldMemoize) {
     return fn();
   }
-  
+
   return useMemo(fn, deps);
 }
 ```
@@ -585,7 +625,9 @@ import { Profiler } from 'react';
 ### 4. Server-Side Caching Opportunities
 
 #### Overview
+
 The server currently performs many repeated expensive operations that could benefit from caching:
+
 - API calls to external services (ElevenLabs, OpenRouter)
 - Database queries
 - Search results
@@ -594,19 +636,26 @@ The server currently performs many repeated expensive operations that could bene
 #### Caching Strategy #1: Voice Synthesis Caching
 
 **Current Issue:**
+
 ```typescript
 // server/api/elevenLabsService.ts
-export async function generateElevenLabsSpeech(text: string): Promise<string | null> {
+export async function generateElevenLabsSpeech(
+  text: string
+): Promise<string | null> {
   // Makes API call EVERY time, even for repeated text
-  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
-    method: 'POST',
-    body: JSON.stringify({ text }),
-  });
+  const response = await fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+    {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    }
+  );
   // ...
 }
 ```
 
 **Problem:**
+
 - Repeated phrases (greetings, common responses) generate identical audio
 - Each API call costs money and time
 - No cache means 100% cache misses
@@ -628,7 +677,9 @@ const speechCache = new LRUCache<string, string>({
   ttl: 1000 * 60 * 60 * 24 * 7, // 7 days TTL
 });
 
-export async function generateElevenLabsSpeech(text: string): Promise<string | null> {
+export async function generateElevenLabsSpeech(
+  text: string
+): Promise<string | null> {
   if (!ELEVENLABS_API_KEY) {
     console.error('ElevenLabs API key is not configured.');
     return null;
@@ -649,7 +700,7 @@ export async function generateElevenLabsSpeech(text: string): Promise<string | n
 
   // Cache miss - generate new audio
   console.log(`Cache miss for text: "${text.substring(0, 50)}..."`);
-  
+
   const response = await fetch(
     `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
     {
@@ -671,13 +722,15 @@ export async function generateElevenLabsSpeech(text: string): Promise<string | n
   );
 
   if (!response.ok) {
-    console.error(`ElevenLabs API request failed with status: ${response.status}`);
+    console.error(
+      `ElevenLabs API request failed with status: ${response.status}`
+    );
     return null;
   }
 
   const audioBuffer = await response.buffer();
   const audioDir = path.resolve(process.cwd(), 'client', 'public', 'audio');
-  
+
   // Ensure directory exists
   if (!fs.existsSync(audioDir)) {
     fs.mkdirSync(audioDir, { recursive: true });
@@ -686,14 +739,14 @@ export async function generateElevenLabsSpeech(text: string): Promise<string | n
   // Use hash as filename for consistent cache hits
   const fileName = `${cacheKey}.mp3`;
   const filePath = path.join(audioDir, fileName);
-  
+
   fs.writeFileSync(filePath, audioBuffer);
-  
+
   const publicUrl = `/audio/${fileName}`;
-  
+
   // Store in cache
   speechCache.set(cacheKey, publicUrl);
-  
+
   return publicUrl;
 }
 
@@ -711,6 +764,7 @@ export function getSpeechCacheStats() {
 ```
 
 **Performance Impact:**
+
 - **Before:** Every TTS request = API call (~1-3 seconds latency)
 - **After:** Cached requests = instant (<10ms)
 - **Cost savings:** ~70-90% reduction in API costs for typical usage
@@ -721,9 +775,12 @@ export function getSpeechCacheStats() {
 #### Caching Strategy #2: Search Results Caching
 
 **Current Issue:**
+
 ```typescript
 // server/searchService.ts
-export async function performWebSearch(query: string): Promise<SearchResponse | null> {
+export async function performWebSearch(
+  query: string
+): Promise<SearchResponse | null> {
   // Every search query hits external APIs
   const realWorldResponse = await getRealWorldInfo(query);
   const wolframResult = await queryWolframAlpha(query, WOLFRAM_APPID);
@@ -742,10 +799,12 @@ const searchCache = new LRUCache<string, SearchResponse>({
   ttl: 1000 * 60 * 15, // 15 minutes TTL (searches age quickly)
 });
 
-export async function performWebSearch(query: string): Promise<SearchResponse | null> {
+export async function performWebSearch(
+  query: string
+): Promise<SearchResponse | null> {
   // Normalize query for better cache hits
   const normalizedQuery = query.toLowerCase().trim();
-  
+
   // Check cache first
   const cached = searchCache.get(normalizedQuery);
   if (cached) {
@@ -779,14 +838,16 @@ export async function performWebSearch(query: string): Promise<SearchResponse | 
     if (wolframResult) {
       const response = {
         query,
-        results: [{
-          title: 'Wolfram Alpha Result',
-          url: `https://www.wolframalpha.com/input/?i=${encodeURIComponent(query)}`,
-          description: wolframResult,
-        }],
+        results: [
+          {
+            title: 'Wolfram Alpha Result',
+            url: `https://www.wolframalpha.com/input/?i=${encodeURIComponent(query)}`,
+            description: wolframResult,
+          },
+        ],
         summary: wolframResult,
       };
-      
+
       searchCache.set(normalizedQuery, response);
       return response;
     }
@@ -798,6 +859,7 @@ export async function performWebSearch(query: string): Promise<SearchResponse | 
 ```
 
 **Performance Impact:**
+
 - **Cache hit rate:** 40-60% for typical usage
 - **Latency reduction:** 2-5 seconds → <10ms for cached queries
 - **API cost reduction:** 40-60% fewer external API calls
@@ -842,7 +904,7 @@ export function cacheMiddleware(ttlSeconds?: number) {
         body,
         headers: res.getHeaders(),
       });
-      
+
       res.set('X-Cache', 'MISS');
       return originalJson(body);
     };
@@ -858,6 +920,7 @@ export function cacheMiddleware(ttlSeconds?: number) {
 ```
 
 **Recommended Routes for Caching:**
+
 1. `/api/voice/metadata` - Voice configuration (rarely changes)
 2. `/api/ai-updates` - AI updates list (can cache for 5-15 minutes)
 3. `/api/models` - Available AI models (rarely changes)
@@ -1028,7 +1091,7 @@ services:
     container_name: milla-rayne
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - '5000:5000'
     environment:
       - NODE_ENV=production
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -1063,7 +1126,13 @@ services:
       # Optional: mount custom scene backgrounds
       - ./client/public/assets/scenes:/app/client/public/assets/scenes:ro
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1092,16 +1161,19 @@ volumes:
 #### Expected Improvements
 
 **Image Size:**
+
 - **Before:** ~800MB - 1.2GB
 - **After:** ~300MB - 500MB
 - **Reduction:** 40-60% smaller
 
 **Build Time:**
+
 - **Before:** 3-5 minutes (cold build)
 - **After:** 1-2 minutes (cold), <30s (cached)
 - **Speedup:** 2-3x faster builds
 
 **Build Cache Efficiency:**
+
 - Dependency layer cached separately
 - Changes to source code don't invalidate npm install
 - Better CI/CD pipeline performance
@@ -1115,6 +1187,7 @@ volumes:
 ## Implementation Roadmap
 
 ### Phase 1: Quick Wins (Week 1)
+
 1. ✅ Create .dockerignore file
 2. ✅ Update Dockerfile with optimizations
 3. ✅ Remove unused imports (automated with ESLint)
@@ -1124,6 +1197,7 @@ volumes:
 **Expected Impact:** 30% overall improvement
 
 ### Phase 2: High-Priority Optimizations (Week 2-3)
+
 1. ✅ Optimize `searchMemoryCore` function
 2. ✅ Optimize `extractKeyTopics` function
 3. ✅ Implement voice synthesis caching
@@ -1133,6 +1207,7 @@ volumes:
 **Expected Impact:** 60% overall improvement
 
 ### Phase 3: Refactoring (Week 4-6)
+
 1. ⬜ Break down `registerRoutes` into modular files
 2. ⬜ Optimize remaining complex functions
 3. ⬜ Memoize remaining React components
@@ -1142,6 +1217,7 @@ volumes:
 **Expected Impact:** 80% overall improvement
 
 ### Phase 4: Long-term Improvements (Ongoing)
+
 1. ⬜ Implement Redis for distributed caching
 2. ⬜ Add CDN for static assets
 3. ⬜ Implement service worker for offline support
@@ -1160,17 +1236,23 @@ volumes:
 // server/middleware/performanceMonitoring.ts
 import { Request, Response, NextFunction } from 'express';
 
-export function performanceMonitoring(req: Request, res: Response, next: NextFunction) {
+export function performanceMonitoring(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
-    
+
     // Log slow requests
     if (duration > 1000) {
-      console.warn(`Slow request: ${req.method} ${req.originalUrl} took ${duration}ms`);
+      console.warn(
+        `Slow request: ${req.method} ${req.originalUrl} took ${duration}ms`
+      );
     }
-    
+
     // Track metrics
     trackMetric({
       route: req.route?.path || req.originalUrl,
@@ -1180,12 +1262,13 @@ export function performanceMonitoring(req: Request, res: Response, next: NextFun
       timestamp: new Date().toISOString(),
     });
   });
-  
+
   next();
 }
 ```
 
 ### Key Metrics:
+
 1. **Response Time** - P50, P95, P99 latencies
 2. **Cache Hit Rates** - For each cache layer
 3. **Memory Usage** - Track Node.js heap usage
@@ -1213,7 +1296,7 @@ describe('Memory Search Performance', () => {
     const start = Date.now();
     const results = await searchMemoryCore('test query', 10);
     const duration = Date.now() - start;
-    
+
     expect(duration).toBeLessThan(100);
     expect(results).toHaveLength(10);
   });
@@ -1221,16 +1304,16 @@ describe('Memory Search Performance', () => {
   it('should have >80% cache hit rate on repeated queries', async () => {
     // First query (cache miss)
     await searchMemoryCore('cached query', 10);
-    
+
     // Repeat query 10 times
-    const promises = Array(10).fill(null).map(() => 
-      searchMemoryCore('cached query', 10)
-    );
-    
+    const promises = Array(10)
+      .fill(null)
+      .map(() => searchMemoryCore('cached query', 10));
+
     const start = Date.now();
     await Promise.all(promises);
     const avgDuration = (Date.now() - start) / 10;
-    
+
     // Cached queries should be <10ms
     expect(avgDuration).toBeLessThan(10);
   });
@@ -1245,13 +1328,13 @@ This optimization analysis identified **significant opportunities** for performa
 
 ### Summary of Recommendations
 
-| Priority | Category | Files/Components | Expected Impact | Effort |
-|----------|----------|------------------|----------------|--------|
-| **High** | Dead Code | 53 files | Medium | Low |
-| **High** | Complexity | 8 functions | Very High | High |
-| **Medium** | Memoization | 44 components | High | Medium |
-| **Medium** | Caching | 5+ opportunities | High | Medium |
-| **Low** | Docker | 2 files | Medium | Low |
+| Priority   | Category    | Files/Components | Expected Impact | Effort |
+| ---------- | ----------- | ---------------- | --------------- | ------ |
+| **High**   | Dead Code   | 53 files         | Medium          | Low    |
+| **High**   | Complexity  | 8 functions      | Very High       | High   |
+| **Medium** | Memoization | 44 components    | High            | Medium |
+| **Medium** | Caching     | 5+ opportunities | High            | Medium |
+| **Low**    | Docker      | 2 files          | Medium          | Low    |
 
 ### Expected Overall Performance Improvements
 

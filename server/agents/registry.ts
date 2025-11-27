@@ -34,13 +34,17 @@ export function listAgents(): AgentDefinition[] {
  */
 export function registerExternalAgent(def: ExternalAgentDefinition) {
   externalRegistry.set(def.name, def);
-  console.log(`[Registry] Registered external agent: ${def.name} (${def.type})`);
+  console.log(
+    `[Registry] Registered external agent: ${def.name} (${def.type})`
+  );
 }
 
 /**
  * Get an external agent definition
  */
-export function getExternalAgent(name: string): ExternalAgentDefinition | undefined {
+export function getExternalAgent(
+  name: string
+): ExternalAgentDefinition | undefined {
   return externalRegistry.get(name);
 }
 
