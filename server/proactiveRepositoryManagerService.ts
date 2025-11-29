@@ -37,6 +37,8 @@ import {
   getMillaMotivation,
   getTokenStatistics,
 } from './tokenIncentiveService';
+import { codingAgent } from './agents/codingAgent';
+import { config } from './config';
 
 export interface ProactiveAction {
   id: string;
@@ -184,9 +186,47 @@ class ProactiveRepositoryManagerService {
         }
       }
 
-      console.log(
-        `✅ Proactive cycle complete. Created ${newActions.length} new actions.`
-      );
+      // Step 7: Run autonomous code improvement if enabled
+      if (config.enableAutonomousCodeImprovement) {
+        console.log('🔧 Running autonomous code improvement analysis...');
+        try {
+          const repositoryPath = process.cwd();
+          const result = await codingAgent.performAutomatedFixLifecycle({
+            repositoryPath,
+            issueSource: 'proactive_cycle',
+          });
+
+          if (result.success) {
+            const action: ProactiveAction = {
+              id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              timestamp: Date.now(),
+              type: 'autonomous_fix',
+              description: `Autonomous code improvement: ${result.message}`,
+              status: 'completed',
+              priority: 'medium',
+              estimatedImpact: 7,
+              completedAt: Date.now(),
+              relatedIds: result.sandboxId ? [result.sandboxId] : [],
+            };
+
+            // Award tokens for successful autonomous fix
+            if (result.prUrl) {
+              const tokenReward = await awardTokensForPR(`Autonomous fix: ${result.message}`, action.id);
+              action.tokensEarned = tokenReward.amount;
+            }
+
+            newActions.push(action);
+            console.log(`✅ Autonomous code improvement completed: ${result.message}`);
+          } else {
+            console.log(`ℹ️ Autonomous code improvement result: ${result.message}`);
+          }
+        } catch (error) {
+          console.error('Error in autonomous code improvement:', error);
+          // Don't throw - allow proactive cycle to continue
+        }
+      }
+
+      console.log(`✅ Proactive cycle complete. Created ${newActions.length} new actions.`);
       this.actions.push(...newActions);
       await this.saveActions();
 
@@ -360,6 +400,10 @@ class ProactiveRepositoryManagerService {
         const prReward = await awardTokensForPR(action.description, actionId);
         tokensEarned = prReward.amount;
         break;
+      case 'autonomous_fix':
+        const autonomousReward = await awardTokensForBugFix(action.description, actionId);
+        tokensEarned = autonomousReward.amount;
+        break;
       case 'optimization':
         tokensEarned = 30;
         break;
@@ -497,6 +541,13 @@ class ProactiveRepositoryManagerService {
         this.actions.reduce((sum, a) => sum + a.estimatedImpact, 0) / total ||
         0,
       byType: {
+        bugFix: this.actions.filter(a => a.type === 'bug_fix').length,
+        featureProposal: this.actions.filter(a => a.type === 'feature_proposal').length,
+        optimization: this.actions.filter(a => a.type === 'optimization').length,
+        sandboxCreation: this.actions.filter(a => a.type === 'sandbox_creation').length,
+        prPreparation: this.actions.filter(a => a.type === 'pr_preparation').length,
+        userEngagement: this.actions.filter(a => a.type === 'user_engagement').length,
+        autonomousFix: this.actions.filter(a => a.type === 'autonomous_fix').length,
         bugFix: this.actions.filter((a) => a.type === 'bug_fix').length,
         featureProposal: this.actions.filter(
           (a) => a.type === 'feature_proposal'
