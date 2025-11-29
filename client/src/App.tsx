@@ -297,25 +297,25 @@ function App() {
 
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayerWithActiveListening
-<Suspense fallback={<div>Loading video player...</div>}>
-            videoId={youtubeVideoId || undefined}
-            videos={youtubeVideos || undefined}
-            onClose={() => {
-              setYoutubeVideoId(null);
-              setYoutubeVideos(null);
-            }}
-            onSelectVideo={(videoId) => {
-              setYoutubeVideoId(videoId);
-              setYoutubeVideos(null);
-            }}
-            activeListeningEnabled={true}
-            onInsightDetected={(insight) => {
-              console.log('🎧 Insight detected:', insight);
-            }}
-          />
+          <Suspense fallback={<div>Loading video player...</div>}>
+            <YoutubePlayerWithActiveListening
+              videoId={youtubeVideoId || undefined}
+              videos={youtubeVideos || undefined}
+              onClose={() => {
+                setYoutubeVideoId(null);
+                setYoutubeVideos(null);
+              }}
+              onSelectVideo={(videoId) => {
+                setYoutubeVideoId(videoId);
+                setYoutubeVideos(null);
+              }}
+              activeListeningEnabled={true}
+              onInsightDetected={(insight) => {
+                console.log('🎧 Insight detected:', insight);
+              }}
+            />
+          </Suspense>
         )}
-</Suspense>
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
           style={{
