@@ -14,7 +14,31 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+          submodules: false  # Explicit no-subs to dodge init
+      - name: Sanitize .gitmodules (submodule cleanup fix)
+        run: |
+          if [ -f .gitmodules ]; then
+            if ! grep -q "\[submodule" .gitmodules; then
+              echo "Empty/malformed .gitmodules detected—removing to dodge cleanup fatal"
+              rm .gitmodules
+            else
+              echo ".gitmodules looks valid; skipping"
+            fi
+          else
+            echo "No .gitmodules; all good"
+          fi
+          ls -la .gitmodules || echo "Confirmed: .gitmodules gone"
+      - name: Purge submodule cache (ghost buster)
+        run: |
+          rm -rf .git/modules || true
+          echo "Submodule cache purged—no more cleanup specters"
+      - name: Quick post-checkout peek
+        run: |
+          echo "Post-checkout: pwd=$(pwd)"
+          echo "Repo contents:"
+          ls -la
+          echo "Dynamic dir status:"
+          ls -la dynamic/ || echo "No 'dynamic/' yet"
       - name: Ensure main ref is available (retry)
         run: |
           set -euo pipefail
@@ -33,7 +57,6 @@ jobs:
             git remote -v
             exit 1
           fi
-
       - name: Safe cleanup for stale git index.lock
         run: |
           if [ -f .git/index.lock ]; then
@@ -42,35 +65,38 @@ jobs:
           else
             echo "No .git/index.lock found"
           fi
-
+      - name: Create agent directory (idempotent)
+        run: |
+          mkdir -p dynamic/copilot-swe-agent
+          echo "Agent dir ready at $(pwd)/dynamic/copilot-swe-agent"
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
           cache: 'npm'
-
       - name: Show runtime & dependency info
         run: |
           node -v
           npm -v
           echo "Installed undici (if available):"
           npm ls undici || true
-
       - name: Install dependencies for copilot agent (if package.json present)
         working-directory: dynamic/copilot-swe-agent
         run: |
+          echo "In dir: $(pwd)"
+          ls -la || true
           if [ -f package.json ]; then
             npm ci
           else
             echo "No package.json in dynamic/copilot-swe-agent; skipping npm ci"
           fi
-
       - name: Callback endpoint diagnostic (HEAD)
         working-directory: dynamic/copilot-swe-agent
         env:
           CALLBACK_ENDPOINT: ${{ env.CALLBACK_ENDPOINT }}
         run: |
           set -euo pipefail
+          echo "In dir: $(pwd)"
           if [ -z "${CALLBACK_ENDPOINT:-}" ]; then
             echo "CALLBACK_ENDPOINT not set (expected in secrets or env). Skipping network diagnostic."
           else
@@ -81,12 +107,13 @@ jobs:
               curl -I --max-time 10 "$CALLBACK_ENDPOINT" || echo "curl failed"
             fi
           fi
-
       - name: Run copilot agent (original entry)
         working-directory: dynamic/copilot-swe-agent
         run: |
-          echo "Ready to run the copilot agent job. This workflow adds diagnostics and safer git handling."
+          echo "In dir: $(pwd); Ready to run the copilot agent job. This workflow adds diagnostics and safer git handling."
+          ls -la || true
           if [ -f run-agent.sh ]; then
+            echo "Found run-agent.sh — executing"
             ./run-agent.sh
           else
             echo "No run-agent.sh detected; this workflow leaves the real agent execution step unchanged."
