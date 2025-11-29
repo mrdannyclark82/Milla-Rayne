@@ -31,7 +31,7 @@ export default function DeveloperModeToggle({
   const [isOpen, setIsOpen] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
   const [isDeveloperModeLoading, setIsDeveloperModeLoading] = useState(false);
-  
+
   // XAI Transparency state
   const [xaiTransparencyEnabled, setXaiTransparencyEnabled] = useState(false);
 
@@ -222,7 +222,8 @@ export default function DeveloperModeToggle({
                     )}
                   </h4>
                   <p className="text-sm text-white/60">
-                    View detailed reasoning steps, tool selections, memory retrieval, and decision-making process.
+                    View detailed reasoning steps, tool selections, memory
+                    retrieval, and decision-making process.
                   </p>
                 </div>
                 <Button

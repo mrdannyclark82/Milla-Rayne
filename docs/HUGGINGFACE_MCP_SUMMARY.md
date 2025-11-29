@@ -63,12 +63,14 @@ Successfully integrated **Hugging Face Model Context Protocol (MCP)** into the M
 ## Key Features
 
 ### 1. Model Context Protocol Integration
+
 - Standardized interface for Hugging Face models
 - Supports both text and image generation
 - Model discovery and status checking
 - Error handling with detailed messages
 
 ### 2. Automatic Fallback System
+
 ```
 User Request
     ↓
@@ -81,20 +83,22 @@ Hugging Face API ←────────────────────
 
 ### 3. New API Endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/mcp/text-generate` | POST | Generate text with LLMs |
-| `/api/mcp/image-generate` | POST | Generate images with diffusion models |
-| `/api/mcp/models/:task` | GET | List available models |
-| `/api/mcp/model-status/:modelId` | GET | Check if model is ready |
+| Endpoint                         | Method | Purpose                               |
+| -------------------------------- | ------ | ------------------------------------- |
+| `/api/mcp/text-generate`         | POST   | Generate text with LLMs               |
+| `/api/mcp/image-generate`        | POST   | Generate images with diffusion models |
+| `/api/mcp/models/:task`          | GET    | List available models                 |
+| `/api/mcp/model-status/:modelId` | GET    | Check if model is ready               |
 
 ### 4. Enhanced Image Generation
+
 - MCP integration for primary generation
 - Direct API fallback for reliability
 - Maintains existing user-facing functionality
 - Supports advanced parameters (negative prompts, steps, guidance)
 
 ### 5. Text Generation Capability (NEW)
+
 - Generate text using Hugging Face language models
 - Configurable parameters (temperature, top-p, top-k)
 - Default model: `mistralai/Mistral-7B-Instruct-v0.2`
@@ -129,13 +133,13 @@ const mcpService = getHuggingFaceMCPService();
 // Generate image
 const imageResult = await mcpService.generateImage('A sunset', {
   numInferenceSteps: 30,
-  guidanceScale: 7.5
+  guidanceScale: 7.5,
 });
 
 // Generate text
 const textResult = await mcpService.generateText('Write a poem', {
   maxNewTokens: 200,
-  temperature: 0.8
+  temperature: 0.8,
 });
 ```
 
@@ -172,6 +176,7 @@ curl -X POST http://localhost:5000/api/mcp/text-generate \
 ## Milla's Persona Compliance
 
 All response formatting maintains Milla's personality:
+
 - Companion-focused language (not "assistant")
 - Warm, personable error messages
 - Supportive and encouraging responses
@@ -180,6 +185,7 @@ All response formatting maintains Milla's personality:
 ## Testing
 
 All services validated:
+
 ```
 ✓ huggingfaceMcpService.ts is valid
 ✓ imageService.ts is valid

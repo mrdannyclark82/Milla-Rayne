@@ -56,7 +56,12 @@ describe('A/V-RAG Service', () => {
     });
 
     it('should handle all time of day values', () => {
-      const times: Array<SceneContextData['timeOfDay']> = ['dawn', 'day', 'dusk', 'night'];
+      const times: Array<SceneContextData['timeOfDay']> = [
+        'dawn',
+        'day',
+        'dusk',
+        'night',
+      ];
 
       times.forEach((time) => {
         const scene: SceneContextData = {
@@ -295,7 +300,10 @@ describe('A/V-RAG Service', () => {
 
       const avContext = createAVContext(scene, voice);
       const originalMessage = 'What is the weather like?';
-      const enrichedMessage = enrichMessageWithAVContext(originalMessage, avContext);
+      const enrichedMessage = enrichMessageWithAVContext(
+        originalMessage,
+        avContext
+      );
 
       expect(enrichedMessage).toContain(originalMessage);
       expect(enrichedMessage).toContain('Contextual awareness');
@@ -304,7 +312,10 @@ describe('A/V-RAG Service', () => {
     it('should return original message when no context', () => {
       const avContext = createAVContext(undefined, undefined);
       const originalMessage = 'What is the weather like?';
-      const enrichedMessage = enrichMessageWithAVContext(originalMessage, avContext);
+      const enrichedMessage = enrichMessageWithAVContext(
+        originalMessage,
+        avContext
+      );
 
       expect(enrichedMessage).toBe(originalMessage);
     });

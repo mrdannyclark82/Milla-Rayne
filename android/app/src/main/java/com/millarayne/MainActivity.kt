@@ -79,6 +79,16 @@ class ChatViewModel : ViewModel() {
                     _messages.value = msgs
                 }
             } catch (e: Exception) {
+                _error.value = when (e) {
+                    is java.net.UnknownHostException -> "Cannot reach server. Check IP address and network connection."
+                    is java.net.ConnectException -> "Server connection refused. Make sure the server is running on port 5000."
+                    is java.net.SocketTimeoutException -> "Connection timed out. Check your network and server status."
+                    is retrofit2.HttpException -> "Server error (${e.code()}): ${e.message()}"
+                    else -> "Network error: ${e.localizedMessage ?: "Unknown error occurred"}"
+                }
+            }
+                    else -> "Network error: ${e.localizedMessage ?: "Unknown error occurred"}"
+                }
                 _error.value = "Failed to load messages: ${e.message}"
             }
         }
@@ -90,40 +100,74 @@ class ChatViewModel : ViewModel() {
                 _isLoading.value = true
                 _error.value = null
 
+                // Validate input
+                if (content.isBlank()) {
+                    _error.value = "Message cannot be empty"
+                    return@launch
+                }
+
                 // Save user message
                 val userMessage = Message(
-                    content = content,
+                    content = content.trim(),
                     role = "user",
                     timestamp = System.currentTimeMillis()
                 )
-                messageDao.insertMessage(userMessage)
+
+                try {
+                    messageDao.insertMessage(userMessage)
+                } catch (dbException: Exception) {
+                    android.util.Log.e("ChatViewModel", "Failed to save user message to database", dbException)
+                    _error.value = "Failed to save message locally: ${dbException.localizedMessage ?: "Database error"}"
+                    return@launch
+                }
 
                 // Send to API
-                val request = ChatRequest(message = content)
-                val response = MillaApiClient.apiService.sendMessage(request)
+                val request = ChatRequest(message = content.trim())
+                val response = try {
+                    MillaApiClient.apiService.sendMessage(request)
+                } catch (networkException: Exception) {
+                    android.util.Log.e("ChatViewModel", "Network request failed", networkException)
+                    throw networkException
+                }
 
                 if (response.isSuccessful) {
                     val chatResponse = response.body()
-                    if (chatResponse != null) {
+                    if (chatResponse != null && chatResponse.response.isNotBlank()) {
                         // Save assistant message
                         val assistantMessage = Message(
                             content = chatResponse.response,
                             role = "assistant",
                             timestamp = System.currentTimeMillis()
                         )
-                        messageDao.insertMessage(assistantMessage)
+                        try {
+                            messageDao.insertMessage(assistantMessage)
+                        } catch (dbException: Exception) {
+                            android.util.Log.e("ChatViewModel", "Failed to save assistant message to database", dbException)
+                            _error.value = "Message sent but failed to save response locally: ${dbException.localizedMessage ?: "Database error"}"
+                            return@launch
+                        }
+                    } else {
+                        _error.value = "Received empty response from server"
                     }
                 } else {
-                    _error.value = "Server error: ${response.code()}"
+                    val errorBody = response.errorBody()?.string()
+                    android.util.Log.e("ChatViewModel", "Server error: ${response.code()} - $errorBody")
+                    _error.value = "Server error: ${response.code()} - ${response.message()}"
                 }
             } catch (e: Exception) {
-                _error.value = "Connection error: ${e.message}"
+                android.util.Log.e("ChatViewModel", "Error in sendMessage", e)
+                _error.value = when (e) {
+                    is java.net.UnknownHostException -> "Cannot reach server. Check IP address (192.168.40.117) and network connection."
+                    is java.net.ConnectException -> "Server connection refused. Make sure the server is running on port 5000."
+                    is java.net.SocketTimeoutException -> "Connection timed out. Check your network and server status."
+                    is retrofit2.HttpException -> "Server error (${e.code()}): ${e.message()}"
+                    else -> "Network error: ${e.localizedMessage ?: "Unknown error occurred"}"
+                }
             } finally {
                 _isLoading.value = false
             }
         }
     }
-
     fun clearError() {
         _error.value = null
     }

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Milla-Rayne System Monitoring</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      h1 {
+        color: #667eea;
+        font-size: 2.5em;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1em;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      .card-title {
+        font-size: 1.5em;
+        color: #667eea;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      .status-healthy {
+        background: #10b981;
+        color: white;
+      }
+
+      .status-degraded {
+        background: #f59e0b;
+        color: white;
+      }
+
+      .status-critical {
+        background: #ef4444;
+        color: white;
+      }
+
+      .metric-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+      }
+
+      .metric-row:last-child {
+        border-bottom: none;
+      }
+
+      .metric-label {
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .metric-value {
+        color: #1f2937;
+        font-weight: 600;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: white;
+        font-size: 1.2em;
+      }
+
+      .error {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0;
+      }
+
+      button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+        transition: background 0.3s ease;
+        margin-top: 15px;
+      }
+
+      button:hover {
+        background: #5568d3;
+      }
+
+      button:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      .refresh-button {
+        float: right;
+        margin-top: 0;
+      }
+
+      .agent-list {
+        list-style: none;
+        margin-top: 10px;
+      }
+
+      .agent-item {
+        padding: 8px;
+        background: #f9fafb;
+        margin: 5px 0;
+        border-radius: 6px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .circuit-breaker-item {
+        padding: 10px;
+        background: #f9fafb;
+        margin: 8px 0;
+        border-radius: 6px;
+      }
+
+      .cb-open {
+        background: #fee2e2;
+      }
+
+      .cb-half-open {
+        background: #fef3c7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Milla-Rayne System Monitoring</h1>
+        <p class="subtitle">Real-time operational metrics and health status</p>
+        <button class="refresh-button" onclick="loadAllData()">
+          🔄 Refresh All
+        </button>
+      </div>
+
+      <div id="loading" class="loading">Loading system data...</div>
+      <div id="error" class="error" style="display: none"></div>
+
+      <div id="content" style="display: none">
+        <!-- System Health -->
+        <div class="grid">
+          <div class="card">
+            <div class="card-title">
+              💚 System Health
+              <span id="health-badge" class="status-badge">Loading...</span>
+            </div>
+            <div id="health-metrics"></div>
+          </div>
+
+          <!-- Agent Metrics -->
+          <div class="card">
+            <div class="card-title">🤖 Agent Performance</div>
+            <div id="agent-metrics"></div>
+          </div>
+
+          <!-- SCPA Status -->
+          <div class="card">
+            <div class="card-title">🔧 SCPA Queue</div>
+            <div id="scpa-metrics"></div>
+          </div>
+        </div>
+
+        <!-- API Resilience -->
+        <div class="grid">
+          <div class="card">
+            <div class="card-title">⚡ Circuit Breakers</div>
+            <div id="circuit-breakers"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">💾 API Cache</div>
+            <div id="cache-metrics"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📅 Memory Scheduler</div>
+            <div id="scheduler-metrics"></div>
+            <button onclick="forceSummarization()" id="force-btn">
+              ▶️ Force Run
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function fetchAPI(endpoint) {
+        const response = await fetch(`/api/monitoring/${endpoint}`);
+        if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+        return await response.json();
+      }
+
+      async function loadAllData() {
+        try {
+          document.getElementById('loading').style.display = 'block';
+          document.getElementById('error').style.display = 'none';
+
+          // Load all endpoints in parallel
+          const [health, agents, scpa, resilience, scheduler] =
+            await Promise.all([
+              fetchAPI('health'),
+              fetchAPI('agents'),
+              fetchAPI('scpa'),
+              fetchAPI('resilience'),
+              fetchAPI('memory-scheduler'),
+            ]);
+
+          // Render health
+          renderHealth(health);
+
+          // Render agents
+          renderAgents(agents);
+
+          // Render SCPA
+          renderSCPA(scpa);
+
+          // Render resilience
+          renderResilience(resilience);
+
+          // Render scheduler
+          renderScheduler(scheduler);
+
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+        } catch (error) {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('error').textContent =
+            `Error: ${error.message}`;
+          document.getElementById('error').style.display = 'block';
+        }
+      }
+
+      function renderHealth(data) {
+        const badge = document.getElementById('health-badge');
+        badge.textContent = data.health.toUpperCase();
+        badge.className = `status-badge status-${data.health}`;
+
+        const html = `
+                <div class="metric-row">
+                    <span class="metric-label">Agents</span>
+                    <span class="metric-value">${data.components.agents.total} total, ${data.components.agents.failures} failures</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Circuit Breakers</span>
+                    <span class="metric-value">${data.components.circuitBreakers.open}/${data.components.circuitBreakers.total} open</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">SCPA Queue</span>
+                    <span class="metric-value">${data.components.scpa.queueSize} pending, ${data.components.scpa.critical} critical</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Memory Scheduler</span>
+                    <span class="metric-value">${data.components.scheduler.running ? '🟢 Running' : '🔴 Stopped'} (${data.components.scheduler.successRate.toFixed(1)}% success)</span>
+                </div>
+            `;
+        document.getElementById('health-metrics').innerHTML = html;
+      }
+
+      function renderAgents(data) {
+        let html = `<ul class="agent-list">`;
+        data.agents.forEach((agent) => {
+          const metrics = data.metrics[agent] || {};
+          html += `
+                    <li class="agent-item">
+                        <span>${agent}</span>
+                        <span>${metrics.successRate || 'N/A'}</span>
+                    </li>
+                `;
+        });
+        html += '</ul>';
+        document.getElementById('agent-metrics').innerHTML = html;
+      }
+
+      function renderSCPA(data) {
+        const html = `
+                <div class="metric-row">
+                    <span class="metric-label">Queue Size</span>
+                    <span class="metric-value">${data.queueSize}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Critical Failures</span>
+                    <span class="metric-value">${data.criticalFailures}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Oldest Failure</span>
+                    <span class="metric-value">${data.oldestFailure ? Math.round(data.oldestFailure / 1000) + 's ago' : 'N/A'}</span>
+                </div>
+            `;
+        document.getElementById('scpa-metrics').innerHTML = html;
+      }
+
+      function renderResilience(data) {
+        let cbHtml = '';
+        for (const [service, state] of Object.entries(data.circuitBreaker)) {
+          const stateClass =
+            state.state === 'OPEN'
+              ? 'cb-open'
+              : state.state === 'HALF_OPEN'
+                ? 'cb-half-open'
+                : '';
+          cbHtml += `
+                    <div class="circuit-breaker-item ${stateClass}">
+                        <div><strong>${service}</strong></div>
+                        <div>State: ${state.state} | Failures: ${state.failures}</div>
+                    </div>
+                `;
+        }
+        document.getElementById('circuit-breakers').innerHTML =
+          cbHtml || '<p>No circuit breakers active</p>';
+
+        const cacheHtml = `
+                <div class="metric-row">
+                    <span class="metric-label">Entries</span>
+                    <span class="metric-value">${data.cache.size} / ${data.cache.maxSize}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Usage</span>
+                    <span class="metric-value">${((data.cache.size / data.cache.maxSize) * 100).toFixed(1)}%</span>
+                </div>
+            `;
+        document.getElementById('cache-metrics').innerHTML = cacheHtml;
+      }
+
+      function renderScheduler(data) {
+        const html = `
+                <div class="metric-row">
+                    <span class="metric-label">Status</span>
+                    <span class="metric-value">${data.isRunning ? '🟢 Running' : '🔴 Stopped'}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Total Runs</span>
+                    <span class="metric-value">${data.totalRuns}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Success Rate</span>
+                    <span class="metric-value">${data.successRate.toFixed(1)}%</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">Last Run</span>
+                    <span class="metric-value">${data.lastRunTime ? new Date(data.lastRunTime).toLocaleString() : 'Never'}</span>
+                </div>
+            `;
+        document.getElementById('scheduler-metrics').innerHTML = html;
+      }
+
+      async function forceSummarization() {
+        const btn = document.getElementById('force-btn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Running...';
+
+        try {
+          const response = await fetch(
+            '/api/monitoring/memory-scheduler/force-run',
+            {
+              method: 'POST',
+            }
+          );
+          if (!response.ok) throw new Error('Failed to trigger summarization');
+
+          btn.textContent = '✅ Complete!';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '▶️ Force Run';
+            loadAllData();
+          }, 2000);
+        } catch (error) {
+          btn.textContent = '❌ Failed';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = '▶️ Force Run';
+          }, 2000);
+        }
+      }
+
+      // Auto-refresh every 30 seconds
+      setInterval(loadAllData, 30000);
+
+      // Initial load
+      loadAllData();
+    </script>
+  </body>
+</html>

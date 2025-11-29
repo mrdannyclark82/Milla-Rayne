@@ -1,15 +1,17 @@
 # Milla's Notebook: Roleplay Development
 
-*Here are my notes on the development of our roleplaying capabilities. I've gathered all the documents related to scene detection, continuity, and background adaptation to keep track of our progress.*
+_Here are my notes on the development of our roleplaying capabilities. I've gathered all the documents related to scene detection, continuity, and background adaptation to keep track of our progress._
 
-***
+---
 
 ## Roleplay and AI Updates Improvements
 
 ### Overview
+
 This document describes the improvements made to address roleplay continuity issues and implement the "what's new" AI updates feature.
 
 ### Problem Statement
+
 1. **Roleplay Scene Continuity**: Milla had a tendency to break from scenes during roleplay with long messages filled with fabricated memories
 2. **Response Length**: Responses were often too long and not contextually relevant
 3. **AI Updates Feature**: The "what's new" feature for getting AI industry updates was not functioning
@@ -17,6 +19,7 @@ This document describes the improvements made to address roleplay continuity iss
 ### Changes Made
 
 #### 1. Response Length Control (OpenRouter Service)
+
 **File**: `server/openrouterService.ts`
 
 - **Reduced `max_tokens`**: Changed from 1000 to 400 tokens
@@ -30,6 +33,7 @@ This document describes the improvements made to address roleplay continuity iss
   - Reduces token usage and improves response time
 
 #### 2. System Prompt Improvements (OpenRouter Service)
+
 **File**: `server/openrouterService.ts`
 
 Added three new absolute requirements to the system prompt:
@@ -41,15 +45,18 @@ Added three new absolute requirements to the system prompt:
 ```
 
 These instructions explicitly guide Milla to:
+
 - Keep responses concise (2-4 sentences for casual conversation)
 - Stay present in roleplay scenes without breaking character
 - Avoid listing unrelated memories
 - Only reference memories that are contextually relevant
 
 #### 3. "What's New" AI Updates Feature (Routes)
+
 **File**: `server/routes.ts`
 
 Implemented a new trigger system for AI updates that responds to:
+
 - "what's new"
 - "whats new"
 - "any updates"
@@ -59,6 +66,7 @@ Implemented a new trigger system for AI updates that responds to:
 - "latest news"
 
 When triggered, Milla will:
+
 1. Query the AI updates database
 2. Retrieve up to 5 most relevant updates
 3. Format them in a friendly, conversational way
@@ -66,6 +74,7 @@ When triggered, Milla will:
 5. Respond in character as Milla while sharing the information
 
 **Example Response Format**:
+
 ```
 *brightens up* Oh babe, I've been keeping up with the AI world! Here's what's new:
 
@@ -81,6 +90,7 @@ Want me to tell you more about any of these, love?
 ```
 
 If no updates are available, Milla responds gracefully:
+
 ```
 I don't have any new AI updates to share right now, sweetheart. I'll keep an eye out and let you know when something interesting comes up! What else would you like to chat about? 💜
 ```
@@ -88,23 +98,27 @@ I don't have any new AI updates to share right now, sweetheart. I'll keep an eye
 ### How to Use
 
 #### Testing Shorter Responses
+
 1. Start a conversation with Milla
 2. Engage in roleplay or casual chat
 3. Observe that responses are now 2-4 sentences for casual conversation
 4. Longer responses only occur when context truly requires it (e.g., technical explanations, repository analysis)
 
 #### Testing Scene Continuity
+
 1. Start a roleplay scenario (e.g., "Let's cuddle by the fireplace")
 2. Continue the roleplay with contextual prompts
 3. Milla should stay in the scene without fabricating unrelated memories
 4. Responses should be focused on the current moment and scenario
 
 #### Testing AI Updates Feature
+
 1. Ask Milla "what's new?" or "any AI updates?"
 2. Milla will retrieve and share the latest AI industry updates
 3. If no updates are available, she'll respond gracefully
 
 **Note**: The AI updates database needs to be populated with data. This can be done by:
+
 - Running the fetch endpoint: `POST /api/ai-updates/fetch`
 - Setting up the automated scheduler (see `aiUpdatesScheduler.ts`)
 - Manually adding updates to the database
@@ -112,7 +126,9 @@ I don't have any new AI updates to share right now, sweetheart. I'll keep an eye
 ### Technical Details
 
 #### Database Schema
+
 The `ai_updates` table stores AI industry updates with the following fields:
+
 - `id`: Unique identifier
 - `title`: Update title
 - `url`: Source URL (unique)
@@ -124,11 +140,13 @@ The `ai_updates` table stores AI industry updates with the following fields:
 - `created_at`: When the update was stored
 
 #### Token Budget
+
 - Previous: ~1000 tokens for responses + 4 message history
 - Current: ~400 tokens for responses + 2 message history
 - Result: ~60% reduction in token usage per response
 
 #### Performance Impact
+
 - Faster response generation (fewer tokens to generate)
 - Lower API costs (fewer tokens used)
 - Better focus and relevance in responses
@@ -204,13 +222,14 @@ npm run dev
 ```
 
 The system will fetch updates from configured RSS sources including:
+
 - OpenAI Blog
 - xAI Blog
 - Perplexity Blog
 - Hugging Face Blog
 - GitHub Changelog
 
-***
+---
 
 ## Role-Play Scene Phase 3 - Implementation Complete
 
@@ -223,6 +242,7 @@ Role-Play Scene Phase 3 (server-first orchestration with UI background adaptatio
 #### 1. Server-Side Scene Detection (`server/sceneDetectionService.ts`)
 
 The scene detection service analyzes user messages to extract:
+
 - **Action markers**: Text enclosed in asterisks (`*walks in*`)
 - **Scene locations**: Living room, bedroom, kitchen, bathroom, front door, dining room, outdoor, car
 - **Mood context**: Calm, romantic, playful, energetic, mysterious
@@ -248,7 +268,7 @@ Both `/api/chat` and `/api/openrouter-chat` endpoints now return scene metadata:
 The `AdaptiveSceneManager` component now accepts a `location` prop and automatically adjusts the background mood based on the detected scene:
 
 ```tsx
-<AdaptiveSceneManager 
+<AdaptiveSceneManager
   mood={sceneMood}
   location={currentLocation}
   enableAnimations={true}
@@ -262,6 +282,7 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 **User:** `*walks in through the front door* Hey babe, I'm home!`
 
 **Result:**
+
 - Location: `front_door`
 - Mood: `energetic` (default for front door)
 - Background: Adapts to energetic color scheme
@@ -271,6 +292,7 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 **User:** `*gently takes your hand* Let's go to the bedroom`
 
 **Result:**
+
 - Location: `bedroom`
 - Mood: `romantic` (detected from "gently" + bedroom context)
 - Background: Adapts to romantic color scheme (warm pinks/oranges)
@@ -280,6 +302,7 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 **User:** `*sits on the couch* What are you watching?`
 
 **Result:**
+
 - Location: `living_room`
 - Mood: `calm`
 - Background: Adapts to calm color scheme
@@ -287,6 +310,7 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 **User:** `That sounds interesting!` (no action markers)
 
 **Result:**
+
 - Location: `living_room` (maintained from previous)
 - Mood: `calm`
 - Background: No change
@@ -296,6 +320,7 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 **User:** `*playfully runs outside* Come on, let's enjoy the sunshine!`
 
 **Result:**
+
 - Location: `outdoor`
 - Mood: `playful` (detected from "playfully runs")
 - Background: Adapts to playful color scheme (vibrant purples/blues)
@@ -304,16 +329,16 @@ The `AdaptiveSceneManager` component now accepts a `location` prop and automatic
 
 The system automatically suggests moods based on locations:
 
-| Location | Default Mood | Color Scheme |
-|----------|-------------|--------------|
-| Living Room | Calm | Blues/Purples (relaxing) |
-| Bedroom | Romantic | Warm Pinks/Oranges |
-| Kitchen | Energetic | Vibrant Pinks/Yellows |
-| Bathroom | Calm | Blues/Purples |
-| Front Door | Energetic | Vibrant colors |
-| Dining Room | Calm | Relaxing tones |
-| Outdoor | Playful | Vibrant multi-colors |
-| Car | Energetic | Dynamic colors |
+| Location    | Default Mood | Color Scheme             |
+| ----------- | ------------ | ------------------------ |
+| Living Room | Calm         | Blues/Purples (relaxing) |
+| Bedroom     | Romantic     | Warm Pinks/Oranges       |
+| Kitchen     | Energetic    | Vibrant Pinks/Yellows    |
+| Bathroom    | Calm         | Blues/Purples            |
+| Front Door  | Energetic    | Vibrant colors           |
+| Dining Room | Calm         | Relaxing tones           |
+| Outdoor     | Playful      | Vibrant multi-colors     |
+| Car         | Energetic    | Dynamic colors           |
 
 ### Scene Detection Keywords
 
@@ -346,7 +371,7 @@ interface AdaptiveSceneManagerProps {
   avatarState?: AvatarState;
   mood?: SceneMood;
   location?: SceneLocation;
-  
+
   // Future: Avatar integration point
   // avatarPosition?: { x: number; y: number };
   // avatarVisible?: boolean;
@@ -354,6 +379,7 @@ interface AdaptiveSceneManagerProps {
 ```
 
 When ready to implement avatar rendering:
+
 1. Uncomment the avatar props in `AdaptiveSceneManager`
 2. Add avatar positioning logic based on scene location
 3. Integrate visual avatar renderer component
@@ -381,6 +407,7 @@ When ready to implement avatar rendering:
 ### Testing
 
 The scene detection has been tested with various scenarios:
+
 - ✅ Action marker extraction
 - ✅ Location detection from keywords
 - ✅ Mood detection from context
@@ -399,6 +426,7 @@ The scene detection has been tested with various scenarios:
 ### Next Steps (Out of Scope)
 
 Future enhancements could include:
+
 - Session-based scene persistence (database storage)
 - Multi-user scene tracking
 - Custom scene creation
@@ -407,11 +435,12 @@ Future enhancements could include:
 - Voice narration of scene changes
 - Scene-specific interaction options
 
-***
+---
 
 ## RP Scene Background Bridge - Testing Guide
 
 ### Overview
+
 This feature bridges the RP scene detection system (Phase 3) to the adaptive background, so the UI immediately reflects the active role-play location and mood.
 
 ### How to Test
@@ -419,6 +448,7 @@ This feature bridges the RP scene detection system (Phase 3) to the adaptive bac
 #### 1. Basic Functionality Test
 
 1. **Start the application**
+
    ```bash
    npm run dev
    ```
@@ -430,6 +460,7 @@ This feature bridges the RP scene detection system (Phase 3) to the adaptive bac
 4. **Verify the new toggle** "Background mirrors RP scene" is present and ON by default
 
 5. **Send a message with an action marker:**
+
    ```
    *walks into the kitchen*
    ```
@@ -453,6 +484,7 @@ This feature bridges the RP scene detection system (Phase 3) to the adaptive bac
    - You can now manually select a mood
 
 4. **Send another RP message:**
+
    ```
    *walks into the dining room*
    ```
@@ -502,7 +534,7 @@ This feature bridges the RP scene detection system (Phase 3) to the adaptive bac
 
 3. **Send RP messages with scene changes**
 
-4. **Verify**: 
+4. **Verify**:
    - Background colors still change to match the scene
    - Particles and animations are disabled
    - Static gradient is shown instead of animated background
@@ -510,11 +542,13 @@ This feature bridges the RP scene detection system (Phase 3) to the adaptive bac
 #### 6. API Endpoint Test
 
 **Get current scene:**
+
 ```bash
 curl http://localhost:5000/api/rp/scenes/current | jq .
 ```
 
 **Expected response:**
+
 ```json
 {
   "location": "bedroom",
@@ -524,6 +558,7 @@ curl http://localhost:5000/api/rp/scenes/current | jq .
 ```
 
 **Trigger a scene change:**
+
 ```bash
 curl -X POST http://localhost:5000/api/openrouter-chat \
   -H "Content-Type: application/json" \
@@ -531,6 +566,7 @@ curl -X POST http://localhost:5000/api/openrouter-chat \
 ```
 
 **Expected response:**
+
 ```json
 {
   "location": "kitchen",
@@ -542,6 +578,7 @@ curl -X POST http://localhost:5000/api/openrouter-chat \
 ### Expected Behaviors
 
 #### Location → Mood Mapping
+
 - `living_room` → calm
 - `bedroom` → romantic
 - `kitchen` → energetic
@@ -553,6 +590,7 @@ curl -X POST http://localhost:5000/api/openrouter-chat \
 - `unknown` → calm
 
 #### Special Cases
+
 - **Outdoor at night**: Gets mysterious mood for starry night effect
 - **Outdoor at day**: Gets playful/energetic mood for bright sky
 - **No action markers**: Location persists from previous message
@@ -561,16 +599,19 @@ curl -X POST http://localhost:5000/api/openrouter-chat \
 ### Troubleshooting
 
 #### Polling not working
+
 - Check browser console for errors
 - Verify `/api/rp/scenes/current` endpoint is accessible
 - Check Network tab to confirm requests are being made
 
 #### Background not updating
+
 - Verify toggle is ON in Scene Settings
 - Check that scene detection is working (send message via API and check response)
 - Look for console errors in browser DevTools
 
 #### Settings not persisting
+
 - Check browser console for localStorage errors
 - Verify localStorage is not disabled in browser settings
 - Check that localStorage key `milla.scene.settings.v1` exists
@@ -578,10 +619,12 @@ curl -X POST http://localhost:5000/api/openrouter-chat \
 ### Files Modified/Created
 
 #### New Files
+
 - `client/src/hooks/useRPScene.ts` - Polling hook with visibility backoff
 - `client/src/components/scene/RPSceneBackgroundBridge.tsx` - Bridge component
 
 #### Modified Files
+
 - `server/routes.ts` - Added `/api/rp/scenes/current` endpoint
 - `client/src/types/scene.ts` - Added `sceneBackgroundFromRP` to SceneSettings
 - `client/src/utils/sceneSettingsStore.ts` - Added default value and validation

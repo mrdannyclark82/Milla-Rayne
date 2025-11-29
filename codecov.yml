@@ -6,7 +6,7 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "70...100"
+  range: '70...100'
   status:
     project:
       default:
@@ -19,20 +19,20 @@ coverage:
         threshold: 2%
 
 comment:
-  layout: "reach, diff, flags, files"
+  layout: 'reach, diff, flags, files'
   behavior: default
   require_changes: false
   require_base: no
   require_head: yes
 
 ignore:
-  - "**/__tests__/**"
-  - "**/*.test.ts"
-  - "**/*.spec.ts"
-  - "server/index.ts"
-  - "dist/**"
-  - "node_modules/**"
-  - "client/**"
-  - "android/**"
-  - "docs/**"
-  - "**/*.d.ts"
+  - '**/__tests__/**'
+  - '**/*.test.ts'
+  - '**/*.spec.ts'
+  - 'server/index.ts'
+  - 'dist/**'
+  - 'node_modules/**'
+  - 'client/**'
+  - 'android/**'
+  - 'docs/**'
+  - '**/*.d.ts'

@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { monitorTaskAlignment, formatFeedbackForContext } from '../metacognitiveService';
+import {
+  monitorTaskAlignment,
+  formatFeedbackForContext,
+} from '../metacognitiveService';
 import type { AgentTask } from '../agents/taskStorage';
 import * as profileService from '../profileService';
 import * as geminiService from '../geminiService';
@@ -99,7 +102,8 @@ describe('metacognitiveService', () => {
           reasoning: 'Task conflicts with user dietary preferences',
           feedback: {
             type: 'warning',
-            message: 'This recipe contains meat products, which conflicts with your vegan preferences.',
+            message:
+              'This recipe contains meat products, which conflicts with your vegan preferences.',
             suggestedAction: 'Search for vegan recipes instead',
             confidence: 0.85,
           },

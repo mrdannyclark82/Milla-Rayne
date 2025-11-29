@@ -1,6 +1,6 @@
 /**
  * Performance Profiling Service
- * 
+ *
  * Monitors and profiles system performance to identify optimization opportunities.
  */
 
@@ -45,7 +45,11 @@ export interface PerformanceAlert {
 class PerformanceProfilingService {
   private metrics: PerformanceMetric[] = [];
   private alerts: PerformanceAlert[] = [];
-  private readonly METRICS_FILE = path.join(process.cwd(), 'memory', 'performance_metrics.json');
+  private readonly METRICS_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'performance_metrics.json'
+  );
   private readonly MAX_METRICS_STORED = 10000;
   private readonly ALERT_THRESHOLDS = {
     slowOperation: 5000, // ms
@@ -126,26 +130,35 @@ class PerformanceProfilingService {
    * Get performance profile for an operation
    */
   getPerformanceProfile(operation: string): PerformanceProfile | null {
-    const operationMetrics = this.metrics.filter(m => m.operation === operation);
-    
+    const operationMetrics = this.metrics.filter(
+      (m) => m.operation === operation
+    );
+
     if (operationMetrics.length === 0) {
       return null;
     }
 
-    const durations = operationMetrics.map(m => m.duration).sort((a, b) => a - b);
-    const successCount = operationMetrics.filter(m => m.success).length;
+    const durations = operationMetrics
+      .map((m) => m.duration)
+      .sort((a, b) => a - b);
+    const successCount = operationMetrics.filter((m) => m.success).length;
 
     return {
       operation,
       totalCalls: operationMetrics.length,
-      averageDuration: durations.reduce((sum, d) => sum + d, 0) / durations.length,
+      averageDuration:
+        durations.reduce((sum, d) => sum + d, 0) / durations.length,
       minDuration: durations[0],
       maxDuration: durations[durations.length - 1],
       p95Duration: durations[Math.floor(durations.length * 0.95)],
       p99Duration: durations[Math.floor(durations.length * 0.99)],
       successRate: successCount / operationMetrics.length,
-      averageMemory: operationMetrics.reduce((sum, m) => sum + m.memoryUsed, 0) / operationMetrics.length,
-      averageCPU: operationMetrics.reduce((sum, m) => sum + m.cpuUsage, 0) / operationMetrics.length,
+      averageMemory:
+        operationMetrics.reduce((sum, m) => sum + m.memoryUsed, 0) /
+        operationMetrics.length,
+      averageCPU:
+        operationMetrics.reduce((sum, m) => sum + m.cpuUsage, 0) /
+        operationMetrics.length,
       lastProfiled: operationMetrics[operationMetrics.length - 1].timestamp,
     };
   }
@@ -154,9 +167,9 @@ class PerformanceProfilingService {
    * Get all performance profiles
    */
   getAllPerformanceProfiles(): PerformanceProfile[] {
-    const operations = [...new Set(this.metrics.map(m => m.operation))];
+    const operations = [...new Set(this.metrics.map((m) => m.operation))];
     return operations
-      .map(op => this.getPerformanceProfile(op))
+      .map((op) => this.getPerformanceProfile(op))
       .filter((p): p is PerformanceProfile => p !== null)
       .sort((a, b) => b.totalCalls - a.totalCalls);
   }
@@ -166,7 +179,7 @@ class PerformanceProfilingService {
    */
   getSlowOperations(threshold: number = 3000): PerformanceProfile[] {
     return this.getAllPerformanceProfiles()
-      .filter(p => p.averageDuration > threshold)
+      .filter((p) => p.averageDuration > threshold)
       .sort((a, b) => b.averageDuration - a.averageDuration);
   }
 
@@ -175,21 +188,27 @@ class PerformanceProfilingService {
    */
   getHighMemoryOperations(): PerformanceProfile[] {
     return this.getAllPerformanceProfiles()
-      .filter(p => p.averageMemory > this.ALERT_THRESHOLDS.highMemory)
+      .filter((p) => p.averageMemory > this.ALERT_THRESHOLDS.highMemory)
       .sort((a, b) => b.averageMemory - a.averageMemory);
   }
 
   /**
    * Check for performance issues
    */
-  private async checkForPerformanceIssues(metric: PerformanceMetric): Promise<void> {
+  private async checkForPerformanceIssues(
+    metric: PerformanceMetric
+  ): Promise<void> {
     // Check for slow operations
     if (metric.duration > this.ALERT_THRESHOLDS.slowOperation) {
       await this.createAlert({
-        severity: metric.duration > this.ALERT_THRESHOLDS.slowOperation * 2 ? 'critical' : 'high',
+        severity:
+          metric.duration > this.ALERT_THRESHOLDS.slowOperation * 2
+            ? 'critical'
+            : 'high',
         operation: metric.operation,
         issue: `Operation took ${(metric.duration / 1000).toFixed(2)}s (threshold: ${(this.ALERT_THRESHOLDS.slowOperation / 1000).toFixed(2)}s)`,
-        recommendation: 'Consider optimizing this operation or implementing caching',
+        recommendation:
+          'Consider optimizing this operation or implementing caching',
       });
     }
 
@@ -199,13 +218,18 @@ class PerformanceProfilingService {
         severity: 'high',
         operation: metric.operation,
         issue: `High memory usage: ${(metric.memoryUsed / 1024 / 1024).toFixed(2)}MB`,
-        recommendation: 'Review memory allocation and consider implementing memory pooling',
+        recommendation:
+          'Review memory allocation and consider implementing memory pooling',
       });
     }
 
     // Check for low success rate
     const profile = this.getPerformanceProfile(metric.operation);
-    if (profile && profile.successRate < this.ALERT_THRESHOLDS.lowSuccessRate && profile.totalCalls > 10) {
+    if (
+      profile &&
+      profile.successRate < this.ALERT_THRESHOLDS.lowSuccessRate &&
+      profile.totalCalls > 10
+    ) {
       await this.createAlert({
         severity: 'medium',
         operation: metric.operation,
@@ -225,10 +249,11 @@ class PerformanceProfilingService {
     recommendation: string;
   }): Promise<PerformanceAlert> {
     // Check if similar alert exists recently (within 1 hour)
-    const recentSimilar = this.alerts.find(a => 
-      a.operation === params.operation && 
-      a.issue === params.issue &&
-      Date.now() - a.timestamp < 60 * 60 * 1000
+    const recentSimilar = this.alerts.find(
+      (a) =>
+        a.operation === params.operation &&
+        a.issue === params.issue &&
+        Date.now() - a.timestamp < 60 * 60 * 1000
     );
 
     if (recentSimilar) {
@@ -246,7 +271,7 @@ class PerformanceProfilingService {
     };
 
     this.alerts.push(alert);
-    
+
     // Keep only recent alerts (last 100)
     if (this.alerts.length > 100) {
       this.alerts = this.alerts.slice(-100);
@@ -269,14 +294,14 @@ class PerformanceProfilingService {
    * Get unacknowledged alerts
    */
   getUnacknowledgedAlerts(): PerformanceAlert[] {
-    return this.alerts.filter(a => !a.acknowledged);
+    return this.alerts.filter((a) => !a.acknowledged);
   }
 
   /**
    * Acknowledge alert
    */
   async acknowledgeAlert(alertId: string): Promise<boolean> {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
       await this.saveMetrics();
@@ -296,11 +321,13 @@ class PerformanceProfilingService {
     return {
       totalOperations: profiles.reduce((sum, p) => sum + p.totalCalls, 0),
       uniqueOperations: profiles.length,
-      averageResponseTime: profiles.reduce((sum, p) => sum + p.averageDuration, 0) / profiles.length || 0,
+      averageResponseTime:
+        profiles.reduce((sum, p) => sum + p.averageDuration, 0) /
+          profiles.length || 0,
       slowOperations: slowOps.length,
-      criticalAlerts: alerts.filter(a => a.severity === 'critical').length,
-      highAlerts: alerts.filter(a => a.severity === 'high').length,
-      topSlowOperations: slowOps.slice(0, 5).map(p => ({
+      criticalAlerts: alerts.filter((a) => a.severity === 'critical').length,
+      highAlerts: alerts.filter((a) => a.severity === 'high').length,
+      topSlowOperations: slowOps.slice(0, 5).map((p) => ({
         operation: p.operation,
         duration: p.averageDuration,
       })),
@@ -359,7 +386,9 @@ export function startProfiling(operation: string) {
   return profilingService.startProfiling(operation);
 }
 
-export function getPerformanceProfile(operation: string): PerformanceProfile | null {
+export function getPerformanceProfile(
+  operation: string
+): PerformanceProfile | null {
   return profilingService.getPerformanceProfile(operation);
 }
 

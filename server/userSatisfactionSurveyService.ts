@@ -1,6 +1,6 @@
 /**
  * User Satisfaction Survey Service
- * 
+ *
  * Collects and analyzes user satisfaction data through periodic surveys.
  */
 
@@ -45,7 +45,11 @@ export interface SurveyAnalytics {
 
 class UserSatisfactionSurveyService {
   private surveys: Survey[] = [];
-  private readonly SURVEY_FILE = path.join(process.cwd(), 'memory', 'user_surveys.json');
+  private readonly SURVEY_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'user_surveys.json'
+  );
   private readonly DEFAULT_SURVEY_ID = 'default-satisfaction-survey';
 
   async initialize(): Promise<void> {
@@ -58,7 +62,7 @@ class UserSatisfactionSurveyService {
    * Ensure default satisfaction survey exists
    */
   private async ensureDefaultSurvey(): Promise<void> {
-    const existing = this.surveys.find(s => s.id === this.DEFAULT_SURVEY_ID);
+    const existing = this.surveys.find((s) => s.id === this.DEFAULT_SURVEY_ID);
     if (!existing) {
       await this.createDefaultSurvey();
     }
@@ -77,19 +81,19 @@ class UserSatisfactionSurveyService {
       questions: [
         {
           id: 'q1',
-          question: 'How satisfied are you with Milla\'s responses?',
+          question: "How satisfied are you with Milla's responses?",
           type: 'rating',
           category: 'overall',
         },
         {
           id: 'q2',
-          question: 'How would you rate Milla\'s response speed?',
+          question: "How would you rate Milla's response speed?",
           type: 'rating',
           category: 'performance',
         },
         {
           id: 'q3',
-          question: 'Are Milla\'s features easy to use?',
+          question: "Are Milla's features easy to use?",
           type: 'rating',
           category: 'usability',
         },
@@ -129,7 +133,7 @@ class UserSatisfactionSurveyService {
    * Get active survey
    */
   getActiveSurvey(): Survey | null {
-    return this.surveys.find(s => s.active) || null;
+    return this.surveys.find((s) => s.active) || null;
   }
 
   /**
@@ -142,7 +146,7 @@ class UserSatisfactionSurveyService {
     response: number | string | boolean;
     context?: string;
   }): Promise<SurveyResponse> {
-    const survey = this.surveys.find(s => s.id === params.surveyId);
+    const survey = this.surveys.find((s) => s.id === params.surveyId);
     if (!survey) {
       throw new Error('Survey not found');
     }
@@ -159,7 +163,9 @@ class UserSatisfactionSurveyService {
     survey.responses.push(response);
     await this.saveSurveys();
 
-    console.log(`Survey response recorded: ${params.questionId} = ${params.response}`);
+    console.log(
+      `Survey response recorded: ${params.questionId} = ${params.response}`
+    );
     return response;
   }
 
@@ -192,31 +198,34 @@ class UserSatisfactionSurveyService {
    * Get survey analytics
    */
   getSurveyAnalytics(surveyId: string): SurveyAnalytics {
-    const survey = this.surveys.find(s => s.id === surveyId);
+    const survey = this.surveys.find((s) => s.id === surveyId);
     if (!survey) {
       throw new Error('Survey not found');
     }
 
-    const ratingResponses = survey.responses.filter(
-      r => {
-        const question = survey.questions.find(q => q.id === r.questionId);
-        return question?.type === 'rating';
-      }
-    );
+    const ratingResponses = survey.responses.filter((r) => {
+      const question = survey.questions.find((q) => q.id === r.questionId);
+      return question?.type === 'rating';
+    });
 
-    const totalResponses = new Set(survey.responses.map(r => r.userId)).size;
-    const averageRating = ratingResponses.length > 0
-      ? ratingResponses.reduce((sum, r) => sum + (r.response as number), 0) / ratingResponses.length
-      : 0;
+    const totalResponses = new Set(survey.responses.map((r) => r.userId)).size;
+    const averageRating =
+      ratingResponses.length > 0
+        ? ratingResponses.reduce((sum, r) => sum + (r.response as number), 0) /
+          ratingResponses.length
+        : 0;
 
     // Calculate category scores
     const categoryScores: Record<string, number> = {};
     for (const question of survey.questions) {
       if (question.type === 'rating') {
-        const responses = survey.responses.filter(r => r.questionId === question.id);
+        const responses = survey.responses.filter(
+          (r) => r.questionId === question.id
+        );
         if (responses.length > 0) {
-          categoryScores[question.category] = 
-            responses.reduce((sum, r) => sum + (r.response as number), 0) / responses.length;
+          categoryScores[question.category] =
+            responses.reduce((sum, r) => sum + (r.response as number), 0) /
+            responses.length;
         }
       }
     }
@@ -229,38 +238,45 @@ class UserSatisfactionSurveyService {
     // Analyze trends (compare recent vs older responses)
     const recentResponses = ratingResponses.slice(-20);
     const olderResponses = ratingResponses.slice(-40, -20);
-    
-    const recentAvg = recentResponses.length > 0
-      ? recentResponses.reduce((sum, r) => sum + (r.response as number), 0) / recentResponses.length
-      : 0;
-    const olderAvg = olderResponses.length > 0
-      ? olderResponses.reduce((sum, r) => sum + (r.response as number), 0) / olderResponses.length
-      : 0;
+
+    const recentAvg =
+      recentResponses.length > 0
+        ? recentResponses.reduce((sum, r) => sum + (r.response as number), 0) /
+          recentResponses.length
+        : 0;
+    const olderAvg =
+      olderResponses.length > 0
+        ? olderResponses.reduce((sum, r) => sum + (r.response as number), 0) /
+          olderResponses.length
+        : 0;
 
     let trends: 'improving' | 'stable' | 'declining' = 'stable';
     if (recentAvg > olderAvg + 0.3) trends = 'improving';
     else if (recentAvg < olderAvg - 0.3) trends = 'declining';
 
     // Extract top issues from text responses
-    const textResponses = survey.responses.filter(r => {
-      const question = survey.questions.find(q => q.id === r.questionId);
+    const textResponses = survey.responses.filter((r) => {
+      const question = survey.questions.find((q) => q.id === r.questionId);
       return question?.type === 'text' && question.category === 'feature';
     });
 
     const topIssues = textResponses
-      .map(r => r.response as string)
-      .filter(r => r.length > 0)
+      .map((r) => r.response as string)
+      .filter((r) => r.length > 0)
       .slice(0, 5);
 
     // Extract top praises
-    const praiseResponses = survey.responses.filter(r => {
-      const question = survey.questions.find(q => q.id === r.questionId);
-      return question?.type === 'text' && q.question.toLowerCase().includes('like');
+    const praiseResponses = survey.responses.filter((r) => {
+      const question = survey.questions.find((q) => q.id === r.questionId);
+      return (
+        question?.type === 'text' &&
+        question.question.toLowerCase().includes('like')
+      );
     });
 
     const topPraises = praiseResponses
-      .map(r => r.response as string)
-      .filter(r => r.length > 0)
+      .map((r) => r.response as string)
+      .filter((r) => r.length > 0)
       .slice(0, 5);
 
     return {
@@ -282,8 +298,10 @@ class UserSatisfactionSurveyService {
     if (!survey) return false;
 
     // Check if user has already responded recently (within 7 days)
-    const recentResponses = survey.responses.filter(r => 
-      r.userId === userId && Date.now() - r.timestamp < 7 * 24 * 60 * 60 * 1000
+    const recentResponses = survey.responses.filter(
+      (r) =>
+        r.userId === userId &&
+        Date.now() - r.timestamp < 7 * 24 * 60 * 60 * 1000
     );
 
     return recentResponses.length === 0;
@@ -300,7 +318,7 @@ class UserSatisfactionSurveyService {
    * Get survey by ID
    */
   getSurvey(surveyId: string): Survey | undefined {
-    return this.surveys.find(s => s.id === surveyId);
+    return this.surveys.find((s) => s.id === surveyId);
   }
 
   /**
@@ -320,7 +338,10 @@ class UserSatisfactionSurveyService {
    */
   private async saveSurveys(): Promise<void> {
     try {
-      await fs.writeFile(this.SURVEY_FILE, JSON.stringify(this.surveys, null, 2));
+      await fs.writeFile(
+        this.SURVEY_FILE,
+        JSON.stringify(this.surveys, null, 2)
+      );
     } catch (error) {
       console.error('Error saving survey data:', error);
     }

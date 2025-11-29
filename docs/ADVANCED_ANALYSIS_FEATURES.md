@@ -14,9 +14,11 @@ The repository analysis system has been enhanced with four major capabilities:
 ## 1. GitHub API Integration
 
 ### Purpose
+
 Automatically create pull requests with suggested improvements, eliminating manual file editing and Git operations.
 
 ### Features
+
 - ✅ Branch creation from base branch
 - ✅ File creation and updates via GitHub Contents API
 - ✅ Pull request creation with detailed descriptions
@@ -28,6 +30,7 @@ Automatically create pull requests with suggested improvements, eliminating manu
 #### Key Functions
 
 **`createGitHubBranch()`**
+
 ```typescript
 createGitHubBranch(
   repoInfo: RepositoryInfo,
@@ -36,9 +39,11 @@ createGitHubBranch(
   githubToken: string
 ): Promise<GitHubBranchResult>
 ```
+
 Creates a new branch from the specified base branch.
 
 **`updateGitHubFile()`**
+
 ```typescript
 updateGitHubFile(
   repoInfo: RepositoryInfo,
@@ -49,9 +54,11 @@ updateGitHubFile(
   githubToken: string
 ): Promise<{ success: boolean; error?: string }>
 ```
+
 Creates or updates a file in the repository.
 
 **`createGitHubPullRequest()`**
+
 ```typescript
 createGitHubPullRequest(
   repoInfo: RepositoryInfo,
@@ -59,9 +66,11 @@ createGitHubPullRequest(
   githubToken: string
 ): Promise<GitHubPullRequestResult>
 ```
+
 Creates a pull request with the specified changes.
 
 **`applyImprovementsViaPullRequest()`**
+
 ```typescript
 applyImprovementsViaPullRequest(
   repoInfo: RepositoryInfo,
@@ -70,6 +79,7 @@ applyImprovementsViaPullRequest(
   baseBranch: string = 'main'
 ): Promise<GitHubPullRequestResult>
 ```
+
 High-level function that creates a branch, applies all improvements, and creates a PR.
 
 ### Usage Example
@@ -82,7 +92,7 @@ const result = await applyImprovementsViaPullRequest(
     owner: 'username',
     name: 'repo',
     url: 'https://github.com/username/repo',
-    fullName: 'username/repo'
+    fullName: 'username/repo',
   },
   improvements,
   'ghp_your_github_token'
@@ -99,6 +109,7 @@ if (result.success) {
 **POST** `/api/repository/apply-improvements`
 
 Request body:
+
 ```json
 {
   "repositoryUrl": "https://github.com/owner/repo",
@@ -108,6 +119,7 @@ Request body:
 ```
 
 Response (success):
+
 ```json
 {
   "success": true,
@@ -119,6 +131,7 @@ Response (success):
 ### GitHub Token Requirements
 
 The token needs the following scopes:
+
 - `repo` - Full control of private repositories
 - `workflow` - Update GitHub Action workflows (if modifying workflow files)
 
@@ -127,9 +140,11 @@ Create a token at: https://github.com/settings/tokens
 ## 2. Code Analysis Service
 
 ### Purpose
+
 Perform deep analysis of repository code to identify security vulnerabilities, performance issues, code quality problems, and provide language-specific suggestions.
 
 ### Features
+
 - ✅ Security vulnerability detection with CWE references
 - ✅ Performance issue identification
 - ✅ Code quality analysis
@@ -141,6 +156,7 @@ Perform deep analysis of repository code to identify security vulnerabilities, p
 #### Security Patterns
 
 Detects issues like:
+
 - **CWE-95**: Use of `eval()` function
 - **CWE-79**: XSS via `innerHTML` assignment
 - **CWE-798**: Hardcoded passwords and API keys
@@ -149,6 +165,7 @@ Detects issues like:
 - **CWE-502**: Insecure deserialization (pickle)
 
 Example security issue:
+
 ```typescript
 {
   severity: 'critical',
@@ -163,6 +180,7 @@ Example security issue:
 #### Performance Patterns
 
 Detects issues like:
+
 - DOM queries inside loops
 - High-frequency intervals (< 100ms)
 - Inefficient string concatenation
@@ -170,6 +188,7 @@ Detects issues like:
 - JSON.parse(JSON.stringify()) for deep cloning
 
 Example performance issue:
+
 ```typescript
 {
   severity: 'high',
@@ -184,6 +203,7 @@ Example performance issue:
 #### Language-Specific Suggestions
 
 **JavaScript/TypeScript:**
+
 - Use const/let instead of var
 - Async/await over promise chains
 - Proper error handling with try-catch
@@ -191,6 +211,7 @@ Example performance issue:
 - Strict mode
 
 **Python:**
+
 - Follow PEP 8 style guidelines
 - Use type hints
 - Context managers (with statements)
@@ -198,6 +219,7 @@ Example performance issue:
 - Docstrings
 
 **Java:**
+
 - Try-with-resources
 - Composition over inheritance
 - Optional for null handling
@@ -205,6 +227,7 @@ Example performance issue:
 - Streams API
 
 **Go:**
+
 - Explicit error checking
 - Defer for cleanup
 - Context handling
@@ -214,6 +237,7 @@ Example performance issue:
 #### Key Functions
 
 **`analyzeSecurityIssues()`**
+
 ```typescript
 analyzeSecurityIssues(
   code: string,
@@ -223,6 +247,7 @@ analyzeSecurityIssues(
 ```
 
 **`analyzePerformanceIssues()`**
+
 ```typescript
 analyzePerformanceIssues(
   code: string,
@@ -232,6 +257,7 @@ analyzePerformanceIssues(
 ```
 
 **`analyzeCodeQuality()`**
+
 ```typescript
 analyzeCodeQuality(
   code: string,
@@ -241,6 +267,7 @@ analyzeCodeQuality(
 ```
 
 **`analyzeRepositoryCode()`**
+
 ```typescript
 analyzeRepositoryCode(
   repoData: RepositoryData
@@ -252,6 +279,7 @@ analyzeRepositoryCode(
 **POST** `/api/repository/analyze-code`
 
 Request body:
+
 ```json
 {
   "repositoryUrl": "https://github.com/owner/repo"
@@ -259,6 +287,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "repository": {
@@ -288,6 +317,7 @@ Response:
 ## 3. Language-Specific Patterns
 
 ### Supported Languages
+
 - JavaScript
 - TypeScript
 - Python
@@ -305,6 +335,7 @@ Response:
 To add support for a new language:
 
 1. Add security patterns to `SECURITY_PATTERNS` in `codeAnalysisService.ts`:
+
 ```typescript
 rust: [
   {
@@ -312,12 +343,13 @@ rust: [
     issue: 'Unsafe code block',
     severity: 'high',
     cwe: 'CWE-XXX',
-    recommendation: 'Minimize unsafe code usage'
-  }
-]
+    recommendation: 'Minimize unsafe code usage',
+  },
+];
 ```
 
 2. Add performance patterns to `PERFORMANCE_PATTERNS`:
+
 ```typescript
 rust: [
   {
@@ -325,28 +357,31 @@ rust: [
     issue: 'Excessive cloning',
     severity: 'medium',
     impact: 'Unnecessary memory allocations',
-    recommendation: 'Use references where possible'
-  }
-]
+    recommendation: 'Use references where possible',
+  },
+];
 ```
 
 3. Add best practices to `LANGUAGE_BEST_PRACTICES`:
+
 ```typescript
 rust: [
   'Use Result type for error handling',
   'Prefer iterators over manual loops',
   'Follow Rust naming conventions',
   'Use cargo clippy for linting',
-  'Write comprehensive tests with cargo test'
-]
+  'Write comprehensive tests with cargo test',
+];
 ```
 
 ## 4. Automated Testing Service
 
 ### Purpose
+
 Validate suggested changes before applying them to catch syntax errors, assess risk, and provide confidence in modifications.
 
 ### Features
+
 - ✅ Syntax validation (JSON, YAML, Markdown, JS/TS)
 - ✅ File size checks
 - ✅ Risk assessment (low/medium/high)
@@ -359,18 +394,21 @@ Validate suggested changes before applying them to catch syntax errors, assess r
 #### Test Types
 
 **Syntax Validation:**
+
 - JSON: Valid JSON structure
 - YAML: Indentation, tab usage, structure
 - Markdown: Link validation, heading hierarchy
 - JavaScript/TypeScript: Bracket matching, string closure
 
 **Impact Analysis:**
+
 - Files changed count
 - Lines added estimation
 - Lines removed estimation
 - Risk level (low/medium/high)
 
 **Risk Factors:**
+
 - Number of files modified
 - Total lines changed
 - Critical file types (config, security, auth)
@@ -379,6 +417,7 @@ Validate suggested changes before applying them to catch syntax errors, assess r
 #### Key Functions
 
 **`testImprovement()`**
+
 ```typescript
 testImprovement(
   improvement: RepositoryImprovement
@@ -386,6 +425,7 @@ testImprovement(
 ```
 
 **`testAllImprovements()`**
+
 ```typescript
 testAllImprovements(
   improvements: RepositoryImprovement[]
@@ -393,6 +433,7 @@ testAllImprovements(
 ```
 
 **`validateImprovements()`**
+
 ```typescript
 validateImprovements(
   improvements: RepositoryImprovement[],
@@ -401,6 +442,7 @@ validateImprovements(
 ```
 
 **`generateTestSummary()`**
+
 ```typescript
 generateTestSummary(
   reports: ImprovementTestReport[]
@@ -429,6 +471,7 @@ interface ImprovementTestReport {
 **POST** `/api/repository/test-improvements`
 
 Request body:
+
 ```json
 {
   "repositoryUrl": "https://github.com/owner/repo",
@@ -437,6 +480,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "repository": {...},
@@ -501,24 +545,28 @@ The existing repository modification service has been enhanced to integrate all 
 ## Best Practices
 
 ### For Security Scanning
+
 1. Run analysis regularly on main/develop branches
 2. Address critical and high severity issues immediately
 3. Review medium/low severity issues during code reviews
 4. Keep security patterns updated with new CVE/CWE information
 
 ### For Performance Optimization
+
 1. Focus on high-severity performance issues first
 2. Measure before and after changes
 3. Consider trade-offs between performance and readability
 4. Profile production code to validate improvements
 
 ### For Automated Testing
+
 1. Always run tests before applying improvements
 2. Review warnings even if all tests pass
 3. Pay attention to risk assessment
 4. Test critical changes in staging environment first
 
 ### For GitHub API Integration
+
 1. Use fine-grained personal access tokens when possible
 2. Limit token scopes to minimum required permissions
 3. Rotate tokens regularly
@@ -532,21 +580,21 @@ All services include comprehensive logging:
 ```typescript
 // Security issues found
 console.log('Security analysis:', {
-  critical: issues.filter(i => i.severity === 'critical').length,
-  high: issues.filter(i => i.severity === 'high').length
+  critical: issues.filter((i) => i.severity === 'critical').length,
+  high: issues.filter((i) => i.severity === 'high').length,
 });
 
 // Test results
 console.log('Test validation:', {
   valid: validation.valid,
   errors: validation.errors.length,
-  warnings: validation.warnings.length
+  warnings: validation.warnings.length,
 });
 
 // GitHub API operations
 console.log('PR created:', {
   number: result.prNumber,
-  url: result.url
+  url: result.url,
 });
 ```
 
@@ -600,6 +648,7 @@ To contribute new patterns or improvements:
 ## Support
 
 For issues or questions:
+
 - Open an issue on GitHub
 - Tag with `repository-analysis` label
 - Provide example repository URL if applicable

@@ -3,6 +3,7 @@
 ## Current Branch Status
 
 ### Active/Current Branch
+
 - **copilot/cleanup-branches-and-secure-info** - Current working branch for security cleanup
 
 ### Branch Categories
@@ -10,16 +11,20 @@
 Based on the branch names, they fall into these categories:
 
 #### 1. Automated Fix Branches (Should be DELETED)
+
 These are automated fix branches that have likely been merged or are no longer needed:
+
 - `alert-autofix-8`
 - `alert-autofix-8.1`
 
 #### 2. Feature Branches (Needs Review)
+
 - **copilot/create-oauth-routes-server** - OAuth implementation
   - Status: Review if OAuth routes are in main branch
   - Action: Merge if features are not in main, otherwise delete
 
 #### 3. Automated Fix/Copilot Branches (Should be DELETED if merged)
+
 These appear to be automated Copilot fix branches with UUID or numeric identifiers. Most are likely already merged:
 
 - `copilot/fix-0b3d6fe9-68ad-45b2-b9db-4fc45012d7e4`
@@ -56,6 +61,7 @@ These appear to be automated Copilot fix branches with UUID or numeric identifie
 **Note**: The following actions require GitHub authentication which is not available in this sandboxed environment. You'll need to perform these manually.
 
 #### 1. Delete Merged Fix Branches
+
 All the `copilot/fix-*` and `alert-autofix-*` branches should be deleted if they've been merged. To check and delete:
 
 ```bash
@@ -67,6 +73,7 @@ git push origin --delete branch-name
 ```
 
 **Recommended deletion list** (28 branches):
+
 ```bash
 # Delete all fix branches at once (ONLY after confirming they're merged)
 git push origin --delete alert-autofix-8 alert-autofix-8.1
@@ -76,7 +83,9 @@ git push origin --delete copilot/fix-0d5029de-765e-49bb-8d75-f890a3463017
 ```
 
 #### 2. Review Feature Branch
+
 **copilot/create-oauth-routes-server**:
+
 - Review the OAuth implementation
 - If it contains features not in main branch, merge it
 - If already merged, delete it
@@ -86,12 +95,14 @@ git push origin --delete copilot/fix-0d5029de-765e-49bb-8d75-f890a3463017
 Before deleting any branch, you should:
 
 1. **Check merge status**:
+
    ```bash
    # See if branch is merged to main
    git log origin/main..origin/branch-name
    ```
 
 2. **View branch changes**:
+
    ```bash
    # See what changes the branch has
    git diff origin/main...origin/branch-name

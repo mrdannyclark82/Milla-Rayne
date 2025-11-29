@@ -400,3 +400,124 @@ function createSystemPrompt(context: OpenRouterContext): string {
 
   return contextualPrompt;
 }
+
+/**
+ * Generate response using Google Gemini via OpenRouter
+ */
+export async function generateGeminiResponse(
+  userMessage: string,
+  context: OpenRouterContext = {},
+  maxTokens?: number
+): Promise<OpenRouterResponse> {
+  try {
+    const openrouterKey =
+      config.openrouter.geminiApiKey || config.openrouter.apiKey;
+
+    if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
+      console.log('OpenRouter API key not configured for Gemini');
+      return {
+        content:
+          'Gemini service temporarily unavailable. Please try again later.',
+        success: false,
+        error: 'OpenRouter API key not configured',
+      };
+    }
+
+    const systemPrompt = createSystemPrompt(context);
+    const messages: Array<{ role: string; content: string }> = [];
+
+    if (systemPrompt && systemPrompt.trim().length > 0) {
+      messages.push({ role: 'system', content: systemPrompt.trim() });
+    }
+
+    if (context.conversationHistory) {
+      const recentHistory = context.conversationHistory.slice(-2);
+      const validMessages = recentHistory.filter(
+        (msg) =>
+          msg.content &&
+          msg.content.trim().length > 0 &&
+          (msg.role === 'user' || msg.role === 'assistant')
+      );
+
+      let startIndex = 0;
+      for (let i = 0; i < validMessages.length; i++) {
+        if (validMessages[i].role === 'user') {
+          startIndex = i;
+          break;
+        }
+      }
+
+      let expectedRole = 'user';
+      for (let i = startIndex; i < validMessages.length; i++) {
+        const msg = validMessages[i];
+        if (msg.role === expectedRole && msg.content.trim()) {
+          messages.push({
+            role: msg.role,
+            content: msg.content.trim(),
+          });
+          expectedRole = expectedRole === 'user' ? 'assistant' : 'user';
+        }
+      }
+    }
+
+    messages.push({ role: 'user', content: userMessage });
+
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://millarayne.com',
+          'X-Title': 'Milla Rayne - AI Companion',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.0-flash-exp:free',
+          messages: messages,
+          max_tokens: maxTokens || 2048,
+          temperature: 0.7,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API error:', response.status, errorText);
+      return {
+        content:
+          'I had trouble connecting to Gemini. Let me try another approach.',
+        success: false,
+        error: `API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (
+      !data.choices ||
+      !data.choices[0] ||
+      !data.choices[0].message ||
+      !data.choices[0].message.content
+    ) {
+      console.error('Unexpected Gemini response format:', data);
+      return {
+        content: 'I received an unexpected response format.',
+        success: false,
+        error: 'Invalid response format',
+      };
+    }
+
+    return {
+      content: data.choices[0].message.content,
+      success: true,
+    };
+  } catch (error) {
+    console.error('Gemini service error:', error);
+    return {
+      content: 'I encountered an error while processing your request.',
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}

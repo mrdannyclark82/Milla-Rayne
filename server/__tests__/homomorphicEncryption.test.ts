@@ -28,11 +28,15 @@ describe('Homomorphic Encryption Prototype', () => {
     });
 
     it('should throw error for empty string', () => {
-      expect(() => encryptHomomorphic('')).toThrow('Data to encrypt must be a non-empty string');
+      expect(() => encryptHomomorphic('')).toThrow(
+        'Data to encrypt must be a non-empty string'
+      );
     });
 
     it('should throw error for non-string input', () => {
-      expect(() => encryptHomomorphic(null as any)).toThrow('Data to encrypt must be a non-empty string');
+      expect(() => encryptHomomorphic(null as any)).toThrow(
+        'Data to encrypt must be a non-empty string'
+      );
     });
 
     it('should handle special characters', () => {
@@ -54,7 +58,8 @@ describe('Homomorphic Encryption Prototype', () => {
     });
 
     it('should handle long text', () => {
-      const plaintext = 'This is a much longer piece of text that contains multiple sentences and should still be properly encrypted and decrypted without any issues.';
+      const plaintext =
+        'This is a much longer piece of text that contains multiple sentences and should still be properly encrypted and decrypted without any issues.';
       const encrypted = encryptHomomorphic(plaintext);
       const decrypted = decryptHomomorphic(encrypted);
 
@@ -62,11 +67,15 @@ describe('Homomorphic Encryption Prototype', () => {
     });
 
     it('should throw error for invalid format', () => {
-      expect(() => decryptHomomorphic('invalid_format')).toThrow('Invalid homomorphic encryption format');
+      expect(() => decryptHomomorphic('invalid_format')).toThrow(
+        'Invalid homomorphic encryption format'
+      );
     });
 
     it('should throw error for malformed encrypted data', () => {
-      expect(() => decryptHomomorphic('HE_v1:malformed')).toThrow('Failed to decrypt homomorphically encrypted data');
+      expect(() => decryptHomomorphic('HE_v1:malformed')).toThrow(
+        'Failed to decrypt homomorphically encrypted data'
+      );
     });
 
     it('should handle Unicode characters', () => {
@@ -176,7 +185,9 @@ describe('Homomorphic Encryption Prototype', () => {
     it('should check if encrypted data contains substring', () => {
       const plaintext = 'user lives in Seattle';
       const encrypted = encryptHomomorphic(plaintext);
-      const contains = computeOnEncrypted(encrypted, 'contains', { substring: 'Seattle' });
+      const contains = computeOnEncrypted(encrypted, 'contains', {
+        substring: 'Seattle',
+      });
 
       expect(contains).toBe(true);
     });
@@ -186,8 +197,10 @@ describe('Homomorphic Encryption Prototype', () => {
       const data2 = 'same data';
       const encrypted1 = encryptHomomorphic(data1);
       const encrypted2 = encryptHomomorphic(data2);
-      
-      const areEqual = computeOnEncrypted(encrypted1, 'compare', { otherEncrypted: encrypted2 });
+
+      const areEqual = computeOnEncrypted(encrypted1, 'compare', {
+        otherEncrypted: encrypted2,
+      });
 
       expect(areEqual).toBe(true);
     });
@@ -195,30 +208,34 @@ describe('Homomorphic Encryption Prototype', () => {
     it('should detect different encrypted values', () => {
       const encrypted1 = encryptHomomorphic('data1');
       const encrypted2 = encryptHomomorphic('data2');
-      
-      const areEqual = computeOnEncrypted(encrypted1, 'compare', { otherEncrypted: encrypted2 });
+
+      const areEqual = computeOnEncrypted(encrypted1, 'compare', {
+        otherEncrypted: encrypted2,
+      });
 
       expect(areEqual).toBe(false);
     });
 
     it('should throw error for unsupported operation', () => {
       const encrypted = encryptHomomorphic('test');
-      expect(() => computeOnEncrypted(encrypted, 'unsupported' as any)).toThrow('Unsupported operation');
+      expect(() => computeOnEncrypted(encrypted, 'unsupported' as any)).toThrow(
+        'Unsupported operation'
+      );
     });
   });
 
   describe('Integration Scenarios', () => {
     it('should handle complete encrypt-query-decrypt workflow', () => {
       const sensitiveData = 'User location: 123 Main St, New York, NY';
-      
+
       // Encrypt
       const encrypted = encryptHomomorphic(sensitiveData);
       expect(isHomomorphicallyEncrypted(encrypted)).toBe(true);
-      
+
       // Query without decryption
       const queryResult = queryHomomorphic(encrypted, 'New York');
       expect(queryResult.matches).toBe(true);
-      
+
       // Decrypt for authorized access
       const decrypted = decryptHomomorphic(encrypted);
       expect(decrypted).toBe(sensitiveData);
@@ -226,13 +243,13 @@ describe('Homomorphic Encryption Prototype', () => {
 
     it('should support key rotation workflow', () => {
       const plaintext = 'sensitive information';
-      
+
       // Initial encryption
       const encrypted1 = encryptHomomorphic(plaintext);
-      
+
       // Simulate key rotation
       const encrypted2 = reencryptHomomorphic(encrypted1);
-      
+
       // Verify data integrity after rotation
       const decrypted = decryptHomomorphic(encrypted2);
       expect(decrypted).toBe(plaintext);
@@ -244,20 +261,20 @@ describe('Homomorphic Encryption Prototype', () => {
         'phone: 555-1234',
         'email: user@example.com',
       ];
-      
-      const encrypted = fields.map(field => encryptHomomorphic(field));
-      
+
+      const encrypted = fields.map((field) => encryptHomomorphic(field));
+
       // All should be encrypted
-      encrypted.forEach(enc => {
+      encrypted.forEach((enc) => {
         expect(isHomomorphicallyEncrypted(enc)).toBe(true);
       });
-      
+
       // Should be queryable
       const locationQuery = queryHomomorphic(encrypted[0], 'Boston');
       expect(locationQuery.matches).toBe(true);
-      
+
       // Should be decryptable
-      const decrypted = encrypted.map(enc => decryptHomomorphic(enc));
+      const decrypted = encrypted.map((enc) => decryptHomomorphic(enc));
       expect(decrypted).toEqual(fields);
     });
   });

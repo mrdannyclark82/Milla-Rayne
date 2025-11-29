@@ -9,7 +9,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
-import { YoutubePlayer } from '@/components/YoutubePlayer';
+import { YoutubePlayerWithActiveListening } from '@/components/YoutubePlayerWithActiveListening';
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
 import {
@@ -69,12 +69,14 @@ function App() {
 
   useNeutralizeLegacyBackground();
   const [showSharedNotepad, setShowSharedNotepad] = useState(false);
-  
+  const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
+  const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
+
   // XAI Transparency state
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
   const [showXAIOverlay, setShowXAIOverlay] = useState(false);
   const [developerMode, setDeveloperMode] = useState(getDeveloperMode());
-  
+
   // Agent-Driven UI state
   const [uiCommand, setUiCommand] = useState<UICommand | null>(null);
 
@@ -294,7 +296,7 @@ function App() {
 
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayer
+          <YoutubePlayerWithActiveListening
             videoId={youtubeVideoId || undefined}
             videos={youtubeVideos || undefined}
             onClose={() => {
@@ -304,6 +306,10 @@ function App() {
             onSelectVideo={(videoId) => {
               setYoutubeVideoId(videoId);
               setYoutubeVideos(null);
+            }}
+            activeListeningEnabled={true}
+            onInsightDetected={(insight) => {
+              console.log('🎧 Insight detected:', insight);
             }}
           />
         )}
@@ -491,6 +497,24 @@ function App() {
             onToggleSharedNotepad={() =>
               setShowSharedNotepad(!showSharedNotepad)
             }
+            onShowKnowledgeBase={() => {
+              setUiCommand({
+                action: 'SHOW_COMPONENT',
+                componentName: 'KnowledgeBaseSearch',
+                data: {},
+              });
+            }}
+            onShowYoutubeMemories={() =>
+              setShowYoutubeMemories(!showYoutubeMemories)
+            }
+            onShowFeatures={() => {
+              // TODO: Add features panel
+              console.log('Show features panel');
+            }}
+            onShowSettings={() => {
+              // TODO: Add settings panel
+              console.log('Show settings panel');
+            }}
           />
           <SharedNotepad
             isOpen={showSharedNotepad}

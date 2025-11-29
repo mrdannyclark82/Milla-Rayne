@@ -1,12 +1,15 @@
 # YouTube Adaptive Prediction System
 
 ## Overview
+
 Milla now learns from your YouTube viewing habits and provides intelligent, personalized recommendations based on your watch history, time of day, favorite channels, and search patterns.
 
 ## Features
 
 ### 🎯 Automatic Tracking
+
 Every time you watch a YouTube video through Milla, she automatically tracks:
+
 - **Video title** and **Video ID**
 - **Search query** you used
 - **Channel name**
@@ -16,28 +19,35 @@ Every time you watch a YouTube video through Milla, she automatically tracks:
 ### 🧠 Smart Predictions
 
 #### 1. **Context-Aware Suggestions**
+
 When you search for videos, Milla provides related suggestions based on:
+
 - Similar past searches
 - Your current time of day viewing patterns
 - Frequently watched channels
 - Popular categories in your history
 
 #### 2. **Time-Based Recommendations**
+
 Milla learns what you typically watch at different times:
+
 - Morning routines
 - Lunch break entertainment
 - Evening relaxation
 - Late-night preferences
 
 #### 3. **Auto-Complete from History**
+
 As you type search queries, Milla can suggest completions based on your past searches.
 
 #### 4. **Fallback Suggestions**
+
 If a search fails, Milla suggests alternatives from your viewing history.
 
 ### 💬 Natural Language Commands
 
 #### Watch Videos (Flexible)
+
 ```
 "play some jazz"
 "watch cooking videos"
@@ -48,6 +58,7 @@ If a search fails, Milla suggests alternatives from your viewing history.
 ```
 
 #### Get Personalized Suggestions
+
 ```
 "what should I watch?"
 "youtube suggestions"
@@ -56,6 +67,7 @@ If a search fails, Milla suggests alternatives from your viewing history.
 ```
 
 #### View Your Stats
+
 ```
 "my youtube stats"
 "my watch history"
@@ -65,6 +77,7 @@ If a search fails, Milla suggests alternatives from your viewing history.
 ## How It Works
 
 ### Data Collection
+
 ```typescript
 // Tracked automatically when you watch a video
 {
@@ -78,12 +91,14 @@ If a search fails, Milla suggests alternatives from your viewing history.
 ```
 
 ### Prediction Algorithm
+
 1. **Time-based**: Matches current hour to your typical viewing patterns
 2. **Query similarity**: Finds related searches based on keyword overlap
 3. **Frequency ranking**: Prioritizes your most-watched topics/channels
 4. **Recency weighting**: Recent watches influence predictions more
 
 ### Storage
+
 - Keeps last **100 videos** in history
 - Tracks aggregated preferences:
   - Top queries (sorted by frequency)
@@ -94,16 +109,19 @@ If a search fails, Milla suggests alternatives from your viewing history.
 ## Examples
 
 ### Scenario 1: Morning Routine
+
 **User (8:00 AM):** "play something"
 
 **Milla:** "At this time, you usually enjoy watching news and morning podcasts. Your favorite categories are: News, Educational, Technology. You love channels like BBC News, TED, Veritasium."
 
 Based on your history, you might enjoy:
+
 1. news
 2. tech updates
 3. morning podcast
 
 ### Scenario 2: Search with Predictions
+
 **User:** "play music videos"
 
 **Milla:** "I found 5 videos for 'music videos':
@@ -119,6 +137,7 @@ Based on your history, you might enjoy:
 Which one would you like to watch? Just tell me the number or a more specific title!"
 
 ### Scenario 3: Failed Search with Fallback
+
 **User:** "play xyzabc123 nonsense"
 
 **Milla:** "I couldn't find any videos for 'xyzabc123 nonsense'.
@@ -126,9 +145,10 @@ Which one would you like to watch? Just tell me the number or a more specific ti
 💡 You might like these instead: gaming videos, tutorials, music"
 
 ### Scenario 4: Stats Request
+
 **User:** "my youtube stats"
 
-**Milla:** "*pulls up your YouTube stats* Here's what I know about your viewing habits, babe:
+**Milla:** "_pulls up your YouTube stats_ Here's what I know about your viewing habits, babe:
 
 📊 **Total videos watched**: 47
 🔥 **Most searched topic**: music
@@ -149,7 +169,9 @@ Recently you've been into: jazz music, study music, ambient sounds. Want me to f
 ## API Reference
 
 ### `trackYouTubeWatch()`
+
 Tracks a video watch event
+
 ```typescript
 await trackYouTubeWatch(
   videoId: string,
@@ -161,28 +183,36 @@ await trackYouTubeWatch(
 ```
 
 ### `predictYouTubeQuery()`
+
 Get predicted queries based on context
+
 ```typescript
 const predictions = await predictYouTubeQuery(currentQuery?: string);
 // Returns: string[] of predicted queries
 ```
 
 ### `getPersonalizedSuggestions()`
+
 Get natural language suggestions
+
 ```typescript
 const suggestion = await getPersonalizedSuggestions();
 // Returns: string with personalized message
 ```
 
 ### `getAutocompleteSuggestions()`
+
 Get autocomplete options as user types
+
 ```typescript
 const suggestions = await getAutocompleteSuggestions(partialQuery: string);
 // Returns: string[] of matching queries from history
 ```
 
 ### `getWatchStatistics()`
+
 Get viewing statistics
+
 ```typescript
 const stats = await getWatchStatistics();
 // Returns: { totalWatches, topQuery, topChannel, favoriteTime }

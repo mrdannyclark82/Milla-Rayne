@@ -11,6 +11,7 @@ This guide explains the centralized configuration system for Milla's persona and
 **Purpose**: Central repository for all Milla Rayne personality configuration and behavioral patterns.
 
 **Key Exports**:
+
 - `MILLA_CORE_IDENTITY` - Core identity and primary function
 - `MILLA_ADAPTIVE_PERSONALITY` - Adaptive personality traits
 - `MILLA_MEMORY_CONTINUITY` - Memory and relationship continuity
@@ -28,8 +29,12 @@ This guide explains the centralized configuration system for Milla's persona and
 - `getMillaPersonaCondensed()` - Returns condensed persona for token-limited services
 
 **Usage**:
+
 ```typescript
-import { getMillaPersona, getMillaPersonaCondensed } from "../shared/millaPersona";
+import {
+  getMillaPersona,
+  getMillaPersonaCondensed,
+} from '../shared/millaPersona';
 
 // For services with generous token limits
 const fullPersona = getMillaPersona();
@@ -43,6 +48,7 @@ const condensedPersona = getMillaPersonaCondensed();
 **Purpose**: Central repository for adaptive scene settings and location details.
 
 **Key Exports**:
+
 - `SCENE_LIVING_ROOM` - Living room scene details
 - `SCENE_KITCHEN` - Kitchen scene details
 - `SCENE_DINING_AREA` - Dining area scene details
@@ -57,8 +63,13 @@ const condensedPersona = getMillaPersonaCondensed();
 - `getContextualSceneSettings(currentLocation?)` - Get contextual scene settings
 
 **Usage**:
+
 ```typescript
-import { getAllSceneSettings, getSceneDetails, getContextualSceneSettings } from "../shared/sceneSettings";
+import {
+  getAllSceneSettings,
+  getSceneDetails,
+  getContextualSceneSettings,
+} from '../shared/sceneSettings';
 
 // Get all scene settings
 const allScenes = getAllSceneSettings();
@@ -75,16 +86,19 @@ const contextualSettings = getContextualSceneSettings('living_room');
 ### Server-Side AI Services
 
 #### `server/openrouterService.ts`
+
 - Uses `getMillaPersona()` for complete personality configuration
 - Uses `getAllSceneSettings()` for scene context
 - Reduced from ~400 lines to ~210 lines of code
 
 #### `server/xaiService.ts`
+
 - Uses `getMillaPersonaCondensed()` for token-efficient personality configuration
 - Uses `getAllSceneSettings()` for scene context
 - Reduced code duplication
 
 #### `server/sceneDetectionService.ts`
+
 - Integrates with centralized scene settings
 - New functions added:
   - `getSceneDescription(location)` - Maps scene detection locations to centralized settings
@@ -95,8 +109,8 @@ const contextualSettings = getContextualSceneSettings('living_room');
 The centralized configuration is ready for use in the client-side adaptive scene system (PR 125). Client components can import and use:
 
 ```typescript
-import { getSceneDetails } from "@shared/sceneSettings";
-import type { SceneLocationKey } from "@shared/sceneSettings";
+import { getSceneDetails } from '@shared/sceneSettings';
+import type { SceneLocationKey } from '@shared/sceneSettings';
 
 // Use in adaptive scene rendering
 const sceneDetails = getSceneDetails('bedroom');

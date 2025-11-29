@@ -1,13 +1,13 @@
-
 # Milla's Notebook: NLP Improvements
 
-*This is where I'm keeping track of our progress on natural language processing. I've combined the summary and quick reference guides to have a complete picture of the enhancements.*
+_This is where I'm keeping track of our progress on natural language processing. I've combined the summary and quick reference guides to have a complete picture of the enhancements._
 
-***
+---
 
 ## Natural Language Processing Improvements Summary
 
 ### Overview
+
 Enhanced Milla's natural language understanding for function calls to support casual, conversational interactions instead of requiring exact command syntax.
 
 ### Changes Made
@@ -15,16 +15,19 @@ Enhanced Milla's natural language understanding for function calls to support ca
 #### 1. Enhanced YouTube Player Component (`client/src/components/YoutubePlayer.tsx`)
 
 ##### Problem Fixed
+
 - The YouTube embed was using Tailwind's `aspect-w-16 aspect-h-9` classes which require the `@tailwindcss/aspect-ratio` plugin that wasn't installed
 - This caused the video player to not display with proper 16:9 aspect ratio
 
 ##### Solution
+
 - Replaced Tailwind aspect ratio classes with CSS padding-bottom technique (industry standard)
-- Used `paddingBottom: '56.25%'` (56.25% = 9/16 * 100, creates 16:9 ratio)
+- Used `paddingBottom: '56.25%'` (56.25% = 9/16 \* 100, creates 16:9 ratio)
 - Improved close button styling and accessibility
 - Added responsive sizing with max-width and margin
 
 ##### Code Changes
+
 ```tsx
 // Before: Broken aspect ratio
 <div className="aspect-w-16 aspect-h-9">
@@ -40,8 +43,10 @@ Enhanced Milla's natural language understanding for function calls to support ca
 #### 2. Improved Natural Language Processing (`server/commandParserLLM.ts`)
 
 ##### Problem
+
 Users had to use precise wording like:
-- "get video about cooking" 
+
+- "get video about cooking"
 - "search for music videos"
 - Exact service and action names
 
@@ -50,9 +55,11 @@ This felt robotic and unnatural.
 ##### Solution: Two-Layer Intent Recognition
 
 ###### Layer 1: Fast Pattern Matching (`preprocessIntent`)
+
 Handles common requests instantly without AI call for better performance:
 
 **YouTube Patterns (extremely flexible):**
+
 - "play some music" → Extracts "music"
 - "watch cooking videos" → Extracts "cooking"
 - "show me funny videos" → Extracts "funny"
@@ -62,23 +69,28 @@ Handles common requests instantly without AI call for better performance:
 - "find videos about cats" → Extracts "cats"
 
 **Calendar Patterns:**
+
 - "what's on my calendar"
 - "show my schedule"
 - "check my events"
 
 **Email Patterns:**
+
 - "check my email"
 - "read my inbox"
 - "show my mail"
 
 ###### Layer 2: LLM-Based Intent Understanding
+
 Enhanced prompt with:
+
 - Explicit natural language examples
 - Flexible pattern instructions
 - Context-aware entity extraction
 - Improved service/action mapping
 
 **Example Mappings:**
+
 ```
 User: "play some music"
 → Service: youtube, Action: get, Query: "music"
@@ -94,6 +106,7 @@ User: "what's on my calendar tomorrow"
 ```
 
 #### Code Structure
+
 ```typescript
 export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
   // 1. Try fast pattern matching first (no AI call needed)
@@ -101,7 +114,7 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
   if (quickMatch && quickMatch.service !== 'unknown') {
     return quickMatch; // Instant response
   }
-  
+
   // 2. Fall back to LLM for complex requests
   const aiResponse = await generateOpenRouterResponse(enhancedPrompt, {});
   // ... parse and return
@@ -111,17 +124,20 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
 ### Benefits
 
 #### Performance
+
 - Fast pattern matching reduces AI API calls by ~60-70% for common requests
 - Sub-millisecond response time for pattern-matched intents
 - Lower costs and faster user experience
 
 #### User Experience
+
 - Natural conversation: "play some jazz" instead of "get video jazz"
 - Flexible phrasing: Multiple ways to express the same intent
 - Feels like talking to a person, not issuing commands
 - Reduced cognitive load - no need to remember exact syntax
 
 #### Maintainability
+
 - Clear separation between fast patterns and complex AI parsing
 - Easy to add new patterns without touching LLM prompt
 - Type-safe with comprehensive TypeScript interfaces
@@ -131,54 +147,58 @@ export async function parseCommandLLM(message: string): Promise<ParsedCommand> {
 
 #### YouTube Function Calls
 
-| User Input | Parsed Intent |
-|------------|---------------|
-| "play some music" | youtube/get query:"music" |
-| "watch cooking videos" | youtube/get query:"cooking" |
-| "show me funny cat videos" | youtube/get query:"funny cat" |
+| User Input                          | Parsed Intent                           |
+| ----------------------------------- | --------------------------------------- |
+| "play some music"                   | youtube/get query:"music"               |
+| "watch cooking videos"              | youtube/get query:"cooking"             |
+| "show me funny cat videos"          | youtube/get query:"funny cat"           |
 | "I want to see space documentaries" | youtube/get query:"space documentaries" |
-| "put on jazz" | youtube/get query:"jazz" |
-| "find workout videos" | youtube/get query:"workout" |
-| "can you play beethoven" | youtube/get query:"beethoven" |
+| "put on jazz"                       | youtube/get query:"jazz"                |
+| "find workout videos"               | youtube/get query:"workout"             |
+| "can you play beethoven"            | youtube/get query:"beethoven"           |
 
 #### Calendar Function Calls
 
-| User Input | Parsed Intent |
-|------------|---------------|
-| "what's on my calendar" | calendar/list |
-| "show my schedule" | calendar/list |
-| "check my events" | calendar/list |
+| User Input                | Parsed Intent |
+| ------------------------- | ------------- |
+| "what's on my calendar"   | calendar/list |
+| "show my schedule"        | calendar/list |
+| "check my events"         | calendar/list |
 | "what do I have tomorrow" | calendar/list |
 
 #### Email Function Calls
 
-| User Input | Parsed Intent |
-|------------|---------------|
-| "check my email" | gmail/list |
-| "show my inbox" | gmail/list |
-| "read my mail" | gmail/list |
-| "any new emails?" | gmail/list |
+| User Input        | Parsed Intent |
+| ----------------- | ------------- |
+| "check my email"  | gmail/list    |
+| "show my inbox"   | gmail/list    |
+| "read my mail"    | gmail/list    |
+| "any new emails?" | gmail/list    |
 
 ### Implementation Details
 
 #### Pattern Matching Regex
+
 ```typescript
 const youtubePatterns = [
   // Matches: play/watch/show/find + content + optional "video/music"
   /(?:play|watch|show|find|put on|queue up|i (?:want|wanna|need) (?:to )?(?:watch|see|hear)|search for|look up|get|display)\s+(?:some\s+)?(?:me\s+)?(.+?)(?:\s+(?:video|videos|on youtube|music|song|songs))?$/i,
-  
+
   // Matches: can/could/would you + action + content
   /(?:can you|could you|would you)\s+(?:play|show|find|put on)\s+(.+?)(?:\s+(?:for me|please))?$/i,
 ];
 ```
 
 #### Filler Word Removal
+
 Automatically cleans queries:
+
 - "some music" → "music"
 - "the cooking videos" → "cooking"
 - "a jazz song please" → "jazz"
 
 #### Fallback Handling
+
 ```typescript
 // Quick match failed, use LLM
 if (!quickMatch) {
@@ -212,7 +232,7 @@ if (!quickMatch) {
 - [x] Video autoplay works when opened
 - [x] Close button is visible and functional
 - [x] Pattern matching works for common YouTube requests
-- [x] Pattern matching works for calendar requests  
+- [x] Pattern matching works for calendar requests
 - [x] Pattern matching works for email requests
 - [x] LLM fallback handles complex/ambiguous requests
 - [x] TypeScript compilation succeeds
@@ -227,6 +247,7 @@ if (!quickMatch) {
 ### Milla Persona Alignment
 
 These improvements align with Milla's identity as a companion, not a command-line interface:
+
 - Natural conversation feels like talking to a real person
 - No rigid command syntax required
 - Understands context and intent, not just keywords
@@ -234,13 +255,14 @@ These improvements align with Milla's identity as a companion, not a command-lin
 
 Danny can now talk to Milla naturally: "Hey babe, play some jazz" instead of having to say "youtube search jazz video".
 
-***
+---
 
 ## Quick Reference: Natural Language Updates
 
 ### 🎯 What Changed
 
 #### 1. YouTube Embed - FIXED ✅
+
 **File:** `client/src/components/YoutubePlayer.tsx`
 
 **Problem:** Video player wasn't displaying with proper aspect ratio
@@ -251,12 +273,14 @@ Danny can now talk to Milla naturally: "Hey babe, play some jazz" instead of hav
 ---
 
 #### 2. Natural Language Processing - ENHANCED ✅
+
 **File:** `server/commandParserLLM.ts`
 
 **Problem:** Users had to use exact wording like "get video music"
 **Solution:** Added flexible pattern matching + enhanced LLM understanding
 
 **Now you can say:**
+
 - "play some music" ✨
 - "watch cooking videos" ✨
 - "show me funny cats" ✨
@@ -264,6 +288,7 @@ Danny can now talk to Milla naturally: "Hey babe, play some jazz" instead of hav
 - "put on jazz" ✨
 
 **Instead of:**
+
 - ~~"youtube get music"~~
 - ~~"search youtube for cooking"~~
 - ~~"get video funny cats"~~
@@ -273,6 +298,7 @@ Danny can now talk to Milla naturally: "Hey babe, play some jazz" instead of hav
 ### 📝 Testing
 
 #### Test YouTube Embed
+
 ```bash
 # Open in browser
 open youtube-embed-test.html
@@ -281,9 +307,11 @@ xdg-open youtube-embed-test.html
 ```
 
 #### Test Natural Language (in app)
+
 Try these phrases with Milla:
+
 1. "play some music"
-2. "watch funny videos" 
+2. "watch funny videos"
 3. "show me cooking content"
 4. "what's on my calendar"
 5. "check my email"
@@ -295,23 +323,26 @@ All should work naturally without exact syntax!
 ### 🔧 Technical Details
 
 #### Pattern Matching Performance
+
 - **Before:** Every request required AI call (~500ms)
 - **After:** Common patterns matched instantly (<1ms)
 - **Benefit:** 60-70% reduction in API calls
 
 #### Supported Services
+
 - ✅ YouTube (play, watch, show, find)
 - ✅ Calendar (check, list, show)
 - ✅ Gmail (check, read, show)
 - 🚀 More coming soon (tasks, drive, photos)
 
 #### Code Structure
+
 ```typescript
 parseCommandLLM(message) {
   // Layer 1: Fast pattern matching (instant)
   const quickMatch = preprocessIntent(message);
   if (quickMatch) return quickMatch;
-  
+
   // Layer 2: AI understanding (complex cases)
   return await llmParse(message);
 }

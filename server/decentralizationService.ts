@@ -1,18 +1,18 @@
 /**
  * Decentralization Service - Self-Sovereign Identity (SSI) Pilot
- * 
+ *
  * This service provides a proof-of-concept implementation for securing user identity data
  * using Zero-Knowledge Proofs (ZKP) and decentralized storage concepts.
- * 
+ *
  * The goal is to demonstrate ownership of data without revealing it, enabling users to:
  * - Prove possession of credentials without exposing the actual data
  * - Maintain sovereignty over their identity information
  * - Store identity data in a decentralized manner
- * 
+ *
  * IMPORTANT PRODUCTION NOTES:
  * =========================
  * This is a PROOF-OF-CONCEPT implementation for architectural planning.
- * 
+ *
  * For production deployment, consider:
  * 1. Real ZKP libraries (e.g., snarkjs, circom, zk-SNARKs)
  * 2. Decentralized storage solutions (IPFS, Arweave, Filecoin)
@@ -21,7 +21,10 @@
  */
 
 import * as crypto from 'crypto';
-import { encryptHomomorphic, decryptHomomorphic } from './crypto/homomorphicPrototype';
+import {
+  encryptHomomorphic,
+  decryptHomomorphic,
+} from './crypto/homomorphicPrototype';
 
 /**
  * Represents a Zero-Knowledge Proof for identity verification
@@ -74,10 +77,10 @@ const credentialStore = new Map<string, VerifiableCredential>();
 
 /**
  * Generate a Zero-Knowledge Proof for a claim
- * 
+ *
  * In production, this would use actual ZKP circuits (e.g., using circom/snarkjs)
  * to create proofs that can verify claims without revealing the underlying data.
- * 
+ *
  * @param userId - User identifier
  * @param claim - Claim type (e.g., "age_over_18")
  * @param secretData - The actual data (e.g., birthdate)
@@ -92,14 +95,14 @@ export function generateZKProof(
 ): ZKProof {
   // Mock ZKP generation - In production, use snarkjs or similar library
   const proofId = `zkp_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
-  
+
   // Create a commitment to the secret data with random nonce for uniqueness
   const nonce = crypto.randomBytes(16).toString('hex');
   const commitment = crypto
     .createHash('sha256')
     .update(secretData + userId + claim + nonce)
     .digest('hex');
-  
+
   // Mock proof generation (simulating a zkSNARK)
   const proofData = {
     commitment,
@@ -108,7 +111,7 @@ export function generateZKProof(
     timestamp: Date.now(),
     nonce, // Include nonce to ensure different proofs
   };
-  
+
   const proof: ZKProof = {
     id: proofId,
     claim,
@@ -117,47 +120,52 @@ export function generateZKProof(
     timestamp: Date.now(),
     expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
   };
-  
+
   zkProofStore.set(proofId, proof);
-  
-  console.log(`[Decentralization] Generated ZK proof: ${proofId} for claim: ${claim}`);
+
+  console.log(
+    `[Decentralization] Generated ZK proof: ${proofId} for claim: ${claim}`
+  );
   return proof;
 }
 
 /**
  * Verify a Zero-Knowledge Proof
- * 
+ *
  * In production, this would verify the cryptographic proof using the ZKP circuit's
  * verification algorithm without accessing the original secret data.
- * 
+ *
  * @param proofId - The proof identifier
  * @param challenge - Optional verifier challenge
  * @returns True if the proof is valid
  */
 export function verifyZKProof(proofId: string, challenge?: string): boolean {
   const proof = zkProofStore.get(proofId);
-  
+
   if (!proof) {
     console.warn(`[Decentralization] Proof not found: ${proofId}`);
     return false;
   }
-  
+
   // Check expiration
   if (Date.now() > proof.expiresAt) {
     console.warn(`[Decentralization] Proof expired: ${proofId}`);
     return false;
   }
-  
+
   // Mock verification - In production, use ZKP verification algorithm
   try {
     const proofData = JSON.parse(Buffer.from(proof.proof, 'base64').toString());
-    
+
     // Simulate verification checks
-    const isValid = proofData.commitment && 
-                   proofData.claim === proof.claim &&
-                   proofData.timestamp === proof.timestamp;
-    
-    console.log(`[Decentralization] Proof verification ${isValid ? 'succeeded' : 'failed'}: ${proofId}`);
+    const isValid =
+      proofData.commitment &&
+      proofData.claim === proof.claim &&
+      proofData.timestamp === proof.timestamp;
+
+    console.log(
+      `[Decentralization] Proof verification ${isValid ? 'succeeded' : 'failed'}: ${proofId}`
+    );
     return isValid;
   } catch (error) {
     console.error(`[Decentralization] Error verifying proof: ${error}`);
@@ -167,7 +175,7 @@ export function verifyZKProof(proofId: string, challenge?: string): boolean {
 
 /**
  * Store data in the decentralized vault with homomorphic encryption
- * 
+ *
  * @param userId - User identifier
  * @param dataType - Type of data being stored
  * @param data - The data to store
@@ -179,13 +187,16 @@ export function storeInVault(
   data: string
 ): VaultEntry {
   const entryId = `vault_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
-  
+
   // Encrypt data using homomorphic encryption
   const encryptedData = encryptHomomorphic(data);
-  
+
   // Mock decentralized storage location (simulating IPFS hash)
-  const mockIPFSHash = `Qm${crypto.randomBytes(22).toString('base64').replace(/[^a-zA-Z0-9]/g, '')}`;
-  
+  const mockIPFSHash = `Qm${crypto
+    .randomBytes(22)
+    .toString('base64')
+    .replace(/[^a-zA-Z0-9]/g, '')}`;
+
   const vaultEntry: VaultEntry = {
     id: entryId,
     userId,
@@ -197,38 +208,45 @@ export function storeInVault(
     },
     decentralizedLocation: mockIPFSHash,
   };
-  
+
   vaultStore.set(entryId, vaultEntry);
-  
-  console.log(`[Decentralization] Stored data in vault: ${entryId}, location: ${mockIPFSHash}`);
+
+  console.log(
+    `[Decentralization] Stored data in vault: ${entryId}, location: ${mockIPFSHash}`
+  );
   return vaultEntry;
 }
 
 /**
  * Retrieve data from the decentralized vault
- * 
+ *
  * @param entryId - Vault entry identifier
  * @param userId - User identifier (for access control)
  * @returns Decrypted data or null if not found/unauthorized
  */
-export function retrieveFromVault(entryId: string, userId: string): string | null {
+export function retrieveFromVault(
+  entryId: string,
+  userId: string
+): string | null {
   const entry = vaultStore.get(entryId);
-  
+
   if (!entry) {
     console.warn(`[Decentralization] Vault entry not found: ${entryId}`);
     return null;
   }
-  
+
   // Access control check
   if (entry.userId !== userId) {
-    console.warn(`[Decentralization] Unauthorized access attempt to vault: ${entryId}`);
+    console.warn(
+      `[Decentralization] Unauthorized access attempt to vault: ${entryId}`
+    );
     return null;
   }
-  
+
   // Update access metadata
   entry.metadata.lastAccessed = Date.now();
   entry.metadata.accessCount++;
-  
+
   // Decrypt the data
   try {
     const decryptedData = decryptHomomorphic(entry.encryptedData);
@@ -242,7 +260,7 @@ export function retrieveFromVault(entryId: string, userId: string): string | nul
 
 /**
  * Issue a verifiable credential to a user
- * 
+ *
  * @param subject - User DID or identifier
  * @param type - Credential type
  * @param claims - Claims to include in the credential
@@ -256,7 +274,7 @@ export function issueVerifiableCredential(
   issuer: string = 'milla-rayne-system'
 ): VerifiableCredential {
   const credentialId = `vc_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
-  
+
   // Create credential
   const credential: VerifiableCredential = {
     id: credentialId,
@@ -267,42 +285,44 @@ export function issueVerifiableCredential(
     expiresAt: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
     claims,
   };
-  
+
   // Generate proof (mock digital signature)
   const credentialData = JSON.stringify({ ...credential, proof: undefined });
   const signature = crypto
     .createHmac('sha256', 'mock-issuer-secret')
     .update(credentialData)
     .digest('hex');
-  
+
   credential.proof = signature;
-  
+
   credentialStore.set(credentialId, credential);
-  
-  console.log(`[Decentralization] Issued verifiable credential: ${credentialId}, type: ${type}`);
+
+  console.log(
+    `[Decentralization] Issued verifiable credential: ${credentialId}, type: ${type}`
+  );
   return credential;
 }
 
 /**
  * Verify a verifiable credential
- * 
+ *
  * @param credentialId - Credential identifier
  * @returns True if the credential is valid
  */
 export function verifyCredential(credentialId: string): boolean {
   const credential = credentialStore.get(credentialId);
-  
+
   if (!credential) {
     console.warn(`[Decentralization] Credential not found: ${credentialId}`);
     return false;
   }
-  
+
   // Check expiration
   if (credential.expiresAt && Date.now() > credential.expiresAt) {
     console.warn(`[Decentralization] Credential expired: ${credentialId}`);
     return false;
   }
-  
+
   // Verify proof (mock signature verification)
   try {
     const credentialData = JSON.stringify({ ...credential, proof: undefined });
@@ -310,10 +330,12 @@ export function verifyCredential(credentialId: string): boolean {
       .createHmac('sha256', 'mock-issuer-secret')
       .update(credentialData)
       .digest('hex');
-    
+
     const isValid = credential.proof === expectedSignature;
-    
-    console.log(`[Decentralization] Credential verification ${isValid ? 'succeeded' : 'failed'}: ${credentialId}`);
+
+    console.log(
+      `[Decentralization] Credential verification ${isValid ? 'succeeded' : 'failed'}: ${credentialId}`
+    );
     return isValid;
   } catch (error) {
     console.error(`[Decentralization] Error verifying credential: ${error}`);
@@ -323,35 +345,38 @@ export function verifyCredential(credentialId: string): boolean {
 
 /**
  * Create a complete SSI profile for a user
- * 
+ *
  * This demonstrates the integration of ZKP, vault storage, and verifiable credentials
- * 
+ *
  * @param userId - User identifier
  * @param identityData - User's identity information
  * @returns SSI profile with proof, vault entry, and credential
  */
-export function createSSIProfile(userId: string, identityData: {
-  email?: string;
-  age?: number;
-  name?: string;
-  [key: string]: any;
-}): {
+export function createSSIProfile(
+  userId: string,
+  identityData: {
+    email?: string;
+    age?: number;
+    name?: string;
+    [key: string]: any;
+  }
+): {
   vaultEntry: VaultEntry;
   zkProofs: ZKProof[];
   credentials: VerifiableCredential[];
 } {
   console.log(`[Decentralization] Creating SSI profile for user: ${userId}`);
-  
+
   // Store full identity data in vault
   const vaultEntry = storeInVault(
     userId,
     'identity',
     JSON.stringify(identityData)
   );
-  
+
   const zkProofs: ZKProof[] = [];
   const credentials: VerifiableCredential[] = [];
-  
+
   // Generate ZK proofs for specific claims without revealing the data
   if (identityData.age !== undefined) {
     // Prove age is over 18 without revealing exact age
@@ -362,16 +387,15 @@ export function createSSIProfile(userId: string, identityData: {
       identityData.age >= 18 ? 'true' : 'false'
     );
     zkProofs.push(ageProof);
-    
+
     // Issue age verification credential
-    const ageCredential = issueVerifiableCredential(
-      userId,
-      'AgeVerification',
-      { verified: identityData.age >= 18, verifiedAt: Date.now() }
-    );
+    const ageCredential = issueVerifiableCredential(userId, 'AgeVerification', {
+      verified: identityData.age >= 18,
+      verifiedAt: Date.now(),
+    });
     credentials.push(ageCredential);
   }
-  
+
   if (identityData.email) {
     // Prove email ownership without revealing the email
     const emailProof = generateZKProof(
@@ -381,7 +405,7 @@ export function createSSIProfile(userId: string, identityData: {
       crypto.createHash('sha256').update(identityData.email).digest('hex')
     );
     zkProofs.push(emailProof);
-    
+
     // Issue email verification credential
     const emailCredential = issueVerifiableCredential(
       userId,
@@ -390,9 +414,11 @@ export function createSSIProfile(userId: string, identityData: {
     );
     credentials.push(emailCredential);
   }
-  
-  console.log(`[Decentralization] SSI profile created with ${zkProofs.length} proofs and ${credentials.length} credentials`);
-  
+
+  console.log(
+    `[Decentralization] SSI profile created with ${zkProofs.length} proofs and ${credentials.length} credentials`
+  );
+
   return {
     vaultEntry,
     zkProofs,
@@ -402,61 +428,61 @@ export function createSSIProfile(userId: string, identityData: {
 
 /**
  * Get all vault entries for a user
- * 
+ *
  * @param userId - User identifier
  * @returns Array of vault entries
  */
 export function getUserVaultEntries(userId: string): VaultEntry[] {
   const entries: VaultEntry[] = [];
-  
+
   for (const entry of vaultStore.values()) {
     if (entry.userId === userId) {
       entries.push(entry);
     }
   }
-  
+
   return entries;
 }
 
 /**
  * Get all ZK proofs for a specific claim
- * 
+ *
  * @param claim - Claim type
  * @returns Array of ZK proofs
  */
 export function getProofsByClaim(claim: string): ZKProof[] {
   const proofs: ZKProof[] = [];
-  
+
   for (const proof of zkProofStore.values()) {
     if (proof.claim === claim && Date.now() <= proof.expiresAt) {
       proofs.push(proof);
     }
   }
-  
+
   return proofs;
 }
 
 /**
  * Get all credentials for a user
- * 
+ *
  * @param subject - User DID or identifier
  * @returns Array of verifiable credentials
  */
 export function getUserCredentials(subject: string): VerifiableCredential[] {
   const credentials: VerifiableCredential[] = [];
-  
+
   for (const credential of credentialStore.values()) {
     if (credential.subject === subject) {
       credentials.push(credential);
     }
   }
-  
+
   return credentials;
 }
 
 /**
  * Get SSI system statistics
- * 
+ *
  * @returns System statistics
  */
 export function getSSIStats(): {
@@ -469,7 +495,7 @@ export function getSSIStats(): {
   const now = Date.now();
   let activeProofs = 0;
   let expiredProofs = 0;
-  
+
   for (const proof of zkProofStore.values()) {
     if (now <= proof.expiresAt) {
       activeProofs++;
@@ -477,7 +503,7 @@ export function getSSIStats(): {
       expiredProofs++;
     }
   }
-  
+
   return {
     totalVaultEntries: vaultStore.size,
     totalZKProofs: zkProofStore.size,
@@ -488,9 +514,107 @@ export function getSSIStats(): {
 }
 
 /**
+ * Verify user identity using Zero-Knowledge Proof
+ *
+ * This function demonstrates ZKP-based identity verification for authentication.
+ * The user proves possession of valid credentials without revealing sensitive PII.
+ *
+ * Integration point for authService.ts to enable decentralized authentication.
+ *
+ * @param userId - User identifier
+ * @param proof - The ZK proof string or proof ID
+ * @returns Promise<boolean> indicating if identity is verified
+ *
+ * @example
+ * ```typescript
+ * // During login, user provides a ZK proof instead of password
+ * const verified = await verifyIdentityZKP(userId, zkProofId);
+ * if (verified) {
+ *   // Grant access
+ * }
+ * ```
+ */
+export async function verifyIdentityZKP(
+  userId: string,
+  proof: string
+): Promise<boolean> {
+  console.log(
+    `[Decentralization] Verifying identity for user: ${userId} using ZKP`
+  );
+
+  try {
+    // Check if proof is a proof ID or an actual proof string
+    let proofId: string;
+
+    if (proof.startsWith('zkp_')) {
+      // It's a proof ID, verify directly
+      proofId = proof;
+    } else {
+      // It's a proof string, decode and extract ID
+      try {
+        const proofData = JSON.parse(Buffer.from(proof, 'base64').toString());
+        proofId = proofData.id || proof;
+      } catch {
+        proofId = proof;
+      }
+    }
+
+    // Verify the ZK proof
+    const isValid = verifyZKProof(proofId);
+
+    if (!isValid) {
+      console.warn(
+        `[Decentralization] Identity verification failed for user: ${userId}`
+      );
+      return false;
+    }
+
+    // Additional check: Verify associated credentials
+    const userCredentials = getUserCredentials(userId);
+    const hasValidCredentials = userCredentials.some(
+      (cred) =>
+        verifyCredential(cred.id) &&
+        (cred.type === 'EmailVerification' || cred.type === 'AgeVerification')
+    );
+
+    if (!hasValidCredentials) {
+      console.warn(
+        `[Decentralization] User ${userId} has no valid credentials`
+      );
+      return false;
+    }
+
+    // Check if user has encrypted identity data in vault
+    const vaultEntries = getUserVaultEntries(userId);
+    const hasIdentityVault = vaultEntries.some(
+      (entry) => entry.dataType === 'identity'
+    );
+
+    if (!hasIdentityVault) {
+      console.warn(`[Decentralization] User ${userId} has no identity vault`);
+      return false;
+    }
+
+    console.log(
+      `[Decentralization] ✅ Identity verified for user: ${userId} using ZKP`
+    );
+    console.log(
+      `[Decentralization] Note: Verified without exposing PII - using HE-encrypted vault data`
+    );
+
+    return true;
+  } catch (error) {
+    console.error(`[Decentralization] Error verifying identity ZKP:`, error);
+    return false;
+  }
+}
+
+/**
  * Initialize the decentralization service
  */
 export function initializeDecentralizationService(): void {
   console.log('[Decentralization] Service initialized - SSI Pilot ready');
-  console.log('[Decentralization] Note: This is a proof-of-concept implementation');
+  console.log(
+    '[Decentralization] Note: This is a proof-of-concept implementation'
+  );
 }

@@ -1,9 +1,9 @@
 /**
  * Vector Database Service
- * 
+ *
  * Provides semantic embedding generation and similarity search capabilities
  * for Vector-Augmented Retrieval Generation (V-RAG) system.
- * 
+ *
  * Features:
  * - Generate embeddings using OpenAI's text-embedding-ada-002 model
  * - Cosine similarity search for semantic retrieval
@@ -24,6 +24,15 @@ export interface VectorEntry {
   id: string;
   content: string;
   embedding: number[];
+  // P2.6: Add summary vector for hierarchical indexing
+  summaryVector?: number[]; // Smaller, faster vector for initial filtering
+  // P2.2: Add encrypted vector support for HCF
+  encryptedEmbedding?: {
+    ciphertext: string;
+    dimensions: number;
+    timestamp: number;
+    metadata?: any;
+  };
   metadata: {
     type: 'memory' | 'knowledge' | 'conversation' | 'youtube';
     timestamp: string;
@@ -47,9 +56,15 @@ class VectorStore {
   private isDirty: boolean = false;
   private saveTimeout: NodeJS.Timeout | null = null;
 
-  constructor(persistencePath: string = path.join(process.cwd(), 'memory', 'vector_store.json')) {
+  constructor(
+    persistencePath: string = path.join(
+      process.cwd(),
+      'memory',
+      'vector_store.json'
+    )
+  ) {
     this.persistencePath = persistencePath;
-    this.loadFromDisk().catch(err => {
+    this.loadFromDisk().catch((err) => {
       console.error('Error loading vector store from disk:', err);
     });
   }
@@ -62,11 +77,11 @@ class VectorStore {
       await fs.access(this.persistencePath);
       const data = await fs.readFile(this.persistencePath, 'utf-8');
       const entries: VectorEntry[] = JSON.parse(data);
-      
-      entries.forEach(entry => {
+
+      entries.forEach((entry) => {
         this.entries.set(entry.id, entry);
       });
-      
+
       console.log(`✅ Loaded ${entries.length} vectors from disk`);
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
@@ -85,16 +100,16 @@ class VectorStore {
     try {
       const entries = Array.from(this.entries.values());
       const memoryDir = path.dirname(this.persistencePath);
-      
+
       // Ensure directory exists
       await fs.mkdir(memoryDir, { recursive: true });
-      
+
       await fs.writeFile(
         this.persistencePath,
         JSON.stringify(entries, null, 2),
         'utf-8'
       );
-      
+
       this.isDirty = false;
       console.log(`✅ Saved ${entries.length} vectors to disk`);
     } catch (error) {
@@ -107,11 +122,11 @@ class VectorStore {
    */
   private scheduleSave(): void {
     this.isDirty = true;
-    
+
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout);
     }
-    
+
     this.saveTimeout = setTimeout(() => {
       this.saveToDisk();
     }, 5000); // Save after 5 seconds of inactivity
@@ -129,7 +144,7 @@ class VectorStore {
    * Add multiple vector entries
    */
   async upsertBatch(entries: VectorEntry[]): Promise<void> {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       this.entries.set(entry.id, entry);
     });
     this.scheduleSave();
@@ -156,28 +171,109 @@ class VectorStore {
   /**
    * Search for similar vectors using cosine similarity
    */
-  async search(queryEmbedding: number[], options: {
-    topK?: number;
-    minSimilarity?: number;
-    filter?: (entry: VectorEntry) => boolean;
-  } = {}): Promise<SearchResult[]> {
-    const { topK = 5, minSimilarity = 0.5, filter } = options;
-    
+  /**
+   * P2.2: Search with HCF encrypted vectors support
+   * Accepts both plain and encrypted query vectors
+   */
+  async search(
+    queryEmbedding: number[],
+    options: {
+      topK?: number;
+      minSimilarity?: number;
+      filter?: (entry: VectorEntry) => boolean;
+      useEncrypted?: boolean; // P2.2: Enable HCF encrypted search
+    } = {}
+  ): Promise<SearchResult[]> {
+    const {
+      topK = 5,
+      minSimilarity = 0.5,
+      filter,
+      useEncrypted = false,
+    } = options;
+
+    // P2.2: If encrypted search requested, use HCF operations
+    if (useEncrypted) {
+      console.log('🔐 [HCF] Performing encrypted similarity search');
+      const { encryptVector, encryptedDistance } = await import(
+        './crypto/homomorphicProduction'
+      );
+
+      // Encrypt query vector
+      const encryptedQuery = encryptVector(queryEmbedding);
+
+      const results: SearchResult[] = [];
+
+      for (const entry of this.entries.values()) {
+        // Apply filter if provided
+        if (filter && !filter(entry)) {
+          continue;
+        }
+
+        // Use encrypted embedding if available, otherwise encrypt on-the-fly
+        let distance: number;
+        if (entry.encryptedEmbedding) {
+          distance = encryptedDistance(
+            encryptedQuery,
+            entry.encryptedEmbedding
+          );
+        } else {
+          const encryptedEntry = encryptVector(entry.embedding);
+          distance = encryptedDistance(encryptedQuery, encryptedEntry);
+        }
+
+        // Convert distance to similarity (inverse relationship)
+        const similarity = 1 - distance;
+
+        if (similarity >= minSimilarity) {
+          results.push({ entry, similarity });
+        }
+      }
+
+      // Sort by similarity descending and take top K
+      results.sort((a, b) => b.similarity - a.similarity);
+      return results.slice(0, topK);
+    }
+
+    // Original plain-text search
     const results: SearchResult[] = [];
-    
+
     for (const entry of this.entries.values()) {
       // Apply filter if provided
       if (filter && !filter(entry)) {
         continue;
       }
-      
-      const similarity = cosineSimilarity(queryEmbedding, entry.embedding);
-      
+
+      // P2.6: Use summary vector for initial filtering if available
+      let similarity: number;
+      if (
+        entry.summaryVector &&
+        queryEmbedding.length > entry.summaryVector.length
+      ) {
+        // Fast filtering with summary vector
+        const querySummary = queryEmbedding.slice(
+          0,
+          entry.summaryVector.length
+        );
+        const prelimSimilarity = cosineSimilarity(
+          querySummary,
+          entry.summaryVector
+        );
+
+        // Only compute full similarity if summary passes threshold
+        if (prelimSimilarity >= minSimilarity * 0.8) {
+          similarity = cosineSimilarity(queryEmbedding, entry.embedding);
+        } else {
+          continue; // Skip this entry
+        }
+      } else {
+        similarity = cosineSimilarity(queryEmbedding, entry.embedding);
+      }
+
       if (similarity >= minSimilarity) {
         results.push({ entry, similarity });
       }
     }
-    
+
     // Sort by similarity descending and take top K
     results.sort((a, b) => b.similarity - a.similarity);
     return results.slice(0, topK);
@@ -186,7 +282,9 @@ class VectorStore {
   /**
    * Get all entries matching a filter
    */
-  async filter(predicate: (entry: VectorEntry) => boolean): Promise<VectorEntry[]> {
+  async filter(
+    predicate: (entry: VectorEntry) => boolean
+  ): Promise<VectorEntry[]> {
     const results: VectorEntry[] = [];
     for (const entry of this.entries.values()) {
       if (predicate(entry)) {
@@ -247,7 +345,9 @@ function getOpenAIClient(): OpenAI | null {
 /**
  * Generate embedding for text content
  */
-export async function generateEmbedding(text: string): Promise<number[] | null> {
+export async function generateEmbedding(
+  text: string
+): Promise<number[] | null> {
   const client = getOpenAIClient();
   if (!client) {
     console.warn('Cannot generate embedding - OpenAI client not initialized');
@@ -257,7 +357,7 @@ export async function generateEmbedding(text: string): Promise<number[] | null> 
   try {
     // Clean and truncate text if needed (max ~8000 tokens for ada-002)
     const cleanText = text.replace(/\s+/g, ' ').trim().slice(0, 32000);
-    
+
     const response = await client.embeddings.create({
       model: 'text-embedding-ada-002',
       input: cleanText,
@@ -273,7 +373,9 @@ export async function generateEmbedding(text: string): Promise<number[] | null> 
 /**
  * Generate embeddings for multiple texts (batched)
  */
-export async function generateEmbeddings(texts: string[]): Promise<(number[] | null)[]> {
+export async function generateEmbeddings(
+  texts: string[]
+): Promise<(number[] | null)[]> {
   const client = getOpenAIClient();
   if (!client) {
     console.warn('Cannot generate embeddings - OpenAI client not initialized');
@@ -282,7 +384,7 @@ export async function generateEmbeddings(texts: string[]): Promise<(number[] | n
 
   try {
     // Clean texts
-    const cleanTexts = texts.map(text => 
+    const cleanTexts = texts.map((text) =>
       text.replace(/\s+/g, ' ').trim().slice(0, 32000)
     );
 
@@ -292,7 +394,7 @@ export async function generateEmbeddings(texts: string[]): Promise<(number[] | n
       input: cleanTexts,
     });
 
-    return response.data.map(item => item.embedding);
+    return response.data.map((item) => item.embedding);
   } catch (error) {
     console.error('Error generating embeddings:', error);
     return texts.map(() => null);
@@ -322,7 +424,7 @@ export function cosineSimilarity(a: number[], b: number[]): number {
   }
 
   const magnitude = Math.sqrt(normA) * Math.sqrt(normB);
-  
+
   if (magnitude === 0) {
     return 0;
   }
@@ -350,7 +452,7 @@ class VectorDBService {
     metadata: VectorEntry['metadata']
   ): Promise<boolean> {
     const embedding = await generateEmbedding(content);
-    
+
     if (!embedding) {
       console.warn(`Failed to generate embedding for content: ${id}`);
       return false;
@@ -377,9 +479,9 @@ class VectorDBService {
       metadata: VectorEntry['metadata'];
     }>
   ): Promise<number> {
-    const texts = items.map(item => item.content);
+    const texts = items.map((item) => item.content);
     const embeddings = await generateEmbeddings(texts);
-    
+
     const entries: VectorEntry[] = [];
     let successCount = 0;
 
@@ -415,7 +517,7 @@ class VectorDBService {
     } = {}
   ): Promise<SearchResult[]> {
     const embedding = await generateEmbedding(query);
-    
+
     if (!embedding) {
       console.warn('Failed to generate embedding for query');
       return [];
@@ -425,13 +527,14 @@ class VectorDBService {
 
     const results = await this.store.search(embedding, {
       ...searchOptions,
-      filter: type || userId 
-        ? (entry) => {
-            if (type && entry.metadata.type !== type) return false;
-            if (userId && entry.metadata.userId !== userId) return false;
-            return true;
-          }
-        : undefined,
+      filter:
+        type || userId
+          ? (entry) => {
+              if (type && entry.metadata.type !== type) return false;
+              if (userId && entry.metadata.userId !== userId) return false;
+              return true;
+            }
+          : undefined,
     });
 
     return results;
@@ -460,9 +563,9 @@ class VectorDBService {
   }> {
     const total = await this.store.count();
     const allEntries = await this.store.filter(() => true);
-    
+
     const byType: Record<string, number> = {};
-    allEntries.forEach(entry => {
+    allEntries.forEach((entry) => {
       const type = entry.metadata.type;
       byType[type] = (byType[type] || 0) + 1;
     });

@@ -5,7 +5,7 @@
  * to GitHub repositories based on analysis and recommendations.
  */
 
-import { generateGrokResponse } from './openrouterService';
+import { generateGeminiResponse } from './openrouterService';
 import { RepositoryData, RepositoryInfo } from './repositoryAnalysisService';
 import {
   analyzeRepositoryCode,
@@ -103,19 +103,19 @@ Format your response as JSON with this structure:
   try {
     let aiResponse: { content: string; success: boolean } | null = null;
 
-    // Use Grok 1 Fast for repository improvement generation
+    // Use Gemini 2.0 Flash for repository improvement generation
     try {
-      aiResponse = await generateGrokResponse(improvementPrompt, {
+      aiResponse = await generateGeminiResponse(improvementPrompt, {
         userName: 'Danny Ray',
       });
       if (aiResponse.success && aiResponse.content) {
         return parseImprovementResponse(aiResponse.content);
       }
     } catch (error) {
-      console.warn('Grok improvement generation failed:', error);
+      console.warn('Gemini improvement generation failed:', error);
     }
 
-    // Fallback to simple improvements if Grok fails
+    // Fallback to simple improvements if Gemini fails
     return generateFallbackImprovements(repoData, focusArea);
   } catch (error) {
     console.error('Error generating improvements:', error);

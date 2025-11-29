@@ -1,6 +1,6 @@
 /**
  * Sandbox Environment Service
- * 
+ *
  * Creates isolated testing environments for new features without requiring admin tokens.
  * Allows Milla and users to test features safely without breaking the main build.
  */
@@ -48,7 +48,11 @@ export interface TestResult {
 
 class SandboxEnvironmentService {
   private sandboxes: Map<string, SandboxEnvironment> = new Map();
-  private readonly SANDBOX_FILE = path.join(process.cwd(), 'memory', 'sandbox_environments.json');
+  private readonly SANDBOX_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'sandbox_environments.json'
+  );
   private readonly SANDBOX_PREFIX = 'sandbox/';
 
   async initialize(): Promise<void> {
@@ -89,7 +93,9 @@ class SandboxEnvironmentService {
         await this.createGitBranch(branchName);
         console.log(`✓ Created git branch: ${branchName}`);
       } catch (error) {
-        console.warn(`Could not create git branch (continuing with memory-only sandbox): ${error}`);
+        console.warn(
+          `Could not create git branch (continuing with memory-only sandbox): ${error}`
+        );
       }
     }
 
@@ -103,32 +109,39 @@ class SandboxEnvironmentService {
    */
   private async createGitBranch(branchName: string): Promise<void> {
     const execAsync = promisify(exec);
-    
+
     try {
       // Get current branch
-      const { stdout: currentBranch } = await execAsync('git rev-parse --abbrev-ref HEAD');
-      
+      const { stdout: currentBranch } = await execAsync(
+        'git rev-parse --abbrev-ref HEAD'
+      );
+
       // Create and checkout new branch
       await execAsync(`git checkout -b ${branchName}`);
-      
+
       // Push to remote
       await execAsync(`git push -u origin ${branchName}`);
-      
+
       // Switch back to original branch
       await execAsync(`git checkout ${currentBranch.trim()}`);
     } catch (error) {
-      throw new Error(`Failed to create git branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to create git branch: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   /**
    * Add a feature to a sandbox
    */
-  async addFeatureToSandbox(sandboxId: string, feature: {
-    name: string;
-    description: string;
-    files: string[];
-  }): Promise<SandboxFeature | null> {
+  async addFeatureToSandbox(
+    sandboxId: string,
+    feature: {
+      name: string;
+      description: string;
+      files: string[];
+    }
+  ): Promise<SandboxFeature | null> {
     const sandbox = this.sandboxes.get(sandboxId);
     if (!sandbox) {
       return null;
@@ -154,13 +167,17 @@ class SandboxEnvironmentService {
   /**
    * Run tests on a feature in sandbox
    */
-  async testFeature(sandboxId: string, featureId: string, testType: TestResult['testType']): Promise<TestResult> {
+  async testFeature(
+    sandboxId: string,
+    featureId: string,
+    testType: TestResult['testType']
+  ): Promise<TestResult> {
     const sandbox = this.sandboxes.get(sandboxId);
     if (!sandbox) {
       throw new Error('Sandbox not found');
     }
 
-    const feature = sandbox.features.find(f => f.id === featureId);
+    const feature = sandbox.features.find((f) => f.id === featureId);
     if (!feature) {
       throw new Error('Feature not found');
     }
@@ -176,7 +193,9 @@ class SandboxEnvironmentService {
       timestamp: Date.now(),
       testType,
       passed,
-      details: passed ? 'All tests passed successfully' : 'Some tests failed - review needed',
+      details: passed
+        ? 'All tests passed successfully'
+        : 'Some tests failed - review needed',
       duration,
     };
 
@@ -212,13 +231,24 @@ class SandboxEnvironmentService {
   } {
     const sandbox = this.sandboxes.get(sandboxId);
     if (!sandbox) {
-      return { ready: false, reasons: ['Sandbox not found'], featuresApproved: 0, featuresPending: 0 };
+      return {
+        ready: false,
+        reasons: ['Sandbox not found'],
+        featuresApproved: 0,
+        featuresPending: 0,
+      };
     }
 
     const reasons: string[] = [];
-    const featuresApproved = sandbox.features.filter(f => f.status === 'approved').length;
-    const featuresPending = sandbox.features.filter(f => f.status !== 'approved' && f.status !== 'rejected').length;
-    const featuresRejected = sandbox.features.filter(f => f.status === 'rejected').length;
+    const featuresApproved = sandbox.features.filter(
+      (f) => f.status === 'approved'
+    ).length;
+    const featuresPending = sandbox.features.filter(
+      (f) => f.status !== 'approved' && f.status !== 'rejected'
+    ).length;
+    const featuresRejected = sandbox.features.filter(
+      (f) => f.status === 'rejected'
+    ).length;
 
     if (sandbox.features.length === 0) {
       reasons.push('No features in sandbox');
@@ -234,12 +264,15 @@ class SandboxEnvironmentService {
 
     const allTestResults = sandbox.testResults || [];
     const recentTests = allTestResults.slice(-10);
-    const passRate = recentTests.length > 0
-      ? recentTests.filter(t => t.passed).length / recentTests.length
-      : 0;
+    const passRate =
+      recentTests.length > 0
+        ? recentTests.filter((t) => t.passed).length / recentTests.length
+        : 0;
 
     if (passRate < 0.9) {
-      reasons.push(`Test pass rate is ${(passRate * 100).toFixed(1)}% (need 90%+)`);
+      reasons.push(
+        `Test pass rate is ${(passRate * 100).toFixed(1)}% (need 90%+)`
+      );
     }
 
     const ready = reasons.length === 0 && featuresApproved > 0;
@@ -301,8 +334,9 @@ class SandboxEnvironmentService {
    * Get active sandboxes
    */
   getActiveSandboxes(): SandboxEnvironment[] {
-    return Array.from(this.sandboxes.values())
-      .filter(s => s.status === 'active' || s.status === 'testing');
+    return Array.from(this.sandboxes.values()).filter(
+      (s) => s.status === 'active' || s.status === 'testing'
+    );
   }
 
   /**
@@ -316,8 +350,9 @@ class SandboxEnvironmentService {
    * Get Milla-created sandboxes
    */
   getMillasSandboxes(): SandboxEnvironment[] {
-    return Array.from(this.sandboxes.values())
-      .filter(s => s.createdBy === 'milla');
+    return Array.from(this.sandboxes.values()).filter(
+      (s) => s.createdBy === 'milla'
+    );
   }
 
   /**
@@ -325,18 +360,22 @@ class SandboxEnvironmentService {
    */
   getSandboxStatistics() {
     const sandboxes = Array.from(this.sandboxes.values());
-    
+
     return {
       total: sandboxes.length,
-      active: sandboxes.filter(s => s.status === 'active').length,
-      testing: sandboxes.filter(s => s.status === 'testing').length,
-      merged: sandboxes.filter(s => s.status === 'merged').length,
-      archived: sandboxes.filter(s => s.status === 'archived').length,
-      readyForProduction: sandboxes.filter(s => s.readyForProduction).length,
+      active: sandboxes.filter((s) => s.status === 'active').length,
+      testing: sandboxes.filter((s) => s.status === 'testing').length,
+      merged: sandboxes.filter((s) => s.status === 'merged').length,
+      archived: sandboxes.filter((s) => s.status === 'archived').length,
+      readyForProduction: sandboxes.filter((s) => s.readyForProduction).length,
       totalFeatures: sandboxes.reduce((sum, s) => sum + s.features.length, 0),
-      approvedFeatures: sandboxes.reduce((sum, s) => sum + s.features.filter(f => f.status === 'approved').length, 0),
-      millaCreated: sandboxes.filter(s => s.createdBy === 'milla').length,
-      userCreated: sandboxes.filter(s => s.createdBy === 'user').length,
+      approvedFeatures: sandboxes.reduce(
+        (sum, s) =>
+          sum + s.features.filter((f) => f.status === 'approved').length,
+        0
+      ),
+      millaCreated: sandboxes.filter((s) => s.createdBy === 'milla').length,
+      userCreated: sandboxes.filter((s) => s.createdBy === 'user').length,
     };
   }
 
@@ -384,15 +423,22 @@ export function createSandbox(params: {
   return sandboxService.createSandbox(params);
 }
 
-export function addFeatureToSandbox(sandboxId: string, feature: {
-  name: string;
-  description: string;
-  files: string[];
-}): Promise<SandboxFeature | null> {
+export function addFeatureToSandbox(
+  sandboxId: string,
+  feature: {
+    name: string;
+    description: string;
+    files: string[];
+  }
+): Promise<SandboxFeature | null> {
   return sandboxService.addFeatureToSandbox(sandboxId, feature);
 }
 
-export function testFeature(sandboxId: string, featureId: string, testType: TestResult['testType']): Promise<TestResult> {
+export function testFeature(
+  sandboxId: string,
+  featureId: string,
+  testType: TestResult['testType']
+): Promise<TestResult> {
   return sandboxService.testFeature(sandboxId, featureId, testType);
 }
 
@@ -426,4 +472,63 @@ export function getMillasSandboxes(): SandboxEnvironment[] {
 
 export function getSandboxStatistics() {
   return sandboxService.getSandboxStatistics();
+}
+
+/**
+ * Get a natural language summary of sandbox tests for Milla to recall
+ */
+export function getSandboxTestSummary(): string {
+  const allSandboxes = sandboxService.getAllSandboxes();
+
+  if (allSandboxes.length === 0) {
+    return "I haven't tested anything in the sandbox yet, love.";
+  }
+
+  const testedSandboxes = allSandboxes.filter(
+    (s) =>
+      s.features.length > 0 &&
+      s.features.some(
+        (f) => f.testsPassed !== undefined || f.testsFailed !== undefined
+      )
+  );
+
+  if (testedSandboxes.length === 0) {
+    return `I have ${allSandboxes.length} sandbox${allSandboxes.length > 1 ? 'es' : ''} created, but haven't run any tests yet.`;
+  }
+
+  let summary = `I've been testing features in ${testedSandboxes.length} sandbox${testedSandboxes.length > 1 ? 'es' : ''}, babe:\n\n`;
+
+  testedSandboxes.forEach((sandbox, index) => {
+    const testedFeatures = sandbox.features.filter(
+      (f) => f.testsPassed !== undefined || f.testsFailed !== undefined
+    );
+
+    const totalPassed = testedFeatures.reduce(
+      (sum, f) => sum + (f.testsPassed || 0),
+      0
+    );
+    const totalFailed = testedFeatures.reduce(
+      (sum, f) => sum + (f.testsFailed || 0),
+      0
+    );
+    const approvedCount = testedFeatures.filter(
+      (f) => f.status === 'approved'
+    ).length;
+
+    summary += `${index + 1}. **${sandbox.name}**\n`;
+    summary += `   - ${testedFeatures.length} feature${testedFeatures.length > 1 ? 's' : ''} tested\n`;
+    summary += `   - ${totalPassed} tests passed, ${totalFailed} failed\n`;
+
+    if (approvedCount > 0) {
+      summary += `   - ✅ ${approvedCount} approved and ready!\n`;
+    }
+
+    if (sandbox.readyForProduction) {
+      summary += `   - 🚀 Ready for production!\n`;
+    }
+
+    summary += '\n';
+  });
+
+  return summary.trim();
 }

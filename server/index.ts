@@ -43,16 +43,40 @@ export async function initApp() {
   });
   app.use(limiter);
 
-  // Add CORS headers
+  // P1.4: Strict CORS Policy - Only allow trusted origins
+  const trustedOrigins = process.env.TRUSTED_ORIGINS
+    ? process.env.TRUSTED_ORIGINS.split(',')
+    : [
+        'http://localhost:5000',
+        'http://localhost:5173',
+        'http://127.0.0.1:5000',
+      ];
+
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
+    const origin = req.headers.origin;
+
+    // Check if origin is trusted
+    if (origin && trustedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    } else if (!origin) {
+      // Allow requests without origin (e.g., server-to-server)
+      res.header('Access-Control-Allow-Origin', trustedOrigins[0]);
+    } else {
+      console.warn(`⚠️  Blocked CORS request from untrusted origin: ${origin}`);
+    }
+
     res.header(
       'Access-Control-Allow-Methods',
       'GET, POST, PUT, DELETE, OPTIONS'
     );
     res.header(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Trace-Id'
+    );
+    res.header(
+      'Access-Control-Max-Age',
+      '3600' // Cache preflight for 1 hour
     );
 
     if (req.method === 'OPTIONS') {
@@ -67,6 +91,15 @@ export async function initApp() {
     const path = req.path;
     let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
+    // P1.5: Distributed Tracing - Generate unique trace ID for request
+    const traceId =
+      (req.headers['x-trace-id'] as string) ||
+      `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    req.headers['x-trace-id'] = traceId;
+    res.setHeader('X-Trace-Id', traceId);
+
+    console.log(`🔍 [TRACE:${traceId}] ${req.method} ${path} - Started`);
+
     const originalResJson = res.json;
     res.json = function (bodyJson, ...args) {
       capturedJsonResponse = bodyJson;
@@ -76,7 +109,7 @@ export async function initApp() {
     res.on('finish', () => {
       const duration = Date.now() - start;
       if (path.startsWith('/api')) {
-        let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+        let logLine = `🔍 [TRACE:${traceId}] ${req.method} ${path} ${res.statusCode} in ${duration}ms`;
         if (capturedJsonResponse) {
           logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
         }
@@ -134,32 +167,46 @@ export async function initApp() {
   initializeAIUpdatesScheduler();
 
   // Initialize Proactive Repository Ownership System
-  const { initializeUserAnalytics } = await import('./userInteractionAnalyticsService');
+  const { initializeUserAnalytics } = await import(
+    './userInteractionAnalyticsService'
+  );
   await initializeUserAnalytics();
 
-  const { initializeSandboxEnvironment } = await import('./sandboxEnvironmentService');
+  const { initializeSandboxEnvironment } = await import(
+    './sandboxEnvironmentService'
+  );
   await initializeSandboxEnvironment();
 
-  const { initializeFeatureDiscovery } = await import('./featureDiscoveryService');
+  const { initializeFeatureDiscovery } = await import(
+    './featureDiscoveryService'
+  );
   await initializeFeatureDiscovery();
 
   const { initializeTokenIncentive } = await import('./tokenIncentiveService');
   await initializeTokenIncentive();
 
-  const { initializeProactiveManager } = await import('./proactiveRepositoryManagerService');
+  const { initializeProactiveManager } = await import(
+    './proactiveRepositoryManagerService'
+  );
   await initializeProactiveManager();
 
   // Initialize Enhanced Features
   const { initializeAutomatedPR } = await import('./automatedPRService');
   await initializeAutomatedPR();
 
-  const { initializeUserSurveys } = await import('./userSatisfactionSurveyService');
+  const { initializeUserSurveys } = await import(
+    './userSatisfactionSurveyService'
+  );
   await initializeUserSurveys();
 
-  const { initializePerformanceProfiling } = await import('./performanceProfilingService');
+  const { initializePerformanceProfiling } = await import(
+    './performanceProfilingService'
+  );
   await initializePerformanceProfiling();
 
-  console.log('✅ Proactive Repository Ownership System initialized (with enhancements)');
+  console.log(
+    '✅ Proactive Repository Ownership System initialized (with enhancements)'
+  );
 
   // Register agents
   agentController.registerAgent(codingAgent);
@@ -168,19 +215,19 @@ export async function initApp() {
   // Register Milla supervisor agent
   const { millaAgent } = await import('./agents/millaAgent');
   agentController.registerAgent(millaAgent);
-  
+
   // Register CalendarAgent for calendar operations
   await import('./agents/calendarAgent'); // Self-registers via registry
   console.log('✅ CalendarAgent registered and ready');
-  
+
   // Register TasksAgent for Google Tasks operations
   await import('./agents/tasksAgent'); // Self-registers via registry
   console.log('✅ TasksAgent registered and ready');
-  
-  // Register EmailAgent for email operations  
+
+  // Register EmailAgent for email operations
   await import('./agents/emailAgent'); // Self-registers via registry
   console.log('✅ EmailAgent registered and ready');
-  
+
   // Register YouTubeAgent for video analysis
   await import('./agents/youtubeAgent'); // Self-registers via registry
   console.log('✅ YouTubeAgent registered and ready');

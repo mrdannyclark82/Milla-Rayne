@@ -18,6 +18,7 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 **Triggers:** Push to `main`, Pull Requests to `main`
 
 **Jobs:**
+
 - **Node.js Testing** (Matrix: Node 18.x, 20.x)
   - Install dependencies
   - Run linting
@@ -39,6 +40,7 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 **Triggers:** Pull Request events (opened, synchronized, reopened)
 
 **Jobs:**
+
 - **Lint and Format Check**: ESLint and Prettier validation
 - **Type Check**: TypeScript compilation check
 - **Test**: Run full test suite with coverage
@@ -51,12 +53,14 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 
 ### 3. CodeQL Security Scanning (`.github/workflows/codeql.yml`)
 
-**Triggers:** 
+**Triggers:**
+
 - Push to `main`
 - Pull Requests to `main`
 - Weekly schedule (Sundays at 3 AM)
 
 **Languages Analyzed:**
+
 - JavaScript/TypeScript
 - Python
 
@@ -65,15 +69,18 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 ### 4. Build and Release Workflow (`.github/workflows/release.yml`)
 
 **Triggers:**
+
 - Version tags (`v*.*.*`)
 - Manual workflow dispatch
 
 **Jobs:**
+
 - **Build**: Compile and test application
 - **Create Release**: Generate GitHub release with artifacts
 - **Docker Build**: Build and push Docker image to GHCR
 
 **Artifacts:**
+
 - Release archive (`.tar.gz`)
 - Build metadata
 - Docker image
@@ -83,14 +90,17 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 ### 5. Deployment Workflow (`.github/workflows/deploy.yml`)
 
 **Triggers:**
+
 - Push to `main` (auto-deploy to staging)
 - Manual workflow dispatch (choose environment)
 
 **Environments:**
+
 - **Staging**: Auto-deployed on main branch updates
 - **Production**: Manual deployment only
 
 **Deployment Options:**
+
 - Heroku (template provided)
 - Railway (template provided)
 - Custom VPS via SSH (template provided)
@@ -116,10 +126,12 @@ The project uses GitHub Actions for automated testing, building, and deployment.
 ### Dockerfile
 
 Multi-stage build optimized for production:
+
 - **Stage 1**: Build application
 - **Stage 2**: Production image with minimal dependencies
 
 Features:
+
 - Non-root user (nodejs)
 - Health check endpoint
 - Dumb-init for proper signal handling
@@ -128,11 +140,13 @@ Features:
 ### Docker Compose
 
 Easy local development with Docker:
+
 ```bash
 docker-compose up
 ```
 
 Features:
+
 - Environment variable support
 - Volume mounts for persistence
 - Health checks
@@ -154,6 +168,7 @@ docker-compose up
 ### GitHub Container Registry
 
 Images are automatically published to:
+
 ```
 ghcr.io/mrdannyclark82/milla-rayne:latest
 ghcr.io/mrdannyclark82/milla-rayne:v1.0.0
@@ -244,6 +259,7 @@ Application secrets should be stored as environment secrets:
 ### GitHub Actions Status
 
 View workflow runs:
+
 - Repository → Actions tab
 - See all workflow runs and their status
 - Download artifacts from completed runs
@@ -251,6 +267,7 @@ View workflow runs:
 ### Build Status Badges
 
 Add to README:
+
 ```markdown
 [![CI](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CI/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/mrdannyclark82/Milla-Rayne/workflows/CodeQL/badge.svg)](https://github.com/mrdannyclark82/Milla-Rayne/actions/workflows/codeql.yml)
@@ -261,6 +278,7 @@ Add to README:
 ### Modify CI Checks
 
 Edit `.github/workflows/ci.yml`:
+
 - Add/remove Node.js versions in matrix
 - Add custom build steps
 - Configure test coverage reporting
@@ -275,6 +293,7 @@ Edit `.github/workflows/ci.yml`:
 ### Environment Variables
 
 Configure in:
+
 - `docker-compose.yml`: For Docker deployments
 - Repository Settings → Environments: For GitHub deployments
 - Deployment platform: For Heroku, Railway, etc.
@@ -284,6 +303,7 @@ Configure in:
 ### Branch Protection
 
 Enable in repository settings:
+
 - Require PR reviews
 - Require status checks to pass
 - Require branches to be up to date
@@ -354,6 +374,7 @@ Enable in repository settings:
 This CI/CD setup was last updated: November 9, 2024
 
 To update workflows:
+
 1. Edit workflow files in `.github/workflows/`
 2. Test changes in a feature branch
 3. Merge to main after verification

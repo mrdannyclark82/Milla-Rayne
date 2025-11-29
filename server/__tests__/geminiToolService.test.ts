@@ -18,9 +18,11 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       // Mock agents
       const mockAgent = {
         name: 'TestAgent',
-        handleTask: vi.fn().mockResolvedValue({ success: true, data: 'result' }),
+        handleTask: vi
+          .fn()
+          .mockResolvedValue({ success: true, data: 'result' }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const toolCalls: ToolCall[] = [
@@ -35,11 +37,11 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       const executionTime = endTime - startTime;
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r.success)).toBe(true);
-      
+      expect(results.every((r) => r.success)).toBe(true);
+
       // Verify all tools were called
       expect(mockAgent.handleTask).toHaveBeenCalledTimes(3);
-      
+
       // Parallel execution should be faster than sequential
       // With 3 calls, if they were sequential with 50ms delay each, it would take ~150ms
       // Parallel should take closer to 50ms (the time of the slowest call)
@@ -49,12 +51,13 @@ describe('Gemini Tool Service - Parallel Execution', () => {
     it('should handle tool execution failures gracefully', async () => {
       const mockAgent = {
         name: 'TestAgent',
-        handleTask: vi.fn()
+        handleTask: vi
+          .fn()
           .mockResolvedValueOnce({ success: true, data: 'result1' })
           .mockRejectedValueOnce(new Error('Tool failed'))
           .mockResolvedValueOnce({ success: true, data: 'result3' }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const toolCalls: ToolCall[] = [
@@ -76,11 +79,11 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       const mockAgent = {
         name: 'TestAgent',
         handleTask: vi.fn().mockImplementation(async () => {
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           return { success: true, data: 'result' };
         }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const toolCalls: ToolCall[] = [
@@ -97,7 +100,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
         name: 'TestAgent',
         handleTask: vi.fn().mockResolvedValue({ success: true }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const toolCalls: ToolCall[] = [
@@ -131,7 +134,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
         name: 'TestAgent',
         handleTask: vi.fn().mockResolvedValue({ success: true, events: [] }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const context: GeminiChatContext = {
@@ -155,7 +158,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
         name: 'TestAgent',
         handleTask: vi.fn().mockResolvedValue({ success: true }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const context: GeminiChatContext = {
@@ -165,14 +168,14 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       };
 
       const response = await generateGeminiChatWithTools(
-        "Check my calendar today and also search YouTube for tutorials",
+        'Check my calendar today and also search YouTube for tutorials',
         context
       );
 
       expect(response.success).toBe(true);
       // Should detect both calendar and YouTube tools
       if (response.toolCalls) {
-        const toolNames = response.toolCalls.map(tc => tc.name);
+        const toolNames = response.toolCalls.map((tc) => tc.name);
         expect(toolNames).toContain('check_calendar');
         expect(toolNames).toContain('search_youtube');
       }
@@ -188,7 +191,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       // This test would require actual Gemini API key in production
       // For now, we test that it doesn't throw and handles the API error gracefully
       const response = await generateGeminiChatWithTools(
-        "Hello, how are you?",
+        'Hello, how are you?',
         context
       );
 
@@ -203,7 +206,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       expect(AVAILABLE_TOOLS).toBeDefined();
       expect(AVAILABLE_TOOLS.length).toBeGreaterThan(0);
 
-      AVAILABLE_TOOLS.forEach(tool => {
+      AVAILABLE_TOOLS.forEach((tool) => {
         expect(tool).toHaveProperty('name');
         expect(tool).toHaveProperty('description');
         expect(tool).toHaveProperty('parameters');
@@ -213,19 +216,23 @@ describe('Gemini Tool Service - Parallel Execution', () => {
     });
 
     it('should include calendar tool', () => {
-      const calendarTool = AVAILABLE_TOOLS.find(t => t.name === 'check_calendar');
+      const calendarTool = AVAILABLE_TOOLS.find(
+        (t) => t.name === 'check_calendar'
+      );
       expect(calendarTool).toBeDefined();
       expect(calendarTool!.description).toContain('calendar');
     });
 
     it('should include YouTube tool', () => {
-      const youtubeTool = AVAILABLE_TOOLS.find(t => t.name === 'search_youtube');
+      const youtubeTool = AVAILABLE_TOOLS.find(
+        (t) => t.name === 'search_youtube'
+      );
       expect(youtubeTool).toBeDefined();
       expect(youtubeTool!.description).toContain('YouTube');
     });
 
     it('should include weather tool', () => {
-      const weatherTool = AVAILABLE_TOOLS.find(t => t.name === 'get_weather');
+      const weatherTool = AVAILABLE_TOOLS.find((t) => t.name === 'get_weather');
       expect(weatherTool).toBeDefined();
       expect(weatherTool!.description).toContain('weather');
     });
@@ -237,11 +244,11 @@ describe('Gemini Tool Service - Parallel Execution', () => {
       const mockAgent = {
         name: 'TestAgent',
         handleTask: vi.fn().mockImplementation(async () => {
-          await new Promise(resolve => setTimeout(resolve, 50));
+          await new Promise((resolve) => setTimeout(resolve, 50));
           return { success: true };
         }),
       };
-      
+
       vi.spyOn(registry, 'getAgent').mockReturnValue(mockAgent as any);
 
       const toolCalls: ToolCall[] = [

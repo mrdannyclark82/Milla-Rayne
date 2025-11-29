@@ -5,6 +5,7 @@
 Milla Rayne uses multiple AI services for different purposes:
 
 ### 1. **xAI (Grok-4-Fast-Reasoning)** - Primary Conversational AI
+
 - **Used for**: Main chat responses, personality interactions
 - **Model**: `grok-4-fast-reasoning` (configurable via `XAI_MODEL` env var)
 - **Default**: `grok-beta` if not specified
@@ -15,6 +16,7 @@ Milla Rayne uses multiple AI services for different purposes:
 - **Notes**: This is the main AI that powers Milla's personality with fast reasoning capabilities
 
 ### 2. **OpenRouter (MiniMax-M2)** - Fallback Conversational AI
+
 - **Used for**: Conversational fallback, some specialized features
 - **Model**: `minimax/minimax-m2:free` (configurable via `MINIMAX_MODEL`)
 - **Config**: `OPENROUTER_MINIMAX_API_KEY` or `OPENROUTER_API_KEY`
@@ -25,6 +27,7 @@ Milla Rayne uses multiple AI services for different purposes:
 - **Presence penalty**: 0.4 (encourages new topics)
 
 ### 3. **OpenRouter (Grok-1-Fast)** - Repository Analysis
+
 - **Used for**: GitHub repository analysis ONLY
 - **Model**: Configurable via `OPENROUTER_GROK1_MODEL` (currently: x-ai/grok-code-fast-1)
 - **Default**: `x-ai/grok-1-fast` if not specified
@@ -36,39 +39,47 @@ Milla Rayne uses multiple AI services for different purposes:
 - **Notes**: Uses xAI's Grok-1-Fast for fast code analysis via OpenRouter
 
 ### 4. **OpenRouter (Gemini)** - Image Generation/Enhancement
+
 - **Used for**: Enhanced image descriptions, image generation fallback
 - **Config**: `OPENROUTER_GEMINI_API_KEY`
 - **Service file**: `server/openrouterImageService.ts`
 
 ### 5. **Gemini Direct** - Image Analysis
+
 - **Used for**: Direct Gemini API calls for image analysis
 - **Config**: `GEMINI_API_KEY`
 - **Service file**: Various image services
 
 ### 6. **Qwen (via OpenRouter)** - Code Generation
+
 - **Used for**: Code generation requests
 - **Service file**: `server/openrouterCodeService.ts`
 
 ### 7. **Hugging Face** - Image Generation
+
 - **Used for**: AI image generation (fallback)
 - **Config**: `HUGGINGFACE_API_KEY`, `HUGGINGFACE_MODEL`
 
 ### 8. **Banana** - Image Generation
+
 - **Used for**: Primary image generation
 - **Config**: `BANANA_API_KEY`, `BANANA_API_URL`, etc.
 
 ## Service Priority Flow
 
 ### For Chat Messages:
+
 1. **xAI (Grok-4-Fast-Reasoning)** - Primary (configurable)
 2. **OpenRouter (MiniMax-M2)** - Fallback if xAI fails
 3. **Intelligent fallback** - Pattern-based responses if both fail
 
 ### For Repository Analysis:
+
 1. **OpenRouter (Grok-1-Fast)** - Primary (uses dedicated API key)
 2. **Manual analysis** - Fallback if OpenRouter fails
 
 ### For Image Generation:
+
 1. **Banana** - Try first if configured
 2. **OpenRouter (Gemini)** - Secondary
 3. **Pollinations.AI** - Free fallback (no API key needed)
@@ -77,6 +88,7 @@ Milla Rayne uses multiple AI services for different purposes:
 ## Token Management
 
 ### Input (System Prompt):
+
 - **Persona**: ~500-1000 tokens
 - **Scene settings**: ~200-500 tokens
 - **Memory context**: Limited to relevant memories only
@@ -85,6 +97,7 @@ Milla Rayne uses multiple AI services for different purposes:
 - **REMOVED**: Project file structure (was adding ~50K+ tokens!)
 
 ### Output:
+
 - **Default**: 1024 tokens (configurable via `MAX_OUTPUT_TOKENS` env var)
 - **xAI default**: 800 tokens
 - **OpenRouter default**: 400 tokens
@@ -95,6 +108,7 @@ Milla Rayne uses multiple AI services for different purposes:
 **Problem**: System prompt was including entire project file structure (3,346+ files) in every message, causing 250K+ token messages.
 
 **Solution**: Removed the file structure injection from `xaiService.ts`:
+
 ```typescript
 // REMOVED THIS SECTION:
 ### YOUR PROJECT FILE STRUCTURE:
@@ -108,6 +122,7 @@ This reduced system prompt size by ~50,000+ tokens per message!
 ## Environment Variables
 
 Required for full functionality:
+
 ```bash
 # Primary AI
 XAI_API_KEY=your_xai_key

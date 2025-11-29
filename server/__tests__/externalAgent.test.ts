@@ -1,7 +1,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { processFinanceCommand, getFinanceAgentStatus } from '../externalFinanceAgent';
+import {
+  processFinanceCommand,
+  getFinanceAgentStatus,
+} from '../externalFinanceAgent';
 import { dispatchExternalCommand, getAgentStatus } from '../agentCommsService';
-import { registerExternalAgent, getExternalAgent, listExternalAgents, isExternalAgent } from '../agents/registry';
+import {
+  registerExternalAgent,
+  getExternalAgent,
+  listExternalAgents,
+  isExternalAgent,
+} from '../agents/registry';
 import type { ExternalAgentCommand } from '../../shared/schema';
 
 describe('External Agent Communication - Finance Agent', () => {
@@ -29,7 +37,7 @@ describe('External Agent Communication - Finance Agent', () => {
       expect(response.statusCode).toBe('OK');
       expect(response.data).toBeDefined();
       expect(response.data.account).toBe('checking');
-      expect(response.data.balance).toBe(1500.50);
+      expect(response.data.balance).toBe(1500.5);
       expect(response.data.currency).toBe('USD');
     });
 
@@ -72,7 +80,7 @@ describe('External Agent Communication - Finance Agent', () => {
         command: 'CREATE_TRANSACTION',
         args: {
           account: 'checking',
-          amount: 50.00,
+          amount: 50.0,
           type: 'debit',
           description: 'Test Transaction',
         },
@@ -200,7 +208,7 @@ describe('External Agent Communication - Finance Agent', () => {
       const agents = listExternalAgents();
 
       expect(agents.length).toBeGreaterThan(0);
-      expect(agents.some(a => a.name === 'FinanceAgent')).toBe(true);
+      expect(agents.some((a) => a.name === 'FinanceAgent')).toBe(true);
     });
 
     it('should identify Finance Agent as external', () => {

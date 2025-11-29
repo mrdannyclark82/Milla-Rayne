@@ -1,6 +1,6 @@
 /**
  * Proactive Repository Ownership API Routes
- * 
+ *
  * API endpoints for Milla's proactive repository management system.
  */
 
@@ -80,21 +80,28 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, suggestions });
     } catch (error) {
       console.error('Error getting suggestions:', error);
-      res.status(500).json({ success: false, error: 'Failed to get suggestions' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get suggestions' });
     }
   });
 
-  router.post('/api/milla/analytics/suggestions/:id/status', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
-      const updated = await updateSuggestionStatus(id, status);
-      res.json({ success: updated });
-    } catch (error) {
-      console.error('Error updating suggestion:', error);
-      res.status(500).json({ success: false, error: 'Failed to update suggestion' });
+  router.post(
+    '/api/milla/analytics/suggestions/:id/status',
+    async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const updated = await updateSuggestionStatus(id, status);
+        res.json({ success: updated });
+      } catch (error) {
+        console.error('Error updating suggestion:', error);
+        res
+          .status(500)
+          .json({ success: false, error: 'Failed to update suggestion' });
+      }
     }
-  });
+  );
 
   // Sandbox Environment Routes
   router.get('/api/milla/sandboxes', (req, res) => {
@@ -103,7 +110,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, sandboxes });
     } catch (error) {
       console.error('Error getting sandboxes:', error);
-      res.status(500).json({ success: false, error: 'Failed to get sandboxes' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get sandboxes' });
     }
   });
 
@@ -113,7 +122,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, sandboxes });
     } catch (error) {
       console.error('Error getting active sandboxes:', error);
-      res.status(500).json({ success: false, error: 'Failed to get active sandboxes' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get active sandboxes' });
     }
   });
 
@@ -122,8 +133,10 @@ export function registerProactiveRoutes(router: Router): void {
       const sandboxes = getMillasSandboxes();
       res.json({ success: true, sandboxes });
     } catch (error) {
-      console.error('Error getting Milla\'s sandboxes:', error);
-      res.status(500).json({ success: false, error: 'Failed to get sandboxes' });
+      console.error("Error getting Milla's sandboxes:", error);
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get sandboxes' });
     }
   });
 
@@ -155,11 +168,17 @@ export function registerProactiveRoutes(router: Router): void {
   router.post('/api/milla/sandboxes', async (req, res) => {
     try {
       const { name, description, createdBy } = req.body;
-      const sandbox = await createSandbox({ name, description, createdBy: createdBy || 'user' });
+      const sandbox = await createSandbox({
+        name,
+        description,
+        createdBy: createdBy || 'user',
+      });
       res.json({ success: true, sandbox });
     } catch (error) {
       console.error('Error creating sandbox:', error);
-      res.status(500).json({ success: false, error: 'Failed to create sandbox' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to create sandbox' });
     }
   });
 
@@ -167,7 +186,11 @@ export function registerProactiveRoutes(router: Router): void {
     try {
       const { id } = req.params;
       const { name, description, files } = req.body;
-      const feature = await addFeatureToSandbox(id, { name, description, files: files || [] });
+      const feature = await addFeatureToSandbox(id, {
+        name,
+        description,
+        files: files || [],
+      });
       if (feature) {
         res.json({ success: true, feature });
       } else {
@@ -179,17 +202,26 @@ export function registerProactiveRoutes(router: Router): void {
     }
   });
 
-  router.post('/api/milla/sandboxes/:sandboxId/features/:featureId/test', async (req, res) => {
-    try {
-      const { sandboxId, featureId } = req.params;
-      const { testType } = req.body;
-      const result = await testFeature(sandboxId, featureId, testType || 'unit');
-      res.json({ success: true, result });
-    } catch (error) {
-      console.error('Error testing feature:', error);
-      res.status(500).json({ success: false, error: 'Failed to test feature' });
+  router.post(
+    '/api/milla/sandboxes/:sandboxId/features/:featureId/test',
+    async (req, res) => {
+      try {
+        const { sandboxId, featureId } = req.params;
+        const { testType } = req.body;
+        const result = await testFeature(
+          sandboxId,
+          featureId,
+          testType || 'unit'
+        );
+        res.json({ success: true, result });
+      } catch (error) {
+        console.error('Error testing feature:', error);
+        res
+          .status(500)
+          .json({ success: false, error: 'Failed to test feature' });
+      }
     }
-  });
+  );
 
   router.get('/api/milla/sandboxes/:id/readiness', (req, res) => {
     try {
@@ -198,7 +230,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, readiness });
     } catch (error) {
       console.error('Error evaluating readiness:', error);
-      res.status(500).json({ success: false, error: 'Failed to evaluate readiness' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to evaluate readiness' });
     }
   });
 
@@ -209,7 +243,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: marked });
     } catch (error) {
       console.error('Error marking for merge:', error);
-      res.status(500).json({ success: false, error: 'Failed to mark for merge' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to mark for merge' });
     }
   });
 
@@ -219,9 +255,10 @@ export function registerProactiveRoutes(router: Router): void {
       const filters: any = {};
       if (req.query.status) filters.status = req.query.status;
       if (req.query.source) filters.source = req.query.source;
-      if (req.query.minRelevance) filters.minRelevance = parseFloat(req.query.minRelevance as string);
+      if (req.query.minRelevance)
+        filters.minRelevance = parseFloat(req.query.minRelevance as string);
       if (req.query.tags) filters.tags = (req.query.tags as string).split(',');
-      
+
       const features = getDiscoveredFeatures(filters);
       res.json({ success: true, features });
     } catch (error) {
@@ -237,7 +274,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, recommendations });
     } catch (error) {
       console.error('Error getting recommendations:', error);
-      res.status(500).json({ success: false, error: 'Failed to get recommendations' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get recommendations' });
     }
   });
 
@@ -245,15 +284,17 @@ export function registerProactiveRoutes(router: Router): void {
     try {
       const { limit, source } = req.body;
       let features: any[] = [];
-      
+
       if (source === 'github' || !source) {
         features = await discoverFromGitHub(limit);
       }
-      
+
       res.json({ success: true, features, count: features.length });
     } catch (error) {
       console.error('Error discovering features:', error);
-      res.status(500).json({ success: false, error: 'Failed to discover features' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to discover features' });
     }
   });
 
@@ -264,7 +305,12 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, features, count: features.length });
     } catch (error) {
       console.error('Error discovering features from web:', error);
-      res.status(500).json({ success: false, error: 'Failed to discover features from web' });
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: 'Failed to discover features from web',
+        });
     }
   });
 
@@ -275,7 +321,12 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, features, count: features.length });
     } catch (error) {
       console.error('Error discovering features from YouTube:', error);
-      res.status(500).json({ success: false, error: 'Failed to discover features from YouTube' });
+      res
+        .status(500)
+        .json({
+          success: false,
+          error: 'Failed to discover features from YouTube',
+        });
     }
   });
 
@@ -287,7 +338,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: updated });
     } catch (error) {
       console.error('Error updating feature status:', error);
-      res.status(500).json({ success: false, error: 'Failed to update feature' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to update feature' });
     }
   });
 
@@ -319,7 +372,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, transactions });
     } catch (error) {
       console.error('Error getting transactions:', error);
-      res.status(500).json({ success: false, error: 'Failed to get transactions' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get transactions' });
     }
   });
 
@@ -350,14 +405,22 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, motivation });
     } catch (error) {
       console.error('Error getting motivation:', error);
-      res.status(500).json({ success: false, error: 'Failed to get motivation' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get motivation' });
     }
   });
 
   router.post('/api/milla/tokens/goals', async (req, res) => {
     try {
       const { name, description, targetTokens, reward, priority } = req.body;
-      const goal = await createMillaGoal({ name, description, targetTokens, reward, priority });
+      const goal = await createMillaGoal({
+        name,
+        description,
+        targetTokens,
+        reward,
+        priority,
+      });
       res.json({ success: true, goal });
     } catch (error) {
       console.error('Error creating goal:', error);
@@ -372,7 +435,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, report });
     } catch (error) {
       console.error('Error getting health report:', error);
-      res.status(500).json({ success: false, error: 'Failed to get health report' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get health report' });
     }
   });
 
@@ -414,7 +479,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: completed });
     } catch (error) {
       console.error('Error completing action:', error);
-      res.status(500).json({ success: false, error: 'Failed to complete action' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to complete action' });
     }
   });
 
@@ -424,7 +491,9 @@ export function registerProactiveRoutes(router: Router): void {
       res.json({ success: true, actions, count: actions.length });
     } catch (error) {
       console.error('Error running proactive cycle:', error);
-      res.status(500).json({ success: false, error: 'Failed to run proactive cycle' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to run proactive cycle' });
     }
   });
 
@@ -455,7 +524,13 @@ export function registerProactiveRoutes(router: Router): void {
     try {
       const { createPRForSandbox } = await import('./automatedPRService');
       const { sandboxId, title, description, branch, files } = req.body;
-      const pr = await createPRForSandbox({ sandboxId, title, description, branch, files });
+      const pr = await createPRForSandbox({
+        sandboxId,
+        title,
+        description,
+        branch,
+        files,
+      });
       res.json({ success: true, pr });
     } catch (error) {
       console.error('Error creating PR:', error);
@@ -466,7 +541,9 @@ export function registerProactiveRoutes(router: Router): void {
   // User Survey Routes
   router.get('/api/milla/surveys/active', async (req, res) => {
     try {
-      const { getActiveSurvey } = await import('./userSatisfactionSurveyService');
+      const { getActiveSurvey } = await import(
+        './userSatisfactionSurveyService'
+      );
       const survey = getActiveSurvey();
       res.json({ success: true, survey });
     } catch (error) {
@@ -477,32 +554,47 @@ export function registerProactiveRoutes(router: Router): void {
 
   router.post('/api/milla/surveys/respond', async (req, res) => {
     try {
-      const { submitCompleteSurvey } = await import('./userSatisfactionSurveyService');
+      const { submitCompleteSurvey } = await import(
+        './userSatisfactionSurveyService'
+      );
       const { surveyId, userId, responses, context } = req.body;
-      const result = await submitCompleteSurvey({ surveyId, userId, responses, context });
+      const result = await submitCompleteSurvey({
+        surveyId,
+        userId,
+        responses,
+        context,
+      });
       res.json({ success: true, responses: result });
     } catch (error) {
       console.error('Error submitting survey:', error);
-      res.status(500).json({ success: false, error: 'Failed to submit survey' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to submit survey' });
     }
   });
 
   router.get('/api/milla/surveys/:surveyId/analytics', async (req, res) => {
     try {
-      const { getSurveyAnalytics } = await import('./userSatisfactionSurveyService');
+      const { getSurveyAnalytics } = await import(
+        './userSatisfactionSurveyService'
+      );
       const { surveyId } = req.params;
       const analytics = getSurveyAnalytics(surveyId);
       res.json({ success: true, analytics });
     } catch (error) {
       console.error('Error getting survey analytics:', error);
-      res.status(500).json({ success: false, error: 'Failed to get analytics' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get analytics' });
     }
   });
 
   // Performance Profiling Routes
   router.get('/api/milla/performance/profiles', async (req, res) => {
     try {
-      const { getAllPerformanceProfiles } = await import('./performanceProfilingService');
+      const { getAllPerformanceProfiles } = await import(
+        './performanceProfilingService'
+      );
       const profiles = getAllPerformanceProfiles();
       res.json({ success: true, profiles });
     } catch (error) {
@@ -513,19 +605,27 @@ export function registerProactiveRoutes(router: Router): void {
 
   router.get('/api/milla/performance/slow', async (req, res) => {
     try {
-      const { getSlowOperations } = await import('./performanceProfilingService');
-      const threshold = req.query.threshold ? parseInt(req.query.threshold as string) : 3000;
+      const { getSlowOperations } = await import(
+        './performanceProfilingService'
+      );
+      const threshold = req.query.threshold
+        ? parseInt(req.query.threshold as string)
+        : 3000;
       const slowOps = getSlowOperations(threshold);
       res.json({ success: true, operations: slowOps });
     } catch (error) {
       console.error('Error getting slow operations:', error);
-      res.status(500).json({ success: false, error: 'Failed to get slow operations' });
+      res
+        .status(500)
+        .json({ success: false, error: 'Failed to get slow operations' });
     }
   });
 
   router.get('/api/milla/performance/alerts', async (req, res) => {
     try {
-      const { getUnacknowledgedPerformanceAlerts } = await import('./performanceProfilingService');
+      const { getUnacknowledgedPerformanceAlerts } = await import(
+        './performanceProfilingService'
+      );
       const alerts = getUnacknowledgedPerformanceAlerts();
       res.json({ success: true, alerts });
     } catch (error) {
@@ -536,7 +636,9 @@ export function registerProactiveRoutes(router: Router): void {
 
   router.get('/api/milla/performance/stats', async (req, res) => {
     try {
-      const { getPerformanceStatistics } = await import('./performanceProfilingService');
+      const { getPerformanceStatistics } = await import(
+        './performanceProfilingService'
+      );
       const stats = getPerformanceStatistics();
       res.json({ success: true, stats });
     } catch (error) {
@@ -545,17 +647,26 @@ export function registerProactiveRoutes(router: Router): void {
     }
   });
 
-  router.post('/api/milla/performance/alerts/:id/acknowledge', async (req, res) => {
-    try {
-      const { acknowledgePerformanceAlert } = await import('./performanceProfilingService');
-      const { id } = req.params;
-      const acknowledged = await acknowledgePerformanceAlert(id);
-      res.json({ success: acknowledged });
-    } catch (error) {
-      console.error('Error acknowledging alert:', error);
-      res.status(500).json({ success: false, error: 'Failed to acknowledge alert' });
+  router.post(
+    '/api/milla/performance/alerts/:id/acknowledge',
+    async (req, res) => {
+      try {
+        const { acknowledgePerformanceAlert } = await import(
+          './performanceProfilingService'
+        );
+        const { id } = req.params;
+        const acknowledged = await acknowledgePerformanceAlert(id);
+        res.json({ success: acknowledged });
+      } catch (error) {
+        console.error('Error acknowledging alert:', error);
+        res
+          .status(500)
+          .json({ success: false, error: 'Failed to acknowledge alert' });
+      }
     }
-  });
+  );
 
-  console.log('✅ Proactive Repository Management routes registered (with enhancements)');
+  console.log(
+    '✅ Proactive Repository Management routes registered (with enhancements)'
+  );
 }

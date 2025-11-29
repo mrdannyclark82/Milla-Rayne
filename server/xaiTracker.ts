@@ -1,11 +1,15 @@
 /**
  * XAI Tracker Service
- * 
+ *
  * Tracks AI reasoning and decision-making process for transparency
  * Provides data for the XAI overlay visualization on the client
  */
 
-import type { ReasoningStep, XAIData } from '../client/src/components/XAIOverlay';
+import { randomUUID } from 'crypto';
+import type {
+  ReasoningStep,
+  XAIData,
+} from '../client/src/components/XAIOverlay';
 
 interface ReasoningSession {
   sessionId: string;
@@ -25,9 +29,8 @@ const SESSION_TTL = 60 * 60 * 1000;
  */
 export function startReasoningSession(userId: string): string {
   // Use crypto.randomUUID() for cryptographically secure random IDs
-  const crypto = require('crypto');
-  const sessionId = `xai-${Date.now()}-${crypto.randomUUID().slice(0, 9)}`;
-  
+  const sessionId = `xai-${Date.now()}-${randomUUID().slice(0, 9)}`;
+
   reasoningSessions.set(sessionId, {
     sessionId,
     userId,
@@ -36,7 +39,7 @@ export function startReasoningSession(userId: string): string {
       reasoning: [],
     },
   });
-  
+
   return sessionId;
 }
 
@@ -46,7 +49,7 @@ export function startReasoningSession(userId: string): string {
 export function trackCommandIntent(sessionId: string, intent: string): void {
   const session = reasoningSessions.get(sessionId);
   if (!session) return;
-  
+
   session.data.commandIntent = intent;
   session.data.reasoning.push({
     type: 'intent',
@@ -62,7 +65,7 @@ export function trackCommandIntent(sessionId: string, intent: string): void {
 export function trackToolSelection(sessionId: string, tools: string[]): void {
   const session = reasoningSessions.get(sessionId);
   if (!session) return;
-  
+
   session.data.toolsSelected = tools;
   session.data.reasoning.push({
     type: 'tools',
@@ -84,7 +87,7 @@ export function trackMemoryRetrieval(
 ): void {
   const session = reasoningSessions.get(sessionId);
   if (!session) return;
-  
+
   session.data.memoryFragments = memories;
   session.data.reasoning.push({
     type: 'memory',
@@ -93,7 +96,8 @@ export function trackMemoryRetrieval(
     timestamp: new Date(),
     metadata: {
       count: memories.length,
-      avgRelevance: memories.reduce((sum, m) => sum + m.relevance, 0) / memories.length,
+      avgRelevance:
+        memories.reduce((sum, m) => sum + m.relevance, 0) / memories.length,
     },
   });
 }
@@ -109,13 +113,13 @@ export function trackResponseGeneration(
 ): void {
   const session = reasoningSessions.get(sessionId);
   if (!session) return;
-  
+
   session.data.responseGeneration = {
     model,
     tokensUsed,
     processingTime,
   };
-  
+
   session.data.reasoning.push({
     type: 'response',
     title: 'Response Generated',
@@ -141,7 +145,7 @@ export function addReasoningStep(
 ): void {
   const session = reasoningSessions.get(sessionId);
   if (!session) return;
-  
+
   session.data.reasoning.push({
     type,
     title,
@@ -157,7 +161,7 @@ export function addReasoningStep(
 export function getReasoningData(sessionId: string): XAIData | null {
   const session = reasoningSessions.get(sessionId);
   if (!session) return null;
-  
+
   return session.data;
 }
 
@@ -166,14 +170,16 @@ export function getReasoningData(sessionId: string): XAIData | null {
  */
 export function getUserReasoningSessions(userId: string): ReasoningSession[] {
   const userSessions: ReasoningSession[] = [];
-  
+
   for (const session of reasoningSessions.values()) {
     if (session.userId === userId) {
       userSessions.push(session);
     }
   }
-  
-  return userSessions.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+
+  return userSessions.sort(
+    (a, b) => b.startTime.getTime() - a.startTime.getTime()
+  );
 }
 
 /**
@@ -181,7 +187,7 @@ export function getUserReasoningSessions(userId: string): ReasoningSession[] {
  */
 export function cleanupOldSessions(): void {
   const now = Date.now();
-  
+
   for (const [sessionId, session] of reasoningSessions.entries()) {
     if (now - session.startTime.getTime() > SESSION_TTL) {
       reasoningSessions.delete(sessionId);

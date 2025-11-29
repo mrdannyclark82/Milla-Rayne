@@ -1,93 +1,93 @@
 /**
  * Homomorphic Encryption Prototype
- * 
+ *
  * This module provides a prototype implementation of homomorphic encryption (HE) for PII fields.
  * Homomorphic encryption allows computation on encrypted data without decryption, ensuring
  * privacy while maintaining functionality.
- * 
+ *
  * IMPORTANT PRODUCTION NOTES:
  * =========================
  * This is a PROTOTYPE implementation for demonstration and architectural planning.
- * 
+ *
  * For production deployment, you MUST:
  * 1. Replace with a true HE library (e.g., Microsoft SEAL, HElib, PALISADE, or Concrete)
  *    - Microsoft SEAL: https://github.com/microsoft/SEAL - Best for general-purpose HE
  *    - HElib: https://github.com/homenc/HElib - Mature BGV implementation
  *    - PALISADE: https://palisade-crypto.org/ - Full-featured lattice crypto library
  *    - Concrete: https://github.com/zama-ai/concrete - Modern TFHE implementation
- * 
+ *
  * 2. Implement proper key management and rotation
  *    - Use Hardware Security Modules (HSM) or AWS KMS/Azure Key Vault
  *    - Implement key rotation policies (recommended: quarterly)
  *    - Separate public/private key pairs for different data domains
  *    - Consider threshold cryptography for key recovery
- * 
+ *
  * 3. Add secure key storage
  *    - Never store keys in environment variables in production
  *    - Use dedicated key management services
  *    - Implement key access auditing
  *    - Use key derivation functions (KDF) with strong parameters
- * 
+ *
  * 4. Implement proper error handling and validation
  *    - Validate ciphertext integrity before operations
  *    - Implement proper exception handling for crypto operations
  *    - Add input sanitization and bounds checking
  *    - Log security events without exposing sensitive data
- * 
+ *
  * 5. Add performance optimizations for large-scale operations
  *    - Batch encryption/decryption operations
  *    - Use GPU acceleration where available
  *    - Implement ciphertext compression
  *    - Consider approximate HE schemes for numeric data
- * 
+ *
  * 6. Consider Format-Preserving Encryption (FPE) as an alternative for certain use cases
  *    - FPE maintains data format (e.g., SSN stays 9 digits)
  *    - Better for legacy systems requiring format compatibility
  *    - See NIST SP 800-38G for FPE standards
- * 
+ *
  * 7. Implement comprehensive audit logging for all encryption/decryption operations
  *    - Log all key access attempts
  *    - Track data access patterns
  *    - Implement alerting for anomalous behavior
  *    - Comply with regulatory requirements (GDPR, HIPAA, etc.)
- * 
+ *
  * 8. Add rate limiting and access controls
  *    - Prevent brute-force attacks on encrypted data
  *    - Implement per-user/per-service rate limits
  *    - Add circuit breakers for crypto operations
  *    - Monitor for crypto timing attacks
- * 
+ *
  * Current Implementation:
  * ----------------------
- * This prototype uses AES-256-CBC encryption with a special marker to simulate 
- * homomorphic encryption behavior. In production, actual HE schemes like Paillier, 
+ * This prototype uses AES-256-CBC encryption with a special marker to simulate
+ * homomorphic encryption behavior. In production, actual HE schemes like Paillier,
  * BGV, BFV, or CKKS would be used.
- * 
+ *
  * Homomorphic Encryption Schemes Overview:
  * - Paillier: Supports additive operations, best for simple aggregations
  * - BGV/BFV: Supports both addition and multiplication, good for general computation
  * - CKKS: Supports approximate arithmetic on real/complex numbers, ideal for ML
  * - TFHE: Supports arbitrary boolean circuits, best for conditional logic
- * 
+ *
  * Expected Production Integration:
  * -------------------------------
  * When integrating a real HE library, the following functions should be updated:
- * 
+ *
  * - encryptHomomorphic(data: string): HECiphertext
  *   Input: Plaintext string to encrypt
  *   Output: HE ciphertext object (not base64 string)
  *   Process: Use HE library's encrypt() with public key
- * 
+ *
  * - decryptHomomorphic(ciphertext: HECiphertext): string
  *   Input: HE ciphertext object
  *   Output: Decrypted plaintext string
  *   Process: Use HE library's decrypt() with private key
- * 
+ *
  * - queryHomomorphic(ciphertext: HECiphertext, query: string): QueryResult
  *   Input: HE ciphertext and search query
  *   Output: Search results computed on encrypted data
  *   Process: Encrypt query, perform HE operations, return encrypted result
- * 
+ *
  * - computeOnEncrypted(ciphertext: HECiphertext, operation: string, params: any): HECiphertext
  *   Input: HE ciphertext and operation specification
  *   Output: Result ciphertext after computation
@@ -97,7 +97,8 @@
 import * as crypto from 'crypto';
 
 // Encryption key - In production, this would be stored securely in KMS/HSM
-const ENCRYPTION_KEY = process.env.HE_ENCRYPTION_KEY || 'default-prototype-key-change-in-production';
+const ENCRYPTION_KEY =
+  process.env.HE_ENCRYPTION_KEY || 'default-prototype-key-change-in-production';
 
 // Salt for key derivation
 const SALT = 'milla-rayne-he-salt-v1';
@@ -118,14 +119,14 @@ function generateIV(): Buffer {
 
 /**
  * Encrypt data using homomorphic encryption (prototype)
- * 
+ *
  * In this prototype, we use AES encryption with a special marker to indicate
  * the data is homomorphically encrypted. In production, this would use a
  * true HE scheme that allows computation on encrypted data.
- * 
+ *
  * @param data - The plaintext data to encrypt
  * @returns The encrypted data with HE marker
- * 
+ *
  * @example
  * ```typescript
  * const encrypted = encryptHomomorphic("sensitive user location");
@@ -140,17 +141,17 @@ export function encryptHomomorphic(data: string): string {
   try {
     const key = deriveKey();
     const iv = generateIV();
-    
+
     // Create cipher
     const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-    
+
     // Encrypt the data
     let encrypted = cipher.update(data, 'utf8', 'base64');
     encrypted += cipher.final('base64');
-    
+
     // Combine IV and encrypted data
     const combined = iv.toString('base64') + ':' + encrypted;
-    
+
     // Add HE marker to indicate this is homomorphically encrypted
     // In production, this would be actual HE ciphertext
     return `HE_v1:${combined}`;
@@ -162,10 +163,10 @@ export function encryptHomomorphic(data: string): string {
 
 /**
  * Decrypt homomorphically encrypted data
- * 
+ *
  * @param encryptedData - The encrypted data with HE marker
  * @returns The decrypted plaintext
- * 
+ *
  * @example
  * ```typescript
  * const decrypted = decryptHomomorphic("HE_v1:base64encodeddata");
@@ -185,23 +186,23 @@ export function decryptHomomorphic(encryptedData: string): string {
   try {
     // Remove HE marker
     const combined = encryptedData.slice(6); // Remove "HE_v1:"
-    
+
     // Split IV and encrypted data
     const [ivBase64, encrypted] = combined.split(':');
     if (!ivBase64 || !encrypted) {
       throw new Error('Invalid encrypted data format');
     }
-    
+
     const key = deriveKey();
     const iv = Buffer.from(ivBase64, 'base64');
-    
+
     // Create decipher
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-    
+
     // Decrypt the data
     let decrypted = decipher.update(encrypted, 'base64', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   } catch (error) {
     console.error('[HE] Decryption failed:', error);
@@ -211,20 +212,20 @@ export function decryptHomomorphic(encryptedData: string): string {
 
 /**
  * Query homomorphically encrypted data
- * 
+ *
  * This function simulates querying encrypted data without decryption.
  * In a true HE implementation, this would perform computations directly
  * on the encrypted data.
- * 
+ *
  * PROTOTYPE BEHAVIOR:
  * - For this prototype, we decrypt, search, and re-encrypt
  * - In production HE, the data would never be decrypted
  * - Production systems would use specialized HE search algorithms
- * 
+ *
  * @param encryptedData - The encrypted data to query
  * @param query - The search query
  * @returns Object indicating if query matches and relevance score
- * 
+ *
  * @example
  * ```typescript
  * const result = queryHomomorphic(encrypted, "location");
@@ -243,20 +244,20 @@ export function queryHomomorphic(
     // PROTOTYPE: We decrypt for searching
     // In production HE, this would be done on encrypted data
     const decrypted = decryptHomomorphic(encryptedData);
-    
+
     // Perform search
     const lowerDecrypted = decrypted.toLowerCase();
     const lowerQuery = query.toLowerCase();
-    
+
     // Check for exact match
     if (lowerDecrypted.includes(lowerQuery)) {
       return { matches: true, score: 1.0, encrypted: true };
     }
-    
+
     // Check for partial match using simple similarity
     const words = lowerDecrypted.split(/\s+/);
     const queryWords = lowerQuery.split(/\s+/);
-    
+
     let matchCount = 0;
     for (const queryWord of queryWords) {
       for (const word of words) {
@@ -266,10 +267,10 @@ export function queryHomomorphic(
         }
       }
     }
-    
+
     const score = matchCount / queryWords.length;
     const matches = score > 0.5;
-    
+
     return { matches, score, encrypted: true };
   } catch (error) {
     console.error('[HE] Query failed:', error);
@@ -279,7 +280,7 @@ export function queryHomomorphic(
 
 /**
  * Check if data is homomorphically encrypted
- * 
+ *
  * @param data - The data to check
  * @returns True if data is HE encrypted
  */
@@ -289,10 +290,10 @@ export function isHomomorphicallyEncrypted(data: string): boolean {
 
 /**
  * Re-encrypt data with a new key (for key rotation)
- * 
+ *
  * In production, this would be used for periodic key rotation
  * to maintain security.
- * 
+ *
  * @param encryptedData - Currently encrypted data
  * @returns Re-encrypted data
  */
@@ -303,11 +304,11 @@ export function reencryptHomomorphic(encryptedData: string): string {
 
 /**
  * Perform a computation on encrypted data (prototype)
- * 
+ *
  * This demonstrates the concept of computing on encrypted data.
  * In this prototype, we show length calculation as an example.
  * Production HE would support addition, multiplication, comparisons, etc.
- * 
+ *
  * @param encryptedData - The encrypted data
  * @param operation - Operation to perform ('length', 'contains', etc.)
  * @param params - Operation parameters
@@ -320,7 +321,7 @@ export function computeOnEncrypted(
 ): any {
   // PROTOTYPE: Demonstrates the concept
   // Production HE would perform these operations without decryption
-  
+
   switch (operation) {
     case 'length': {
       const decrypted = decryptHomomorphic(encryptedData);
@@ -335,7 +336,9 @@ export function computeOnEncrypted(
     }
     case 'compare': {
       if (!params?.otherEncrypted) {
-        throw new Error('otherEncrypted parameter required for compare operation');
+        throw new Error(
+          'otherEncrypted parameter required for compare operation'
+        );
       }
       const data1 = decryptHomomorphic(encryptedData);
       const data2 = decryptHomomorphic(params.otherEncrypted);

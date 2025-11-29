@@ -1,6 +1,6 @@
 /**
  * Proactive Repository Manager Service
- * 
+ *
  * Central coordination service that makes Milla proactive in maintaining and improving the repository.
  * Integrates user analytics, feature discovery, sandbox testing, and token incentives.
  */
@@ -43,7 +43,13 @@ import { config } from './config';
 export interface ProactiveAction {
   id: string;
   timestamp: number;
-  type: 'bug_fix' | 'feature_proposal' | 'optimization' | 'sandbox_creation' | 'pr_preparation' | 'user_engagement' | 'autonomous_fix';
+  type:
+    | 'bug_fix'
+    | 'feature_proposal'
+    | 'optimization'
+    | 'sandbox_creation'
+    | 'pr_preparation'
+    | 'user_engagement';
   description: string;
   status: 'planned' | 'in_progress' | 'completed' | 'blocked';
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -72,7 +78,11 @@ export interface RepositoryHealthReport {
 
 class ProactiveRepositoryManagerService {
   private actions: ProactiveAction[] = [];
-  private readonly ACTIONS_FILE = path.join(process.cwd(), 'memory', 'proactive_actions.json');
+  private readonly ACTIONS_FILE = path.join(
+    process.cwd(),
+    'memory',
+    'proactive_actions.json'
+  );
   private readonly CHECK_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours (when inactive)
   private lastCheck: number = 0;
   private isProcessing: boolean = false;
@@ -103,7 +113,9 @@ class ProactiveRepositoryManagerService {
       const patterns = getInteractionPatterns();
       const suggestions = getImprovementSuggestions('identified');
 
-      console.log(`📊 Analyzed ${patterns.length} interaction patterns, found ${suggestions.length} improvement opportunities`);
+      console.log(
+        `📊 Analyzed ${patterns.length} interaction patterns, found ${suggestions.length} improvement opportunities`
+      );
 
       // Step 2: Create actions for high-priority improvements
       for (const suggestion of suggestions.slice(0, 3)) {
@@ -114,7 +126,8 @@ class ProactiveRepositoryManagerService {
       }
 
       // Step 3: Discover new features from GitHub and user patterns
-      if (Date.now() - this.lastCheck > 24 * 60 * 60 * 1000) { // Once per day
+      if (Date.now() - this.lastCheck > 24 * 60 * 60 * 1000) {
+        // Once per day
         console.log('🔍 Discovering new features from GitHub...');
         await discoverFromGitHub(5);
         await discoverFromUserPatterns(patterns);
@@ -124,7 +137,10 @@ class ProactiveRepositoryManagerService {
       // Step 4: Evaluate top feature recommendations
       const topFeatures = getTopFeatureRecommendations(3);
       for (const feature of topFeatures) {
-        if (feature.relevance >= 7 && feature.implementationComplexity !== 'high') {
+        if (
+          feature.relevance >= 7 &&
+          feature.implementationComplexity !== 'high'
+        ) {
           const action = await this.createActionForFeature(feature);
           if (action) {
             newActions.push(action);
@@ -138,9 +154,16 @@ class ProactiveRepositoryManagerService {
         for (const feature of sandbox.features) {
           if (feature.status === 'draft' || feature.status === 'testing') {
             // Run tests on features
-            const testResult = await testFeature(sandbox.id, feature.id, 'unit');
+            const testResult = await testFeature(
+              sandbox.id,
+              feature.id,
+              'unit'
+            );
             if (testResult.passed) {
-              await awardTokensForTestPass(`${feature.name} in ${sandbox.name}`, feature.id);
+              await awardTokensForTestPass(
+                `${feature.name} in ${sandbox.name}`,
+                feature.id
+              );
             }
           }
         }
@@ -216,10 +239,12 @@ class ProactiveRepositoryManagerService {
   /**
    * Create action from improvement suggestion
    */
-  private async createActionFromSuggestion(suggestion: any): Promise<ProactiveAction | null> {
+  private async createActionFromSuggestion(
+    suggestion: any
+  ): Promise<ProactiveAction | null> {
     // Check if action already exists for this suggestion
-    const existing = this.actions.find(a => 
-      a.relatedIds?.includes(suggestion.id) && a.status !== 'completed'
+    const existing = this.actions.find(
+      (a) => a.relatedIds?.includes(suggestion.id) && a.status !== 'completed'
     );
     if (existing) {
       return null;
@@ -252,9 +277,11 @@ class ProactiveRepositoryManagerService {
   /**
    * Create action for discovered feature
    */
-  private async createActionForFeature(feature: any): Promise<ProactiveAction | null> {
-    const existing = this.actions.find(a => 
-      a.relatedIds?.includes(feature.id) && a.status !== 'completed'
+  private async createActionForFeature(
+    feature: any
+  ): Promise<ProactiveAction | null> {
+    const existing = this.actions.find(
+      (a) => a.relatedIds?.includes(feature.id) && a.status !== 'completed'
     );
     if (existing) {
       return null;
@@ -294,9 +321,14 @@ class ProactiveRepositoryManagerService {
   /**
    * Create PR preparation action
    */
-  private async createPRPreparationAction(sandbox: any): Promise<ProactiveAction | null> {
-    const existing = this.actions.find(a => 
-      a.relatedIds?.includes(sandbox.id) && a.type === 'pr_preparation' && a.status !== 'completed'
+  private async createPRPreparationAction(
+    sandbox: any
+  ): Promise<ProactiveAction | null> {
+    const existing = this.actions.find(
+      (a) =>
+        a.relatedIds?.includes(sandbox.id) &&
+        a.type === 'pr_preparation' &&
+        a.status !== 'completed'
     );
     if (existing) {
       return null;
@@ -339,7 +371,7 @@ class ProactiveRepositoryManagerService {
    * Complete an action and award tokens
    */
   async completeAction(actionId: string): Promise<boolean> {
-    const action = this.actions.find(a => a.id === actionId);
+    const action = this.actions.find((a) => a.id === actionId);
     if (!action) {
       return false;
     }
@@ -351,11 +383,17 @@ class ProactiveRepositoryManagerService {
     let tokensEarned = 0;
     switch (action.type) {
       case 'bug_fix':
-        const bugReward = await awardTokensForBugFix(action.description, actionId);
+        const bugReward = await awardTokensForBugFix(
+          action.description,
+          actionId
+        );
         tokensEarned = bugReward.amount;
         break;
       case 'feature_proposal':
-        const featureReward = await awardTokensForFeature(action.description, actionId);
+        const featureReward = await awardTokensForFeature(
+          action.description,
+          actionId
+        );
         tokensEarned = featureReward.amount;
         break;
       case 'pr_preparation':
@@ -374,7 +412,9 @@ class ProactiveRepositoryManagerService {
     action.tokensEarned = tokensEarned;
     await this.saveActions();
 
-    console.log(`✅ Completed action: ${action.description} (earned ${tokensEarned} tokens)`);
+    console.log(
+      `✅ Completed action: ${action.description} (earned ${tokensEarned} tokens)`
+    );
     return true;
   }
 
@@ -389,17 +429,25 @@ class ProactiveRepositoryManagerService {
 
     // Calculate overall health score
     const userSatScore = metrics.userSatisfactionScore * 2; // 0-10
-    const successRateScore = (metrics.successfulInteractions / metrics.totalInteractions) * 10;
-    const responseScore = Math.max(0, 10 - (metrics.averageResponseTime / 1000));
-    const engagementScore = metrics.userEngagementTrend === 'increasing' ? 9 : 
-                           metrics.userEngagementTrend === 'stable' ? 7 : 5;
+    const successRateScore =
+      (metrics.successfulInteractions / metrics.totalInteractions) * 10;
+    const responseScore = Math.max(0, 10 - metrics.averageResponseTime / 1000);
+    const engagementScore =
+      metrics.userEngagementTrend === 'increasing'
+        ? 9
+        : metrics.userEngagementTrend === 'stable'
+          ? 7
+          : 5;
 
-    const overallHealth = (userSatScore + successRateScore + responseScore + engagementScore) / 4;
+    const overallHealth =
+      (userSatScore + successRateScore + responseScore + engagementScore) / 4;
 
     const recommendations: string[] = [];
 
     if (metrics.userSatisfactionScore < 4) {
-      recommendations.push('Focus on improving user satisfaction through better responses and features');
+      recommendations.push(
+        'Focus on improving user satisfaction through better responses and features'
+      );
     }
 
     if (metrics.averageResponseTime > 3000) {
@@ -407,7 +455,9 @@ class ProactiveRepositoryManagerService {
     }
 
     if (suggestions.length > 10) {
-      recommendations.push(`Address ${suggestions.length} pending improvement suggestions`);
+      recommendations.push(
+        `Address ${suggestions.length} pending improvement suggestions`
+      );
     }
 
     if (sandboxStats.active === 0) {
@@ -415,7 +465,9 @@ class ProactiveRepositoryManagerService {
     }
 
     if (metrics.userEngagementTrend === 'decreasing') {
-      recommendations.push('Implement user engagement strategies to increase interaction');
+      recommendations.push(
+        'Implement user engagement strategies to increase interaction'
+      );
     }
 
     return {
@@ -441,10 +493,13 @@ class ProactiveRepositoryManagerService {
    */
   getActiveActions(): ProactiveAction[] {
     return this.actions
-      .filter(a => a.status === 'planned' || a.status === 'in_progress')
+      .filter((a) => a.status === 'planned' || a.status === 'in_progress')
       .sort((a, b) => {
         const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority] || b.estimatedImpact - a.estimatedImpact;
+        return (
+          priorityOrder[b.priority] - priorityOrder[a.priority] ||
+          b.estimatedImpact - a.estimatedImpact
+        );
       });
   }
 
@@ -453,7 +508,7 @@ class ProactiveRepositoryManagerService {
    */
   getCompletedActions(limit: number = 20): ProactiveAction[] {
     return this.actions
-      .filter(a => a.status === 'completed')
+      .filter((a) => a.status === 'completed')
       .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0))
       .slice(0, limit);
   }
@@ -463,12 +518,16 @@ class ProactiveRepositoryManagerService {
    */
   getActionStatistics() {
     const total = this.actions.length;
-    const completed = this.actions.filter(a => a.status === 'completed').length;
-    const active = this.actions.filter(a => a.status === 'planned' || a.status === 'in_progress').length;
-    const blocked = this.actions.filter(a => a.status === 'blocked').length;
+    const completed = this.actions.filter(
+      (a) => a.status === 'completed'
+    ).length;
+    const active = this.actions.filter(
+      (a) => a.status === 'planned' || a.status === 'in_progress'
+    ).length;
+    const blocked = this.actions.filter((a) => a.status === 'blocked').length;
 
     const totalTokensEarned = this.actions
-      .filter(a => a.tokensEarned)
+      .filter((a) => a.tokensEarned)
       .reduce((sum, a) => sum + (a.tokensEarned || 0), 0);
 
     return {
@@ -478,7 +537,9 @@ class ProactiveRepositoryManagerService {
       blocked,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
       totalTokensEarned,
-      averageImpact: this.actions.reduce((sum, a) => sum + a.estimatedImpact, 0) / total || 0,
+      averageImpact:
+        this.actions.reduce((sum, a) => sum + a.estimatedImpact, 0) / total ||
+        0,
       byType: {
         bugFix: this.actions.filter(a => a.type === 'bug_fix').length,
         featureProposal: this.actions.filter(a => a.type === 'feature_proposal').length,
@@ -487,6 +548,19 @@ class ProactiveRepositoryManagerService {
         prPreparation: this.actions.filter(a => a.type === 'pr_preparation').length,
         userEngagement: this.actions.filter(a => a.type === 'user_engagement').length,
         autonomousFix: this.actions.filter(a => a.type === 'autonomous_fix').length,
+        bugFix: this.actions.filter((a) => a.type === 'bug_fix').length,
+        featureProposal: this.actions.filter(
+          (a) => a.type === 'feature_proposal'
+        ).length,
+        optimization: this.actions.filter((a) => a.type === 'optimization')
+          .length,
+        sandboxCreation: this.actions.filter(
+          (a) => a.type === 'sandbox_creation'
+        ).length,
+        prPreparation: this.actions.filter((a) => a.type === 'pr_preparation')
+          .length,
+        userEngagement: this.actions.filter((a) => a.type === 'user_engagement')
+          .length,
       },
     };
   }
@@ -563,7 +637,9 @@ export function getActiveProactiveActions(): ProactiveAction[] {
   return managerService.getActiveActions();
 }
 
-export function getCompletedProactiveActions(limit?: number): ProactiveAction[] {
+export function getCompletedProactiveActions(
+  limit?: number
+): ProactiveAction[] {
   return managerService.getCompletedActions(limit);
 }
 
