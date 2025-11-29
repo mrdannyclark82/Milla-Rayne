@@ -24,7 +24,7 @@ export const config = {
     model: process.env.XAI_MODEL,
   },
   openrouter: {
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY ?? ''',
     minimaxApiKey: process.env.OPENROUTER_MINIMAX_API_KEY,
     grok1ApiKey: process.env.OPENROUTER_GROK1_API_KEY,
     minimaxModel: 'openai/gpt-3.5-turbo',
