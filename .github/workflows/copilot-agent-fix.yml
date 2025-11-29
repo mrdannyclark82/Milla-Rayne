@@ -14,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: false  # Explicit no-subs to dodge init
       - name: Sanitize .gitmodules (submodule cleanup fix)
         run: |
           if [ -f .gitmodules ]; then
@@ -27,6 +28,10 @@ jobs:
             echo "No .gitmodules; all good"
           fi
           ls -la .gitmodules || echo "Confirmed: .gitmodules gone"
+      - name: Purge submodule cache (ghost buster)
+        run: |
+          rm -rf .git/modules || true
+          echo "Submodule cache purged—no more cleanup specters"
       - name: Quick post-checkout peek
         run: |
           echo "Post-checkout: pwd=$(pwd)"
