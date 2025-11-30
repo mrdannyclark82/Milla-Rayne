@@ -59,7 +59,7 @@ class FaraService {
 
       const pythonEnvPath = './fara_repo/.venv/bin';
       const vllmExecutable = `${pythonEnvPath}/vllm`;
-      const vllmCommand = `${vllmExecutable} serve "microsoft/Fara-7B" --port 5000 --dtype auto`;
+      const vllmCommand = `${vllmExecutable} serve "microsoft/Fara-7B" --port 5001 --dtype auto`;
       const [cmd, ...args] = vllmCommand.split(' ');
       
       this.vllmProcess = spawn(cmd, args, {
