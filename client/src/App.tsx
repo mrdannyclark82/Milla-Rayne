@@ -198,6 +198,60 @@ function App() {
     }
   };
 
+  const handleSendFaraTask = async (task: string) => {
+    setIsLoading(true);
+    setMessages((prev) => [...prev, { role: 'user', content: `/fara ${task}` }]); // Show user's Fara command
+
+    try {
+      const response = await fetch('/api/fara/run-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to run Fara task');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessageContent = '';
+
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Fara is executing the task...' },
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        assistantMessageContent += chunk;
+
+        // Update the last message with streaming content
+        setMessages((prev) => {
+          const lastMsg = prev[prev.length - 1];
+          if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content.startsWith('Fara is executing')) {
+            const updatedPrev = [...prev];
+            updatedPrev[prev.length - 1] = { ...lastMsg, content: assistantMessageContent };
+            return updatedPrev;
+          }
+          return [...prev, { role: 'assistant', content: chunk }];
+        });
+      }
+    } catch (error) {
+      console.error('Error running Fara task:', error);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Error: Failed to execute Fara task. ${error instanceof Error ? error.message : String(error)}` },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const speakMessage = (text: string) => {
     setIsSpeaking(true);
     voiceService
@@ -534,6 +588,7 @@ function App() {
             toggleListening={toggleListening}
             isMobile={isMobile}
             onSendAudio={onSendAudio}
+            onSendFaraTask={handleSendFaraTask}
             getButtonSize={getButtonSize}
           />
 

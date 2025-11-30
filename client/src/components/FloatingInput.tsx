@@ -13,6 +13,7 @@ interface FloatingInputProps {
   MobileVoiceControls?: React.ComponentType<any>;
   cancelListening?: () => void;
   onSendAudio: (audio: Blob) => void;
+  onSendFaraTask: (task: string) => void;
 }
 
 export function FloatingInput({
@@ -133,7 +134,15 @@ export function FloatingInput({
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                onSendMessage();
+                if (message.startsWith('/fara ')) {
+                  const faraTask = message.substring(6).trim();
+                  if (faraTask) {
+                    onSendFaraTask(faraTask);
+                    setMessage(''); // Clear the input after sending the command
+                  }
+                } else {
+                  onSendMessage();
+                }
               }
             }}
             placeholder={
