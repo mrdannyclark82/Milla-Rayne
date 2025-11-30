@@ -1,6 +1,7 @@
 
 import { spawn } from 'child_process';
 import { Readable } from 'stream';
+import { existsSync } from 'fs';
 
 class FaraService {
   private vllmProcess: import('child_process').ChildProcess | null = null;
@@ -53,9 +54,14 @@ class FaraService {
     console.log('Starting Fara model server...');
 
     try {
-      // For now, let's assume the environment is set up.
-      // In a real scenario, we might want to run this only on first start.
-      await this.setupPythonEnvironment(); // Ensure env is set up
+      const venvActivatePath = './fara_repo/.venv/bin/activate';
+      if (!existsSync(venvActivatePath)) {
+        console.log('Fara Python environment not found. Setting it up...');
+        await this.setupPythonEnvironment();
+        console.log('Fara Python environment setup complete.');
+      } else {
+        console.log('Fara Python environment already exists.');
+      }
 
       const pythonEnvPath = './fara_repo/.venv/bin';
       const vllmExecutable = `${pythonEnvPath}/vllm`;
