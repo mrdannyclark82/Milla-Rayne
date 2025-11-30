@@ -173,7 +173,6 @@ aria-label="Message input"
                 }}
                 variant={isListening ? 'default' : 'outline'}
                 disabled={isLoading}
-aria-label="Message input"
                 title="Click to speak"
                 className={isListening ? 'animate-pulse' : ''}
                 size={getButtonSize()}
@@ -208,7 +207,6 @@ aria-label="Message input"
                 }}
                 variant={isRecording ? 'destructive' : 'outline'}
                 disabled={isLoading}
-aria-label="Message input"
                 title={isRecording ? 'Stop recording' : 'Start recording'}
                 size={getButtonSize()}
                 aria-label={isRecording ? 'Stop recording' : 'Start recording'}

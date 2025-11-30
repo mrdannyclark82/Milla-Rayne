@@ -29,10 +29,6 @@ export function getDefaultSettings(): SceneSettings {
     particleDensity: 'medium',
     animationSpeed: 1.0,
     devDebug: false,
-      winterTheme:
-        typeof settings.winterTheme === 'boolean'
-          ? settings.winterTheme
-          : false,
     sceneBackgroundFromRP: true, // Phase 3: Enabled by default
     winterTheme: false, // Winter theme disabled by default
     sceneRoomOverlaysEnabled: true, // Room Overlays V1: Enabled by default
