@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { lazy, Suspense } from 'react';
 import { voiceService } from '@/services/voiceService';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -9,7 +10,7 @@ import { VoiceControls } from '@/components/VoiceControls';
 import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
-import { YoutubePlayerWithActiveListening } from '@/components/YoutubePlayerWithActiveListening';
+const YoutubePlayerWithActiveListening = lazy(() => import('@/components/YoutubePlayerWithActiveListening'));
 import { useNeutralizeLegacyBackground } from '@/hooks/useNeutralizeLegacyBackground';
 import type { ElevenLabsVoice } from '@/types/elevenLabs';
 import {
@@ -197,6 +198,60 @@ function App() {
     }
   };
 
+  const handleSendFaraTask = async (task: string) => {
+    setIsLoading(true);
+    setMessages((prev) => [...prev, { role: 'user', content: `/fara ${task}` }]); // Show user's Fara command
+
+    try {
+      const response = await fetch('/api/fara/run-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ task }),
+      });
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to run Fara task');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantMessageContent = '';
+
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: 'Fara is executing the task...' },
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        assistantMessageContent += chunk;
+
+        // Update the last message with streaming content
+        setMessages((prev) => {
+          const lastMsg = prev[prev.length - 1];
+          if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content.startsWith('Fara is executing')) {
+            const updatedPrev = [...prev];
+            updatedPrev[prev.length - 1] = { ...lastMsg, content: assistantMessageContent };
+            return updatedPrev;
+          }
+          return [...prev, { role: 'assistant', content: chunk }];
+        });
+      }
+    } catch (error) {
+      console.error('Error running Fara task:', error);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `Error: Failed to execute Fara task. ${error instanceof Error ? error.message : String(error)}` },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const speakMessage = (text: string) => {
     setIsSpeaking(true);
     voiceService
@@ -296,22 +351,24 @@ function App() {
 
         {/* Right 1/3 - Chat Interface */}
         {(youtubeVideoId || youtubeVideos) && (
-          <YoutubePlayerWithActiveListening
-            videoId={youtubeVideoId || undefined}
-            videos={youtubeVideos || undefined}
-            onClose={() => {
-              setYoutubeVideoId(null);
-              setYoutubeVideos(null);
-            }}
-            onSelectVideo={(videoId) => {
-              setYoutubeVideoId(videoId);
-              setYoutubeVideos(null);
-            }}
-            activeListeningEnabled={true}
-            onInsightDetected={(insight) => {
-              console.log('🎧 Insight detected:', insight);
-            }}
-          />
+          <Suspense fallback={<div>Loading video player...</div>}>
+            <YoutubePlayerWithActiveListening
+              videoId={youtubeVideoId || undefined}
+              videos={youtubeVideos || undefined}
+              onClose={() => {
+                setYoutubeVideoId(null);
+                setYoutubeVideos(null);
+              }}
+              onSelectVideo={(videoId) => {
+                setYoutubeVideoId(videoId);
+                setYoutubeVideos(null);
+              }}
+              activeListeningEnabled={true}
+              onInsightDetected={(insight) => {
+                console.log('🎧 Insight detected:', insight);
+              }}
+            />
+          </Suspense>
         )}
         <div
           className="w-1/3 h-screen p-6 border-l border-white/10"
@@ -531,6 +588,7 @@ function App() {
             toggleListening={toggleListening}
             isMobile={isMobile}
             onSendAudio={onSendAudio}
+            onSendFaraTask={handleSendFaraTask}
             getButtonSize={getButtonSize}
           />
 

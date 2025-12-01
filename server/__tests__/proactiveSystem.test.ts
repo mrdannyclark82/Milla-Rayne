@@ -208,12 +208,14 @@ describe('Proactive Repository Ownership System', () => {
   describe('Integration Tests', () => {
     it('should complete full workflow', async () => {
       // 1. Track user interaction with low success
-      await trackUserInteraction({
-        type: 'feature_use',
-        feature: 'test-feature',
-        success: false,
-        duration: 5000,
-      });
+      for (let i = 0; i < 6; i++) {
+        await trackUserInteraction({
+          type: 'feature_use',
+          feature: 'test-feature',
+          success: false,
+          duration: 5000,
+        });
+      }
 
       // 2. Check if improvement suggestion was generated
       const suggestions = getImprovementSuggestions('identified');

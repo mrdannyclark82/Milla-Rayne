@@ -79,17 +79,8 @@ class ChatViewModel : ViewModel() {
                     _messages.value = msgs
                 }
             } catch (e: Exception) {
-                _error.value = when (e) {
-                    is java.net.UnknownHostException -> "Cannot reach server. Check IP address and network connection."
-                    is java.net.ConnectException -> "Server connection refused. Make sure the server is running on port 5000."
-                    is java.net.SocketTimeoutException -> "Connection timed out. Check your network and server status."
-                    is retrofit2.HttpException -> "Server error (${e.code()}): ${e.message()}"
-                    else -> "Network error: ${e.localizedMessage ?: "Unknown error occurred"}"
-                }
-            }
-                    else -> "Network error: ${e.localizedMessage ?: "Unknown error occurred"}"
-                }
-                _error.value = "Failed to load messages: ${e.message}"
+                _error.value = "Failed to load messages: ${e.localizedMessage ?: "Unknown error"}"
+                android.util.Log.e("ChatViewModel", "Failed to load messages", e)
             }
         }
     }

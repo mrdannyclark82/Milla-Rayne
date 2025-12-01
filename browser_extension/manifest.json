@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Milla-Rayne AI Assistant",
+  "version": "1.0",
+  "description": "Context-aware AI assistant integration for web pages",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Milla-Rayne"
+  },
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

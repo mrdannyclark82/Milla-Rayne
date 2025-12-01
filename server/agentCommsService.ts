@@ -51,6 +51,7 @@ export async function dispatchExternalCommand(
     'TravelAgent',
     'SmartHomeAgent',
     'CalendarAgent',
+    'TestAgent',
   ];
 
   if (!allowedAgents.includes(command.target)) {

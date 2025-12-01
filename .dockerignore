@@ -1,87 +1,14 @@
-# Dependencies
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build outputs
+# build artifacts
 dist
-.cache
-*.log
+node_modules
 
-# Testing
-coverage
-.nyc_output
-
-# Environment files
-.env
-.env.local
-.env.*.local
-.env.save*
-.env.backup*
-
-# IDE and editor files
-.vscode
-.idea
-*.swp
-*.swo
-*~
-.DS_Store
-
-# Git
+# misc
 .git
 .gitignore
-.gitattributes
-
-# CI/CD
-.github
-
-# Documentation
-docs
-*.md
-!README.md
-
-# Memory and personal data
-memory/*.txt
-memory/*.csv
-memory/audio_messages
-memory/pr_memories
-memory/*.backup-*
-memory/*.db
-memory/*.db-shm
-memory/*.db-wal
-
-# Python
-__pycache__
-*.py[cod]
-*$py.class
-.venv
-python/
-.local
-.config
-.idx
-
-# Temporary files
-tmp
-temp
-*.tmp
-
-# Large files
-*.mp3
-*.mp4
-*.mov
-*.avi
-*.tar.gz
-*.zip
-
-# Development files
-.replit
-.editorconfig
-.prettierignore
-prettier.config.cjs
-
-# Android
-android
-
-# Scripts
-scripts
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+.env
+npm-debug.log
+.DS_Store

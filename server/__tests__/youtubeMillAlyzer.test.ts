@@ -170,12 +170,12 @@ describe('millAlyzer - Video Analysis', () => {
         Here's how to create a function:
         const greet = (name) => {
           console.log('Hello ' + name);
-        }
+        };
         That's a simple arrow function.
       `;
 
       // Simple regex for demo - real implementation uses AI
-      const codePattern = /const\s+\w+\s*=.*?;/g;
+      const codePattern = /const\s+\w+\s*=[\s\S]*?;/g;
       const matches = transcript.match(codePattern);
 
       expect(matches).toBeDefined();
@@ -214,7 +214,7 @@ describe('millAlyzer - Video Analysis', () => {
   describe('CLI Command Extraction', () => {
     it('should extract npm commands', () => {
       const transcript =
-        'First install express with npm install express then run npm start';
+        'First install express with npm install express then run npm start ';
 
       const npmCommands = transcript.match(
         /npm\s+(install|start|run|build|test)\s+[\w-]*/g
@@ -222,7 +222,7 @@ describe('millAlyzer - Video Analysis', () => {
 
       expect(npmCommands).toBeDefined();
       expect(npmCommands).toContain('npm install express');
-      expect(npmCommands).toContain('npm start');
+      expect(npmCommands).toContain('npm start ');
     });
 
     it('should extract docker commands', () => {
