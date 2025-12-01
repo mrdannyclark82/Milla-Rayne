@@ -153,7 +153,7 @@ export function FloatingInput({
             className="w-full px-4 py-2 bg-gray-900/80 border border-gray-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400 resize-none"
             rows={2}
             disabled={isLoading}
-aria-label="Message input"
+            aria-label="Message input"
           />
           <div className="flex gap-2 items-center">
             {isMobile && MobileVoiceControls && cancelListening ? (
