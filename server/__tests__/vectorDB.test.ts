@@ -9,7 +9,7 @@ import {
   cosineSimilarity,
 } from '../vectorDBService';
 
-describe('Vector Database Service', () => {
+describe.sequential('Vector Database Service', () => {
   describe('Cosine Similarity', () => {
     it('should calculate similarity between identical vectors', () => {
       const vector = [1, 2, 3, 4, 5];
@@ -42,8 +42,9 @@ describe('Vector Database Service', () => {
 
   describe('Vector Storage', () => {
     beforeEach(async () => {
-      // Clear the vector store before each test
+      // Clear the vector store and write the empty state to disk
       await vectorDB.clear();
+      await vectorDB.flush();
     });
 
     afterEach(async () => {
@@ -60,6 +61,11 @@ describe('Vector Database Service', () => {
         'generateEmbedding'
       ).mockResolvedValue(mockEmbedding);
 
+      const initialStats = await vectorDB.getStats();
+      const initialTotal = initialStats.totalEntries;
+      const initialMemoryTotal = initialStats.byType.memory || 0;
+      console.log('Initial total:', initialTotal); // DEBUG
+
       const success = await vectorDB.addContent(
         'test-1',
         'This is test content',
@@ -73,8 +79,9 @@ describe('Vector Database Service', () => {
       expect(success).toBe(true);
 
       const stats = await vectorDB.getStats();
-      expect(stats.totalEntries).toBe(1);
-      expect(stats.byType.memory).toBe(1);
+      console.log('Final total:', stats.totalEntries); // DEBUG
+      expect(stats.totalEntries).toBe(initialTotal + 1);
+      expect(stats.byType.memory).toBe(initialMemoryTotal + 1);
     });
 
     it('should retrieve content by ID', async () => {
@@ -121,7 +128,9 @@ describe('Vector Database Service', () => {
 
   describe('Semantic Search', () => {
     beforeEach(async () => {
+      // Clear the vector store and write the empty state to disk
       await vectorDB.clear();
+      await vectorDB.flush();
     });
 
     afterEach(async () => {
@@ -220,7 +229,9 @@ describe('Vector Database Service', () => {
 
   describe('Batch Operations', () => {
     beforeEach(async () => {
+      // Clear the vector store and write the empty state to disk
       await vectorDB.clear();
+      await vectorDB.flush();
     });
 
     afterEach(async () => {

@@ -73,7 +73,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
   );
 
   return (
-    <Card className="bg-[#2d3e50] border-gray-600">
+    <Card className="bg-blue-500 border-gray-600">
       <CardHeader>
         <CardTitle className="text-base font-bold text-white">
           Adaptive Background
@@ -119,6 +119,22 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           )}
         </div>
 
+        {/* Winter Theme Toggle */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Winter Theme</label>
+          <Button
+            variant={settings.winterTheme ? "default" : "outline"}
+            size="sm"
+            onClick={() => updateSetting("winterTheme", !settings.winterTheme)}
+            aria-pressed={settings.winterTheme}
+            disabled={!settings.enabled}
+          >
+            {settings.winterTheme ? "ON" : "OFF"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Force snowy night scene (overrides seasonal detection)
+          </p>
+        </div>
         {/* Background Mode Selector */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Background Mode</label>

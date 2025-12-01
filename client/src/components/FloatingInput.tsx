@@ -13,6 +13,7 @@ interface FloatingInputProps {
   MobileVoiceControls?: React.ComponentType<any>;
   cancelListening?: () => void;
   onSendAudio: (audio: Blob) => void;
+  onSendFaraTask: (task: string) => void;
 }
 
 export function FloatingInput({
@@ -133,7 +134,15 @@ export function FloatingInput({
             onKeyPress={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                onSendMessage();
+                if (message.startsWith('/fara ')) {
+                  const faraTask = message.substring(6).trim();
+                  if (faraTask) {
+                    onSendFaraTask(faraTask);
+                    setMessage(''); // Clear the input after sending the command
+                  }
+                } else {
+                  onSendMessage();
+                }
               }
             }}
             placeholder={
@@ -144,6 +153,7 @@ export function FloatingInput({
             className="w-full px-4 py-2 bg-gray-900/80 border border-gray-700/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400 resize-none"
             rows={2}
             disabled={isLoading}
+            aria-label="Message input"
           />
           <div className="flex gap-2 items-center">
             {isMobile && MobileVoiceControls && cancelListening ? (

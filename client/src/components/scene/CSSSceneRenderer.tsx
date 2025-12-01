@@ -140,6 +140,10 @@ const ParticleLayer: React.FC<{
           key={p.id}
           className="absolute w-1 h-1 bg-white rounded-full opacity-60"
           style={{
+            animation: config.type === "snowflakes" 
+              ? `snowdrift ${p.duration / animationSpeed}s linear ${p.delay}s infinite, snowtwinkle ${2 / animationSpeed}s ease-in-out infinite` 
+              : `float ${p.duration / animationSpeed}s linear ${p.delay}s infinite, twinkle ${3 / animationSpeed}s ease-in-out infinite`,
+            filter: config.type === "snowflakes" ? "blur(0.5px)" : "blur(1px)",
             left: `${p.left}%`,
             top: `${p.top}%`,
             animation: `float ${p.duration / animationSpeed}s linear ${p.delay}s infinite, twinkle ${3 / animationSpeed}s ease-in-out infinite`,

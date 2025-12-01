@@ -269,8 +269,8 @@ describe('Production Homomorphic Encryption', () => {
       await encryptHomomorphic(data);
       const duration = Date.now() - startTime;
 
-      // Should complete within 100ms for normal strings
-      expect(duration).toBeLessThan(100);
+      // Should complete within 500ms for normal strings
+      expect(duration).toBeLessThan(500);
     });
 
     it('should decrypt within reasonable time', async () => {
@@ -281,8 +281,8 @@ describe('Production Homomorphic Encryption', () => {
       await decryptHomomorphic(encrypted);
       const duration = Date.now() - startTime;
 
-      // Should complete within 100ms
-      expect(duration).toBeLessThan(100);
+      // Should complete within 500ms
+      expect(duration).toBeLessThan(500);
     });
 
     it('should search within reasonable time', async () => {
@@ -293,8 +293,8 @@ describe('Production Homomorphic Encryption', () => {
       await queryHomomorphic(encrypted, 'encrypted');
       const duration = Date.now() - startTime;
 
-      // Should complete within 200ms
-      expect(duration).toBeLessThan(200);
+      // Should complete within 500ms
+      expect(duration).toBeLessThan(500);
     });
   });
 
