@@ -24,7 +24,7 @@ export const config = {
     model: process.env.XAI_MODEL,
   },
   openrouter: {
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: process.env.OPENROUTER_API_KEY ?? ''',
     minimaxApiKey: process.env.OPENROUTER_MINIMAX_API_KEY,
     grok1ApiKey: process.env.OPENROUTER_GROK1_API_KEY,
     minimaxModel: 'openai/gpt-3.5-turbo',
@@ -89,5 +89,6 @@ export const config = {
   enableProactiveRepositoryManagement:
     process.env.ENABLE_PROACTIVE_REPOSITORY_MANAGEMENT !== 'false', // default true
   enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
+  enableAutonomousCodeImprovement: process.env.ENABLE_AUTONOMOUS_CODE_IMPROVEMENT !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
 };
