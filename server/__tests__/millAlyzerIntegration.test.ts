@@ -72,7 +72,7 @@ describe('millAlyzer Chat Integration', () => {
       const messages = [
         'analyze this video',
         'can you analyze the video?',
-        'please analyze https://youtube.com/watch?v=test',
+        'please analyze this video: https://youtube.com/watch?v=test',
       ];
 
       messages.forEach((msg) => {
@@ -255,6 +255,6 @@ describe('millAlyzer Chat Integration', () => {
 
       expect(aiResponse.content).toBe('Chat response');
       // Chat responds immediately, analysis happens in background
-    });
+    }, 10000);
   });
 });

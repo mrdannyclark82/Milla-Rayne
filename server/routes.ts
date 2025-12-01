@@ -5,6 +5,7 @@ import path from 'path';
 import { storage } from './storage';
 import { insertMessageSchema } from '@shared/schema';
 import { z } from 'zod';
+import faraRoutes from './api/fara.routes';
 import { getCurrentWeather, formatWeatherResponse } from './weatherService';
 import { performWebSearch, shouldPerformSearch } from './searchService';
 import {
@@ -301,6 +302,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   const httpServer = createServer(app);
   // Middleware
   app.use(cookieParser());
+
+  // Fara integration
+  app.use('/api/fara', faraRoutes);
 
   // Initialize enhancement task system
   const { initializeEnhancementTaskSystem } = await import(

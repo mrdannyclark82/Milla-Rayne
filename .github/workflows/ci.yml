@@ -64,6 +64,9 @@ jobs:
           NODE_ENV: test
 
       - name: Upload coverage to Codecov
+      - name: Security Audit
+        run: npm audit --audit-level high
+        continue-on-error: true
         uses: codecov/codecov-action@v4
         if: matrix.node-version == '20.x'
         with:

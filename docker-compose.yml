@@ -1,67 +1,51 @@
-version: '3.8'
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
 
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
 services:
-  milla-rayne:
+  server:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: milla-rayne
-    restart: unless-stopped
-    ports:
-      - '5000:5000'
     environment:
-      - NODE_ENV=production
-      # Copy your API keys from .env file or set them here
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - XAI_API_KEY=${XAI_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - OPENROUTER_QWEN_API_KEY=${OPENROUTER_QWEN_API_KEY}
-      - OPENROUTER_GEMINI_API_KEY=${OPENROUTER_GEMINI_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
-      - HUGGINGFACE_MODEL=${HUGGINGFACE_MODEL}
-      - WOLFRAM_ALPHA_APPID=${WOLFRAM_ALPHA_APPID}
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - MEMORY_KEY=${MEMORY_KEY}
-      - ENABLE_PREDICTIVE_UPDATES=${ENABLE_PREDICTIVE_UPDATES:-false}
-      - ENABLE_DEV_TALK=${ENABLE_DEV_TALK:-false}
-      - GOOGLE_CLOUD_TTS_API_KEY=${GOOGLE_CLOUD_TTS_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - AZURE_TTS_API_KEY=${AZURE_TTS_API_KEY}
-      - AZURE_TTS_REGION=${AZURE_TTS_REGION}
-      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
-      - VOICE_PROVIDER=${VOICE_PROVIDER:-browser-native}
-      - VOICE_QUALITY=${VOICE_QUALITY:-low-latency}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - GOOGLE_OAUTH_REDIRECT_URI=${GOOGLE_OAUTH_REDIRECT_URI:-http://localhost:5000/oauth/callback}
-      - ADAPTIVE_SCENES_ENABLED=${ADAPTIVE_SCENES_ENABLED:-false}
-      - ADAPTIVE_SCENES_PERFORMANCE_MODE=${ADAPTIVE_SCENES_PERFORMANCE_MODE:-balanced}
-      - ENABLE_ADVANCED_PARSER=${ENABLE_ADVANCED_PARSER:-true}
-    volumes:
-      # Persist memory database
-      - ./memory:/app/memory
-      # Optional: mount custom scene backgrounds
-      - ./client/public/assets/scenes:/app/client/public/assets/scenes
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'node',
-          '-e',
-          "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})",
-        ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    networks:
-      - milla-network
+      NODE_ENV: production
+    ports:
+      - 5000:5000
 
-networks:
-  milla-network:
-    driver: bridge
+# The commented out section below is an example of how to define a PostgreSQL
+# database that your application can use. `depends_on` tells Docker Compose to
+# start the database before your application. The `db-data` volume persists the
+# database data between container restarts. The `db-password` secret is used
+# to set the database password. You must create `db/password.txt` and add
+# a password of your choosing to it before running `docker-compose up`.
+#     depends_on:
+#       db:
+#         condition: service_healthy
+#   db:
+#     image: postgres
+#     restart: always
+#     user: postgres
+#     secrets:
+#       - db-password
+#     volumes:
+#       - db-data:/var/lib/postgresql/data
+#     environment:
+#       - POSTGRES_DB=example
+#       - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+#     expose:
+#       - 5432
+#     healthcheck:
+#       test: [ "CMD", "pg_isready" ]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+# volumes:
+#   db-data:
+# secrets:
+#   db-password:
+#     file: db/password.txt
 
-volumes:
-  memory:
-    driver: local

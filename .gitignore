@@ -90,3 +90,6 @@ android/.idea/
 android/local.properties
 android/*.iml
 android/.DS_Store
+-e 
+# JDK directory (too large for Git)
+ jdk-17.0.2/
