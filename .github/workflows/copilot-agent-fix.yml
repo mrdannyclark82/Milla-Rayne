@@ -11,7 +11,7 @@ jobs:
       CALLBACK_ENDPOINT: ${{ secrets.COPILOT_CALLBACK_ENDPOINT || '' }}
     steps:
       - name: Checkout repository (fetch full history)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 0
           submodules: false  # Explicit no-subs to dodge init
