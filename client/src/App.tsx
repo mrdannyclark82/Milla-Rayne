@@ -37,6 +37,8 @@ const FALLBACK_MESSAGES = {
   processing: "I'm processing your message. Please give me a moment.",
   voiceProcessing: "I'm processing your voice message. Please give me a moment.",
   defaultResponse: "I'm here with you! What would you like to talk about?",
+  connectionError: "I'm having trouble connecting right now. Please try again in a moment.",
+  audioError: "I'm having trouble processing your audio. Please try again.",
 } as const;
 
 function App() {
@@ -210,6 +212,11 @@ function App() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
+      // Show error message to user
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: FALLBACK_MESSAGES.connectionError },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -340,6 +347,11 @@ function App() {
       }
     } catch (error) {
       console.error('Error sending audio:', error);
+      // Show error message to user
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: FALLBACK_MESSAGES.audioError },
+      ]);
     } finally {
       setIsLoading(false);
     }
