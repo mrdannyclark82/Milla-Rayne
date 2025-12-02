@@ -37,10 +37,6 @@ jobs:
             echo "No .gitmodules; all good"
           fi
           ls -la .gitmodules || echo "Confirmed: .gitmodules gone"
-      - name: Purge submodule cache (ghost buster)
-        run: |
-          rm -rf .git/modules || true
-          echo "Submodule cache purged—no more cleanup specters"
       - name: Quick post-checkout peek
         run: |
           echo "Post-checkout: pwd=$(pwd)"
