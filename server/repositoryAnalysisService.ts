@@ -322,11 +322,17 @@ Please provide:
 Keep your response conversational and supportive, as you're helping your partner understand this code. Use "sweetheart" or "love" occasionally, and be encouraging about the code quality while being honest about areas for improvement.
 `;
 
+  // Common context configuration for AI providers
+  const DEFAULT_USER_NAME = 'Danny Ray';
+  const MAX_TOKENS = 2000;
+  const baseContext = { conversationHistory: [], userName: DEFAULT_USER_NAME };
+  const simpleContext = { userName: DEFAULT_USER_NAME };
+
   // Try multiple AI providers in order of preference
   const providers = [
-    { name: 'OpenAI', fn: async () => await generateOpenAIResponse(analysisPrompt, { conversationHistory: [], userName: 'Danny Ray' }, 2000) },
-    { name: 'Gemini', fn: async () => await generateGeminiResponse(analysisPrompt, { userName: 'Danny Ray' }) },
-    { name: 'OpenRouter', fn: async () => await generateOpenRouterResponse(analysisPrompt, { conversationHistory: [], userName: 'Danny Ray' }, 2000) },
+    { name: 'OpenAI', fn: async () => await generateOpenAIResponse(analysisPrompt, baseContext, MAX_TOKENS) },
+    { name: 'Gemini', fn: async () => await generateGeminiResponse(analysisPrompt, simpleContext) },
+    { name: 'OpenRouter', fn: async () => await generateOpenRouterResponse(analysisPrompt, baseContext, MAX_TOKENS) },
   ];
 
   for (const provider of providers) {

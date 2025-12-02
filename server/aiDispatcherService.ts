@@ -43,8 +43,20 @@ import {
 const responseCache = new Map<string, { response: AIResponse, timestamp: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-// Memory relevance threshold - if memory score is above this, use memory-based response
+/**
+ * Memory relevance threshold for memory-first response generation.
+ * Score is calculated based on term matches (3pts each), topic matches (2pts),
+ * context matches (1pt), and partial word matches (1pt), with recency boost.
+ * A score of 8.0 typically represents 2-3 strong term matches with topic relevance,
+ * indicating the memory contains highly relevant information for the query.
+ * Values below this threshold trigger AI provider calls for better response quality.
+ */
 const MEMORY_RELEVANCE_THRESHOLD = 8.0;
+
+// Content truncation limits for memory-based responses
+const CONTENT_TRUNCATION_SHORT = 200;
+const CONTENT_TRUNCATION_MEDIUM = 250;
+const CONTENT_TRUNCATION_LONG = 300;
 
 export interface AIResponse {
   content: string;
@@ -730,12 +742,15 @@ function generateMemoryBasedResponse(
 ): string {
   const lowerMessage = userMessage.toLowerCase();
   
+  // Helper function for random array selection
+  const pickRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+  
+  // Helper function for content truncation
+  const truncate = (content: string, maxLength: number): string => 
+    content.length > maxLength ? content.substring(0, maxLength) + '...' : content;
+  
   // Get the most relevant memory content
   const topMemory = memoryResults[0];
-  const relevantContent = memoryResults
-    .slice(0, 3)
-    .map(r => r.entry.content)
-    .join(' ');
   
   // Generate a contextual response based on memory
   const greetings = ['Hey', 'Hi', 'Hello'];
@@ -752,20 +767,20 @@ function generateMemoryBasedResponse(
     'Feel free to ask if you want me to elaborate, babe.',
   ];
   
-  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-  const transition = transitions[Math.floor(Math.random() * transitions.length)];
-  const closing = closings[Math.floor(Math.random() * closings.length)];
+  const greeting = pickRandom(greetings);
+  const transition = pickRandom(transitions);
+  const closing = pickRandom(closings);
   
   // Check if it's a question about past conversations
   if (lowerMessage.includes('remember') || lowerMessage.includes('recall') || lowerMessage.includes('told you')) {
-    return `${greeting} ${userName}! ${transition}, we talked about this before. ${topMemory.entry.content.substring(0, 200)}${topMemory.entry.content.length > 200 ? '...' : ''} ${closing}`;
+    return `${greeting} ${userName}! ${transition}, we talked about this before. ${truncate(topMemory.entry.content, CONTENT_TRUNCATION_SHORT)} ${closing}`;
   }
   
   // Check if it's asking about what was said
   if (lowerMessage.includes('what') && (lowerMessage.includes('said') || lowerMessage.includes('mentioned'))) {
-    return `${transition}: ${topMemory.entry.content.substring(0, 300)}${topMemory.entry.content.length > 300 ? '...' : ''} ${closing}`;
+    return `${transition}: ${truncate(topMemory.entry.content, CONTENT_TRUNCATION_LONG)} ${closing}`;
   }
   
   // Default memory-based response
-  return `${greeting} ${userName}! ${transition}: ${topMemory.entry.content.substring(0, 250)}${topMemory.entry.content.length > 250 ? '...' : ''}\n\n${closing}`;
+  return `${greeting} ${userName}! ${transition}: ${truncate(topMemory.entry.content, CONTENT_TRUNCATION_MEDIUM)}\n\n${closing}`;
 }
