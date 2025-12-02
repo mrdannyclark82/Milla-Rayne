@@ -2,10 +2,6 @@ import {
   generateXAIResponse,
   PersonalityContext as XAIPersonalityContext,
 } from './xaiService';
-
-const responseCache = new Map<string, { response: AIResponse, timestamp: number }>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-
 import {
   generateOpenRouterResponse,
   generateGrokResponse,
@@ -15,32 +11,7 @@ import { generateGeminiResponse } from './geminiService';
 import { storage } from './storage';
 import { config } from './config';
 import { generateOpenAIResponse } from './openaiChatService';
-import { getSemanticMemoryContext } from './memoryService';
-import { semanticSearchVideos } from './youtubeKnowledgeBase';
-import {
-  type AVRagContext,
-  enrichMessageWithAVContext,
-  validateSceneContext,
-  validateVoiceContext,
-  createAVContext,
-} from './avRagService';
-import type { VoiceAnalysisResult } from './voiceAnalysisService';
-import type { UICommand } from '../shared/schema';
-import {
-  startReasoningSession,
-  trackCommandIntent,
-  trackToolSelection,
-} from './xaiService';
-import {
-  generateOpenRouterResponse,
-  generateGrokResponse,
-  OpenRouterContext,
-} from './openrouterService';
-import { generateGeminiResponse } from './geminiService';
-import { storage } from './storage';
-import { config } from './config';
-import { generateOpenAIResponse } from './openaiChatService';
-import { getSemanticMemoryContext } from './memoryService';
+import { getSemanticMemoryContext, searchMemoryCore } from './memoryService';
 import { semanticSearchVideos } from './youtubeKnowledgeBase';
 import {
   type AVRagContext,
@@ -67,6 +38,13 @@ import {
   formatPersonaForPrompt,
   type ActiveUserPersona,
 } from './personaFusionService';
+
+// Response cache for avoiding duplicate AI calls
+const responseCache = new Map<string, { response: AIResponse, timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Memory relevance threshold - if memory score is above this, use memory-based response
+const MEMORY_RELEVANCE_THRESHOLD = 8.0;
 
 export interface AIResponse {
   content: string;
@@ -230,17 +208,58 @@ export async function dispatchAIResponse(
   traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
   // P1.5: Generate trace ID if not provided
-  const cacheKey = `${userMessage}-${JSON.stringify(context)}`;
+  const requestTraceId = traceId || `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+  const cacheKey = `${userMessage.substring(0, 100)}-${context.userId || 'anon'}`;
+  const cached = responseCache.get(cacheKey);
+  
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     console.log(`🔍 [TRACE:${requestTraceId}] Cache hit for key: ${cacheKey}`);
     return cached.response;
   }
+  
   console.log(`🔍 [TRACE:${requestTraceId}] dispatchAIResponse - Starting`);
   console.log(
     `🔍 [TRACE:${requestTraceId}] User: ${context.userId || 'anonymous'}, Message length: ${userMessage.length}`
   );
 
   const startTime = Date.now();
+  const userId = context.userId || 'default-user';
+
+  // ============================================
+  // MEMORY-FIRST APPROACH: Check if memories can answer the query
+  // Only call AI provider if memory relevance is low
+  // ============================================
+  try {
+    const memoryResults = await searchMemoryCore(userMessage, 5, userId);
+    const topScore = memoryResults.length > 0 ? memoryResults[0].relevanceScore : 0;
+    
+    console.log(`🧠 [TRACE:${requestTraceId}] Memory search: ${memoryResults.length} results, top score: ${topScore.toFixed(2)}`);
+    
+    // If we have high-relevance memories, generate response from them without calling AI
+    if (topScore >= MEMORY_RELEVANCE_THRESHOLD && memoryResults.length > 0) {
+      console.log(`🧠 [TRACE:${requestTraceId}] Using memory-based response (score ${topScore.toFixed(2)} >= ${MEMORY_RELEVANCE_THRESHOLD})`);
+      
+      const memoryBasedResponse = generateMemoryBasedResponse(userMessage, memoryResults, context.userName);
+      
+      const response: AIResponse = {
+        content: memoryBasedResponse,
+        success: true,
+        xaiSessionId: requestTraceId,
+      };
+      
+      // Cache the response
+      responseCache.set(cacheKey, { response, timestamp: Date.now() });
+      
+      const duration = Date.now() - startTime;
+      console.log(`🔍 [TRACE:${requestTraceId}] Memory-based response completed in ${duration}ms`);
+      
+      return response;
+    }
+    
+    console.log(`🔍 [TRACE:${requestTraceId}] Memory score too low (${topScore.toFixed(2)} < ${MEMORY_RELEVANCE_THRESHOLD}), calling AI provider`);
+  } catch (error) {
+    console.error(`🔍 [TRACE:${requestTraceId}] Memory search error, falling back to AI:`, error);
+  }
 
   // Start XAI reasoning session
   const xaiSessionId = startReasoningSession(context.userId || 'anonymous');
@@ -698,4 +717,55 @@ function detectUICommand(
   }
 
   return undefined;
+}
+
+/**
+ * Generate a response based solely on memory content without calling external AI
+ * This is used when memory relevance score is high enough
+ */
+function generateMemoryBasedResponse(
+  userMessage: string,
+  memoryResults: Array<{ entry: { content: string; speaker: string }; relevanceScore: number; matchedTerms: string[] }>,
+  userName: string
+): string {
+  const lowerMessage = userMessage.toLowerCase();
+  
+  // Get the most relevant memory content
+  const topMemory = memoryResults[0];
+  const relevantContent = memoryResults
+    .slice(0, 3)
+    .map(r => r.entry.content)
+    .join(' ');
+  
+  // Generate a contextual response based on memory
+  const greetings = ['Hey', 'Hi', 'Hello'];
+  const transitions = [
+    'I remember',
+    'From what I recall',
+    'Based on our conversations',
+    'I know from our history that',
+  ];
+  const closings = [
+    'Is there anything else you\'d like to know, love?',
+    'What else can I help you with, sweetheart?',
+    'Let me know if you need more details!',
+    'Feel free to ask if you want me to elaborate, babe.',
+  ];
+  
+  const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+  const transition = transitions[Math.floor(Math.random() * transitions.length)];
+  const closing = closings[Math.floor(Math.random() * closings.length)];
+  
+  // Check if it's a question about past conversations
+  if (lowerMessage.includes('remember') || lowerMessage.includes('recall') || lowerMessage.includes('told you')) {
+    return `${greeting} ${userName}! ${transition}, we talked about this before. ${topMemory.entry.content.substring(0, 200)}${topMemory.entry.content.length > 200 ? '...' : ''} ${closing}`;
+  }
+  
+  // Check if it's asking about what was said
+  if (lowerMessage.includes('what') && (lowerMessage.includes('said') || lowerMessage.includes('mentioned'))) {
+    return `${transition}: ${topMemory.entry.content.substring(0, 300)}${topMemory.entry.content.length > 300 ? '...' : ''} ${closing}`;
+  }
+  
+  // Default memory-based response
+  return `${greeting} ${userName}! ${transition}: ${topMemory.entry.content.substring(0, 250)}${topMemory.entry.content.length > 250 ? '...' : ''}\n\n${closing}`;
 }

@@ -153,11 +153,21 @@ function App() {
       if (!response.ok) throw new Error('Failed to get response');
 
       const data = await response.json();
-      const assistantMessage = data.response;
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: assistantMessage },
-      ]);
+      const assistantMessage = data.response || "I'm processing your message. Please give me a moment.";
+      
+      // Only add the message if it's not empty
+      if (assistantMessage && assistantMessage.trim()) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: assistantMessage },
+        ]);
+      } else {
+        console.warn('Empty response received from server');
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: "I'm here with you! What would you like to talk about?" },
+        ]);
+      }
 
       if (data.sceneContext) {
         if (data.sceneContext.location) {
@@ -293,11 +303,21 @@ function App() {
       if (!response.ok) throw new Error('Failed to send audio');
 
       const data = await response.json();
-      const assistantMessage = data.response;
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: assistantMessage },
-      ]);
+      const assistantMessage = data.response || "I'm processing your voice message. Please give me a moment.";
+      
+      // Only add the message if it's not empty
+      if (assistantMessage && assistantMessage.trim()) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: assistantMessage },
+        ]);
+      } else {
+        console.warn('Empty response received from audio endpoint');
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: "I'm here with you! What would you like to talk about?" },
+        ]);
+      }
 
       if (data.sceneContext) {
         if (data.sceneContext.location) {

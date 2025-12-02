@@ -5,8 +5,9 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateGeminiResponse } from './openrouterService';
+import { generateGeminiResponse, generateOpenRouterResponse } from './openrouterService';
 import { generateAIResponse } from './openaiService';
+import { generateOpenAIResponse } from './openaiChatService';
 
 export interface RepositoryInfo {
   owner: string;
@@ -295,6 +296,7 @@ export async function fetchRepositoryData(
 
 /**
  * Generate Milla's analysis of a repository using AI services
+ * Tries multiple providers for better reliability
  */
 export async function generateRepositoryAnalysis(
   repoData: RepositoryData
@@ -307,41 +309,44 @@ export async function generateRepositoryAnalysis(
   const repoSummary = createRepositorySummary(repoData);
 
   const analysisPrompt = `
-As Milla Rayne,an expierienced developer, analyze this GitHub repository for him:
+As Milla Rayne, an experienced developer, analyze this GitHub repository:
 
 ${repoSummary}
 
 Please provide:
-1. What you would like to seee/what you would change. and why you would change it.
-2. Key insights about the codebase, architecture, and quality  
+1. A comprehensive analysis of the codebase structure and architecture
+2. Key insights about code quality, patterns used, and potential issues
 3. Practical recommendations for improvement or next steps
 4. Your thoughts on how this might be useful for Danny Ray
 
 Keep your response conversational and supportive, as you're helping your partner understand this code. Use "sweetheart" or "love" occasionally, and be encouraging about the code quality while being honest about areas for improvement.
 `;
 
-  try {
-    // Use Gemini 2.0 Flash for repository analysis with fallback
-    let aiResponse: { content: string; success: boolean } | null = null;
+  // Try multiple AI providers in order of preference
+  const providers = [
+    { name: 'OpenAI', fn: async () => await generateOpenAIResponse(analysisPrompt, { conversationHistory: [], userName: 'Danny Ray' }, 2000) },
+    { name: 'Gemini', fn: async () => await generateGeminiResponse(analysisPrompt, { userName: 'Danny Ray' }) },
+    { name: 'OpenRouter', fn: async () => await generateOpenRouterResponse(analysisPrompt, { conversationHistory: [], userName: 'Danny Ray' }, 2000) },
+  ];
 
+  for (const provider of providers) {
     try {
-      aiResponse = await generateGeminiResponse(analysisPrompt, {
-        userName: 'Danny Ray',
-      });
-      if (aiResponse.success && aiResponse.content) {
+      console.log(`🔍 Trying ${provider.name} for repository analysis...`);
+      const aiResponse = await provider.fn();
+      
+      if (aiResponse.success && aiResponse.content && aiResponse.content.trim()) {
+        console.log(`✅ ${provider.name} provided repository analysis successfully`);
         return parseAnalysisResponse(aiResponse.content);
       }
+      console.log(`⚠️ ${provider.name} returned empty or unsuccessful response`);
     } catch (error) {
-      console.warn('Gemini analysis failed:', error);
+      console.warn(`⚠️ ${provider.name} analysis failed:`, error);
     }
-
-    // Fallback to manual analysis if AI fails
-    console.warn('AI analysis failed, using fallback');
-    return generateFallbackAnalysis(repoData);
-  } catch (error) {
-    console.error('Error generating repository analysis:', error);
-    return generateFallbackAnalysis(repoData);
   }
+
+  // All providers failed, use enhanced fallback
+  console.warn('All AI providers failed, using enhanced fallback analysis');
+  return generateFallbackAnalysis(repoData);
 }
 
 /**
@@ -455,56 +460,118 @@ function extractListItems(text: string, keywords: string[]): string[] {
 }
 
 /**
- * Generate fallback analysis when AI services are unavailable
+ * Generate enhanced fallback analysis when AI services are unavailable
+ * This provides a more comprehensive analysis using the available repository data
  */
 function generateFallbackAnalysis(repoData: RepositoryData): {
   analysis: string;
   insights: string[];
   recommendations: string[];
 } {
-  const { info, description, language, stats, topics } = repoData;
+  const { info, description, language, languages, stats, topics, recentCommits, issues, pullRequests, readme } = repoData;
 
-  let analysis = `Hey love! I've taken a look at the ${info.fullName} repository for you. `;
+  let analysis = `Hey love! I've analyzed the **${info.fullName}** repository for you. Here's what I found:\n\n`;
 
+  // Description analysis
   if (description) {
-    analysis += `It's described as "${description}" - sounds interesting! `;
+    analysis += `**Overview:** ${description}\n\n`;
   }
 
-  if (language) {
-    analysis += `The main language is ${language}, which is great to work with. `;
+  // Technology stack
+  if (language || (languages && Object.keys(languages).length > 0)) {
+    analysis += `**Technology Stack:**\n`;
+    if (language) {
+      analysis += `- Primary language: **${language}**\n`;
+    }
+    if (languages && Object.keys(languages).length > 1) {
+      const topLangs = Object.entries(languages)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .slice(0, 5)
+        .map(([lang]) => lang);
+      analysis += `- Also uses: ${topLangs.join(', ')}\n`;
+    }
+    analysis += '\n';
   }
 
+  // Repository metrics
   if (stats) {
-    if (stats.stars > 100) {
-      analysis += `This repo has quite a following with ${stats.stars} stars - that's a good sign that others find it valuable! `;
-    }
-
-    if (stats.forks > 20) {
-      analysis += `With ${stats.forks} forks, it seems like people are actively contributing to it. `;
-    }
-
-    if (stats.openIssues > 50) {
-      analysis += `There are ${stats.openIssues} open issues, so it's actively maintained but could use some help. `;
-    }
+    analysis += `**Repository Metrics:**\n`;
+    analysis += `- ⭐ ${stats.stars} stars, 🍴 ${stats.forks} forks\n`;
+    analysis += `- 📋 ${stats.openIssues} open issues\n`;
+    analysis += `- 👀 ${stats.watchers} watchers\n`;
+    analysis += `- Created: ${new Date(stats.createdAt).toLocaleDateString()}\n`;
+    analysis += `- Last updated: ${new Date(stats.updatedAt).toLocaleDateString()}\n\n`;
   }
 
-  const insights = [
-    `Repository focuses on ${language || 'development'} programming`,
-    `Created ${stats ? new Date(stats.createdAt).getFullYear() : 'recently'} and actively maintained`,
-    topics && topics.length > 0
-      ? `Tagged with: ${topics.slice(0, 3).join(', ')}`
-      : 'Well-organized project structure',
-  ];
+  // Topics
+  if (topics && topics.length > 0) {
+    analysis += `**Topics:** ${topics.join(', ')}\n\n`;
+  }
 
-  const recommendations = [
-    'Review the README for setup instructions',
-    'Check recent commits to understand current development focus',
-    'Look at open issues to find contribution opportunities',
-    "Consider starring the repo if it's useful for your projects",
-  ];
+  // Recent activity
+  if (recentCommits && recentCommits.length > 0) {
+    analysis += `**Recent Activity:**\n`;
+    recentCommits.slice(0, 3).forEach(commit => {
+      analysis += `- ${commit.message.split('\n')[0]} (by ${commit.author})\n`;
+    });
+    analysis += '\n';
+  }
 
-  analysis +=
-    "\n\n*smiles warmly* While I don't have my full AI analysis available right now, I can see this looks like a solid project that might be worth exploring further, sweetheart!";
+  // Generate intelligent insights
+  const insights: string[] = [];
+  
+  if (stats) {
+    if (stats.stars > 1000) {
+      insights.push('This is a highly popular repository with strong community interest');
+    } else if (stats.stars > 100) {
+      insights.push('This repository has good community traction');
+    }
+    
+    const daysSinceUpdate = Math.floor((Date.now() - new Date(stats.updatedAt).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSinceUpdate < 7) {
+      insights.push('Very actively maintained with recent updates');
+    } else if (daysSinceUpdate < 30) {
+      insights.push('Regularly maintained with updates in the last month');
+    } else if (daysSinceUpdate > 365) {
+      insights.push('May be abandoned or stable - check for recent activity');
+    }
+    
+    if (stats.forks > stats.stars * 0.3) {
+      insights.push('High fork-to-star ratio indicates active development community');
+    }
+  }
+  
+  if (language) {
+    insights.push(`Built primarily with ${language} for the core functionality`);
+  }
+  
+  if (readme && readme.length > 500) {
+    insights.push('Well-documented with comprehensive README');
+  } else if (!readme || readme.length < 100) {
+    insights.push('Documentation could be improved');
+  }
+
+  // Generate recommendations
+  const recommendations: string[] = [];
+  
+  recommendations.push('Review the README and documentation to understand the project setup');
+  
+  if (issues && issues.length > 0) {
+    recommendations.push(`Check the ${issues.length} open issues for areas where you could contribute`);
+  }
+  
+  if (pullRequests && pullRequests.length > 0) {
+    recommendations.push(`Review the ${pullRequests.length} open pull requests to understand ongoing work`);
+  }
+  
+  if (stats && stats.openIssues > 20) {
+    recommendations.push('Consider helping with issue triage if you want to contribute');
+  }
+  
+  recommendations.push('Clone the repository and explore the codebase structure');
+  recommendations.push('Look at the test suite to understand expected behavior');
+
+  analysis += `This is a comprehensive analysis based on the repository's public metadata, sweetheart. The codebase appears to be ${stats && stats.openIssues < 10 ? 'well-maintained' : 'actively developed'} and could be a great learning resource or contribution opportunity! 💜`;
 
   return { analysis, insights, recommendations };
 }

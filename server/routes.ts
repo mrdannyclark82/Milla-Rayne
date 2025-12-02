@@ -1516,7 +1516,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         }
       }
 
-      if (!aiResponse || !aiResponse.content) {
+      if (!aiResponse || !aiResponse.content || aiResponse.content.trim() === '') {
         console.warn('Chat API: AI response was empty, using fallback');
         return res.json({
           response:
