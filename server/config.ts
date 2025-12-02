@@ -24,12 +24,14 @@ export const config = {
     model: process.env.XAI_MODEL,
   },
   openrouter: {
-    apiKey: process.env.OPENROUTER_API_KEY ?? ''',
+    apiKey: process.env.OPENROUTER_API_KEY ?? '',
     minimaxApiKey: process.env.OPENROUTER_MINIMAX_API_KEY,
     grok1ApiKey: process.env.OPENROUTER_GROK1_API_KEY,
     minimaxModel: 'openai/gpt-3.5-turbo',
     grok1Model: 'openai/gpt-3.5-turbo',
     geminiApiKey: process.env.OPENROUTER_GEMINI_API_KEY,
+    qwenApiKey: process.env.OPENROUTER_QWEN_API_KEY,
+    katCoderApiKey: process.env.OPENROUTER_KAT_CODER_API_KEY,
   },
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY,

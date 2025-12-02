@@ -521,3 +521,89 @@ export async function generateGeminiResponse(
     };
   }
 }
+
+/**
+ * Generate code analysis using OpenRouter with a specific model
+ */
+export async function generateOpenRouterCodeAnalysis(
+  prompt: string,
+  model: string,
+  apiKey?: string
+): Promise<OpenRouterResponse> {
+  try {
+    const openrouterKey = apiKey || config.openrouter.apiKey;
+    
+    if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
+      console.warn('OpenRouter API key not configured');
+      return {
+        content: 'OpenRouter API key not configured',
+        success: false,
+        error: 'Missing API key',
+      };
+    }
+
+    console.log(`Using OpenRouter model: ${model}`);
+
+    const response = await fetch(
+      'https://openrouter.ai/api/v1/chat/completions',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openrouterKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://millarayne.com',
+          'X-Title': 'Milla Rayne - Repository Analysis',
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          max_tokens: 4096,
+          temperature: 0.7,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`OpenRouter ${model} API error:`, response.status, errorText);
+      return {
+        content: `Failed to get response from ${model}`,
+        success: false,
+        error: `API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (
+      !data.choices ||
+      !data.choices[0] ||
+      !data.choices[0].message ||
+      !data.choices[0].message.content
+    ) {
+      console.error(`Unexpected ${model} response format:`, data);
+      return {
+        content: 'Received unexpected response format',
+        success: false,
+        error: 'Invalid response format',
+      };
+    }
+
+    return {
+      content: data.choices[0].message.content,
+      success: true,
+    };
+  } catch (error) {
+    console.error(`OpenRouter ${model} service error:`, error);
+    return {
+      content: 'Encountered an error while processing request',
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}

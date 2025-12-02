@@ -230,7 +230,9 @@ export async function dispatchAIResponse(
   traceId?: string // P1.5: Add optional trace ID parameter
 ): Promise<AIResponse> {
   // P1.5: Generate trace ID if not provided
+  const requestTraceId = traceId || `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const cacheKey = `${userMessage}-${JSON.stringify(context)}`;
+  const cached = responseCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     console.log(`🔍 [TRACE:${requestTraceId}] Cache hit for key: ${cacheKey}`);
     return cached.response;

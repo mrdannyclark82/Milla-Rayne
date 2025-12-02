@@ -5,8 +5,9 @@
  * analyze GitHub repositories for users.
  */
 
-import { generateGeminiResponse } from './openrouterService';
+import { generateGeminiResponse, generateOpenRouterCodeAnalysis } from './openrouterService';
 import { generateAIResponse } from './openaiService';
+import { config } from './config';
 
 export interface RepositoryInfo {
   owner: string;
@@ -321,21 +322,42 @@ Keep your response conversational and supportive, as you're helping your partner
 `;
 
   try {
-    // Use Gemini 2.0 Flash for repository analysis with fallback
+    // Use qwen/qwen3-coder:free for repository analysis with fallback to kwaipilot/kat-coder-pro:free
     let aiResponse: { content: string; success: boolean } | null = null;
 
+    // Try primary model: qwen/qwen-2.5-coder-32b-instruct
     try {
-      aiResponse = await generateGeminiResponse(analysisPrompt, {
-        userName: 'Danny Ray',
-      });
+      console.log('Attempting repository analysis with qwen/qwen-2.5-coder-32b-instruct');
+      aiResponse = await generateOpenRouterCodeAnalysis(
+        analysisPrompt, 
+        'qwen/qwen-2.5-coder-32b-instruct',
+        config.openrouter.qwenApiKey
+      );
       if (aiResponse.success && aiResponse.content) {
+        console.log('✅ Qwen coder analysis successful');
         return parseAnalysisResponse(aiResponse.content);
       }
     } catch (error) {
-      console.warn('Gemini analysis failed:', error);
+      console.warn('Qwen coder analysis failed:', error);
     }
 
-    // Fallback to manual analysis if AI fails
+    // Try fallback model: kwaipilot/kat-coder-pro:free
+    try {
+      console.log('Attempting repository analysis with kwaipilot/kat-coder-pro:free');
+      aiResponse = await generateOpenRouterCodeAnalysis(
+        analysisPrompt, 
+        'kwaipilot/kat-coder-pro:free',
+        config.openrouter.katCoderApiKey
+      );
+      if (aiResponse.success && aiResponse.content) {
+        console.log('✅ Kat coder analysis successful');
+        return parseAnalysisResponse(aiResponse.content);
+      }
+    } catch (error) {
+      console.warn('Kat coder analysis failed:', error);
+    }
+
+    // Fallback to manual analysis if both AI models fail
     console.warn('AI analysis failed, using fallback');
     return generateFallbackAnalysis(repoData);
   } catch (error) {
