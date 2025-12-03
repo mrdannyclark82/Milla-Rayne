@@ -31,6 +31,8 @@ import { XAIOverlay, type XAIData } from '@/components/XAIOverlay';
 import { getDeveloperMode } from '@/lib/scene/featureFlags';
 import { DynamicFeatureRenderer } from '@/components/DynamicFeatureRenderer';
 import type { UICommand } from '@shared/schema';
+import { Sandbox } from '@/components/Sandbox';
+import { CreativeStudio } from '@/components/CreativeStudio';
 
 // Fallback messages for when responses are empty or undefined
 const FALLBACK_MESSAGES = {
@@ -81,6 +83,10 @@ function App() {
   const [showSharedNotepad, setShowSharedNotepad] = useState(false);
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
   const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
+
+  // Sandbox and Creative Studio state
+  const [showSandbox, setShowSandbox] = useState(false);
+  const [showCreativeStudio, setShowCreativeStudio] = useState(false);
 
   // XAI Transparency state
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
@@ -611,11 +617,35 @@ function App() {
               // TODO: Add settings panel
               console.log('Show settings panel');
             }}
+            onShowSandbox={() => setShowSandbox(true)}
+            onShowCreativeStudio={() => setShowCreativeStudio(true)}
           />
           <SharedNotepad
             isOpen={showSharedNotepad}
             onClose={() => setShowSharedNotepad(false)}
           />
+
+          {/* Code Sandbox */}
+          {showSandbox && (
+            <Sandbox
+              initialCode=""
+              isOpen={showSandbox}
+              onClose={() => setShowSandbox(false)}
+              onDiscuss={(code) => {
+                // Send code to chat for discussion
+                setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
+                setShowSandbox(false);
+              }}
+            />
+          )}
+
+          {/* Creative Studio */}
+          {showCreativeStudio && (
+            <CreativeStudio
+              isOpen={showCreativeStudio}
+              onClose={() => setShowCreativeStudio(false)}
+            />
+          )}
 
           {/* FloatingInput is now outside the main container to be fixed at the bottom */}
           <FloatingInput
