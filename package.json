@@ -110,6 +110,7 @@
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
+    "ollama": "^0.6.3",
     "openai": "^6.7.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
