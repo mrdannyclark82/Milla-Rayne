@@ -279,6 +279,12 @@ export async function dispatchAIResponse(
 
   let preferredModel: string | undefined = 'openai'; // Default model (changed to openai)
 
+  // Check if local model is preferred
+  if (config.localModel?.enabled && config.localModel?.preferLocal) {
+    preferredModel = 'local';
+    console.log('🤖 Local model preference enabled');
+  }
+
   if (context.userId) {
     // Try to get user model preference (optional method)
     try {
@@ -479,6 +485,50 @@ export async function dispatchAIResponse(
   let response: AIResponse;
 
   switch (modelToUse) {
+    case 'local':
+    case 'offline':
+    case 'tflite':
+      // Use local Gemma TFLite model
+      const { offlineService } = await import('./offlineModelService');
+      const localResponse = await offlineService.generateResponse(
+        augmentedMessage,
+        '' // System context is already in augmentedMessage
+      );
+      
+      if (localResponse.success) {
+        response = {
+          content: localResponse.content,
+          success: true,
+        };
+        addReasoningStep(
+          xaiSessionId,
+          'response',
+          'Local Model Used',
+          'Generated response using local Gemma TFLite model'
+        );
+        console.log('✅ Used local Gemma model');
+      } else {
+        // Fallback to cloud if local model fails
+        console.log('Local model failed, falling back to OpenRouter...');
+        addReasoningStep(
+          xaiSessionId,
+          'response',
+          'Fallback Triggered',
+          'Local model failed, falling back to OpenRouter'
+        );
+        response = await generateOpenRouterResponse(
+          augmentedMessage,
+          {
+            conversationHistory: context.conversationHistory,
+            userEmotionalState: context.userEmotionalState,
+            urgency: context.urgency,
+            userName: context.userName,
+          } as OpenRouterContext,
+          maxTokens
+        );
+      }
+      break;
+
     case 'openai':
       // Use OpenAI chat wrapper (supports both conversation array or full PersonalityContext)
       response = await generateOpenAIResponse(

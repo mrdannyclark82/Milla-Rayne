@@ -97,4 +97,10 @@ export const config = {
   enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
   enableAutonomousCodeImprovement: process.env.ENABLE_AUTONOMOUS_CODE_IMPROVEMENT !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
+  // Local model configuration
+  localModel: {
+    enabled: process.env.ENABLE_LOCAL_MODEL === 'true',
+    modelPath: process.env.LOCAL_MODEL_PATH || 'locallm/gemma.tflite',
+    preferLocal: process.env.PREFER_LOCAL_MODEL === 'true', // If true, use local by default
+  },
 };
