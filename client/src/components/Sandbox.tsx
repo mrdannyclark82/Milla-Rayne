@@ -395,8 +395,7 @@ export const Sandbox: React.FC<SandboxProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mode: 'coding',
-          prompt: `Generate code for: ${aiPrompt}\n\nContext: Current file is ${activeFile.name} (${activeFile.language}). Respond with just the code, no explanations.`,
+          message: `Generate code for: ${aiPrompt}\n\nContext: Current file is ${activeFile.name} (${activeFile.language}). Respond with just the code, no explanations.`,
         }),
       });
 

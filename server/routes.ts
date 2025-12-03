@@ -1629,7 +1629,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         'User-Agent': 'Milla-Rayne-Bot',
       };
       if (githubToken) {
-        headers['Authorization'] = `token ${githubToken}`;
+        headers['Authorization'] = `Bearer ${githubToken}`;
       }
 
       const url = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}`;
@@ -1668,6 +1668,60 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     } catch (error) {
       console.error('Error fetching repo contents:', error);
       res.status(500).json({ error: 'Failed to fetch repository contents' });
+    }
+  });
+
+  // Image generation endpoint for CreativeStudio
+  app.post('/api/image/generate', async (req, res) => {
+    try {
+      const { prompt, aspectRatio, model } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ error: 'prompt is required' });
+      }
+
+      // Map aspect ratio to width/height
+      let width = 1024;
+      let height = 1024;
+      switch (aspectRatio) {
+        case '16:9':
+          width = 1280;
+          height = 720;
+          break;
+        case '9:16':
+          width = 720;
+          height = 1280;
+          break;
+        case '4:3':
+          width = 1024;
+          height = 768;
+          break;
+        case '3:4':
+          width = 768;
+          height = 1024;
+          break;
+        default: // '1:1'
+          width = 1024;
+          height = 1024;
+      }
+
+      // Use Pollinations.AI for free image generation
+      const result = await generateImageWithPollinations(prompt, {
+        width,
+        height,
+        model: model || 'flux',
+        nologo: true,
+        private: true,
+      });
+
+      if (result.success && result.imageUrl) {
+        return res.json({ url: result.imageUrl });
+      } else {
+        return res.status(500).json({ error: result.error || 'Image generation failed' });
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      res.status(500).json({ error: 'Failed to generate image' });
     }
   });
 

@@ -47,10 +47,11 @@ const ASPECT_RATIOS: { value: AspectRatio; label: string; icon: React.ReactNode 
 ];
 
 const IMAGE_MODELS = [
-  { value: 'flux', label: 'Flux', description: 'High quality, fast' },
-  { value: 'dall-e', label: 'DALL-E', description: 'OpenAI model' },
-  { value: 'stable-diffusion', label: 'Stable Diffusion', description: 'Open source' },
-  { value: 'pollinations', label: 'Pollinations', description: 'Free, fast' },
+  { value: 'flux', label: 'Flux', description: 'High quality, balanced' },
+  { value: 'flux-realism', label: 'Flux Realism', description: 'Photorealistic images' },
+  { value: 'flux-anime', label: 'Flux Anime', description: 'Anime/manga style' },
+  { value: 'flux-3d', label: 'Flux 3D', description: '3D rendered images' },
+  { value: 'turbo', label: 'Turbo', description: 'Fast generation' },
 ];
 
 const STYLE_PRESETS = [
