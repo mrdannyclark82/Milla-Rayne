@@ -24,7 +24,7 @@ import type {
   SceneLocationKey,
 } from '@shared/sceneTypes';
 import { FloatingInput } from '@/components/FloatingInput';
-import { CentralDock } from '@/components/CentralDock';
+import { Sidebar } from '@/components/Sidebar';
 import { SharedNotepad } from '@/components/SharedNotepad';
 import { GuidedMeditation } from '@/components/GuidedMeditation';
 import { XAIOverlay, type XAIData } from '@/components/XAIOverlay';
@@ -84,9 +84,8 @@ function App() {
   const [showKnowledgeBase, setShowKnowledgeBase] = useState(false);
   const [showYoutubeMemories, setShowYoutubeMemories] = useState(false);
 
-  // Sandbox and Creative Studio state
-  const [showSandbox, setShowSandbox] = useState(false);
-  const [showCreativeStudio, setShowCreativeStudio] = useState(false);
+  // Active view state for sidebar navigation
+  const [activeView, setActiveView] = useState<'chat' | 'sandbox' | 'studio'>('chat');
 
   // XAI Transparency state
   const [xaiData, setXaiData] = useState<XAIData | null>(null);
@@ -379,318 +378,222 @@ function App() {
       appState={appState}
       performanceMode={performanceMode}
     >
-      <div className="min-h-screen flex" style={{ backgroundColor: '#000' }}>
-        {/* Left 2/3 - Background Image Container */}
+      <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#0f0f1a' }}>
+        {/* Background Scene - covers entire screen */}
         <div
-          className="w-2/3 h-screen"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            zIndex: 0,
-            overflow: 'hidden',
-          }}
+          className="fixed inset-0 z-0"
+          style={{ overflow: 'hidden' }}
         >
           <SceneManager />
         </div>
 
-        {/* Right 1/3 - Chat Interface */}
-        {(youtubeVideoId || youtubeVideos) && (
-          <Suspense fallback={<div>Loading video player...</div>}>
-            <YoutubePlayerWithActiveListening
-              videoId={youtubeVideoId || undefined}
-              videos={youtubeVideos || undefined}
-              onClose={() => {
-                setYoutubeVideoId(null);
-                setYoutubeVideos(null);
-              }}
-              onSelectVideo={(videoId) => {
-                setYoutubeVideoId(videoId);
-                setYoutubeVideos(null);
-              }}
-              activeListeningEnabled={true}
-              onInsightDetected={(insight) => {
-                console.log('🎧 Insight detected:', insight);
-              }}
-            />
-          </Suspense>
-        )}
-        <div
-          className="w-1/3 h-screen p-6 border-l border-white/10"
-          style={{
-            position: 'fixed',
-            top: 0,
-            right: 0,
-            zIndex: 10,
-            backgroundColor: '#1a1a2e',
-            fontFamily:
-              "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
+        {/* Left Sidebar - Navigation */}
+        <Sidebar
+          activeView={activeView}
+          onViewChange={setActiveView}
+          onShowKnowledgeBase={() => {
+            setUiCommand({
+              action: 'SHOW_COMPONENT',
+              componentName: 'KnowledgeBaseSearch',
+              data: {},
+            });
           }}
-        >
-          <div className="h-full flex flex-col space-y-4">
-            <div className="flex gap-3 justify-start items-center flex-shrink-0">
-              <UnifiedSettingsMenu
-                getButtonSize={getButtonSize}
-                setShowVoicePicker={setShowVoicePicker}
-                selectedVoice={selectedVoice}
-                onVoiceSelect={setSelectedVoice}
-                speechRate={speechRate}
-                onSpeechRateChange={setSpeechRate}
-                voicePitch={voicePitch}
-                onVoicePitchChange={setVoicePitch}
-                voiceVolume={voiceVolume}
-                onVoiceVolumeChange={setVoiceVolume}
-              />
-            </div>
+          onShowYoutubeMemories={() => setShowYoutubeMemories(!showYoutubeMemories)}
+          onShowSettings={() => setShowVoicePicker(true)}
+        />
 
-            {/* Voice toggle centered above message thread */}
-            <div className="flex justify-center items-center flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <Label
-                  htmlFor="voice-enabled"
-                  className="text-sm text-gray-300"
-                >
-                  Voice
-                </Label>
-                <Switch
-                  id="voice-enabled"
-                  checked={voiceEnabled}
-                  onCheckedChange={setVoiceEnabled}
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col relative z-10">
+          {/* YouTube Player */}
+          {(youtubeVideoId || youtubeVideos) && (
+            <Suspense fallback={<div>Loading video player...</div>}>
+              <YoutubePlayerWithActiveListening
+                videoId={youtubeVideoId || undefined}
+                videos={youtubeVideos || undefined}
+                onClose={() => {
+                  setYoutubeVideoId(null);
+                  setYoutubeVideos(null);
+                }}
+                onSelectVideo={(videoId) => {
+                  setYoutubeVideoId(videoId);
+                  setYoutubeVideos(null);
+                }}
+                activeListeningEnabled={true}
+                onInsightDetected={(insight) => {
+                  console.log('🎧 Insight detected:', insight);
+                }}
+              />
+            </Suspense>
+          )}
+
+          {/* Chat View */}
+          {activeView === 'chat' && (
+            <div className="flex-1 flex flex-col h-full">
+              {/* Header with Controls */}
+              <div className="flex-shrink-0 p-4 flex gap-3 justify-between items-center border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="voice-enabled" className="text-sm text-gray-300">
+                      Voice
+                    </Label>
+                    <Switch
+                      id="voice-enabled"
+                      checked={voiceEnabled}
+                      onCheckedChange={setVoiceEnabled}
+                    />
+                  </div>
+                  {!isMobile && (
+                    <Button
+                      onClick={toggleListening}
+                      variant={isListening ? 'default' : 'outline'}
+                      size="sm"
+                      disabled={isLoading}
+                      className={isListening ? 'animate-pulse' : ''}
+                    >
+                      {isListening ? '🎤 Listening...' : '🎙️ Speak'}
+                    </Button>
+                  )}
+                </div>
+                <UnifiedSettingsMenu
+                  getButtonSize={getButtonSize}
+                  setShowVoicePicker={setShowVoicePicker}
+                  selectedVoice={selectedVoice}
+                  onVoiceSelect={setSelectedVoice}
+                  speechRate={speechRate}
+                  onSpeechRateChange={setSpeechRate}
+                  voicePitch={voicePitch}
+                  onVoicePitchChange={setVoicePitch}
+                  voiceVolume={voiceVolume}
+                  onVoiceVolumeChange={setVoiceVolume}
+                />
+              </div>
+
+              <VoiceVisualizer
+                isListening={isListening}
+                isSpeaking={isSpeaking}
+                className="h-12 flex-shrink-0"
+              />
+
+              <VoiceControls
+                isSpeaking={isSpeaking}
+                onPause={() => window.speechSynthesis.pause()}
+                onResume={() => window.speechSynthesis.resume()}
+                onStop={() => window.speechSynthesis.cancel()}
+                onReplay={() => speakMessage(lastMessage)}
+                showCaptions={showCaptions}
+                onToggleCaptions={setShowCaptions}
+              />
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-slate-500 text-center">
+                      Hey Danny... <em>I smile warmly</em> I'm here. What's on your mind today?
+                    </p>
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
+                          msg.role === 'user'
+                            ? 'bg-slate-800/80 text-white'
+                            : 'bg-slate-900/80 text-slate-100 border border-slate-800'
+                        }`}
+                      >
+                        <p className="text-sm">{msg.content}</p>
+                        {msg.role === 'assistant' && voiceEnabled && (
+                          <button
+                            onClick={() => speakMessage(msg.content)}
+                            className="mt-2 text-xs text-pink-400 hover:text-pink-300"
+                          >
+                            🔊 Replay
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="flex-shrink-0 p-4 bg-slate-900/80 border-t border-slate-800/50 backdrop-blur-md">
+                <FloatingInput
+                  message={message}
+                  setMessage={setMessage}
+                  onSendMessage={handleSendMessage}
+                  isLoading={isLoading}
+                  isListening={isListening}
+                  toggleListening={toggleListening}
+                  isMobile={isMobile}
+                  onSendAudio={onSendAudio}
+                  onSendFaraTask={handleSendFaraTask}
+                  getButtonSize={getButtonSize}
                 />
               </div>
             </div>
+          )}
 
-            <div
-              className="flex-1 overflow-y-auto space-y-4 p-4 rounded-lg border border-gray-700/60 shadow-inner"
-              style={{ backgroundColor: '#4a90e2' }}
-            >
-              {messages.length === 0 ? (
-                <p className="text-gray-400 text-center">
-                  Start a conversation with Milla...
-                </p>
-              ) : (
-                messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-2xl shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600 ml-auto max-w-[85%]' : 'bg-purple-600 mr-auto max-w-[85%]'}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-semibold mb-1 text-white">
-                        {msg.role === 'user' ? 'You' : 'Milla'}
-                      </p>
-                      {msg.role === 'assistant' && voiceEnabled && (
-                        <Button
-                          onClick={() => speakMessage(msg.content)}
-                          variant="ghost"
-                          size="icon"
-                          className="w-6 h-6 text-white"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="lucide lucide-rotate-cw"
-                          >
-                            <path d="M21 2v6h-6" />
-                            <path d="M21 13a9 9 0 1 1-3-7.7L21 8" />
-                          </svg>
-                        </Button>
-                      )}
-                    </div>
-                    <p className="text-sm text-white">{msg.content}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="relative min-h-screen flex flex-col items-center justify-center p-2 sm:p-4">
-          {/* Centered, floating container */}
-          <div className="relative w-full max-w-2xl h-[90vh] sm:h-[75vh] flex flex-col bg-black/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-            {/* Top bar with controls */}
-            <div className="flex-shrink-0 p-2 sm:p-4 flex gap-2 justify-between items-center border-b border-white/10">
-              <Button
-                onClick={() => setVoiceEnabled(!voiceEnabled)}
-                variant={voiceEnabled ? 'default' : 'outline'}
-                size={getButtonSize()}
-                aria-pressed={voiceEnabled}
-                className="flex-1"
-              >
-                {voiceEnabled ? '🔊' : '🔇'} Voice {voiceEnabled ? 'On' : 'Off'}
-              </Button>
-
-              {!isMobile && (
-                <Button
-                  onClick={toggleListening}
-                  variant={isListening ? 'default' : 'outline'}
-                  size={getButtonSize()}
-                  disabled={isLoading}
-                  className={`flex-1 ${isListening ? 'animate-pulse' : ''}`}
-                  aria-pressed={isListening}
-                >
-                  {isListening ? '🎤 Listening...' : '🎙️ Speak'}
-                </Button>
-              )}
-
-              <UnifiedSettingsMenu
-                getButtonSize={getButtonSize}
-                setShowVoicePicker={setShowVoicePicker}
-                selectedVoice={selectedVoice}
-                onVoiceSelect={setSelectedVoice}
-                speechRate={speechRate}
-                onSpeechRateChange={setSpeechRate}
-                voicePitch={voicePitch}
-                onVoicePitchChange={setVoicePitch}
-                voiceVolume={voiceVolume}
-                onVoiceVolumeChange={setVoiceVolume}
+          {/* Sandbox View */}
+          {activeView === 'sandbox' && (
+            <div className="flex-1 h-full">
+              <Sandbox
+                initialCode=""
+                isOpen={true}
+                onClose={() => setActiveView('chat')}
+                onDiscuss={(code) => {
+                  setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
+                  setActiveView('chat');
+                }}
               />
             </div>
+          )}
 
-            <VoiceVisualizer
-              isListening={isListening}
-              isSpeaking={isSpeaking}
-              className="h-16 flex-shrink-0"
-            />
-
-            <VoiceControls
-              isSpeaking={isSpeaking}
-              onPause={() => window.speechSynthesis.pause()}
-              onResume={() => window.speechSynthesis.resume()}
-              onStop={() => window.speechSynthesis.cancel()}
-              onReplay={() => speakMessage(lastMessage)}
-              showCaptions={showCaptions}
-              onToggleCaptions={setShowCaptions}
-            />
-
-            {/* Add the GuidedMeditation component here */}
-            <GuidedMeditation />
-
-            {/* Chat message list */}
-            <div className="flex-1 overflow-y-auto space-y-4 p-4">
-              {messages.length === 0 ? (
-                <p className="text-gray-400 text-center">
-                  Start a conversation with Milla...
-                </p>
-              ) : (
-                messages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-lg shadow-md transition-all duration-300 ${msg.role === 'user' ? 'bg-blue-600/90 ml-auto max-w-[85%]' : 'bg-gray-700/90 mr-auto max-w-[85%]'}`}
-                  >
-                    <p className="text-sm font-semibold mb-1 text-gray-300">
-                      {msg.role === 'user' ? 'You' : 'Milla'}
-                    </p>
-                    <p className="text-sm">{msg.content}</p>
-                  </div>
-                ))
-              )}
+          {/* Creative Studio View */}
+          {activeView === 'studio' && (
+            <div className="flex-1 h-full">
+              <CreativeStudio
+                isOpen={true}
+                onClose={() => setActiveView('chat')}
+              />
             </div>
-
-            {/* FloatingInput will be positioned at the bottom of the viewport */}
-          </div>
-          <CentralDock
-            onToggleSharedNotepad={() =>
-              setShowSharedNotepad(!showSharedNotepad)
-            }
-            onShowKnowledgeBase={() => {
-              setUiCommand({
-                action: 'SHOW_COMPONENT',
-                componentName: 'KnowledgeBaseSearch',
-                data: {},
-              });
-            }}
-            onShowYoutubeMemories={() =>
-              setShowYoutubeMemories(!showYoutubeMemories)
-            }
-            onShowFeatures={() => {
-              // TODO: Add features panel
-              console.log('Show features panel');
-            }}
-            onShowSettings={() => {
-              // TODO: Add settings panel
-              console.log('Show settings panel');
-            }}
-            onShowSandbox={() => setShowSandbox(true)}
-            onShowCreativeStudio={() => setShowCreativeStudio(true)}
-          />
-          <SharedNotepad
-            isOpen={showSharedNotepad}
-            onClose={() => setShowSharedNotepad(false)}
-          />
-
-          {/* Code Sandbox */}
-          {showSandbox && (
-            <Sandbox
-              initialCode=""
-              isOpen={showSandbox}
-              onClose={() => setShowSandbox(false)}
-              onDiscuss={(code) => {
-                // Send code to chat for discussion
-                setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
-                setShowSandbox(false);
-              }}
-            />
-          )}
-
-          {/* Creative Studio */}
-          {showCreativeStudio && (
-            <CreativeStudio
-              isOpen={showCreativeStudio}
-              onClose={() => setShowCreativeStudio(false)}
-            />
-          )}
-
-          {/* FloatingInput is now outside the main container to be fixed at the bottom */}
-          <FloatingInput
-            message={message}
-            setMessage={setMessage}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            isListening={isListening}
-            toggleListening={toggleListening}
-            isMobile={isMobile}
-            onSendAudio={onSendAudio}
-            onSendFaraTask={handleSendFaraTask}
-            getButtonSize={getButtonSize}
-          />
-
-          <VoicePickerDialog
-            open={showVoicePicker}
-            onOpenChange={setShowVoicePicker}
-            selectedVoice={selectedVoice}
-            onVoiceSelect={setSelectedVoice}
-            speechRate={speechRate}
-            onSpeechRateChange={setSpeechRate}
-            voicePitch={voicePitch}
-            onVoicePitchChange={setVoicePitch}
-            voiceVolume={voiceVolume}
-            onVoiceVolumeChange={setVoiceVolume}
-            availableVoices={availableVoices}
-          />
-
-          {/* XAI Transparency Overlay - Only shown in developer mode */}
-          {developerMode && showXAIOverlay && xaiData && (
-            <XAIOverlay
-              data={xaiData}
-              onClose={() => setShowXAIOverlay(false)}
-            />
-          )}
-
-          {/* Agent-Driven UI Renderer */}
-          {uiCommand && (
-            <DynamicFeatureRenderer
-              uiCommand={uiCommand}
-              onClose={() => setUiCommand(null)}
-            />
           )}
         </div>
+
+        {/* Dialogs and Overlays */}
+        <SharedNotepad
+          isOpen={showSharedNotepad}
+          onClose={() => setShowSharedNotepad(false)}
+        />
+
+        <VoicePickerDialog
+          open={showVoicePicker}
+          onOpenChange={setShowVoicePicker}
+          selectedVoice={selectedVoice}
+          onVoiceSelect={setSelectedVoice}
+          speechRate={speechRate}
+          onSpeechRateChange={setSpeechRate}
+          voicePitch={voicePitch}
+          onVoicePitchChange={setVoicePitch}
+          voiceVolume={voiceVolume}
+          onVoiceVolumeChange={setVoiceVolume}
+          availableVoices={availableVoices}
+        />
+
+        {developerMode && showXAIOverlay && xaiData && (
+          <XAIOverlay data={xaiData} onClose={() => setShowXAIOverlay(false)} />
+        )}
+
+        {uiCommand && (
+          <DynamicFeatureRenderer
+            uiCommand={uiCommand}
+            onClose={() => setUiCommand(null)}
+          />
+        )}
       </div>
     </SceneProvider>
   );
