@@ -1615,6 +1615,116 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
     }
   });
 
+  // POST /api/repo/contents - Fetch GitHub repository contents for Sandbox component
+  app.post('/api/repo/contents', async (req, res) => {
+    try {
+      const { owner, repo, path: repoPath = '' } = req.body;
+      if (!owner || !repo) {
+        return res.status(400).json({ error: 'owner and repo are required' });
+      }
+
+      const githubToken = process.env.GITHUB_TOKEN;
+      const headers: Record<string, string> = {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'Milla-Rayne-Bot',
+      };
+      if (githubToken) {
+        headers['Authorization'] = `Bearer ${githubToken}`;
+      }
+
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${repoPath}`;
+      const response = await fetch(url, { headers });
+
+      if (!response.ok) {
+        return res.status(response.status).json({ error: response.statusText });
+      }
+
+      const data = await response.json();
+
+      // GitHub Contents API response interface
+      interface GitHubContentItem {
+        path: string;
+        mode?: string;
+        type: 'file' | 'dir' | 'symlink' | 'submodule';
+        sha: string;
+        size?: number;
+        download_url?: string | null;
+        url: string;
+      }
+
+      if (Array.isArray(data)) {
+        const nodes = (data as GitHubContentItem[]).map((item) => ({
+          path: item.path,
+          mode: item.mode || '100644',
+          type: item.type === 'dir' ? 'tree' : 'blob',
+          sha: item.sha,
+          size: item.size,
+          url: item.download_url || item.url,
+        }));
+        return res.json(nodes);
+      }
+
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching repo contents:', error);
+      res.status(500).json({ error: 'Failed to fetch repository contents' });
+    }
+  });
+
+  // Image generation endpoint for CreativeStudio
+  app.post('/api/image/generate', async (req, res) => {
+    try {
+      const { prompt, aspectRatio, model } = req.body;
+
+      if (!prompt) {
+        return res.status(400).json({ error: 'prompt is required' });
+      }
+
+      // Map aspect ratio to width/height
+      let width = 1024;
+      let height = 1024;
+      switch (aspectRatio) {
+        case '16:9':
+          width = 1280;
+          height = 720;
+          break;
+        case '9:16':
+          width = 720;
+          height = 1280;
+          break;
+        case '4:3':
+          width = 1024;
+          height = 768;
+          break;
+        case '3:4':
+          width = 768;
+          height = 1024;
+          break;
+        default: // '1:1'
+          width = 1024;
+          height = 1024;
+      }
+
+      // Use Pollinations.AI for free image generation
+      const result = await generateImageWithPollinations(prompt, {
+        width,
+        height,
+        model: model || 'flux',
+        nologo: true,
+        private: true,
+      });
+
+      if (result.success && result.imageUrl) {
+        return res.json({ url: result.imageUrl });
+      } else {
+        return res.status(500).json({ error: result.error || 'Image generation failed' });
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      res.status(500).json({ error: 'Failed to generate image' });
+    }
+  });
+
   // Agent orchestration endpoints (must be before /api/agent/:agentName to avoid route conflicts)
   app.post('/api/agent/tasks', async (req, res) => {
     try {

@@ -45,6 +45,7 @@ memory/pr_memories/
 memory/milla_tokens.json
 memory/sandbox_environments.json
 memory/proactive_actions.json
+memory/feature_discovery.json
 
 # SQLite database files (may contain sensitive data)
 *.db
