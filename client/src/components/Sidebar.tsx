@@ -19,6 +19,7 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ interface SidebarProps {
   onShowKnowledgeBase?: () => void;
   onShowYoutubeMemories?: () => void;
   onShowSettings?: () => void;
+  onToggleSharedNotepad?: () => void;
 }
 
 interface SidebarSectionProps {
@@ -101,6 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onShowKnowledgeBase,
   onShowYoutubeMemories,
   onShowSettings,
+  onToggleSharedNotepad,
 }) => {
   const [sectionsOpen, setSectionsOpen] = useState({
     core: true,
@@ -126,7 +129,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
         <SidebarSection
           title="Core"
           isOpen={sectionsOpen.core}
@@ -184,6 +187,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isOpen={sectionsOpen.productivity}
           onToggle={() => toggleSection('productivity')}
         >
+          <SidebarItem
+            icon={<FileText className="w-5 h-5" />}
+            label="Shared Notepad"
+            onClick={() => onToggleSharedNotepad?.()}
+          />
           <SidebarItem
             icon={<Sun className="w-5 h-5" />}
             label="Morning Sync"

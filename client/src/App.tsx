@@ -26,7 +26,6 @@ import type {
 import { FloatingInput } from '@/components/FloatingInput';
 import { Sidebar } from '@/components/Sidebar';
 import { SharedNotepad } from '@/components/SharedNotepad';
-import { GuidedMeditation } from '@/components/GuidedMeditation';
 import { XAIOverlay, type XAIData } from '@/components/XAIOverlay';
 import { getDeveloperMode } from '@/lib/scene/featureFlags';
 import { DynamicFeatureRenderer } from '@/components/DynamicFeatureRenderer';
@@ -400,6 +399,7 @@ function App() {
           }}
           onShowYoutubeMemories={() => setShowYoutubeMemories(!showYoutubeMemories)}
           onShowSettings={() => setShowVoicePicker(true)}
+          onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)}
         />
 
         {/* Main Content Area */}
