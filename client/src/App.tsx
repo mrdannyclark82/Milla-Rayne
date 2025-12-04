@@ -428,100 +428,49 @@ function App() {
 
           {/* Chat View */}
           {activeView === 'chat' && (
-            <div className="flex-1 flex flex-col h-full">
-              {/* Header with Controls */}
-              <div className="flex-shrink-0 p-4 flex gap-3 justify-between items-center border-b border-slate-800/50 bg-slate-900/80 backdrop-blur-md">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor="voice-enabled" className="text-sm text-gray-300">
-                      Voice
-                    </Label>
-                    <Switch
-                      id="voice-enabled"
-                      checked={voiceEnabled}
-                      onCheckedChange={setVoiceEnabled}
-                    />
-                  </div>
-                  {!isMobile && (
-                    <Button
-                      onClick={toggleListening}
-                      variant={isListening ? 'default' : 'outline'}
-                      size="sm"
-                      disabled={isLoading}
-                      className={isListening ? 'animate-pulse' : ''}
-                    >
-                      {isListening ? '🎤 Listening...' : '🎙️ Speak'}
-                    </Button>
-                  )}
-                </div>
-                <UnifiedSettingsMenu
-                  getButtonSize={getButtonSize}
-                  setShowVoicePicker={setShowVoicePicker}
-                  selectedVoice={selectedVoice}
-                  onVoiceSelect={setSelectedVoice}
-                  speechRate={speechRate}
-                  onSpeechRateChange={setSpeechRate}
-                  voicePitch={voicePitch}
-                  onVoicePitchChange={setVoicePitch}
-                  voiceVolume={voiceVolume}
-                  onVoiceVolumeChange={setVoiceVolume}
-                />
-              </div>
-
-              <VoiceVisualizer
-                isListening={isListening}
-                isSpeaking={isSpeaking}
-                className="h-12 flex-shrink-0"
-              />
-
-              <VoiceControls
-                isSpeaking={isSpeaking}
-                onPause={() => window.speechSynthesis.pause()}
-                onResume={() => window.speechSynthesis.resume()}
-                onStop={() => window.speechSynthesis.cancel()}
-                onReplay={() => speakMessage(lastMessage)}
-                showCaptions={showCaptions}
-                onToggleCaptions={setShowCaptions}
-              />
-
+            <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#2d1f3d' }}>
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-6">
                 {messages.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-slate-500 text-center">
-                      Hey Danny... <em>I smile warmly</em> I'm here. What's on your mind today?
-                    </p>
+                  <div className="max-w-2xl">
+                    <div className="bg-slate-800/90 rounded-lg px-4 py-3 inline-block">
+                      <p className="text-slate-200 text-sm">
+                        Hey Danny... <em className="text-slate-400">I smile warmly</em> I'm here. What's on your mind today?
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
+                  <div className="space-y-4 max-w-2xl">
+                    {messages.map((msg, idx) => (
                       <div
-                        className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
-                          msg.role === 'user'
-                            ? 'bg-slate-800/80 text-white'
-                            : 'bg-slate-900/80 text-slate-100 border border-slate-800'
-                        }`}
+                        key={idx}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="text-sm">{msg.content}</p>
-                        {msg.role === 'assistant' && voiceEnabled && (
-                          <button
-                            onClick={() => speakMessage(msg.content)}
-                            className="mt-2 text-xs text-pink-400 hover:text-pink-300"
-                          >
-                            🔊 Replay
-                          </button>
-                        )}
+                        <div
+                          className={`max-w-[85%] px-4 py-3 rounded-lg ${
+                            msg.role === 'user'
+                              ? 'bg-pink-500/20 text-white'
+                              : 'bg-slate-800/90 text-slate-200'
+                          }`}
+                        >
+                          <p className="text-sm">{msg.content}</p>
+                          {msg.role === 'assistant' && voiceEnabled && (
+                            <button
+                              onClick={() => speakMessage(msg.content)}
+                              className="mt-2 text-xs text-pink-400 hover:text-pink-300"
+                            >
+                              🔊 Replay
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
 
-              {/* Input Area */}
-              <div className="flex-shrink-0 p-4 bg-slate-900/80 border-t border-slate-800/50 backdrop-blur-md">
+              {/* Input Area - at bottom center */}
+              <div className="flex-shrink-0 p-4">
                 <FloatingInput
                   message={message}
                   setMessage={setMessage}
