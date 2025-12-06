@@ -5,7 +5,6 @@ import {
   Mic,
   Eye,
   Palette,
-  Podcast,
   Video,
   Sun,
   ClipboardList,
@@ -101,8 +100,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleSharedNotepad,
 }) => {
   const [sectionsOpen, setSectionsOpen] = useState({
-    core: true,
-    creative: true,
+    core: false,
+    creative: false,
     productivity: false,
     system: false,
     settings: false,
@@ -163,11 +162,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Studio"
             isActive={activeView === 'studio'}
             onClick={() => onViewChange('studio')}
-          />
-          <SidebarItem
-            icon={<Podcast className="w-4 h-4" />}
-            label="Podcast"
-            onClick={() => {}}
           />
           <SidebarItem
             icon={<Video className="w-4 h-4" />}

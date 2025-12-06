@@ -210,7 +210,7 @@ export const CreativeStudio: React.FC<CreativeStudioProps> = ({
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Panel - Controls */}
-        <div className="w-80 border-r border-white/10 bg-black/20 flex flex-col p-4 gap-4">
+        <div className="w-80 border-r border-white/10 bg-transparent flex flex-col p-4 gap-4">
           {/* Prompt Input */}
           <div>
             <label className="text-sm text-white/70 mb-2 block">Prompt</label>
@@ -218,7 +218,7 @@ export const CreativeStudio: React.FC<CreativeStudioProps> = ({
               placeholder="Describe the image you want to create..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full h-28 p-3 bg-black/40 border border-white/10 rounded-lg text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-purple-500/50"
+              className="w-full h-28 p-3 bg-transparent border border-white/20 rounded-lg text-white placeholder:text-white/40 resize-none focus:outline-none focus:border-cyan-500/50"
             />
           </div>
 
@@ -231,8 +231,8 @@ export const CreativeStudio: React.FC<CreativeStudioProps> = ({
                   key={style}
                   className={`cursor-pointer transition-colors ${
                     selectedStyle === style
-                      ? 'bg-purple-500/40 text-purple-200 border-purple-500/50'
-                      : 'bg-black/40 text-white/60 border-white/10 hover:border-white/30'
+                      ? 'bg-cyan-500/40 text-cyan-200 border-cyan-500/50'
+                      : 'bg-transparent text-white/60 border-white/20 hover:border-white/30'
                   }`}
                   onClick={() =>
                     setSelectedStyle(selectedStyle === style ? null : style)
@@ -318,7 +318,7 @@ export const CreativeStudio: React.FC<CreativeStudioProps> = ({
 
         {/* Center Panel - Preview */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 flex items-center justify-center p-8 bg-black/20">
+          <div className="flex-1 flex items-center justify-center p-8 bg-transparent">
             {selectedImage ? (
               <div className="relative max-w-full max-h-full">
                 <img
