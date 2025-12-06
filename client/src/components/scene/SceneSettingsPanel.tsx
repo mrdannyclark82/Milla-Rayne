@@ -41,7 +41,13 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
         const response = await fetch('/api/milla/tokens/rewards');
         const data = await response.json();
         if (data.success) {
-          setHasBackgroundControl(data.rewards.includes('UNLOCK_BACKGROUND_CONTROL'));
+          const unlocked = data.rewards.includes('UNLOCK_BACKGROUND_CONTROL');
+          setHasBackgroundControl(unlocked);
+          
+          // If unlocked and has a mood set, fetch the background
+          if (unlocked && settings.mood) {
+            fetchMoodBackground(settings.mood);
+          }
         }
       } catch (error) {
         console.error('Error checking rewards:', error);
@@ -83,6 +89,30 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
     setSettings(updated);
     saveSceneSettings(updated);
     onSettingsChange?.(updated);
+    
+    // If mood changed and background control is unlocked, fetch mood background
+    if (key === 'mood' && hasBackgroundControl) {
+      fetchMoodBackground(value as string);
+    }
+  };
+
+  // Fetch mood background image
+  const fetchMoodBackground = async (mood: string) => {
+    try {
+      const response = await fetch(`/api/scene/mood-background/${mood}`);
+      const data = await response.json();
+      
+      if (data.success && data.imageUrl) {
+        console.log(`Mood background loaded for ${mood}:`, data.cached ? 'cached' : 'generated');
+        // The background will be applied by the scene manager
+        // Trigger a scene update event if needed
+        window.dispatchEvent(new CustomEvent('moodBackgroundUpdated', {
+          detail: { mood, imageUrl: data.imageUrl }
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch mood background:', error);
+    }
   };
 
   // Map particle density to display values

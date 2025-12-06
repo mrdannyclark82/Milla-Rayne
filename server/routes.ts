@@ -24,6 +24,12 @@ import {
   formatPollinationsImageResponse,
 } from './pollinationsImageService';
 import {
+  getMoodBackground,
+  getCachedMoodBackgrounds,
+  pregenerateAllMoodBackgrounds,
+  initializeMoodBackgroundService,
+} from './moodBackgroundService';
+import {
   generateCodeWithQwen,
   extractCodeRequest,
   formatCodeResponse,
@@ -1719,9 +1725,82 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       } else {
         return res.status(500).json({ error: result.error || 'Image generation failed' });
       }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      res.status(500).json({ error: 'Failed to generate image' });
+    } catch (error: any) {
+      console.error('Image generation error:', error);
+      return res.status(500).json({ error: error.message || 'Failed to generate image' });
+    }
+  });
+
+  // Mood Background Generation Routes
+  app.get('/api/scene/mood-background/:mood', async (req, res) => {
+    try {
+      const { mood } = req.params;
+      const forceRegenerate = req.query.regenerate === 'true';
+      
+      const validMoods = ['calm', 'energetic', 'romantic', 'mysterious', 'playful'];
+      if (!validMoods.includes(mood)) {
+        return res.status(400).json({ 
+          error: `Invalid mood. Must be one of: ${validMoods.join(', ')}` 
+        });
+      }
+
+      const result = await getMoodBackground(mood as any, forceRegenerate);
+      
+      if (result.success) {
+        return res.json({
+          success: true,
+          imageUrl: result.imageUrl,
+          mood,
+          cached: result.cached
+        });
+      } else {
+        return res.status(500).json({ 
+          success: false,
+          error: result.error || 'Failed to generate mood background' 
+        });
+      }
+    } catch (error: any) {
+      console.error('Mood background error:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to generate mood background' 
+      });
+    }
+  });
+
+  app.get('/api/scene/mood-backgrounds', async (req, res) => {
+    try {
+      const cached = getCachedMoodBackgrounds();
+      return res.json({
+        success: true,
+        backgrounds: cached
+      });
+    } catch (error: any) {
+      console.error('Error fetching cached backgrounds:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/scene/mood-backgrounds/pregenerate', async (req, res) => {
+    try {
+      // Trigger background pregeneration (async)
+      pregenerateAllMoodBackgrounds().catch(err => 
+        console.error('Background pregeneration error:', err)
+      );
+      
+      return res.json({
+        success: true,
+        message: 'Background pregeneration started'
+      });
+    } catch (error: any) {
+      console.error('Error starting pregeneration:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message 
+      });
     }
   });
 
