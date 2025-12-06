@@ -50,11 +50,11 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
         <ChevronRight className="w-3 h-3" />
       )}
     </button>
-    <div
-      className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[500px]' : 'max-h-0'}`}
-    >
-      <div className="px-2 pb-1 space-y-0.5">{children}</div>
-    </div>
+    {isOpen && (
+      <div className="px-2 pb-1 space-y-0.5 animate-in fade-in slide-in-from-top-2 duration-200">
+        {children}
+      </div>
+    )}
   </div>
 );
 
