@@ -2650,7 +2650,19 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       console.log(`Analyzing YouTube video: ${url}`);
 
-      const analysis = await analyzeYouTubeVideo(url);
+      // Pass AI service for intelligent analysis
+      const aiService = {
+        generateResponse: async (prompt: string, options: any) => {
+          return await dispatchAIResponse(
+            { userId: 0, conversationId: 0 },
+            [{ role: 'user', content: prompt }],
+            0,
+            options
+          );
+        },
+      };
+
+      const analysis = await analyzeYouTubeVideo(url, aiService);
 
       res.json({
         success: true,
@@ -6635,7 +6647,20 @@ Could you share the repository URL again so I can take another look?
 
       try {
         console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
-        const analysis = await analyzeYouTubeVideo(youtubeUrl);
+        
+        // Pass AI service for intelligent analysis
+        const aiService = {
+          generateResponse: async (prompt: string, options: any) => {
+            return await dispatchAIResponse(
+              dispatchContext,
+              [{ role: 'user', content: prompt }],
+              userId,
+              options
+            );
+          },
+        };
+        
+        const analysis = await analyzeYouTubeVideo(youtubeUrl, aiService);
 
         const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
 

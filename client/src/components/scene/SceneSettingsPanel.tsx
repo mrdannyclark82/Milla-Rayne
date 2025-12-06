@@ -32,6 +32,25 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
     loadSceneSettings()
   );
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hasBackgroundControl, setHasBackgroundControl] = useState(false);
+
+  // Check if background control is unlocked
+  useEffect(() => {
+    const checkRewards = async () => {
+      try {
+        const response = await fetch('/api/milla/tokens/rewards');
+        const data = await response.json();
+        if (data.success) {
+          setHasBackgroundControl(data.rewards.includes('UNLOCK_BACKGROUND_CONTROL'));
+        }
+      } catch (error) {
+        console.error('Error checking rewards:', error);
+        // Default to locked
+        setHasBackgroundControl(false);
+      }
+    };
+    checkRewards();
+  }, []);
 
   // Detect reduced motion preference
   useEffect(() => {
@@ -95,11 +114,18 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
         {/* Mood Selector */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Mood</label>
+          <label className="text-sm font-medium">
+            Mood {!hasBackgroundControl && '🔒'}
+          </label>
+          {!hasBackgroundControl && (
+            <p className="text-xs text-yellow-400 mb-2">
+              Unlock background control by completing the "Scene Designer" goal!
+            </p>
+          )}
           <Select
             value={settings.mood}
             onValueChange={(value) => updateSetting('mood', value as SceneMood)}
-            disabled={!settings.enabled || settings.sceneBackgroundFromRP}
+            disabled={!settings.enabled || settings.sceneBackgroundFromRP || !hasBackgroundControl}
           >
             <SelectTrigger>
               <SelectValue />
