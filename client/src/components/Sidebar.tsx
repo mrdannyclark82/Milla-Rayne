@@ -9,11 +9,6 @@ import {
   Video,
   Sun,
   ClipboardList,
-  Sparkles,
-  Brain,
-  Globe,
-  MapPin,
-  Monitor,
   Database,
   Cpu,
   Settings,
@@ -81,16 +76,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-1.5 rounded transition-all text-[13px] ${
+    className={`w-full text-left bg-transparent border-none shadow-none transition-colors duration-200 py-2 px-4 rounded flex items-center gap-3 text-[13px] ${
       isActive
-        ? 'text-pink-400'
-        : 'text-slate-400 hover:text-white'
+        ? 'text-cyan-400 bg-cyan-500/10 border-r-2 border-cyan-400'
+        : 'text-white/70 hover:bg-white/5 hover:text-white hover:border-r-2 hover:border-magenta-400'
     }`}
   >
-    <span className={`w-4 h-4 flex items-center justify-center ${isActive ? 'text-pink-400' : ''}`}>{icon}</span>
+    <span className={`w-4 h-4 flex items-center justify-center ${isActive ? 'text-cyan-400' : ''}`}>{icon}</span>
     <span>{label}</span>
     {badge && (
-      <span className="ml-auto text-xs bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full">
+      <span className="ml-auto text-xs bg-magenta-500/20 text-magenta-300 px-2 py-0.5 rounded-full">
         {badge}
       </span>
     )}
@@ -109,7 +104,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     core: true,
     creative: true,
     productivity: false,
-    intelligence: true,
     system: false,
     settings: false,
   });
@@ -119,10 +113,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-40 bg-[#1a1a2e] flex flex-col shrink-0 z-20 h-screen overflow-hidden">
+    <aside className="w-40 bg-[#0f0f1a]/95 backdrop-blur-md flex flex-col shrink-0 z-20 h-screen overflow-hidden border-r border-white/5">
       {/* Header */}
-      <div className="px-4 py-4">
-        <h1 className="text-base font-semibold text-pink-400">
+      <div className="px-4 py-4 border-b border-white/5">
+        <h1 className="text-base font-semibold text-cyan-400">
           Milla Rayne
         </h1>
         <p className="text-[10px] text-slate-500 mt-0.5">Devoted Companion</p>
@@ -202,43 +196,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label="Task Manager"
             onClick={() => {}}
           />
-          <SidebarItem
-            icon={<Sparkles className="w-4 h-4" />}
-            label="Memory Galaxy"
-            onClick={() => {}}
-          />
-        </SidebarSection>
-
-        <SidebarSection
-          title="Intelligence"
-          isOpen={sectionsOpen.intelligence}
-          onToggle={() => toggleSection('intelligence')}
-        >
-          <SidebarItem
-            icon={<Brain className="w-4 h-4" />}
-            label="Thinking Mode"
-            onClick={() => {}}
-          />
-          <SidebarItem
-            icon={<Eye className="w-4 h-4" />}
-            label="Show Process"
-            onClick={() => {}}
-          />
-          <SidebarItem
-            icon={<Globe className="w-4 h-4" />}
-            label="Deep Search"
-            onClick={() => {}}
-          />
-          <SidebarItem
-            icon={<MapPin className="w-4 h-4" />}
-            label="Maps Grounding"
-            onClick={() => {}}
-          />
-          <SidebarItem
-            icon={<Monitor className="w-4 h-4" />}
-            label="Screen Share"
-            onClick={() => {}}
-          />
         </SidebarSection>
 
         <SidebarSection
@@ -265,8 +222,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <SidebarItem
             icon={<Settings className="w-4 h-4" />}
-            label="Preferences"
+            label="Voice Settings"
             onClick={() => onShowSettings?.()}
+          />
+          <SidebarItem
+            icon={<Settings className="w-4 h-4" />}
+            label="Developer Options"
+            onClick={() => {}}
+          />
+          <SidebarItem
+            icon={<Settings className="w-4 h-4" />}
+            label="Google Sign In"
+            onClick={() => {
+              const width = 600;
+              const height = 700;
+              const left = window.screen.width / 2 - width / 2;
+              const top = window.screen.height / 2 - height / 2;
+              window.open(
+                '/api/auth/google',
+                'Connect Google Services',
+                `width=${width},height=${height},left=${left},top=${top}`
+              );
+            }}
           />
         </SidebarSection>
       </nav>

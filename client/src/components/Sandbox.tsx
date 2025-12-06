@@ -455,11 +455,11 @@ export const Sandbox: React.FC<SandboxProps> = ({
 
   return (
     <div
-      className="fixed inset-4 z-50 flex flex-col bg-gray-900/95 backdrop-blur-lg rounded-xl border border-purple-500/30 shadow-2xl overflow-hidden"
+      className="fixed inset-4 z-50 flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden"
       style={{ width: width ? `${width}px` : undefined }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/40">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#0a0a12]/60">
         <div className="flex items-center gap-3">
           <Code className="w-5 h-5 text-purple-400" />
           <h2 className="text-lg font-semibold text-white">Code Sandbox</h2>

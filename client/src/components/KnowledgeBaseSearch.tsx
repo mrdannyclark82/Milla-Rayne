@@ -100,22 +100,34 @@ export function KnowledgeBaseSearch({
 
   return (
     <Card
-      className={`bg-black/40 backdrop-blur-lg border-white/10 ${className}`}
+      className={`bg-[#0f0f1a]/98 backdrop-blur-lg border-cyan-500/20 ${className}`}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-purple-400" />
+            <BookOpen className="w-5 h-5 text-cyan-400" />
             <CardTitle className="text-xl text-white">Knowledge Base</CardTitle>
           </div>
-          {stats && (
-            <Badge
-              variant="outline"
-              className="border-purple-500/30 text-purple-300"
-            >
-              {stats.totalVideos} videos
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {stats && (
+              <Badge
+                variant="outline"
+                className="border-cyan-500/30 text-cyan-300"
+              >
+                {stats.totalVideos} videos
+              </Badge>
+            )}
+            {onClose && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-white/60 hover:text-white hover:bg-white/10"
+              >
+                ✕
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
 
