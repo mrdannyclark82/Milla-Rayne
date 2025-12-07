@@ -25,7 +25,7 @@ defaults:
 jobs:
   debugger:
     if: |-
-      ${{ fromJSON(vars.DEBUG || vars.ACTIONS_STEP_DEBUG || false) }}
+     ${{ fromJSON(vars.DEBUG || vars.ACTIONS_STEP_DEBUG || false) }}
     runs-on: 'ubuntu-latest'
     permissions:
       contents: 'read'
@@ -71,7 +71,15 @@ jobs:
     steps:
       - name: 'Mint identity token'
         id: 'mint_identity_token'
-        uses: ./.github/actions/mint-token
+        if: |-
+          ${{ vars.APP_ID }}
+        uses: 'actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b' # ratchet:actions/create-github-app-token@v2
+        with:
+          app-id: '${{ vars.APP_ID }}'
+          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
+          permission-contents: 'read'
+          permission-issues: 'write'
+          permission-pull-requests: 'write'
 
       - name: 'Extract command'
         id: 'extract_command'
@@ -173,7 +181,15 @@ jobs:
     steps:
       - name: 'Mint identity token'
         id: 'mint_identity_token'
-        uses: ./.github/actions/mint-token
+        if: |-
+          ${{ vars.APP_ID }}
+        uses: 'actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b' # ratchet:actions/create-github-app-token@v2
+        with:
+          app-id: '${{ vars.APP_ID }}'
+          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
+          permission-contents: 'read'
+          permission-issues: 'write'
+          permission-pull-requests: 'write'
 
       - name: 'Send failure comment'
         env:

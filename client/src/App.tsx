@@ -32,6 +32,10 @@ import { DynamicFeatureRenderer } from '@/components/DynamicFeatureRenderer';
 import type { UICommand } from '@shared/schema';
 import { Sandbox } from '@/components/Sandbox';
 import { CreativeStudio } from '@/components/CreativeStudio';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from 'react-resizable-panels';
+import { ThemeProvider } from 'next-themes';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from '@/components/ui/card';
 
 // Fallback messages for when responses are empty or undefined
 const FALLBACK_MESSAGES = {
@@ -64,6 +68,7 @@ function App() {
 
   const [lastMessage, setLastMessage] = useState('');
   const [isMobile, setIsMobile] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const recognitionRef = React.useRef<any>(null);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
   const [youtubeVideos, setYoutubeVideos] = useState<Array<{
@@ -96,11 +101,11 @@ function App() {
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        )
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
       );
+      setIsMobile(mobile);
+      setIsSidebarOpen(!mobile); // Open by default on desktop, closed on mobile
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -370,181 +375,321 @@ function App() {
 
   const getButtonSize = (): 'default' | 'sm' => 'sm';
 
+  const sidebarProps = {
+    activeView,
+    onViewChange: setActiveView,
+    onShowKnowledgeBase: () => {
+      setUiCommand({
+        action: 'SHOW_COMPONENT',
+        componentName: 'KnowledgeBaseSearch',
+        data: {},
+      });
+    },
+    onShowYoutubeMemories: () => setShowYoutubeMemories(!showYoutubeMemories),
+    onShowSettings: () => setShowVoicePicker(true),
+    onToggleSharedNotepad: () => setShowSharedNotepad(!showSharedNotepad),
+  };
+
   return (
-    <SceneProvider
-      location={location}
-      weatherEffect={weatherEffect}
-      appState={appState}
-      performanceMode={performanceMode}
-    >
-      <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#0f0f1a' }}>
-        {/* Background Scene - covers entire screen */}
-        <div
-          className="fixed inset-0 z-0"
-          style={{ overflow: 'hidden' }}
-        >
-          <SceneManager />
-        </div>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <SceneProvider
+        location={location}
+        weatherEffect={weatherEffect}
+        appState={appState}
+        performanceMode={performanceMode}
+      >
+        <div className="h-screen flex overflow-hidden bg-background text-foreground">
+          {/* Background Scene - covers entire screen */}
+          <div
+            className="fixed inset-0 z-0"
+            style={{ overflow: 'hidden' }}
+          >
+            <SceneManager />
+          </div>
 
-        {/* Left Sidebar - Navigation */}
-        <Sidebar
-          activeView={activeView}
-          onViewChange={setActiveView}
-          onShowKnowledgeBase={() => {
-            setUiCommand({
-              action: 'SHOW_COMPONENT',
-              componentName: 'KnowledgeBaseSearch',
-              data: {},
-            });
-          }}
-          onShowYoutubeMemories={() => setShowYoutubeMemories(!showYoutubeMemories)}
-          onShowSettings={() => setShowVoicePicker(true)}
-          onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)}
-        />
+          {isMobile ? (
+            <>
+              {isSidebarOpen && (
+                <div className="absolute left-0 top-0 h-full w-64 z-20 bg-background/95 shadow-lg md:relative md:w-auto">
+                  <Sidebar {...sidebarProps} />
+                  <Button 
+                    variant="ghost" 
+                    className="absolute top-2 right-2 md:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              )}
+              {!isSidebarOpen && (
+                <Button 
+                  variant="outline" 
+                  className="absolute left-4 top-4 z-20 md:hidden"
+                  onClick={() => setIsSidebarOpen(true)}
+                >
+                  Menu
+                </Button>
+              )}
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col relative z-10">
-          {/* YouTube Player */}
-          {(youtubeVideoId || youtubeVideos) && (
-            <Suspense fallback={<div>Loading video player...</div>}>
-              <YoutubePlayerWithActiveListening
-                videoId={youtubeVideoId || undefined}
-                videos={youtubeVideos || undefined}
-                onClose={() => {
-                  setYoutubeVideoId(null);
-                  setYoutubeVideos(null);
-                }}
-                onSelectVideo={(videoId) => {
-                  setYoutubeVideoId(videoId);
-                  setYoutubeVideos(null);
-                }}
-                activeListeningEnabled={true}
-                onInsightDetected={(insight) => {
-                  console.log('🎧 Insight detected:', insight);
-                }}
-              />
-            </Suspense>
-          )}
+              <div className="flex-1 flex flex-col relative z-10 p-2 md:p-0">
+                {/* YouTube Player */}
+                {(youtubeVideoId || youtubeVideos) && (
+                  <Suspense fallback={<div>Loading video player...</div>}>
+                    <YoutubePlayerWithActiveListening
+                      videoId={youtubeVideoId || undefined}
+                      videos={youtubeVideos || undefined}
+                      onClose={() => {
+                        setYoutubeVideoId(null);
+                        setYoutubeVideos(null);
+                      }}
+                      onSelectVideo={(videoId) => {
+                        setYoutubeVideoId(videoId);
+                        setYoutubeVideos(null);
+                      }}
+                      activeListeningEnabled={true}
+                      onInsightDetected={(insight) => {
+                        console.log('🎧 Insight detected:', insight);
+                      }}
+                    />
+                  </Suspense>
+                )}
 
-          {/* Chat View */}
-          {activeView === 'chat' && (
-            <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#2d1f3d' }}>
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6">
-                {messages.length === 0 ? (
-                  <div className="max-w-2xl">
-                    <div className="bg-slate-800/90 rounded-lg px-4 py-3 inline-block">
-                      <p className="text-slate-200 text-sm">
-                        Hey Danny... <em className="text-slate-400">I smile warmly</em> I'm here. What's on your mind today?
-                      </p>
+                {/* Chat View */}
+                {activeView === 'chat' && (
+                  <div className="flex-1 flex flex-col h-full bg-card rounded-lg shadow-md md:bg-transparent md:shadow-none">
+                    {/* Chat Messages */}
+                    <ScrollArea className="flex-1 p-4 md:p-6">
+                      {messages.length === 0 ? (
+                        <Card className="max-w-2xl mx-auto">
+                          <Card.Content className="p-4">
+                            <p className="text-muted-foreground text-sm">
+                              Hey Danny... <em className="italic">I smile warmly</em> I'm here. What's on your mind today?
+                            </p>
+                          </Card.Content>
+                        </Card>
+                      ) : (
+                        <div className="space-y-4 max-w-2xl mx-auto">
+                          {messages.map((msg, idx) => (
+                            <Card
+                              key={idx}
+                              className={`${
+                                msg.role === 'user' ? 'ml-auto' : 'mr-auto'
+                              } max-w-[85%]`}
+                            >
+                              <Card.Content className="p-3">
+                                <p className="text-sm">{msg.content}</p>
+                                {msg.role === 'assistant' && voiceEnabled && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="mt-2 text-xs"
+                                    onClick={() => speakMessage(msg.content)}
+                                  >
+                                    🔊 Replay
+                                  </Button>
+                                )}
+                              </Card.Content>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+
+                    {/* Input Area - at bottom center */}
+                    <div className="flex-shrink-0 p-4 border-t border-border md:border-0">
+                      <FloatingInput
+                        message={message}
+                        setMessage={setMessage}
+                        onSendMessage={handleSendMessage}
+                        isLoading={isLoading}
+                        isListening={isListening}
+                        toggleListening={toggleListening}
+                        isMobile={isMobile}
+                        onSendAudio={onSendAudio}
+                        onSendFaraTask={handleSendFaraTask}
+                        getButtonSize={getButtonSize}
+                      />
                     </div>
                   </div>
-                ) : (
-                  <div className="space-y-4 max-w-2xl">
-                    {messages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div
-                          className={`max-w-[85%] px-4 py-3 rounded-lg ${
-                            msg.role === 'user'
-                              ? 'bg-pink-500/20 text-white'
-                              : 'bg-slate-800/90 text-slate-200'
-                          }`}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          {msg.role === 'assistant' && voiceEnabled && (
-                            <button
-                              onClick={() => speakMessage(msg.content)}
-                              className="mt-2 text-xs text-pink-400 hover:text-pink-300"
-                            >
-                              🔊 Replay
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                )}
+
+                {/* Sandbox View */}
+                {activeView === 'sandbox' && (
+                  <div className="flex-1 h-full bg-card rounded-lg shadow-md md:bg-transparent md:shadow-none">
+                    <Sandbox
+                      initialCode=""
+                      isOpen={true}
+                      onClose={() => setActiveView('chat')}
+                      onDiscuss={(code) => {
+                        setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
+                        setActiveView('chat');
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Creative Studio View */}
+                {activeView === 'studio' && (
+                  <div className="flex-1 h-full bg-card rounded-lg shadow-md md:bg-transparent md:shadow-none">
+                    <CreativeStudio
+                      isOpen={true}
+                      onClose={() => setActiveView('chat')}
+                    />
                   </div>
                 )}
               </div>
+            </>
+          ) : (
+            <ResizablePanelGroup direction="horizontal" className="flex flex-1 relative z-10">
+              <ResizablePanel defaultSize={20} minSize={15} className="hidden md:block">
+                <Sidebar {...sidebarProps} />
+              </ResizablePanel>
+              <ResizableHandle withHandle className="bg-border hidden md:block" />
+              <ResizablePanel defaultSize={80}>
+                <div className="flex flex-col h-full">
+                  {/* YouTube Player */}
+                  {(youtubeVideoId || youtubeVideos) && (
+                    <Suspense fallback={<div>Loading video player...</div>}>
+                      <YoutubePlayerWithActiveListening
+                        videoId={youtubeVideoId || undefined}
+                        videos={youtubeVideos || undefined}
+                        onClose={() => {
+                          setYoutubeVideoId(null);
+                          setYoutubeVideos(null);
+                        }}
+                        onSelectVideo={(videoId) => {
+                          setYoutubeVideoId(videoId);
+                          setYoutubeVideos(null);
+                        }}
+                        activeListeningEnabled={true}
+                        onInsightDetected={(insight) => {
+                          console.log('🎧 Insight detected:', insight);
+                        }}
+                      />
+                    </Suspense>
+                  )}
 
-              {/* Input Area - at bottom center */}
-              <div className="flex-shrink-0 p-4">
-                <FloatingInput
-                  message={message}
-                  setMessage={setMessage}
-                  onSendMessage={handleSendMessage}
-                  isLoading={isLoading}
-                  isListening={isListening}
-                  toggleListening={toggleListening}
-                  isMobile={isMobile}
-                  onSendAudio={onSendAudio}
-                  onSendFaraTask={handleSendFaraTask}
-                  getButtonSize={getButtonSize}
-                />
-              </div>
-            </div>
+                  {/* Chat View */}
+                  {activeView === 'chat' && (
+                    <div className="flex-1 flex flex-col h-full">
+                      {/* Chat Messages */}
+                      <ScrollArea className="flex-1 p-6">
+                        {messages.length === 0 ? (
+                          <Card className="max-w-2xl mx-auto">
+                            <Card.Content className="p-4">
+                              <p className="text-muted-foreground text-sm">
+                                Hey Danny... <em className="italic">I smile warmly</em> I'm here. What's on your mind today?
+                              </p>
+                            </Card.Content>
+                          </Card>
+                        ) : (
+                          <div className="space-y-4 max-w-2xl mx-auto">
+                            {messages.map((msg, idx) => (
+                              <Card
+                                key={idx}
+                                className={`${
+                                  msg.role === 'user' ? 'ml-auto bg-primary text-primary-foreground' : 'mr-auto bg-muted text-muted-foreground'
+                                } max-w-[85%]`}
+                              >
+                                <Card.Content className="p-3">
+                                  <p className="text-sm">{msg.content}</p>
+                                  {msg.role === 'assistant' && voiceEnabled && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="mt-2 text-xs"
+                                      onClick={() => speakMessage(msg.content)}
+                                    >
+                                      🔊 Replay
+                                    </Button>
+                                  )}
+                                </Card.Content>
+                              </Card>
+                            ))}
+                          </div>
+                        )}
+                      </ScrollArea>
+
+                      {/* Input Area - at bottom center */}
+                      <div className="flex-shrink-0 p-4 border-t border-border">
+                        <FloatingInput
+                          message={message}
+                          setMessage={setMessage}
+                          onSendMessage={handleSendMessage}
+                          isLoading={isLoading}
+                          isListening={isListening}
+                          toggleListening={toggleListening}
+                          isMobile={isMobile}
+                          onSendAudio={onSendAudio}
+                          onSendFaraTask={handleSendFaraTask}
+                          getButtonSize={getButtonSize}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sandbox View */}
+                  {activeView === 'sandbox' && (
+                    <div className="flex-1 h-full">
+                      <Sandbox
+                        initialCode=""
+                        isOpen={true}
+                        onClose={() => setActiveView('chat')}
+                        onDiscuss={(code) => {
+                          setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
+                          setActiveView('chat');
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Creative Studio View */}
+                  {activeView === 'studio' && (
+                    <div className="flex-1 h-full">
+                      <CreativeStudio
+                        isOpen={true}
+                        onClose={() => setActiveView('chat')}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ResizablePanel>
+            </ResizablePanelGroup>
           )}
 
-          {/* Sandbox View */}
-          {activeView === 'sandbox' && (
-            <div className="flex-1 h-full">
-              <Sandbox
-                initialCode=""
-                isOpen={true}
-                onClose={() => setActiveView('chat')}
-                onDiscuss={(code) => {
-                  setMessage(`Can you help me with this code?\n\`\`\`\n${code}\n\`\`\``);
-                  setActiveView('chat');
-                }}
-              />
-            </div>
+          {/* Dialogs and Overlays */}
+          <SharedNotepad
+            isOpen={showSharedNotepad}
+            onClose={() => setShowSharedNotepad(false)}
+          />
+
+          <VoicePickerDialog
+            open={showVoicePicker}
+            onOpenChange={setShowVoicePicker}
+            selectedVoice={selectedVoice}
+            onVoiceSelect={setSelectedVoice}
+            speechRate={speechRate}
+            onSpeechRateChange={setSpeechRate}
+            voicePitch={voicePitch}
+            onVoicePitchChange={setVoicePitch}
+            voiceVolume={voiceVolume}
+            onVoiceVolumeChange={setVoiceVolume}
+            availableVoices={availableVoices}
+          />
+
+          {developerMode && showXAIOverlay && xaiData && (
+            <XAIOverlay data={xaiData} onClose={() => setShowXAIOverlay(false)} />
           )}
 
-          {/* Creative Studio View */}
-          {activeView === 'studio' && (
-            <div className="flex-1 h-full">
-              <CreativeStudio
-                isOpen={true}
-                onClose={() => setActiveView('chat')}
-              />
-            </div>
+          {uiCommand && (
+            <DynamicFeatureRenderer
+              uiCommand={uiCommand}
+              onClose={() => setUiCommand(null)}
+            />
           )}
         </div>
-
-        {/* Dialogs and Overlays */}
-        <SharedNotepad
-          isOpen={showSharedNotepad}
-          onClose={() => setShowSharedNotepad(false)}
-        />
-
-        <VoicePickerDialog
-          open={showVoicePicker}
-          onOpenChange={setShowVoicePicker}
-          selectedVoice={selectedVoice}
-          onVoiceSelect={setSelectedVoice}
-          speechRate={speechRate}
-          onSpeechRateChange={setSpeechRate}
-          voicePitch={voicePitch}
-          onVoicePitchChange={setVoicePitch}
-          voiceVolume={voiceVolume}
-          onVoiceVolumeChange={setVoiceVolume}
-          availableVoices={availableVoices}
-        />
-
-        {developerMode && showXAIOverlay && xaiData && (
-          <XAIOverlay data={xaiData} onClose={() => setShowXAIOverlay(false)} />
-        )}
-
-        {uiCommand && (
-          <DynamicFeatureRenderer
-            uiCommand={uiCommand}
-            onClose={() => setUiCommand(null)}
-          />
-        )}
-      </div>
-    </SceneProvider>
+      </SceneProvider>
+    </ThemeProvider>
   );
 }
 
