@@ -6,7 +6,7 @@ export type SceneMood =
   | 'playful';
 export type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night';
 export type AvatarState = 'neutral' | 'thinking' | 'responding' | 'listening';
-export type ParticleType = 'stars' | 'sparkles' | 'hearts' | 'petals' | 'mist';
+export type ParticleType = 'stars' | 'sparkles' | 'hearts' | 'petals' | 'mist' | 'snowflakes';
 
 // Role-play scene locations (Phase 3)
 export type SceneLocation =
@@ -59,6 +59,7 @@ export interface SceneSettings {
   particleDensity: 'off' | 'low' | 'medium' | 'high';
   animationSpeed: number; // 0.5-1.5 (50%-150%)
   devDebug: boolean;
+  winterTheme?: boolean; // Force snowy night scene (overrides seasonal detection)
   sceneBackgroundFromRP?: boolean; // Phase 3: Mirror RP scene in background
   sceneRoomOverlaysEnabled?: boolean; // Room Overlays V1: Location silhouettes
   backgroundMode?: BackgroundMode; // Background rendering mode: CSS animated, static image, or auto-detect

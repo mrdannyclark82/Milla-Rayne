@@ -122,3 +122,37 @@ export function getLocationMood(location: string): SceneMood {
 
   return locationMoodMap[location] || 'calm';
 }
+
+// Seasonal scenes for special themes
+export const SEASONAL_SCENES = {
+  snowy_night: {
+    colors: ["#0F2027", "#203A43", "#2C5364", "#1A1A2E"], // Deep midnight blues with white accents
+    animations: ["gentle-wave", "breathing", "drift"], // Subtle breathing glow, gentle parallax
+    particles: { type: "snowflakes", density: "high", speed: 0.4 }, // Slow-moving snowflakes
+    interactive: true,
+  } as SceneConfig,
+};
+
+/**
+ * Get seasonal scene configuration
+ * Currently supports snowy night theme
+ */
+export function getSeasonalScene(season: "winter" | "none" = "none", timeOfDay: TimeOfDay = "night"): SceneConfig | null {
+  if (season === "winter" && timeOfDay === "night") {
+    return SEASONAL_SCENES.snowy_night;
+  }
+  return null;
+}
+
+/**
+ * Detect current season based on date
+ * Winter: December-February
+ */
+export function getCurrentSeason(): "winter" | "none" {
+  const month = new Date().getMonth(); // 0-11
+  if (month === 11 || month === 0 || month === 1) { // Dec, Jan, Feb
+    return "winter";
+  }
+  return "none";
+}
+

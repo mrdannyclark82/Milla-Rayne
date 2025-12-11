@@ -134,6 +134,10 @@ export async function initApp() {
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
 
+  // Initialize Mood Background Service
+  const { initializeMoodBackgroundService } = await import('./moodBackgroundService');
+  await initializeMoodBackgroundService();
+
   // Initialize User Tasks system
   const { initializeUserTasks } = await import('./userTaskService');
   await initializeUserTasks();
