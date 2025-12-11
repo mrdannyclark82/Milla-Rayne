@@ -115,13 +115,11 @@ class FaraService {
 
     const pythonEnvPath = './fara_repo/.venv/bin';
     const faraCliExecutable = `${pythonEnvPath}/fara-cli`;
-    const command = `${faraCliExecutable} --task "${task}"`;
-    const [cmd, ...args] = command.split(' ');
+    const args = ['--task', task];
 
     // No need to activate venv with 'source' if we call the executable directly
-    const faraProcess = spawn(cmd, args, {
+    const faraProcess = spawn(faraCliExecutable, args, {
         cwd: './fara_repo',
-        shell: true,
     });
 
     faraProcess.stdout?.on('data', (data) => {
