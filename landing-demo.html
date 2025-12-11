@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milla-Rayne Landing Page Demo</title>
+  <style>
+    /* Import built CSS from the dist folder after build */
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0f0f1a;
+      color: white;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module">
+    // This is a demo file to test the Landing page
+    // After building, the components will be available in the dist folder
+    import React from 'react';
+    import ReactDOM from 'react-dom/client';
+    import Landing from './client/src/pages/Landing.tsx';
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      React.createElement(Landing)
+    );
+  </script>
+</body>
+</html>
