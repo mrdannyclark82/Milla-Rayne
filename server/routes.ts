@@ -1625,8 +1625,33 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.post('/api/repo/contents', async (req, res) => {
     try {
       const { owner, repo, path: repoPath = '' } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ error: 'owner and repo are required' });
+
+      // Validation: Only allow valid GitHub owner/repo names and path
+      // GitHub usernames/repos: alphanumeric, hyphens, underscores (no dots for security)
+      const githubNameRegex = /^[A-Za-z0-9_-]{1,100}$/;
+      
+      // For paths: allow alphanumeric, dots, hyphens, underscores, and forward slashes
+      // Decode first to catch encoded path traversal attempts
+      const decodedPath = repoPath ? decodeURIComponent(repoPath) : '';
+      const repoPathRegex = /^([A-Za-z0-9_.\-]+([\/][A-Za-z0-9_.\-]+)*)?$/;
+
+      // Validate owner and repo
+      if (!owner || !githubNameRegex.test(owner)) {
+        return res.status(400).json({ error: 'Invalid GitHub owner name' });
+      }
+      if (!repo || !githubNameRegex.test(repo)) {
+        return res.status(400).json({ error: 'Invalid GitHub repository name' });
+      }
+
+      // Validate path
+      if (
+        typeof repoPath !== "string" ||
+        repoPath.length > 256 ||
+        decodedPath.includes('..') ||
+        decodedPath.startsWith('/') ||
+        !repoPathRegex.test(decodedPath)
+      ) {
+        return res.status(400).json({ error: 'Invalid repository path' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
@@ -4670,6 +4695,15 @@ Project: Milla Rayne - AI Virtual Assistant
   app.post('/api/elevenlabs/tts', async (req, res) => {
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
+
+    // Validate voiceName format - must be a valid voice ID (UUID or browser voice format)
+    // This prevents SSRF attacks by ensuring the voice ID can't manipulate the URL
+    const voiceIdRegex = /^[a-zA-Z0-9_-]{1,100}$/;
+    if (!voiceName || typeof voiceName !== 'string' || !voiceIdRegex.test(voiceName)) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid voice ID format' });
+    }
 
     if (!apiKey) {
       return res
