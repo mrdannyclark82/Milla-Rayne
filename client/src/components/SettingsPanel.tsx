@@ -923,7 +923,7 @@ export default function SettingsPanel({
               </CardContent>
             </Card>
             {/* Personal Tasks Section */}
-            \n\n <PersonalTasksSection />
+            <PersonalTasksSection />
             {/* Accessibility Section */}
             <AccessibilitySettings
               highContrast={false}

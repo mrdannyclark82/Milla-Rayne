@@ -34,9 +34,19 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 ```bash
 npm install
 cp .env.example .env   # Add your API keys
-npm run dev
+npm run dev:all        # Start both main server (5000) and proactive server (5001)
 ```
 Open http://localhost:5000 to start chatting.
+
+**Note**: The application now runs two servers:
+- **Main Server (Port 5000)**: Handles core application features, chat, API routes
+- **Proactive Server (Port 5001)**: Handles background proactive features to prevent rate limiting
+
+To run servers separately:
+```bash
+npm run dev              # Main server only (port 5000)
+npm run dev:proactive    # Proactive server only (port 5001)
+```
 
 ### 🔒 Local LLM (Optional - For Privacy)
 Want to run AI models locally for complete privacy?
