@@ -1625,8 +1625,22 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.post('/api/repo/contents', async (req, res) => {
     try {
       const { owner, repo, path: repoPath = '' } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ error: 'owner and repo are required' });
+
+      // Validation: Only allow valid GitHub owner/repo names and path
+      const githubNameRegex = /^[A-Za-z0-9_.-]{1,100}$/;
+      const repoPathRegex = /^([A-Za-z0-9_.\-\/]*)$/;
+
+      if (
+        !owner || !repo ||
+        !githubNameRegex.test(owner) ||
+        !githubNameRegex.test(repo) ||
+        typeof repoPath !== "string" ||
+        repoPath.length > 256 ||
+        repoPath.includes('..') ||
+        repoPath.startsWith('/') ||
+        !repoPathRegex.test(repoPath)
+      ) {
+        return res.status(400).json({ error: 'Invalid owner, repo, or path value.' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
@@ -4667,9 +4681,22 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // List of allowed ElevenLabs voice names
+  const allowedVoiceNames = [
+    'Rachel', 'Domi', 'Bella', 'Antoni', 'Elli', 'Josh', 'Arnold', 'Adam', 'Sam',
+    // Add any other valid ElevenLabs voice names here
+  ];
+
   app.post('/api/elevenlabs/tts', async (req, res) => {
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
+
+    // Validate voiceName against allowed list
+    if (!allowedVoiceNames.includes(voiceName)) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid voice name. Allowed voices: ' + allowedVoiceNames.join(', ') });
+    }
 
     if (!apiKey) {
       return res
