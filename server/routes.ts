@@ -1627,20 +1627,31 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       const { owner, repo, path: repoPath = '' } = req.body;
 
       // Validation: Only allow valid GitHub owner/repo names and path
-      const githubNameRegex = /^[A-Za-z0-9_.-]{1,100}$/;
-      const repoPathRegex = /^([A-Za-z0-9_.\-\/]*)$/;
+      // GitHub usernames/repos: alphanumeric, hyphens, underscores (no dots for security)
+      const githubNameRegex = /^[A-Za-z0-9_-]{1,100}$/;
+      
+      // For paths: allow alphanumeric, dots, hyphens, underscores, and forward slashes
+      // Decode first to catch encoded path traversal attempts
+      const decodedPath = repoPath ? decodeURIComponent(repoPath) : '';
+      const repoPathRegex = /^([A-Za-z0-9_.\-]+([\/][A-Za-z0-9_.\-]+)*)?$/;
 
+      // Validate owner and repo
+      if (!owner || !githubNameRegex.test(owner)) {
+        return res.status(400).json({ error: 'Invalid GitHub owner name' });
+      }
+      if (!repo || !githubNameRegex.test(repo)) {
+        return res.status(400).json({ error: 'Invalid GitHub repository name' });
+      }
+
+      // Validate path
       if (
-        !owner || !repo ||
-        !githubNameRegex.test(owner) ||
-        !githubNameRegex.test(repo) ||
         typeof repoPath !== "string" ||
         repoPath.length > 256 ||
-        repoPath.includes('..') ||
-        repoPath.startsWith('/') ||
-        !repoPathRegex.test(repoPath)
+        decodedPath.includes('..') ||
+        decodedPath.startsWith('/') ||
+        !repoPathRegex.test(decodedPath)
       ) {
-        return res.status(400).json({ error: 'Invalid owner, repo, or path value.' });
+        return res.status(400).json({ error: 'Invalid repository path' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
