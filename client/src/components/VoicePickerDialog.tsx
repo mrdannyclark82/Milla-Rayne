@@ -117,7 +117,7 @@ export function VoicePickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto bg-[#2d3e50] backdrop-blur-md border border-gray-600 text-white shadow-xl">
+      <DialogContent className="sm:max-w-[450px] max-h-[80vh] overflow-y-auto bg-[#0f0f1a]/98 backdrop-blur-md border border-cyan-500/20 text-white shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-base font-bold text-white flex items-center">
             <i className="fas fa-microphone-alt mr-2 text-green-400"></i>

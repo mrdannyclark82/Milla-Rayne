@@ -7,6 +7,8 @@ import {
   Settings,
   Sparkles,
   Youtube,
+  Code,
+  Palette,
 } from 'lucide-react';
 
 interface CentralDockProps {
@@ -16,6 +18,8 @@ interface CentralDockProps {
   onShowSettings?: () => void;
   onShowFeatures?: () => void;
   onShowYoutubeMemories?: () => void;
+  onShowSandbox?: () => void;
+  onShowCreativeStudio?: () => void;
 }
 
 export const CentralDock: React.FC<CentralDockProps> = ({
@@ -25,6 +29,8 @@ export const CentralDock: React.FC<CentralDockProps> = ({
   onShowSettings,
   onShowFeatures,
   onShowYoutubeMemories,
+  onShowSandbox,
+  onShowCreativeStudio,
 }) => {
   return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
@@ -38,6 +44,30 @@ export const CentralDock: React.FC<CentralDockProps> = ({
         >
           <FileText className="h-5 w-5" />
         </Button>
+
+        {onShowSandbox && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onShowSandbox}
+            className="hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+            title="Code Sandbox"
+          >
+            <Code className="h-5 w-5" />
+          </Button>
+        )}
+
+        {onShowCreativeStudio && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onShowCreativeStudio}
+            className="hover:bg-purple-500/20 hover:text-purple-400 transition-colors"
+            title="Creative Studio"
+          >
+            <Palette className="h-5 w-5" />
+          </Button>
+        )}
 
         {onShowVideoAnalysis && (
           <Button

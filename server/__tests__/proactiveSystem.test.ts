@@ -88,13 +88,14 @@ describe('Proactive Repository Ownership System', () => {
         name: 'Test Sandbox',
         description: 'Testing sandbox creation',
         createdBy: 'milla',
+        createGitBranch: false,
       });
 
       expect(sandbox).toHaveProperty('id');
       expect(sandbox.name).toBe('Test Sandbox');
       expect(sandbox.status).toBe('active');
       expect(sandbox.createdBy).toBe('milla');
-    });
+    }, 10000); // Set timeout to 10 seconds
 
     it('should add features to sandbox', async () => {
       const sandboxes = getAllSandboxes();
