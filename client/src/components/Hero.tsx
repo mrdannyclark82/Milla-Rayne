@@ -6,6 +6,8 @@ export interface HeroProps {
   className?: string;
 }
 
+const PARTICLE_COUNT = 100;
+
 const Hero: React.FC<HeroProps> = ({ className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -36,7 +38,7 @@ const Hero: React.FC<HeroProps> = ({ className }) => {
     }> = [];
 
     // Create particles
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -49,7 +51,7 @@ const Hero: React.FC<HeroProps> = ({ className }) => {
     }
 
     // Animation loop
-    let animationFrameId: number;
+    let animationFrameId: number | undefined;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -87,7 +89,9 @@ const Hero: React.FC<HeroProps> = ({ className }) => {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== undefined) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, []);
 
