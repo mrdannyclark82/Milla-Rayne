@@ -30,6 +30,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -71,6 +74,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -106,6 +112,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.14.15
@@ -125,6 +134,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -145,6 +157,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -199,6 +214,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:

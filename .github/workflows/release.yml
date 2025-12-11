@@ -17,6 +17,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -65,6 +68,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - name: Download build artifacts
         uses: actions/download-artifact@v6
@@ -114,6 +120,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
