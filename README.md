@@ -8,6 +8,7 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 
 ## ✨ Key Features
 - **Poly-Model Synthesis**: Integrates Gemini, Mistral, OpenAI, xAI Grok, and more via secure dispatch.
+- **🔒 Local LLM Support**: Run models locally with Ollama for complete privacy (see [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md))
 - **Adaptive Multimodal Frontend**: React + Vite client with dynamic scenes, voice interaction, and visual recognition.
 - **Edge Processing**: Native Android agent for sub-millisecond local tasks.
 - **Enhanced Memory**: SQLite-based memory with encryption, session tracking, and usage analytics.
@@ -33,24 +34,53 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 ```bash
 npm install
 cp .env.example .env   # Add your API keys
-npm run dev
+npm run dev:all        # Start both main server (5000) and proactive server (5001)
+```
 Open http://localhost:5000 to start chatting.
 
-CLI
-bash
+**Note**: The application now runs two servers:
+- **Main Server (Port 5000)**: Handles core application features, chat, API routes
+- **Proactive Server (Port 5001)**: Handles background proactive features to prevent rate limiting
+
+To run servers separately:
+```bash
+npm run dev              # Main server only (port 5000)
+npm run dev:proactive    # Proactive server only (port 5001)
+```
+
+### 🔒 Local LLM (Optional - For Privacy)
+Want to run AI models locally for complete privacy?
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Download a model
+ollama pull gemma3:1b
+
+# Enable in Milla
+echo "ENABLE_LOCAL_MODEL=true" >> .env
+echo "PREFER_LOCAL_MODEL=true" >> .env
+```
+See [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md) for full instructions.
+
+### CLI
+```bash
 npm run dev   # Start server
 npm run cli   # Launch CLI
-Android
-Open android/ in Android Studio, configure server URL, and run on emulator/device.
+```
 
-Docker
-bash
+### Android
+Open `android/` in Android Studio, configure server URL, and run on emulator/device.
+
+### Docker
+```bash
 cp .env.example .env
 docker-compose up
+```
 Or pull prebuilt image:
-
-bash
+```bash
 docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
+```
 🧪 Development
 Testing: npm test (Vitest)
 

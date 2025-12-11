@@ -127,4 +127,10 @@ export const config = {
       10
     ),
   },
+  // Local model configuration
+  localModel: {
+    enabled: process.env.ENABLE_LOCAL_MODEL === 'true',
+    modelPath: process.env.LOCAL_MODEL_PATH || 'locallm/gemma.tflite',
+    preferLocal: process.env.PREFER_LOCAL_MODEL === 'true', // If true, use local by default
+  },
 };

@@ -29,7 +29,7 @@ jobs:
       url: https://staging.milla-rayne.app
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false
@@ -73,7 +73,7 @@ jobs:
     needs: []
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false
@@ -111,7 +111,7 @@ jobs:
       url: https://milla-rayne.herokuapp.com
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false
@@ -133,7 +133,7 @@ jobs:
       url: https://milla-rayne.railway.app
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false
@@ -156,7 +156,7 @@ jobs:
       url: https://milla-rayne.example.com
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false
@@ -213,7 +213,7 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
         with:
           clean: true
           lfs: false

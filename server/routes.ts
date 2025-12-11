@@ -114,7 +114,8 @@ import { analyzeVoiceInput, VoiceAnalysisResult } from './voiceAnalysisService';
 import { getSmartHomeSensorData } from './smartHomeService';
 import { initializeMemorySummarizationScheduler } from './memorySummarizationScheduler';
 import { UserProfile } from './profileService';
-import { registerProactiveRoutes } from './proactiveRoutes';
+// Proactive routes now run on separate server (proactiveServer.ts) on port 5001
+// import { registerProactiveRoutes } from './proactiveRoutes';
 import { trackUserInteraction } from './userInteractionAnalyticsService';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
@@ -321,8 +322,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Initialize memory summarization scheduler
   initializeMemorySummarizationScheduler();
 
-  // Register proactive repository management routes
-  registerProactiveRoutes(app);
+  // Proactive routes now run on separate server (proactiveServer.ts) on port 5001
+  // This prevents rate limiting issues on the main application server
+  // registerProactiveRoutes(app);
 
   // Serve the videoviewer.html file
   app.get('/videoviewer.html', (req, res) => {
@@ -1625,8 +1627,33 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.post('/api/repo/contents', async (req, res) => {
     try {
       const { owner, repo, path: repoPath = '' } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ error: 'owner and repo are required' });
+
+      // Validation: Only allow valid GitHub owner/repo names and path
+      // GitHub usernames/repos: alphanumeric, hyphens, underscores (no dots for security)
+      const githubNameRegex = /^[A-Za-z0-9_-]{1,100}$/;
+      
+      // For paths: allow alphanumeric, dots, hyphens, underscores, and forward slashes
+      // Decode first to catch encoded path traversal attempts
+      const decodedPath = repoPath ? decodeURIComponent(repoPath) : '';
+      const repoPathRegex = /^([A-Za-z0-9_.\-]+([\/][A-Za-z0-9_.\-]+)*)?$/;
+
+      // Validate owner and repo
+      if (!owner || !githubNameRegex.test(owner)) {
+        return res.status(400).json({ error: 'Invalid GitHub owner name' });
+      }
+      if (!repo || !githubNameRegex.test(repo)) {
+        return res.status(400).json({ error: 'Invalid GitHub repository name' });
+      }
+
+      // Validate path
+      if (
+        typeof repoPath !== "string" ||
+        repoPath.length > 256 ||
+        decodedPath.includes('..') ||
+        decodedPath.startsWith('/') ||
+        !repoPathRegex.test(decodedPath)
+      ) {
+        return res.status(400).json({ error: 'Invalid repository path' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
@@ -2016,8 +2043,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Create a new message
   app.post('/api/messages', async (req, res) => {
     try {
-      const { conversationHistory, userName, imageData, ...messageData } =
+      const { conversationHistory, userName: rawUserName, imageData, ...messageData } =
         req.body;
+      // Validate and sanitize userName
+      let userName: string = typeof rawUserName === 'string' && rawUserName.length <= 128
+        ? rawUserName
+        : 'Danny Ray';
       const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
 
@@ -4671,6 +4702,15 @@ Project: Milla Rayne - AI Virtual Assistant
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
 
+    // Validate voiceName format - must be a valid voice ID (UUID or browser voice format)
+    // This prevents SSRF attacks by ensuring the voice ID can't manipulate the URL
+    const voiceIdRegex = /^[a-zA-Z0-9_-]{1,100}$/;
+    if (!voiceName || typeof voiceName !== 'string' || !voiceIdRegex.test(voiceName)) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid voice ID format' });
+    }
+
     if (!apiKey) {
       return res
         .status(500)
@@ -5862,12 +5902,21 @@ function generateIntelligentFallback(
 
   // Deterministic response selection based on userMessage and userName
   function simpleHash(str: string): number {
+    // Defensive: ensure str is a primitive string and length is capped
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    // If the string is suspiciously long, use a safe default string
+    if (str.length > 1024) {
+      str = str.slice(0, 1024);
+    }
+    const safeStr = str;
     let hash = 0,
       i,
       chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i++) {
-      chr = str.charCodeAt(i);
+    if (safeStr.length === 0) return hash;
+    for (i = 0; i < safeStr.length; i++) {
+      chr = safeStr.charCodeAt(i);
       hash = (hash << 5) - hash + chr;
       hash |= 0; // Convert to 32bit integer
     }
