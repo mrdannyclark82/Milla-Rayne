@@ -1,4 +1,5 @@
 @import 'tw-animate-css';
+@import './styles/glow.css';
 
 @plugin "tailwindcss-animate";
 
