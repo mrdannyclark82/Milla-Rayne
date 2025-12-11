@@ -5862,12 +5862,14 @@ function generateIntelligentFallback(
 
   // Deterministic response selection based on userMessage and userName
   function simpleHash(str: string): number {
+    // Defensive: ensure str is a string and length is capped
+    const safeStr = String(str).slice(0, 1024); // Limit input to 1024 chars
     let hash = 0,
       i,
       chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i++) {
-      chr = str.charCodeAt(i);
+    if (safeStr.length === 0) return hash;
+    for (i = 0; i < safeStr.length; i++) {
+      chr = safeStr.charCodeAt(i);
       hash = (hash << 5) - hash + chr;
       hash |= 0; // Convert to 32bit integer
     }
