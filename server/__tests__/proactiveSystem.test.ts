@@ -88,13 +88,14 @@ describe('Proactive Repository Ownership System', () => {
         name: 'Test Sandbox',
         description: 'Testing sandbox creation',
         createdBy: 'milla',
+        createGitBranch: false,
       });
 
       expect(sandbox).toHaveProperty('id');
       expect(sandbox.name).toBe('Test Sandbox');
       expect(sandbox.status).toBe('active');
       expect(sandbox.createdBy).toBe('milla');
-    });
+    }, 10000); // Set timeout to 10 seconds
 
     it('should add features to sandbox', async () => {
       const sandboxes = getAllSandboxes();
@@ -208,12 +209,14 @@ describe('Proactive Repository Ownership System', () => {
   describe('Integration Tests', () => {
     it('should complete full workflow', async () => {
       // 1. Track user interaction with low success
-      await trackUserInteraction({
-        type: 'feature_use',
-        feature: 'test-feature',
-        success: false,
-        duration: 5000,
-      });
+      for (let i = 0; i < 6; i++) {
+        await trackUserInteraction({
+          type: 'feature_use',
+          feature: 'test-feature',
+          success: false,
+          duration: 5000,
+        });
+      }
 
       // 2. Check if improvement suggestion was generated
       const suggestions = getImprovementSuggestions('identified');

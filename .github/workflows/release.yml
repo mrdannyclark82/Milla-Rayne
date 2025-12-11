@@ -16,7 +16,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -64,16 +67,19 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: dist
           path: dist/
 
       - name: Download build info
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: build-info
           path: .
@@ -113,7 +119,10 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
