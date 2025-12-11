@@ -2041,8 +2041,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Create a new message
   app.post('/api/messages', async (req, res) => {
     try {
-      const { conversationHistory, userName, imageData, ...messageData } =
+      const { conversationHistory, userName: rawUserName, imageData, ...messageData } =
         req.body;
+      // Validate and sanitize userName
+      let userName: string = typeof rawUserName === 'string' && rawUserName.length <= 128
+        ? rawUserName
+        : 'Danny Ray';
       const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
 
@@ -5896,8 +5900,15 @@ function generateIntelligentFallback(
 
   // Deterministic response selection based on userMessage and userName
   function simpleHash(str: string): number {
-    // Defensive: ensure str is a string and length is capped
-    const safeStr = String(str).slice(0, 1024); // Limit input to 1024 chars
+    // Defensive: ensure str is a primitive string and length is capped
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    // If the string is suspiciously long, use a safe default string
+    if (str.length > 1024) {
+      str = str.slice(0, 1024);
+    }
+    const safeStr = str;
     let hash = 0,
       i,
       chr;
