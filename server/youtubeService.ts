@@ -42,7 +42,8 @@ export function isYouTubeRequest(message: string): boolean {
   for (const urlStr of urls) {
     try {
       const urlObj = new URL(urlStr);
-      if (forbiddenHosts.includes(urlObj.hostname.replace(/^www\./, ''))) {
+      const hostname = urlObj.hostname.replace(/^www\./, '').replace(/\.$/, '');
+      if (forbiddenHosts.some(host => hostname === host || hostname.endsWith('.' + host))) {
         return false;
       }
     } catch (e) {
