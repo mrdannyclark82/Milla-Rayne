@@ -11,10 +11,12 @@ jobs:
       CALLBACK_ENDPOINT: ${{ secrets.COPILOT_CALLBACK_ENDPOINT || '' }}
     steps:
       - name: Checkout repository (fetch full history)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 0
           submodules: false  # Explicit no-subs to dodge init
+          clean: true
+          lfs: false
       - name: Purge .gitmodules (submodule cleanup fix)
         run: |
           rm -f .gitmodules || true
@@ -62,7 +64,7 @@ jobs:
           mkdir -p dynamic/copilot-swe-agent
           echo "Agent dir ready at $(pwd)/dynamic/copilot-swe-agent"
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20.x
           cache: 'npm'

@@ -122,21 +122,58 @@ export async function getVideoTranscript(
 }
 
 /**
- * Analyzes video content and generates summary
+ * Analyzes video content and generates AI-powered summary
  */
-export function analyzeVideoContent(
+export async function analyzeVideoContent(
   videoInfo: YouTubeVideoInfo,
-  transcript?: string | null
-): {
+  transcript?: string | null,
+  aiService?: any
+): Promise<{
   summary: string;
   keyTopics: string[];
-} {
+}> {
+  // If we have a transcript and AI service, use AI for intelligent analysis
+  if (transcript && transcript.length > 100 && aiService) {
+    try {
+      const prompt = `Analyze this YouTube video transcript and provide:
+1. A concise 2-3 sentence summary
+2. 5-10 key topics/themes (comma-separated)
+
+Video Title: "${videoInfo.title}"
+Channel: ${videoInfo.channelName}
+Transcript: ${transcript.substring(0, 3000)}...
+
+Format:
+SUMMARY: <your summary>
+TOPICS: <topic1>, <topic2>, <topic3>, etc.`;
+
+      const aiResponse = await aiService.generateResponse(prompt, {
+        maxTokens: 300,
+        temperature: 0.3,
+      });
+
+      // Parse AI response
+      const summaryMatch = aiResponse.match(/SUMMARY:\s*(.+?)(?=TOPICS:|$)/s);
+      const topicsMatch = aiResponse.match(/TOPICS:\s*(.+)/s);
+
+      if (summaryMatch && topicsMatch) {
+        const summary = summaryMatch[1].trim();
+        const topics = topicsMatch[1]
+          .split(',')
+          .map((t: string) => t.trim().toLowerCase())
+          .filter((t: string) => t.length > 0)
+          .slice(0, 10);
+
+        return { summary, keyTopics: topics };
+      }
+    } catch (error) {
+      console.warn('AI analysis failed, falling back to basic analysis:', error);
+    }
+  }
+
+  // Fallback to basic analysis
   const content = transcript || videoInfo.description;
-
-  // Simple topic extraction (can be enhanced with NLP)
   const keyTopics = extractKeyTopics(content, videoInfo.title);
-
-  // Generate summary
   const summary = generateVideoSummary(videoInfo, transcript);
 
   return { summary, keyTopics };
@@ -263,7 +300,8 @@ function generateVideoSummary(
  * Analyzes a YouTube video and stores the results in memory
  */
 export async function analyzeYouTubeVideo(
-  url: string
+  url: string,
+  aiService?: any
 ): Promise<YouTubeAnalysisResult> {
   try {
     // Validate URL
@@ -277,8 +315,12 @@ export async function analyzeYouTubeVideo(
     // Get transcript if available
     const transcript = await getVideoTranscript(videoInfo.id);
 
-    // Analyze content
-    const { summary, keyTopics } = analyzeVideoContent(videoInfo, transcript);
+    // Analyze content with AI if available
+    const { summary, keyTopics } = await analyzeVideoContent(
+      videoInfo,
+      transcript,
+      aiService
+    );
 
     // Create memory entry
     const analysisTimestamp = new Date().toISOString();

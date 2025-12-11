@@ -238,8 +238,9 @@ Format your response as JSON with keys: description, changes, reasoning`;
         {
           conversationHistory: [],
           userName: 'CodingAgent',
+          model: 'x-ai/grok-4.1-fast:free', // Use free model for coding tasks
         },
-        'anthropic/claude-3-haiku'
+        4096 // Higher token limit for code generation
       );
 
       if (!result.success) {

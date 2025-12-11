@@ -24,11 +24,17 @@ export const config = {
     model: process.env.XAI_MODEL,
   },
   openrouter: {
-    apiKey: process.env.OPENROUTER_API_KEY ?? ''',
+    apiKey: process.env.OPENROUTER_API_KEY ?? '',
     minimaxApiKey: process.env.OPENROUTER_MINIMAX_API_KEY,
     grok1ApiKey: process.env.OPENROUTER_GROK1_API_KEY,
-    minimaxModel: 'openai/gpt-3.5-turbo',
-    grok1Model: 'openai/gpt-3.5-turbo',
+    grok4ApiKey: process.env.OPENROUTER_GROK4_API_KEY,
+    katCoderApiKey: process.env.OPENROUTER_KAT_CODER_API_KEY,
+    geminiFlashApiKey: process.env.OPENROUTER_GEMINI_FLASH_API_KEY,
+    minimaxModel: process.env.OPENROUTER_MINIMAX_MODEL || 'openai/gpt-3.5-turbo',
+    grok1Model: process.env.OPENROUTER_GROK1_MODEL || 'x-ai/grok-code-fast-1',
+    grok4Model: process.env.OPENROUTER_GROK4_MODEL || 'x-ai/grok-4.1-fast:free',
+    katCoderModel: process.env.OPENROUTER_KAT_CODER_MODEL || 'kwaipilot/kat-coder-pro:free',
+    geminiFlashModel: process.env.OPENROUTER_GEMINI_FLASH_MODEL || 'google/gemini-2.0-flash-001',
     geminiApiKey: process.env.OPENROUTER_GEMINI_API_KEY,
   },
   gemini: {
@@ -91,4 +97,39 @@ export const config = {
   enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
   enableAutonomousCodeImprovement: process.env.ENABLE_AUTONOMOUS_CODE_IMPROVEMENT !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
+  proactiveRepoManager: {
+    checkInterval: parseInt(
+      process.env.PROACTIVE_CHECK_INTERVAL || '10800000',
+      10
+    ), // 3 hours
+    suggestionsSlice: parseInt(
+      process.env.PROACTIVE_SUGGESTIONS_SLICE || '3',
+      10
+    ),
+    featureDiscoveryInterval: parseInt(
+      process.env.PROACTIVE_FEATURE_DISCOVERY_INTERVAL || '86400000',
+      10
+    ), // 24 hours
+    topFeatureRecommendations: parseInt(
+      process.env.PROACTIVE_TOP_FEATURE_RECOMMENDATIONS || '3',
+      10
+    ),
+    featureRelevanceThreshold: parseInt(
+      process.env.PROACTIVE_FEATURE_RELEVANCE_THRESHOLD || '7',
+      10
+    ),
+    initialCheckTimeout: parseInt(
+      process.env.PROACTIVE_INITIAL_CHECK_TIMEOUT || '60000',
+      10
+    ), // 1 minute
+    optimizationTokenAward: parseInt(
+      process.env.PROACTIVE_OPTIMIZATION_TOKEN_AWARD || '30',
+      10
+    ),
+  // Local model configuration
+  localModel: {
+    enabled: process.env.ENABLE_LOCAL_MODEL === 'true',
+    modelPath: process.env.LOCAL_MODEL_PATH || 'locallm/gemma.tflite',
+    preferLocal: process.env.PREFER_LOCAL_MODEL === 'true', // If true, use local by default
+  },
 };

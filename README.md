@@ -8,6 +8,7 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 
 ## ✨ Key Features
 - **Poly-Model Synthesis**: Integrates Gemini, Mistral, OpenAI, xAI Grok, and more via secure dispatch.
+- **🔒 Local LLM Support**: Run models locally with Ollama for complete privacy (see [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md))
 - **Adaptive Multimodal Frontend**: React + Vite client with dynamic scenes, voice interaction, and visual recognition.
 - **Edge Processing**: Native Android agent for sub-millisecond local tasks.
 - **Enhanced Memory**: SQLite-based memory with encryption, session tracking, and usage analytics.
@@ -34,23 +35,42 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 npm install
 cp .env.example .env   # Add your API keys
 npm run dev
+```
 Open http://localhost:5000 to start chatting.
 
-CLI
-bash
+### 🔒 Local LLM (Optional - For Privacy)
+Want to run AI models locally for complete privacy?
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Download a model
+ollama pull gemma3:1b
+
+# Enable in Milla
+echo "ENABLE_LOCAL_MODEL=true" >> .env
+echo "PREFER_LOCAL_MODEL=true" >> .env
+```
+See [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md) for full instructions.
+
+### CLI
+```bash
 npm run dev   # Start server
 npm run cli   # Launch CLI
-Android
-Open android/ in Android Studio, configure server URL, and run on emulator/device.
+```
 
-Docker
-bash
+### Android
+Open `android/` in Android Studio, configure server URL, and run on emulator/device.
+
+### Docker
+```bash
 cp .env.example .env
 docker-compose up
+```
 Or pull prebuilt image:
-
-bash
+```bash
 docker pull ghcr.io/mrdannyclark82/milla-rayne:latest
+```
 🧪 Development
 Testing: npm test (Vitest)
 
