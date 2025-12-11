@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { VoicePickerDialog } from '@/components/VoicePickerDialog';
 import { VoiceVisualizer } from '@/components/VoiceVisualizer';
 import { VoiceControls } from '@/components/VoiceControls';
-import { UnifiedSettingsMenu } from '@/components/UnifiedSettingsMenu';
+import SettingsPanel from '@/components/SettingsPanel';
 import { SceneProvider } from '@/components/scene/SceneProvider';
 import { SceneManager } from '@/components/scene/SceneManager';
 const YoutubePlayerWithActiveListening = lazy(() => import('@/components/YoutubePlayerWithActiveListening'));
@@ -61,6 +61,7 @@ function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [showVoicePicker, setShowVoicePicker] = useState(false);
   const [showCaptions, setShowCaptions] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const [lastMessage, setLastMessage] = useState('');
   const [isMobile, setIsMobile] = useState(false);
@@ -398,7 +399,7 @@ function App() {
             });
           }}
           onShowYoutubeMemories={() => setShowYoutubeMemories(!showYoutubeMemories)}
-          onShowSettings={() => setShowVoicePicker(true)}
+          onShowSettings={() => setShowSettings(true)}
           onToggleSharedNotepad={() => setShowSharedNotepad(!showSharedNotepad)}
         />
 
@@ -532,6 +533,8 @@ function App() {
           onVoiceVolumeChange={setVoiceVolume}
           availableVoices={availableVoices}
         />
+
+        <SettingsPanel open={showSettings} onOpenChange={setShowSettings} />
 
         {developerMode && showXAIOverlay && xaiData && (
           <XAIOverlay data={xaiData} onClose={() => setShowXAIOverlay(false)} />

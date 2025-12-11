@@ -216,28 +216,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         >
           <SidebarItem
             icon={<Settings className="w-4 h-4" />}
-            label="Voice Settings"
+            label="All Settings"
             onClick={() => onShowSettings?.()}
-          />
-          <SidebarItem
-            icon={<Settings className="w-4 h-4" />}
-            label="Developer Options"
-            onClick={() => {}}
-          />
-          <SidebarItem
-            icon={<Settings className="w-4 h-4" />}
-            label="Google Sign In"
-            onClick={() => {
-              const width = 600;
-              const height = 700;
-              const left = window.screen.width / 2 - width / 2;
-              const top = window.screen.height / 2 - height / 2;
-              window.open(
-                '/api/auth/google',
-                'Connect Google Services',
-                `width=${width},height=${height},left=${left},top=${top}`
-              );
-            }}
           />
         </SidebarSection>
       </nav>
