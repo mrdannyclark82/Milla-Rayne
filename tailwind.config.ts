@@ -70,9 +70,9 @@ export default {
           darker: '#05070d',
         },
         neon: {
-          pink: '#ff2a6d',
-          blue: '#05d9e8',
-          purple: '#a855f7',
+          pink: '#ff0080', // More vibrant/saturated pink for neon effects
+          blue: '#00ffff', // Pure cyan for neon effects
+          purple: '#bf40ff', // More vibrant purple for neon effects
           green: '#01ff89',
         },
       },
