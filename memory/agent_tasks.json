@@ -1,0 +1,22 @@
+[
+  {
+    "taskId": "d46c9aa9-a71b-46d2-b0d4-1bb013cfe10a",
+    "supervisor": "MillaAgent",
+    "agent": "TestAgent",
+    "action": "dangerous_action",
+    "payload": {
+      "data": "test"
+    },
+    "metadata": {
+      "requireUserApproval": true,
+      "safety_level": "high",
+      "approved": true
+    },
+    "status": "completed",
+    "createdAt": "2025-12-02T20:12:34.117Z",
+    "updatedAt": "2025-12-02T20:12:34.123Z",
+    "result": {
+      "success": true
+    }
+  }
+]

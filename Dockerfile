@@ -1,5 +1,5 @@
 # Multi-stage build for Milla Rayne AI Companion
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -7,15 +7,20 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && \
-    npm cache clean --force
+
+# Clean up any previous node_modules
+RUN rm -rf node_modules
+# Install all dependencies (including devDependencies)
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Debug: print the first 40 lines of dist/index.js to verify build output
+RUN head -40 dist/index.js || echo 'dist/index.js not found or too short'
 
 # Production stage
 FROM node:20-alpine

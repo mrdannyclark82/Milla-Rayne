@@ -32,6 +32,31 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
     loadSceneSettings()
   );
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [hasBackgroundControl, setHasBackgroundControl] = useState(false);
+
+  // Check if background control is unlocked
+  useEffect(() => {
+    const checkRewards = async () => {
+      try {
+        const response = await fetch('/api/milla/tokens/rewards');
+        const data = await response.json();
+        if (data.success) {
+          const unlocked = data.rewards.includes('UNLOCK_BACKGROUND_CONTROL');
+          setHasBackgroundControl(unlocked);
+          
+          // If unlocked and has a mood set, fetch the background
+          if (unlocked && settings.mood) {
+            fetchMoodBackground(settings.mood);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking rewards:', error);
+        // Default to locked
+        setHasBackgroundControl(false);
+      }
+    };
+    checkRewards();
+  }, []);
 
   // Detect reduced motion preference
   useEffect(() => {
@@ -64,6 +89,30 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
     setSettings(updated);
     saveSceneSettings(updated);
     onSettingsChange?.(updated);
+    
+    // If mood changed and background control is unlocked, fetch mood background
+    if (key === 'mood' && hasBackgroundControl) {
+      fetchMoodBackground(value as string);
+    }
+  };
+
+  // Fetch mood background image
+  const fetchMoodBackground = async (mood: string) => {
+    try {
+      const response = await fetch(`/api/scene/mood-background/${mood}`);
+      const data = await response.json();
+      
+      if (data.success && data.imageUrl) {
+        console.log(`Mood background loaded for ${mood}:`, data.cached ? 'cached' : 'generated');
+        // The background will be applied by the scene manager
+        // Trigger a scene update event if needed
+        window.dispatchEvent(new CustomEvent('moodBackgroundUpdated', {
+          detail: { mood, imageUrl: data.imageUrl }
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch mood background:', error);
+    }
   };
 
   // Map particle density to display values
@@ -73,7 +122,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
   );
 
   return (
-    <Card className="bg-[#2d3e50] border-gray-600">
+    <Card className="bg-blue-500 border-gray-600">
       <CardHeader>
         <CardTitle className="text-base font-bold text-white">
           Adaptive Background
@@ -95,11 +144,18 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
 
         {/* Mood Selector */}
         <div className="space-y-2">
-          <label className="text-sm font-medium">Mood</label>
+          <label className="text-sm font-medium">
+            Mood {!hasBackgroundControl && '🔒'}
+          </label>
+          {!hasBackgroundControl && (
+            <p className="text-xs text-yellow-400 mb-2">
+              Unlock background control by completing the "Scene Designer" goal!
+            </p>
+          )}
           <Select
             value={settings.mood}
             onValueChange={(value) => updateSetting('mood', value as SceneMood)}
-            disabled={!settings.enabled || settings.sceneBackgroundFromRP}
+            disabled={!settings.enabled || settings.sceneBackgroundFromRP || !hasBackgroundControl}
           >
             <SelectTrigger>
               <SelectValue />
@@ -119,6 +175,22 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
           )}
         </div>
 
+        {/* Winter Theme Toggle */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Winter Theme</label>
+          <Button
+            variant={settings.winterTheme ? "default" : "outline"}
+            size="sm"
+            onClick={() => updateSetting("winterTheme", !settings.winterTheme)}
+            aria-pressed={settings.winterTheme}
+            disabled={!settings.enabled}
+          >
+            {settings.winterTheme ? "ON" : "OFF"}
+          </Button>
+          <p className="text-xs text-muted-foreground">
+            Force snowy night scene (overrides seasonal detection)
+          </p>
+        </div>
         {/* Background Mode Selector */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Background Mode</label>

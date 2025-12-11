@@ -30,10 +30,11 @@ export function getDefaultSettings(): SceneSettings {
     animationSpeed: 1.0,
     devDebug: false,
     sceneBackgroundFromRP: true, // Phase 3: Enabled by default
+    winterTheme: false, // Winter theme disabled by default
     sceneRoomOverlaysEnabled: true, // Room Overlays V1: Enabled by default
     // Default to static-image so developers see static backgrounds by default.
     // Users can still change to 'auto' or 'css-animated' via settings UI.
-    backgroundMode: 'static-image', // Default to static-image (use static backgrounds when available)
+    backgroundMode: 'auto', // Default to auto (adaptive) (use static backgrounds when available)
   };
 }
 
@@ -86,6 +87,11 @@ export function loadSceneSettings(): SceneSettings {
       animationSpeed: clamp(settings.animationSpeed ?? 1.0, 0.5, 1.5),
       devDebug:
         typeof settings.devDebug === 'boolean' ? settings.devDebug : false,
+      winterTheme:
+        typeof settings.winterTheme === 'boolean'
+          ? settings.winterTheme
+          : false,
+          
       sceneBackgroundFromRP:
         typeof settings.sceneBackgroundFromRP === 'boolean'
           ? settings.sceneBackgroundFromRP

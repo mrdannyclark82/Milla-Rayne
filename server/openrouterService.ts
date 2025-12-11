@@ -17,6 +17,8 @@ export interface OpenRouterContext {
   userEmotionalState?: 'positive' | 'negative' | 'neutral';
   urgency?: 'low' | 'medium' | 'high';
   userName?: string;
+  model?: string; // Optional model override
+  apiKey?: string; // Optional API key override
 }
 
 import { config } from './config';
@@ -30,10 +32,33 @@ export async function generateOpenRouterResponse(
   maxTokens?: number
 ): Promise<OpenRouterResponse> {
   try {
-    // Prefer a MiniMax-specific key if provided (OPENROUTER_MINIMAX_API_KEY), otherwise fall back to OPENROUTER_API_KEY
-    const openrouterKey =
-      config.openrouter.minimaxApiKey || config.openrouter.apiKey;
+    // Use model from context if provided, otherwise use a free model
+    const model = context.model || config.openrouter.grok4Model;
+    
+    // Determine which API key to use based on model or context
+    let openrouterKey = context.apiKey;
+    if (!openrouterKey) {
+      // Select API key based on model
+      if (model.includes('grok-4')) {
+        openrouterKey = config.openrouter.grok4ApiKey;
+      } else if (model.includes('kat-coder')) {
+        openrouterKey = config.openrouter.katCoderApiKey;
+      } else if (model.includes('gemini')) {
+        openrouterKey = config.openrouter.geminiFlashApiKey;
+      } else {
+        // Default fallback order
+        openrouterKey = 
+          config.openrouter.grok4ApiKey ||
+          config.openrouter.katCoderApiKey ||
+          config.openrouter.geminiFlashApiKey ||
+          config.openrouter.minimaxApiKey || 
+          config.openrouter.apiKey;
+      }
+    }
+    
     console.log('OpenRouter API Key:', openrouterKey);
+    console.log('OpenRouter Model:', model);
+    
     if (!openrouterKey || openrouterKey === 'your_openrouter_api_key_here') {
       // Temporary fallback for demo purposes - in production, add your OPENROUTER_MINIMAX_API_KEY or OPENROUTER_API_KEY
       console.log(
@@ -170,7 +195,7 @@ export async function generateOpenRouterResponse(
           'X-Title': 'Milla Rayne AI Assistant', // Optional: for logs
         },
         body: JSON.stringify({
-          model: config.openrouter.minimaxModel, // MiniMax M2 via OpenRouter (free tier available)
+          model: model, // Use the selected model (free tier available)
           messages: messages,
           temperature: 0.8, // Increased for more variety
           max_tokens: maxTokens || 400, // Reduced to encourage shorter, more focused responses
