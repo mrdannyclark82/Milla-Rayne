@@ -126,6 +126,7 @@ export const config = {
       process.env.PROACTIVE_OPTIMIZATION_TOKEN_AWARD || '30',
       10
     ),
+  },
   // Local model configuration
   localModel: {
     enabled: process.env.ENABLE_LOCAL_MODEL === 'true',

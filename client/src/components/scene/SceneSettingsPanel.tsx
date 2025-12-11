@@ -20,6 +20,7 @@ import {
   saveSceneSettings,
   onSettingsChange as subscribeToSettingsChange,
 } from '@/utils/sceneSettingsStore';
+import { proactiveGet } from '@/lib/proactiveApi';
 
 interface SceneSettingsPanelProps {
   onSettingsChange?: (settings: SceneSettings) => void;
@@ -38,8 +39,7 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
   useEffect(() => {
     const checkRewards = async () => {
       try {
-        const response = await fetch('/api/milla/tokens/rewards');
-        const data = await response.json();
+        const data = await proactiveGet('/api/milla/tokens/rewards');
         if (data.success) {
           const unlocked = data.rewards.includes('UNLOCK_BACKGROUND_CONTROL');
           setHasBackgroundControl(unlocked);
