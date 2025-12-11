@@ -41,6 +41,7 @@ import {
   getTokenStatistics,
   getMillaMotivation,
   createMillaGoal,
+  getUnlockedRewards,
 } from './tokenIncentiveService';
 import {
   getRepositoryHealthReport,
@@ -396,6 +397,16 @@ export function registerProactiveRoutes(router: Router): void {
     } catch (error) {
       console.error('Error getting token stats:', error);
       res.status(500).json({ success: false, error: 'Failed to get stats' });
+    }
+  });
+
+  router.get('/api/milla/tokens/rewards', (req, res) => {
+    try {
+      const rewards = getUnlockedRewards();
+      res.json({ success: true, rewards });
+    } catch (error) {
+      console.error('Error getting unlocked rewards:', error);
+      res.status(500).json({ success: false, error: 'Failed to get rewards' });
     }
   });
 

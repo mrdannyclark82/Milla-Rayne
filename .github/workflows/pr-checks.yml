@@ -16,6 +16,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -39,6 +42,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -58,6 +64,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -89,6 +98,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -115,6 +127,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -141,6 +156,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
