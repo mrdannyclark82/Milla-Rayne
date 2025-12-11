@@ -1625,8 +1625,22 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.post('/api/repo/contents', async (req, res) => {
     try {
       const { owner, repo, path: repoPath = '' } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ error: 'owner and repo are required' });
+
+      // Validation: Only allow valid GitHub owner/repo names and path
+      const githubNameRegex = /^[A-Za-z0-9_.-]{1,100}$/;
+      const repoPathRegex = /^([A-Za-z0-9_.\-\/]*)$/;
+
+      if (
+        !owner || !repo ||
+        !githubNameRegex.test(owner) ||
+        !githubNameRegex.test(repo) ||
+        typeof repoPath !== "string" ||
+        repoPath.length > 256 ||
+        repoPath.includes('..') ||
+        repoPath.startsWith('/') ||
+        !repoPathRegex.test(repoPath)
+      ) {
+        return res.status(400).json({ error: 'Invalid owner, repo, or path value.' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
