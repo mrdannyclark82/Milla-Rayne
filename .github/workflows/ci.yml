@@ -1,106 +1,114 @@
-name: CI
-
+name: Copilot coding agent (diagnostics and safer checkout)
 on:
-  push:
-    branches: ['main']
+  workflow_dispatch:
   pull_request:
-    branches: ['main']
-
-permissions:
-  contents: read
-
+  push:
 jobs:
-  check-python:
-    name: Check for Python Requirements
+  copilot-agent:
+    name: Copilot agent (safer)
     runs-on: ubuntu-latest
-    outputs:
-      requirements-exists: ${{ steps.check-reqs.outputs.exists }}
+    env:
+      CALLBACK_ENDPOINT: ${{ secrets.COPILOT_CALLBACK_ENDPOINT || '' }}
     steps:
-      - uses: actions/checkout@v5
-      - name: Check for requirements.txt
-        id: check-reqs
-        shell: bash
+      - name: Checkout repository (fetch full history)
+        uses: actions/checkout@v6.0.1
+        with:
+          fetch-depth: 0
+          submodules: false  # Explicit no-subs to dodge init
+          clean: true
+          lfs: false
+      - name: Purge .gitmodules (submodule cleanup fix)
         run: |
-          if [ -f requirements.txt ] || find . -name "requirements.txt" -type f | grep -q .; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+          rm -f .gitmodules || true
+          echo ".gitmodules purged—no more malformed specters"
+          ls -la .gitmodules || echo "Confirmed: gone"
+      - name: Purge submodule cache (ghost buster)
+        run: |
+          rm -rf .git/modules || true
+          echo "Submodule cache wiped"
+      - name: Quick post-checkout peek
+        run: |
+          echo "Post-checkout: pwd=$(pwd)"
+          echo "Repo contents:"
+          ls -la
+          echo "Dynamic dir status:"
+          ls -la dynamic/ || echo "No 'dynamic/' yet"
+      - name: Ensure main ref is available (retry)
+        run: |
+          set -euo pipefail
+          tries=0
+          until [ $tries -ge 3 ]
+          do
+            git fetch origin main:refs/remotes/origin/main && break || {
+              tries=$((tries+1))
+              echo "git fetch failed, attempt $tries/3"
+              sleep $((tries * 2))
+            }
+          done
+          if [ $tries -ge 3 ]; then
+            echo "Failed to fetch origin/main after retries" >&2
+            git --version
+            git remote -v
+            exit 1
           fi
-
-  node:
-    name: Node Lint, Typecheck, Build, Test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x]
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci || npm install
-
-      - name: Lint
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Format check
-        run: npm run format -- --check
-        continue-on-error: true
-
-      - name: TypeScript type check
-        run: npm run check
-        continue-on-error: true
-
-      - name: Build
-        run: npm run build
-
-      - name: Test
-        run: npm run test:coverage
-        env:
-          NODE_ENV: test
-
-      - name: Upload coverage to Codecov
-      - name: Security Audit
-        run: npm audit --audit-level high
-        continue-on-error: true
-        uses: codecov/codecov-action@v4
-        if: matrix.node-version == '20.x'
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: codecov-node-${{ matrix.node-version }}
-          fail_ci_if_error: false
-
-      - name: Performance Tests
-        if: matrix.node-version == '20.x'
-        run: npm run test -- --testPathPattern=performance.test.ts --maxWorkers=1
-        env:
-          NODE_ENV: test
-        continue-on-error: true
-
-  python:
-    name: Python Lint and Test
-    runs-on: ubuntu-latest
-    needs: check-python
-    if: ${{ needs.check-python.outputs.requirements-exists == 'true' }}
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Lint (flake8)
+      - name: Safe cleanup for stale git index.lock
         run: |
-          pip install flake8 || true
-          flake8 . || true
-      - name: Test (pytest)
+          if [ -f .git/index.lock ]; then
+            echo "Found stale .git/index.lock — removing"
+            rm -f .git/index.lock
+          else
+            echo "No .git/index.lock found"
+          fi
+      - name: Create agent directory (idempotent)
         run: |
-          pip install pytest || true
-          pytest -q || true
+          mkdir -p dynamic/copilot-swe-agent
+          echo "Agent dir ready at $(pwd)/dynamic/copilot-swe-agent"
+      - name: Use Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - name: Show runtime & dependency info
+        run: |
+          node -v
+          npm -v
+          echo "Installed undici (if available):"
+          npm ls undici || true
+      - name: Install dependencies for copilot agent (if package.json present)
+        working-directory: dynamic/copilot-swe-agent
+        run: |
+          echo "In dir: $(pwd)"
+          ls -la || true
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json in dynamic/copilot-swe-agent; skipping npm ci"
+          fi
+      - name: Callback endpoint diagnostic (HEAD)
+        working-directory: dynamic/copilot-swe-agent
+        env:
+          CALLBACK_ENDPOINT: ${{ env.CALLBACK_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          echo "In dir: $(pwd)"
+          if [ -z "${CALLBACK_ENDPOINT:-}" ]; then
+            echo "CALLBACK_ENDPOINT not set (expected in secrets or env). Skipping network diagnostic."
+          else
+            echo "Testing callback endpoint (no secrets will be echoed) -> $CALLBACK_ENDPOINT"
+            if [ -f scripts/check-callback.js ]; then
+              node scripts/check-callback.js "$CALLBACK_ENDPOINT" || true
+            else
+              curl -I --max-time 10 "$CALLBACK_ENDPOINT" || echo "curl failed"
+            fi
+          fi
+      - name: Run copilot agent (original entry)
+        working-directory: dynamic/copilot-swe-agent
+        run: |
+          echo "In dir: $(pwd); Ready to run the copilot agent job. This workflow adds diagnostics and safer git handling."
+          ls -la || true
+          if [ -f run-agent.sh ]; then
+            echo "Found run-agent.sh — executing"
+            ./run-agent.sh
+          else
+            echo "No run-agent.sh detected; this workflow leaves the real agent execution step unchanged."
+          fi

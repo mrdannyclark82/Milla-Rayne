@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useSceneContext } from '@/contexts/SceneContext';
+import { loadSceneSettings } from '@/utils/sceneSettingsStore';
 
 /**
  * Static background image component for scene display
- * Fills the left 2/3 of the screen with location-based images
+ * Fills the left 2/3 of the screen with location-based images or mood-based generated images
  * Default: front_door.jpg (entering Milla's world)
  */
 export function BackgroundLayer() {
@@ -12,8 +13,32 @@ export function BackgroundLayer() {
     '/assets/scenes/front_door-night.jpg'
   );
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [usingMoodBackground, setUsingMoodBackground] = useState(false);
+
+  // Listen for mood background updates
+  useEffect(() => {
+    const handleMoodBackgroundUpdate = (event: CustomEvent) => {
+      const { imageUrl } = event.detail;
+      if (imageUrl) {
+        setImageLoaded(false);
+        setImageSrc(imageUrl);
+        setUsingMoodBackground(true);
+      }
+    };
+
+    window.addEventListener('moodBackgroundUpdated', handleMoodBackgroundUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('moodBackgroundUpdated', handleMoodBackgroundUpdate as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
+    // If using mood background, don't change on location updates
+    if (usingMoodBackground) {
+      return;
+    }
+
     // Map location to image path - using actual filenames from /client/public/assets/scenes/
     const locationImageMap: Record<string, string> = {
       front_door: '/assets/scenes/front_door-night.jpg',
@@ -31,7 +56,7 @@ export function BackgroundLayer() {
       locationImageMap[location] || '/assets/scenes/front_door-night.jpg';
     setImageLoaded(false);
     setImageSrc(newImageSrc);
-  }, [location]);
+  }, [location, usingMoodBackground]);
 
   return (
     <div

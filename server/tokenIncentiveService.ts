@@ -26,13 +26,21 @@ export interface TokenTransaction {
   relatedId?: string; // ID of related sandbox, feature, or task
 }
 
+export type RewardType = 
+  | 'UNLOCK_ADVANCED_DEBUGGING'
+  | 'UNLOCK_BACKGROUND_CONTROL'
+  | 'UNLOCK_PERSONALITY_CUSTOMIZATION'
+  | 'UNLOCK_PERFORMANCE_PROFILING'
+  | 'UNLOCK_AI_MODEL_SELECTION'
+  | 'UNLOCK_ADVANCED_MEMORY';
+
 export interface MillaGoal {
   id: string;
   name: string;
   description: string;
   targetTokens: number;
   currentTokens: number;
-  reward: string;
+  reward: RewardType | string;
   priority: 'low' | 'medium' | 'high';
   createdAt: number;
   completedAt?: number;
@@ -52,6 +60,7 @@ class TokenIncentiveService {
   private tokenBalance: number = 0;
   private transactions: TokenTransaction[] = [];
   private goals: MillaGoal[] = [];
+  private unlockedRewards: Set<RewardType> = new Set();
   private readonly TOKEN_FILE = path.join(
     process.cwd(),
     'memory',
@@ -251,6 +260,11 @@ class TokenIncentiveService {
         goal.status = 'completed';
         goal.completedAt = Date.now();
 
+        // Unlock reward
+        if (this.isRewardType(goal.reward)) {
+          this.unlockedRewards.add(goal.reward as RewardType);
+        }
+
         // Award bonus tokens for goal completion
         this.awardTokens({
           amount: 50,
@@ -260,7 +274,7 @@ class TokenIncentiveService {
         });
 
         console.log(
-          `🎉 Milla completed goal: ${goal.name}! Reward: ${goal.reward}`
+          `🎉 Milla completed goal: ${goal.name}! Reward unlocked: ${goal.reward}`
         );
       }
     }
@@ -276,15 +290,15 @@ class TokenIncentiveService {
         name: 'First Bug Hunter',
         description: 'Fix your first 5 bugs',
         targetTokens: 250,
-        reward: 'Unlock advanced debugging tools',
+        reward: 'UNLOCK_ADVANCED_DEBUGGING',
         priority: 'medium',
       });
 
       await this.createGoal({
-        name: 'Feature Architect',
-        description: 'Develop 3 complete features',
+        name: 'Scene Designer',
+        description: 'Successfully analyze and respond to 50 messages',
         targetTokens: 300,
-        reward: 'Gain ability to propose architectural changes',
+        reward: 'UNLOCK_BACKGROUND_CONTROL',
         priority: 'high',
       });
 
@@ -292,7 +306,7 @@ class TokenIncentiveService {
         name: 'User Champion',
         description: 'Achieve 90%+ user satisfaction across 20 interactions',
         targetTokens: 500,
-        reward: 'Unlock personalized user experience features',
+        reward: 'UNLOCK_PERSONALITY_CUSTOMIZATION',
         priority: 'high',
       });
 
@@ -300,7 +314,7 @@ class TokenIncentiveService {
         name: 'Code Optimizer',
         description: 'Optimize 10 functions for better performance',
         targetTokens: 300,
-        reward: 'Access to advanced performance profiling',
+        reward: 'UNLOCK_PERFORMANCE_PROFILING',
         priority: 'medium',
       });
     }
@@ -348,6 +362,35 @@ class TokenIncentiveService {
     return this.goals
       .filter((g) => g.status === 'completed')
       .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+  }
+
+  /**
+   * Check if reward has been unlocked
+   */
+  hasReward(reward: RewardType): boolean {
+    return this.unlockedRewards.has(reward);
+  }
+
+  /**
+   * Get all unlocked rewards
+   */
+  getUnlockedRewards(): RewardType[] {
+    return Array.from(this.unlockedRewards);
+  }
+
+  /**
+   * Check if a string is a valid RewardType
+   */
+  private isRewardType(value: any): value is RewardType {
+    const rewardTypes: RewardType[] = [
+      'UNLOCK_ADVANCED_DEBUGGING',
+      'UNLOCK_BACKGROUND_CONTROL',
+      'UNLOCK_PERSONALITY_CUSTOMIZATION',
+      'UNLOCK_PERFORMANCE_PROFILING',
+      'UNLOCK_AI_MODEL_SELECTION',
+      'UNLOCK_ADVANCED_MEMORY'
+    ];
+    return rewardTypes.includes(value);
   }
 
   /**
@@ -418,6 +461,7 @@ class TokenIncentiveService {
       this.tokenBalance = parsed.tokenBalance || 0;
       this.transactions = parsed.transactions || [];
       this.goals = parsed.goals || [];
+      this.unlockedRewards = new Set(parsed.unlockedRewards || []);
     } catch (error) {
       console.log('No existing token data found, starting fresh');
     }
@@ -432,6 +476,7 @@ class TokenIncentiveService {
         tokenBalance: this.tokenBalance,
         transactions: this.transactions,
         goals: this.goals,
+        unlockedRewards: Array.from(this.unlockedRewards),
         lastUpdated: Date.now(),
       };
       await fs.writeFile(this.TOKEN_FILE, JSON.stringify(data, null, 2));
@@ -521,4 +566,12 @@ export function getTokenStatistics() {
 
 export function getMillaMotivation(): string {
   return tokenService.getMotivationMessage();
+}
+
+export function hasReward(reward: RewardType): boolean {
+  return tokenService.hasReward(reward);
+}
+
+export function getUnlockedRewards(): RewardType[] {
+  return tokenService.getUnlockedRewards();
 }
