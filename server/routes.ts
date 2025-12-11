@@ -4681,21 +4681,17 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
-  // List of allowed ElevenLabs voice names
-  const allowedVoiceNames = [
-    'Rachel', 'Domi', 'Bella', 'Antoni', 'Elli', 'Josh', 'Arnold', 'Adam', 'Sam',
-    // Add any other valid ElevenLabs voice names here
-  ];
-
   app.post('/api/elevenlabs/tts', async (req, res) => {
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
 
-    // Validate voiceName against allowed list
-    if (!allowedVoiceNames.includes(voiceName)) {
+    // Validate voiceName format - must be a valid voice ID (UUID or browser voice format)
+    // This prevents SSRF attacks by ensuring the voice ID can't manipulate the URL
+    const voiceIdRegex = /^[a-zA-Z0-9_-]{1,100}$/;
+    if (!voiceName || typeof voiceName !== 'string' || !voiceIdRegex.test(voiceName)) {
       return res
         .status(400)
-        .json({ error: 'Invalid voice name. Allowed voices: ' + allowedVoiceNames.join(', ') });
+        .json({ error: 'Invalid voice ID format' });
     }
 
     if (!apiKey) {
