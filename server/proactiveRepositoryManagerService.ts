@@ -40,16 +40,37 @@ import {
 import { codingAgent } from './agents/codingAgent';
 import { config } from './config';
 
+export enum ProactiveActionType {
+  BugFix = 'bug_fix',
+  FeatureProposal = 'feature_proposal',
+  Optimization = 'optimization',
+  SandboxCreation = 'sandbox_creation',
+  PrPreparation = 'pr_preparation',
+  UserEngagement = 'user_engagement',
+  AutonomousFix = 'autonomous_fix',
+}
+
+export interface Suggestion {
+  id: string;
+  type: 'bug_fix' | 'optimization';
+  description: string;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  estimatedImpact: number;
+}
+
+export interface Feature {
+  id: string;
+  name: string;
+  description: string;
+  relevance: number;
+  implementationComplexity: 'low' | 'medium' | 'high';
+  estimatedValue: number;
+}
+
 export interface ProactiveAction {
   id: string;
   timestamp: number;
-  type:
-    | 'bug_fix'
-    | 'feature_proposal'
-    | 'optimization'
-    | 'sandbox_creation'
-    | 'pr_preparation'
-    | 'user_engagement';
+  type: ProactiveActionType;
   description: string;
   status: 'planned' | 'in_progress' | 'completed' | 'blocked';
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -83,7 +104,7 @@ class ProactiveRepositoryManagerService {
     'memory',
     'proactive_actions.json'
   );
-  private readonly CHECK_INTERVAL = 3 * 60 * 60 * 1000; // 3 hours (when inactive)
+  private readonly CHECK_INTERVAL = config.proactiveRepoManager.checkInterval;
   private lastCheck: number = 0;
   private isProcessing: boolean = false;
 
@@ -108,125 +129,26 @@ class ProactiveRepositoryManagerService {
     try {
       const newActions: ProactiveAction[] = [];
 
-      // Step 1: Analyze user interaction patterns
-      const metrics = getMillaSuccessMetrics();
-      const patterns = getInteractionPatterns();
-      const suggestions = getImprovementSuggestions('identified');
+      const interactionActions = await this._analyzeUserInteractions();
+      newActions.push(...interactionActions);
+
+      const featureActions = await this._discoverAndEvaluateFeatures();
+      newActions.push(...featureActions);
+
+      const sandboxActions = await this._checkSandboxes();
+      newActions.push(...sandboxActions);
+
+      const engagementActions = await this._createUserEngagementActions();
+      newActions.push(...engagementActions);
+
+      if (config.enableAutonomousCodeImprovement) {
+        const autonomousActions = await this._runAutonomousCodeImprovements();
+        newActions.push(...autonomousActions);
+      }
 
       console.log(
-        `📊 Analyzed ${patterns.length} interaction patterns, found ${suggestions.length} improvement opportunities`
+        `✅ Proactive cycle complete. Created ${newActions.length} new actions.`
       );
-
-      // Step 2: Create actions for high-priority improvements
-      for (const suggestion of suggestions.slice(0, 3)) {
-        const action = await this.createActionFromSuggestion(suggestion);
-        if (action) {
-          newActions.push(action);
-        }
-      }
-
-      // Step 3: Discover new features from GitHub and user patterns
-      if (Date.now() - this.lastCheck > 24 * 60 * 60 * 1000) {
-        // Once per day
-        console.log('🔍 Discovering new features from GitHub...');
-        await discoverFromGitHub(5);
-        await discoverFromUserPatterns(patterns);
-        this.lastCheck = Date.now();
-      }
-
-      // Step 4: Evaluate top feature recommendations
-      const topFeatures = getTopFeatureRecommendations(3);
-      for (const feature of topFeatures) {
-        if (
-          feature.relevance >= 7 &&
-          feature.implementationComplexity !== 'high'
-        ) {
-          const action = await this.createActionForFeature(feature);
-          if (action) {
-            newActions.push(action);
-          }
-        }
-      }
-
-      // Step 5: Check active sandboxes and test features
-      const activeSandboxes = getActiveSandboxes();
-      for (const sandbox of activeSandboxes) {
-        for (const feature of sandbox.features) {
-          if (feature.status === 'draft' || feature.status === 'testing') {
-            // Run tests on features
-            const testResult = await testFeature(
-              sandbox.id,
-              feature.id,
-              'unit'
-            );
-            if (testResult.passed) {
-              await awardTokensForTestPass(
-                `${feature.name} in ${sandbox.name}`,
-                feature.id
-              );
-            }
-          }
-        }
-
-        // Check if sandbox is ready for production
-        const readiness = evaluateSandboxReadiness(sandbox.id);
-        if (readiness.ready) {
-          const action = await this.createPRPreparationAction(sandbox);
-          if (action) {
-            newActions.push(action);
-          }
-        }
-      }
-
-      // Step 6: Create user engagement actions
-      if (metrics.userEngagementTrend === 'decreasing') {
-        const action = await this.createUserEngagementAction();
-        if (action) {
-          newActions.push(action);
-        }
-      }
-
-      // Step 7: Run autonomous code improvement if enabled
-      if (config.enableAutonomousCodeImprovement) {
-        console.log('🔧 Running autonomous code improvement analysis...');
-        try {
-          const repositoryPath = process.cwd();
-          const result = await codingAgent.performAutomatedFixLifecycle({
-            repositoryPath,
-            issueSource: 'proactive_cycle',
-          });
-
-          if (result.success) {
-            const action: ProactiveAction = {
-              id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-              timestamp: Date.now(),
-              type: 'autonomous_fix',
-              description: `Autonomous code improvement: ${result.message}`,
-              status: 'completed',
-              priority: 'medium',
-              estimatedImpact: 7,
-              completedAt: Date.now(),
-              relatedIds: result.sandboxId ? [result.sandboxId] : [],
-            };
-
-            // Award tokens for successful autonomous fix
-            if (result.prUrl) {
-              const tokenReward = await awardTokensForPR(`Autonomous fix: ${result.message}`, action.id);
-              action.tokensEarned = tokenReward.amount;
-            }
-
-            newActions.push(action);
-            console.log(`✅ Autonomous code improvement completed: ${result.message}`);
-          } else {
-            console.log(`ℹ️ Autonomous code improvement result: ${result.message}`);
-          }
-        } catch (error) {
-          console.error('Error in autonomous code improvement:', error);
-          // Don't throw - allow proactive cycle to continue
-        }
-      }
-
-      console.log(`✅ Proactive cycle complete. Created ${newActions.length} new actions.`);
       this.actions.push(...newActions);
       await this.saveActions();
 
@@ -236,11 +158,145 @@ class ProactiveRepositoryManagerService {
     }
   }
 
+  private async _analyzeUserInteractions(): Promise<ProactiveAction[]> {
+    const newActions: ProactiveAction[] = [];
+    const suggestions = getImprovementSuggestions('identified');
+    console.log(
+      `📊 Found ${suggestions.length} improvement opportunities from user interactions`
+    );
+
+    for (const suggestion of suggestions.slice(
+      0,
+      config.proactiveRepoManager.suggestionsSlice
+    )) {
+      const action = await this.createActionFromSuggestion(suggestion);
+      if (action) {
+        newActions.push(action);
+      }
+    }
+    return newActions;
+  }
+
+  private async _discoverAndEvaluateFeatures(): Promise<ProactiveAction[]> {
+    const newActions: ProactiveAction[] = [];
+    if (Date.now() - this.lastCheck > config.proactiveRepoManager.featureDiscoveryInterval) {
+      // Once per day
+      console.log('🔍 Discovering new features from GitHub...');
+      const patterns = getInteractionPatterns();
+      await discoverFromGitHub(5);
+      await discoverFromUserPatterns(patterns);
+      this.lastCheck = Date.now();
+    }
+
+    const topFeatures = getTopFeatureRecommendations(
+      config.proactiveRepoManager.topFeatureRecommendations
+    );
+    for (const feature of topFeatures) {
+      if (
+        feature.relevance >= config.proactiveRepoManager.featureRelevanceThreshold &&
+        feature.implementationComplexity !== 'high'
+      ) {
+        const action = await this.createActionForFeature(feature);
+        if (action) {
+          newActions.push(action);
+        }
+      }
+    }
+    return newActions;
+  }
+
+  private async _checkSandboxes(): Promise<ProactiveAction[]> {
+    const newActions: ProactiveAction[] = [];
+    const activeSandboxes = getActiveSandboxes();
+    for (const sandbox of activeSandboxes) {
+      for (const feature of sandbox.features) {
+        if (feature.status === 'draft' || feature.status === 'testing') {
+          const testResult = await testFeature(sandbox.id, feature.id, 'unit');
+          if (testResult.passed) {
+            await awardTokensForTestPass(
+              `${feature.name} in ${sandbox.name}`,
+              feature.id
+            );
+          }
+        }
+      }
+
+      const readiness = evaluateSandboxReadiness(sandbox.id);
+      if (readiness.ready) {
+        const action = await this.createPRPreparationAction(sandbox);
+        if (action) {
+          newActions.push(action);
+        }
+      }
+    }
+    return newActions;
+  }
+
+  private async _createUserEngagementActions(): Promise<ProactiveAction[]> {
+    const newActions: ProactiveAction[] = [];
+    const metrics = getMillaSuccessMetrics();
+    if (metrics.userEngagementTrend === 'decreasing') {
+      const action = await this.createUserEngagementAction();
+      if (action) {
+        newActions.push(action);
+      }
+    }
+    return newActions;
+  }
+
+  private async _runAutonomousCodeImprovements(): Promise<ProactiveAction[]> {
+    const newActions: ProactiveAction[] = [];
+    console.log('🔧 Running autonomous code improvement analysis...');
+    try {
+      const repositoryPath = process.cwd();
+      const result = await codingAgent.performAutomatedFixLifecycle({
+        repositoryPath,
+        issueSource: 'proactive_cycle',
+      });
+
+      if (result.success) {
+        const action: ProactiveAction = {
+          id: `action_${Date.now()}_${Math.random()
+            .toString(36)
+            .substr(2, 9)}`,
+          timestamp: Date.now(),
+          type: ProactiveActionType.AutonomousFix,
+          description: `Autonomous code improvement: ${result.message}`,
+          status: 'completed',
+          priority: 'medium',
+          estimatedImpact: 7,
+          completedAt: Date.now(),
+          relatedIds: result.sandboxId ? [result.sandboxId] : [],
+        };
+
+        if (result.prUrl) {
+          const tokenReward = await awardTokensForPR(
+            `Autonomous fix: ${result.message}`,
+            action.id
+          );
+          action.tokensEarned = tokenReward.amount;
+        }
+
+        newActions.push(action);
+        console.log(
+          `✅ Autonomous code improvement completed: ${result.message}`
+        );
+      } else {
+        console.log(
+          `ℹ️ Autonomous code improvement result: ${result.message}`
+        );
+      }
+    } catch (error) {
+      console.error('Error in autonomous code improvement:', error);
+    }
+    return newActions;
+  }
+
   /**
    * Create action from improvement suggestion
    */
   private async createActionFromSuggestion(
-    suggestion: any
+    suggestion: Suggestion
   ): Promise<ProactiveAction | null> {
     // Check if action already exists for this suggestion
     const existing = this.actions.find(
@@ -253,7 +309,7 @@ class ProactiveRepositoryManagerService {
     const action: ProactiveAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      type: suggestion.type === 'bug_fix' ? 'bug_fix' : 'optimization',
+      type: suggestion.type === 'bug_fix' ? ProactiveActionType.BugFix : ProactiveActionType.Optimization,
       description: suggestion.description,
       status: 'planned',
       priority: suggestion.priority,
@@ -278,7 +334,7 @@ class ProactiveRepositoryManagerService {
    * Create action for discovered feature
    */
   private async createActionForFeature(
-    feature: any
+    feature: Feature
   ): Promise<ProactiveAction | null> {
     const existing = this.actions.find(
       (a) => a.relatedIds?.includes(feature.id) && a.status !== 'completed'
@@ -290,7 +346,7 @@ class ProactiveRepositoryManagerService {
     const action: ProactiveAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      type: 'feature_proposal',
+      type: ProactiveActionType.FeatureProposal,
       description: `Implement feature: ${feature.name}`,
       status: 'planned',
       priority: feature.estimatedValue >= 8 ? 'high' : 'medium',
@@ -327,7 +383,7 @@ class ProactiveRepositoryManagerService {
     const existing = this.actions.find(
       (a) =>
         a.relatedIds?.includes(sandbox.id) &&
-        a.type === 'pr_preparation' &&
+        a.type === ProactiveActionType.PrPreparation &&
         a.status !== 'completed'
     );
     if (existing) {
@@ -337,7 +393,7 @@ class ProactiveRepositoryManagerService {
     const action: ProactiveAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      type: 'pr_preparation',
+      type: ProactiveActionType.PrPreparation,
       description: `Prepare PR for sandbox: ${sandbox.name}`,
       status: 'planned',
       priority: 'high',
@@ -356,7 +412,7 @@ class ProactiveRepositoryManagerService {
     const action: ProactiveAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
-      type: 'user_engagement',
+      type: ProactiveActionType.UserEngagement,
       description: 'Improve user engagement with proactive features',
       status: 'planned',
       priority: 'high',
@@ -382,30 +438,30 @@ class ProactiveRepositoryManagerService {
     // Award tokens based on action type
     let tokensEarned = 0;
     switch (action.type) {
-      case 'bug_fix':
+      case ProactiveActionType.BugFix:
         const bugReward = await awardTokensForBugFix(
           action.description,
           actionId
         );
         tokensEarned = bugReward.amount;
         break;
-      case 'feature_proposal':
+      case ProactiveActionType.FeatureProposal:
         const featureReward = await awardTokensForFeature(
           action.description,
           actionId
         );
         tokensEarned = featureReward.amount;
         break;
-      case 'pr_preparation':
+      case ProactiveActionType.PrPreparation:
         const prReward = await awardTokensForPR(action.description, actionId);
         tokensEarned = prReward.amount;
         break;
-      case 'autonomous_fix':
+      case ProactiveActionType.AutonomousFix:
         const autonomousReward = await awardTokensForBugFix(action.description, actionId);
         tokensEarned = autonomousReward.amount;
         break;
-      case 'optimization':
-        tokensEarned = 30;
+      case ProactiveActionType.Optimization:
+        tokensEarned = config.proactiveRepoManager.optimizationTokenAward;
         break;
     }
 
@@ -541,26 +597,13 @@ class ProactiveRepositoryManagerService {
         this.actions.reduce((sum, a) => sum + a.estimatedImpact, 0) / total ||
         0,
       byType: {
-        bugFix: this.actions.filter(a => a.type === 'bug_fix').length,
-        featureProposal: this.actions.filter(a => a.type === 'feature_proposal').length,
-        optimization: this.actions.filter(a => a.type === 'optimization').length,
-        sandboxCreation: this.actions.filter(a => a.type === 'sandbox_creation').length,
-        prPreparation: this.actions.filter(a => a.type === 'pr_preparation').length,
-        userEngagement: this.actions.filter(a => a.type === 'user_engagement').length,
-        autonomousFix: this.actions.filter(a => a.type === 'autonomous_fix').length,
-        bugFix: this.actions.filter((a) => a.type === 'bug_fix').length,
-        featureProposal: this.actions.filter(
-          (a) => a.type === 'feature_proposal'
-        ).length,
-        optimization: this.actions.filter((a) => a.type === 'optimization')
-          .length,
-        sandboxCreation: this.actions.filter(
-          (a) => a.type === 'sandbox_creation'
-        ).length,
-        prPreparation: this.actions.filter((a) => a.type === 'pr_preparation')
-          .length,
-        userEngagement: this.actions.filter((a) => a.type === 'user_engagement')
-          .length,
+        bugFix: this.actions.filter(a => a.type === ProactiveActionType.BugFix).length,
+        featureProposal: this.actions.filter(a => a.type === ProactiveActionType.FeatureProposal).length,
+        optimization: this.actions.filter(a => a.type === ProactiveActionType.Optimization).length,
+        sandboxCreation: this.actions.filter(a => a.type === ProactiveActionType.SandboxCreation).length,
+        prPreparation: this.actions.filter(a => a.type === ProactiveActionType.PrPreparation).length,
+        userEngagement: this.actions.filter(a => a.type === ProactiveActionType.UserEngagement).length,
+        autonomousFix: this.actions.filter(a => a.type === ProactiveActionType.AutonomousFix).length,
       },
     };
   }
@@ -580,7 +623,7 @@ class ProactiveRepositoryManagerService {
     // Run initial check after 1 minute
     setTimeout(async () => {
       await this.runProactiveCycle();
-    }, 60000);
+    }, config.proactiveRepoManager.initialCheckTimeout);
   }
 
   /**

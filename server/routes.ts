@@ -24,6 +24,12 @@ import {
   formatPollinationsImageResponse,
 } from './pollinationsImageService';
 import {
+  getMoodBackground,
+  getCachedMoodBackgrounds,
+  pregenerateAllMoodBackgrounds,
+  initializeMoodBackgroundService,
+} from './moodBackgroundService';
+import {
   generateCodeWithQwen,
   extractCodeRequest,
   formatCodeResponse,
@@ -1619,8 +1625,33 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.post('/api/repo/contents', async (req, res) => {
     try {
       const { owner, repo, path: repoPath = '' } = req.body;
-      if (!owner || !repo) {
-        return res.status(400).json({ error: 'owner and repo are required' });
+
+      // Validation: Only allow valid GitHub owner/repo names and path
+      // GitHub usernames/repos: alphanumeric, hyphens, underscores (no dots for security)
+      const githubNameRegex = /^[A-Za-z0-9_-]{1,100}$/;
+      
+      // For paths: allow alphanumeric, dots, hyphens, underscores, and forward slashes
+      // Decode first to catch encoded path traversal attempts
+      const decodedPath = repoPath ? decodeURIComponent(repoPath) : '';
+      const repoPathRegex = /^([A-Za-z0-9_.\-]+([\/][A-Za-z0-9_.\-]+)*)?$/;
+
+      // Validate owner and repo
+      if (!owner || !githubNameRegex.test(owner)) {
+        return res.status(400).json({ error: 'Invalid GitHub owner name' });
+      }
+      if (!repo || !githubNameRegex.test(repo)) {
+        return res.status(400).json({ error: 'Invalid GitHub repository name' });
+      }
+
+      // Validate path
+      if (
+        typeof repoPath !== "string" ||
+        repoPath.length > 256 ||
+        decodedPath.includes('..') ||
+        decodedPath.startsWith('/') ||
+        !repoPathRegex.test(decodedPath)
+      ) {
+        return res.status(400).json({ error: 'Invalid repository path' });
       }
 
       const githubToken = process.env.GITHUB_TOKEN;
@@ -1719,9 +1750,82 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       } else {
         return res.status(500).json({ error: result.error || 'Image generation failed' });
       }
-    } catch (error) {
-      console.error('Error generating image:', error);
-      res.status(500).json({ error: 'Failed to generate image' });
+    } catch (error: any) {
+      console.error('Image generation error:', error);
+      return res.status(500).json({ error: error.message || 'Failed to generate image' });
+    }
+  });
+
+  // Mood Background Generation Routes
+  app.get('/api/scene/mood-background/:mood', async (req, res) => {
+    try {
+      const { mood } = req.params;
+      const forceRegenerate = req.query.regenerate === 'true';
+      
+      const validMoods = ['calm', 'energetic', 'romantic', 'mysterious', 'playful'];
+      if (!validMoods.includes(mood)) {
+        return res.status(400).json({ 
+          error: `Invalid mood. Must be one of: ${validMoods.join(', ')}` 
+        });
+      }
+
+      const result = await getMoodBackground(mood as any, forceRegenerate);
+      
+      if (result.success) {
+        return res.json({
+          success: true,
+          imageUrl: result.imageUrl,
+          mood,
+          cached: result.cached
+        });
+      } else {
+        return res.status(500).json({ 
+          success: false,
+          error: result.error || 'Failed to generate mood background' 
+        });
+      }
+    } catch (error: any) {
+      console.error('Mood background error:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to generate mood background' 
+      });
+    }
+  });
+
+  app.get('/api/scene/mood-backgrounds', async (req, res) => {
+    try {
+      const cached = getCachedMoodBackgrounds();
+      return res.json({
+        success: true,
+        backgrounds: cached
+      });
+    } catch (error: any) {
+      console.error('Error fetching cached backgrounds:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message 
+      });
+    }
+  });
+
+  app.post('/api/scene/mood-backgrounds/pregenerate', async (req, res) => {
+    try {
+      // Trigger background pregeneration (async)
+      pregenerateAllMoodBackgrounds().catch(err => 
+        console.error('Background pregeneration error:', err)
+      );
+      
+      return res.json({
+        success: true,
+        message: 'Background pregeneration started'
+      });
+    } catch (error: any) {
+      console.error('Error starting pregeneration:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error.message 
+      });
     }
   });
 
@@ -1937,8 +2041,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   // Create a new message
   app.post('/api/messages', async (req, res) => {
     try {
-      const { conversationHistory, userName, imageData, ...messageData } =
+      const { conversationHistory, userName: rawUserName, imageData, ...messageData } =
         req.body;
+      // Validate and sanitize userName
+      let userName: string = typeof rawUserName === 'string' && rawUserName.length <= 128
+        ? rawUserName
+        : 'Danny Ray';
       const validatedData = insertMessageSchema.parse(messageData);
       const message = await storage.createMessage(validatedData);
 
@@ -2650,7 +2758,19 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
       console.log(`Analyzing YouTube video: ${url}`);
 
-      const analysis = await analyzeYouTubeVideo(url);
+      // Pass AI service for intelligent analysis
+      const aiService = {
+        generateResponse: async (prompt: string, options: any) => {
+          return await dispatchAIResponse(
+            { userId: 0, conversationId: 0 },
+            [{ role: 'user', content: prompt }],
+            0,
+            options
+          );
+        },
+      };
+
+      const analysis = await analyzeYouTubeVideo(url, aiService);
 
       res.json({
         success: true,
@@ -4580,6 +4700,15 @@ Project: Milla Rayne - AI Virtual Assistant
     const { text, voiceName, voice_settings } = req.body;
     const apiKey = config.elevenLabs.apiKey;
 
+    // Validate voiceName format - must be a valid voice ID (UUID or browser voice format)
+    // This prevents SSRF attacks by ensuring the voice ID can't manipulate the URL
+    const voiceIdRegex = /^[a-zA-Z0-9_-]{1,100}$/;
+    if (!voiceName || typeof voiceName !== 'string' || !voiceIdRegex.test(voiceName)) {
+      return res
+        .status(400)
+        .json({ error: 'Invalid voice ID format' });
+    }
+
     if (!apiKey) {
       return res
         .status(500)
@@ -5771,12 +5900,21 @@ function generateIntelligentFallback(
 
   // Deterministic response selection based on userMessage and userName
   function simpleHash(str: string): number {
+    // Defensive: ensure str is a primitive string and length is capped
+    if (typeof str !== 'string') {
+      str = String(str);
+    }
+    // If the string is suspiciously long, use a safe default string
+    if (str.length > 1024) {
+      str = str.slice(0, 1024);
+    }
+    const safeStr = str;
     let hash = 0,
       i,
       chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i++) {
-      chr = str.charCodeAt(i);
+    if (safeStr.length === 0) return hash;
+    for (i = 0; i < safeStr.length; i++) {
+      chr = safeStr.charCodeAt(i);
       hash = (hash << 5) - hash + chr;
       hash |= 0; // Convert to 32bit integer
     }
@@ -6635,7 +6773,20 @@ Could you share the repository URL again so I can take another look?
 
       try {
         console.log(`Detected YouTube URL in message: ${youtubeUrl}`);
-        const analysis = await analyzeYouTubeVideo(youtubeUrl);
+        
+        // Pass AI service for intelligent analysis
+        const aiService = {
+          generateResponse: async (prompt: string, options: any) => {
+            return await dispatchAIResponse(
+              dispatchContext,
+              [{ role: 'user', content: prompt }],
+              userId,
+              options
+            );
+          },
+        };
+        
+        const analysis = await analyzeYouTubeVideo(youtubeUrl, aiService);
 
         const response = `I've analyzed that YouTube video for you! "${analysis.videoInfo.title}" by ${analysis.videoInfo.channelName}. ${analysis.summary} I've stored this in my memory so we can reference it later. The key topics I identified are: ${analysis.keyTopics.slice(0, 5).join(', ')}. What would you like to know about this video?`;
 

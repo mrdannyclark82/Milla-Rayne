@@ -15,7 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -38,7 +41,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -57,7 +63,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -73,7 +82,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -88,7 +97,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -114,7 +126,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
@@ -140,7 +155,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.1
+        with:
+          clean: true
+          lfs: false
 
       - uses: actions/setup-node@v6
         with:
