@@ -27,13 +27,27 @@ export interface YouTubeResponse {
 export function isYouTubeRequest(message: string): boolean {
   const lowerMessage = message.toLowerCase();
 
-  // Don't trigger on GitHub links or other non-YouTube domains
-  if (
-    lowerMessage.includes('github.com') ||
-    lowerMessage.includes('gitlab.com') ||
-    lowerMessage.includes('bitbucket.org')
-  ) {
-    return false;
+  // Improved: Don't trigger on GitHub, GitLab, Bitbucket links (check actual host)
+  const forbiddenHosts = [
+    'github.com',
+    'gitlab.com',
+    'bitbucket.org'
+  ];
+
+  // Find all URLs in the message
+  // This regex matches http and https URLs; could be improved for broader cases
+  const urlRegex = /\bhttps?:\/\/[^\s]+/gi;
+  const urls = message.match(urlRegex) || [];
+
+  for (const urlStr of urls) {
+    try {
+      const urlObj = new URL(urlStr);
+      if (forbiddenHosts.includes(urlObj.hostname.replace(/^www\./, ''))) {
+        return false;
+      }
+    } catch (e) {
+      // Ignore parse errors (not a valid URL)
+    }
   }
 
   // Only trigger if "youtube" is explicitly mentioned
