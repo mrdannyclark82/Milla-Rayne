@@ -18,7 +18,7 @@ We take security vulnerabilities seriously. If you discover a security issue, pl
 
 Instead, please report them via one of the following methods:
 
-1. **Email**: Send details to the repository maintainer
+1. **Email**: Send details to <mrdannyclark82@gmail.com>
 2. **GitHub Security Advisories**: Use the "Security" tab to privately report a vulnerability
 
 ### 📋 What to Include
