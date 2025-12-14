@@ -2,59 +2,48 @@
 
 ## Supported Versions
 
-We support security fixes on the latest `main` branch and the most recent tagged release.
+Currently being supported with security updates:
+
+| Version | Supported          |
+| ------- | ------------------ |
+| Latest  | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
-Please email security reports to <mrdannyclark82@gmail.com>. We will acknowledge receipt within 48 hours and strive to provide a remediation plan within 14 days.
+We take security vulnerabilities seriously. If you discover a security issue, please follow these steps:
 
-Do not open public issues for security problems. If a PoC is required, minimize sensitive data and never include secrets or tokens.
+### 🔒 Private Disclosure
 
-## Handling of Secrets
+**Please do not** report security vulnerabilities through public GitHub issues.
 
-- Never commit secrets. Use environment variables and `.env` locally.
-- Prefer short-lived tokens or a GitHub App over classic PATs for automation features.
+Instead, please report them via one of the following methods:
 
-## Data Encryption at Rest
+1. **Email**: Send details to the repository maintainer
+2. **GitHub Security Advisories**: Use the "Security" tab to privately report a vulnerability
 
-### Memory Encryption
+### 📋 What to Include
 
-As of the latest version, Milla Rayne supports field-level encryption for sensitive conversation data stored in the SQLite database.
+When reporting a vulnerability, please include:
 
-**Features:**
+- Type of vulnerability
+- Full paths of affected source file(s)
+- Location of the affected code (tag/branch/commit or direct URL)
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
 
-- AES-256-GCM authenticated encryption
-- Versioned encryption format (`enc:v1:...`) for future compatibility
-- Environment variable-based key management
-- Backward compatible with existing plaintext data
-- No performance impact on read/write operations
+### ⏱️ Response Timeline
 
-**Setup:**
+- We will acknowledge your report within **48 hours**
+- We will provide a more detailed response within **7 days**
+- We will work on a fix and keep you informed of progress
+- Once a fix is available, we will publish a security advisory
 
-1. Generate a secure encryption key:
+### 🏆 Recognition
 
-   ```bash
-   openssl rand -base64 32
-   ```
+We appreciate security researchers who responsibly disclose vulnerabilities. With your permission:
 
-2. Add the key to your `.env` file:
+- We will acknowledge your contribution in the security advisory
+- Your name will be added to our security hall of fame (if applicable)
 
-   ```
-   MEMORY_KEY=your_generated_key_here
-   ```
-
-3. Restart the application - all new messages will be encrypted automatically
-
-**Key Management:**
-
-- Store the `MEMORY_KEY` securely (e.g., in a password manager)
-- Do NOT commit the key to version control
-- Back up the key - data cannot be recovered without it
-- Consider rotating keys periodically for enhanced security
-
-**Important Notes:**
-
-- If `MEMORY_KEY` is not set, messages are stored in plaintext (default behavior)
-- Changing the encryption key will make existing encrypted data unreadable
-- The encryption protects data at rest but not data in transit
-- Repository analysis and improvement features continue to work normally
+Thank you for helping keep Milla-Rayne and its users safe!
