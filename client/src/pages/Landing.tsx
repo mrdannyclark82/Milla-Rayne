@@ -7,14 +7,18 @@ import { Input, Textarea, Label } from '../components/FormControls';
 
 const Landing: React.FC = () => {
   return (
-    <div className="min-h-screen bg-cyber-darker">
+    <div className="min-h-screen bg-gradient-to-b from-nebula-indigo via-cyber-dark to-nebula-violet">
       <Header />
       <Hero />
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-cyber-dark/50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12 text-high-contrast glow-text text-cyber-pink">
+      <section id="features" className="py-24 bg-nebula-indigo/30 backdrop-blur-sm relative overflow-hidden">
+        {/* Ambient glow effects */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyber-pink/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-neon-blue/10 rounded-full blur-[120px]" />
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <h2 className="text-5xl md:text-6xl font-extrabold text-center mb-16 text-white glow-text tracking-tight">
             Powerful Features
           </h2>
           
@@ -27,7 +31,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Seamlessly switch between devices with synchronized conversations and context.
                 </p>
               </CardContent>
@@ -41,7 +45,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Deep understanding of your needs through continuous learning and adaptation.
                 </p>
               </CardContent>
@@ -55,7 +59,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Talk naturally with high-quality voice synthesis and recognition.
                 </p>
               </CardContent>
@@ -69,7 +73,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Share and explore multimedia content together in an immersive experience.
                 </p>
               </CardContent>
@@ -83,7 +87,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Choose from multiple AI models, voices, and appearance settings.
                 </p>
               </CardContent>
@@ -97,7 +101,7 @@ const Landing: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-slate-300">
+                <p className="text-slate-300 leading-relaxed">
                   Contribute, extend, and customize with full access to the codebase.
                 </p>
               </CardContent>
@@ -107,16 +111,19 @@ const Landing: React.FC = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-20 bg-cyber-darker">
-        <div className="container mx-auto px-4">
+      <section id="about" className="py-24 bg-cyber-dark/50 relative overflow-hidden">
+        {/* Ambient glow effects */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-cyber-purple/10 rounded-full blur-[120px]" />
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-4xl font-bold text-center mb-12 text-high-contrast glow-text text-cyber-pink">
+            <h2 className="text-5xl md:text-6xl font-extrabold text-center mb-16 text-white glow-text tracking-tight">
               About Milla-Rayne
             </h2>
             
             <Card animated className="mb-8">
               <CardContent>
-                <p className="text-slate-300 text-lg leading-relaxed mb-4">
+                <p className="text-slate-300 text-lg leading-relaxed mb-6">
                   Milla-Rayne is a sophisticated, context-aware AI assistant designed for rich, 
                   personal interaction. Built as a full-stack monorepo with a clear separation 
                   between client, server, and shared components, it offers multiple ways to 
@@ -134,23 +141,26 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-cyber-dark/50">
-        <div className="container mx-auto px-4">
+      <section id="contact" className="py-24 bg-nebula-indigo/30 backdrop-blur-sm relative overflow-hidden">
+        {/* Ambient glow effects */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-neon-blue/10 rounded-full blur-[120px]" />
+        
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-2xl mx-auto">
-            <h2 className="text-4xl font-bold text-center mb-12 text-high-contrast glow-text text-cyber-pink">
+            <h2 className="text-5xl md:text-6xl font-extrabold text-center mb-16 text-white glow-text tracking-tight">
               Get In Touch
             </h2>
             
             <Card glow>
               <CardContent>
-                <form className="space-y-6">
+                <form className="space-y-8">
                   <div>
                     <Label htmlFor="name">Name</Label>
                     <Input
                       id="name"
                       type="text"
                       placeholder="Enter your name"
-                      className="mt-2"
+                      className="mt-3"
                     />
                   </div>
 
@@ -160,7 +170,7 @@ const Landing: React.FC = () => {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="mt-2"
+                      className="mt-3"
                     />
                   </div>
 
@@ -169,7 +179,7 @@ const Landing: React.FC = () => {
                     <Textarea
                       id="message"
                       placeholder="Tell us what you think..."
-                      className="mt-2"
+                      className="mt-3"
                       rows={5}
                     />
                   </div>
@@ -187,8 +197,8 @@ const Landing: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-cyber-darker border-t border-cyber-pink/20">
-        <div className="container mx-auto px-4">
+      <footer className="py-8 bg-nebula-indigo/60 backdrop-blur-xl border-t border-cyber-pink/20">
+        <div className="container mx-auto px-6">
           <div className="text-center text-slate-400">
             <p>&copy; 2024 Milla-Rayne. Built with ❤️ and AI.</p>
           </div>
