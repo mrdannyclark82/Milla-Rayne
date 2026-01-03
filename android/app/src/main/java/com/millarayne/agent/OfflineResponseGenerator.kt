@@ -237,7 +237,14 @@ class OfflineResponseGenerator(private val context: Context) {
                     else -> return "I couldn't understand that math operation."
                 }
                 
-                "The answer is ${result.toInt()}."
+                // Format result - show decimal if not a whole number
+                val formattedResult = if (result % 1.0 == 0.0) {
+                    result.toInt().toString()
+                } else {
+                    String.format("%.2f", result)
+                }
+                
+                "The answer is $formattedResult."
             } else {
                 "I can do basic math like 5 + 3 or 10 * 2. Try asking me a simple calculation!"
             }
