@@ -1,29 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
 
-const Orb: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Simple pulsing orb animation
-    let radius = 50;
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.beginPath();
-      ctx.arc(100, 100, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-      ctx.fill();
-      radius = 50 + 10 * Math.sin(Date.now() / 500);
-      requestAnimationFrame(animate);
-    };
-    animate();
-  }, []);
-
-  return <canvas ref={canvasRef} width={200} height={200} />;
-};
+const Orb: React.FC = () => (
+  <motion.div
+    className="orb"
+    animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+    transition={{ duration: 2, repeat: Infinity }}
+    style={{
+      width: 50,
+      height: 50,
+      borderRadius: '50%',
+      background: 'radial-gradient(circle, #ff00ff, #00ffff)',
+    }}
+  />
+);
 
 export default Orb;
