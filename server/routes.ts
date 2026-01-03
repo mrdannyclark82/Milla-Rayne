@@ -4927,6 +4927,207 @@ Project: Milla Rayne - AI Virtual Assistant
     }
   });
 
+  // ============================================
+  // MCP Services Routes
+  // ============================================
+
+  // Filesystem MCP Routes
+  app.post('/api/mcp/filesystem/read', async (req, res) => {
+    try {
+      const { getFilesystemMCPService } = await import('./mcp/index.js');
+      const service = getFilesystemMCPService();
+      const { path: filePath } = req.body;
+      const content = await service.readFile(filePath);
+      res.json({ success: true, content });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/filesystem/write', async (req, res) => {
+    try {
+      const { getFilesystemMCPService } = await import('./mcp/index.js');
+      const service = getFilesystemMCPService();
+      const { path: filePath, content } = req.body;
+      await service.writeFile(filePath, content);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/filesystem/list', async (req, res) => {
+    try {
+      const { getFilesystemMCPService } = await import('./mcp/index.js');
+      const service = getFilesystemMCPService();
+      const { path: dirPath } = req.body;
+      const files = await service.listDirectory(dirPath);
+      res.json({ success: true, files });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/filesystem/search', async (req, res) => {
+    try {
+      const { getFilesystemMCPService } = await import('./mcp/index.js');
+      const service = getFilesystemMCPService();
+      const { pattern, basePath } = req.body;
+      const files = await service.searchFiles(pattern, basePath);
+      res.json({ success: true, files });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // GitHub MCP Routes
+  app.post('/api/mcp/github/search-repos', async (req, res) => {
+    try {
+      const { getGitHubMCPService } = await import('./mcp/index.js');
+      const service = getGitHubMCPService();
+      const { query, limit } = req.body;
+      const repos = await service.searchRepositories(query, limit);
+      res.json({ success: true, repos });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/github/get-file', async (req, res) => {
+    try {
+      const { getGitHubMCPService } = await import('./mcp/index.js');
+      const service = getGitHubMCPService();
+      const { owner, repo, path, ref } = req.body;
+      const file = await service.getFileContents(owner, repo, path, ref);
+      res.json({ success: true, file });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/github/search-code', async (req, res) => {
+    try {
+      const { getGitHubMCPService } = await import('./mcp/index.js');
+      const service = getGitHubMCPService();
+      const { query, limit } = req.body;
+      const results = await service.searchCode(query, limit);
+      res.json({ success: true, results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Memory MCP Routes
+  app.post('/api/mcp/memory/store', async (req, res) => {
+    try {
+      const { getMemoryMCPService } = await import('./mcp/index.js');
+      const service = getMemoryMCPService();
+      const { userId, content, metadata, importance } = req.body;
+      const memory = await service.storeMemory(userId, content, metadata, importance);
+      res.json({ success: true, memory });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/memory/search', async (req, res) => {
+    try {
+      const { getMemoryMCPService } = await import('./mcp/index.js');
+      const service = getMemoryMCPService();
+      const { userId, query, limit } = req.body;
+      const memories = await service.searchMemories(userId, query, limit);
+      res.json({ success: true, memories });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Brave Search MCP Routes
+  app.post('/api/mcp/brave/search', async (req, res) => {
+    try {
+      const { getBraveSearchMCPService } = await import('./mcp/index.js');
+      const service = getBraveSearchMCPService();
+      const { query, limit } = req.body;
+      const results = await service.webSearch(query, limit);
+      res.json({ success: true, results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/brave/news', async (req, res) => {
+    try {
+      const { getBraveSearchMCPService } = await import('./mcp/index.js');
+      const service = getBraveSearchMCPService();
+      const { query, limit } = req.body;
+      const results = await service.newsSearch(query, limit);
+      res.json({ success: true, results });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Puppeteer MCP Routes
+  app.post('/api/mcp/puppeteer/screenshot', async (req, res) => {
+    try {
+      const { getPuppeteerMCPService } = await import('./mcp/index.js');
+      const service = getPuppeteerMCPService();
+      const { url, options } = req.body;
+      const screenshot = await service.screenshot(url, options);
+      res.json({ success: true, screenshot: screenshot.toString('base64') });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/puppeteer/extract', async (req, res) => {
+    try {
+      const { getPuppeteerMCPService } = await import('./mcp/index.js');
+      const service = getPuppeteerMCPService();
+      const { url } = req.body;
+      const content = await service.extractContent(url);
+      res.json({ success: true, content });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  // Postgres MCP Routes
+  app.post('/api/mcp/postgres/query', async (req, res) => {
+    try {
+      const { getPostgresMCPService } = await import('./mcp/index.js');
+      const service = getPostgresMCPService();
+      const { sql: sqlQuery, params } = req.body;
+      const result = await service.query(sqlQuery, params);
+      res.json({ success: true, result });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.get('/api/mcp/postgres/tables', async (req, res) => {
+    try {
+      const { getPostgresMCPService } = await import('./mcp/index.js');
+      const service = getPostgresMCPService();
+      const tables = await service.listTables();
+      res.json({ success: true, tables });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
+  app.post('/api/mcp/postgres/describe', async (req, res) => {
+    try {
+      const { getPostgresMCPService } = await import('./mcp/index.js');
+      const service = getPostgresMCPService();
+      const { tableName, schema } = req.body;
+      const tableInfo = await service.describeTable(tableName, schema);
+      res.json({ success: true, tableInfo });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // Mobile Sensor Data Endpoint
   app.post('/api/sensor-data', async (req, res) => {
     try {

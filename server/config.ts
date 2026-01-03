@@ -133,4 +133,42 @@ export const config = {
     modelPath: process.env.LOCAL_MODEL_PATH || 'locallm/gemma.tflite',
     preferLocal: process.env.PREFER_LOCAL_MODEL === 'true', // If true, use local by default
   },
+  // MCP Services Configuration
+  mcp: {
+    filesystem: {
+      enabled: process.env.MCP_FILESYSTEM_ENABLED !== 'false', // enabled by default
+      allowedPaths: process.env.MCP_FILESYSTEM_ALLOWED_PATHS?.split(',') || [process.cwd()],
+    },
+    github: {
+      enabled: process.env.MCP_GITHUB_ENABLED !== 'false', // enabled by default
+      token: process.env.GITHUB_TOKEN,
+    },
+    memory: {
+      enabled: process.env.MCP_MEMORY_ENABLED !== 'false', // enabled by default
+      storePath: process.env.MCP_MEMORY_STORE_PATH || 'memory/mcp-store',
+    },
+    braveSearch: {
+      enabled: process.env.MCP_BRAVE_SEARCH_ENABLED === 'true',
+      apiKey: process.env.BRAVE_SEARCH_API_KEY,
+    },
+    postgres: {
+      enabled: process.env.MCP_POSTGRES_ENABLED === 'true',
+      connectionString: process.env.DATABASE_URL,
+    },
+    puppeteer: {
+      enabled: process.env.MCP_PUPPETEER_ENABLED === 'true',
+      headless: process.env.MCP_PUPPETEER_HEADLESS !== 'false',
+    },
+    slack: {
+      enabled: process.env.MCP_SLACK_ENABLED === 'true',
+      botToken: process.env.SLACK_BOT_TOKEN,
+      signingSecret: process.env.SLACK_SIGNING_SECRET,
+    },
+  },
+  github: {
+    token: process.env.GITHUB_TOKEN,
+  },
+  database: {
+    url: process.env.DATABASE_URL,
+  },
 };
