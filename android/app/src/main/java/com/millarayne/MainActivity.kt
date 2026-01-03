@@ -125,51 +125,9 @@ class ChatViewModel : ViewModel() {
                 }
 
                 // Try to send to API, fallback to offline mode
-                var responseText: String? = null
-                var usedOfflineMode = false
-                
-                try {
-                    val request = ChatRequest(message = content.trim())
-                    val response = MillaApiClient.apiService.sendMessage(request)
-
-                    if (response.isSuccessful) {
-                        val chatResponse = response.body()
-                        if (chatResponse != null && chatResponse.response.isNotBlank()) {
-                            responseText = chatResponse.response
-                            _isOfflineMode.value = false
-                        } else {
-                            throw Exception("Received empty response from server")
-                        }
-                    } else {
-                        val errorBody = response.errorBody()?.string()
-                        android.util.Log.e("ChatViewModel", "Server error: ${response.code()} - $errorBody")
-                        throw Exception("Server error: ${response.code()} - ${response.message()}")
-                    }
-                } catch (networkException: Exception) {
-                    android.util.Log.w("ChatViewModel", "Server unavailable, using offline mode", networkException)
-                    
-                    // Use offline response generator
-                    offlineGenerator?.let { generator ->
-                        val (offlineResponse, handled) = generator.generateResponse(content.trim())
-                        if (handled) {
-                            responseText = "🔌 Offline Mode\n\n$offlineResponse"
-                            usedOfflineMode = true
-                            _isOfflineMode.value = true
-                        }
-                    }
-                    
-                    if (responseText == null) {
-                        throw networkException
-                    }
-                }
                 
                 // Save assistant message
-                if (responseText != null) {
-                    val assistantMessage = Message(
-                        content = responseText,
-                        role = "assistant",
-                        timestamp = System.currentTimeMillis()
-                    )
+              
                     try {
                         messageDao.insertMessage(assistantMessage)
                     } catch (dbException: Exception) {
