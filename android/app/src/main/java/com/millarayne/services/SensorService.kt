@@ -1,6 +1,7 @@
 package com.millarayne.services
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
@@ -151,16 +152,7 @@ class SensorService : Service(), SensorEventListener {
         
         // Start location updates if permitted
         if (checkLocationPermission()) {
-            try {
-                locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER,
-                    LOCATION_UPDATE_INTERVAL_MS,
-                    MIN_LOCATION_DISTANCE_M,
-                    locationListener
-                )
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Location permission denied", e)
-            }
+            startLocationUpdates()
         }
         
         // Connect WebSocket
@@ -326,6 +318,7 @@ class SensorService : Service(), SensorEventListener {
     /**
      * Get nearby Bluetooth devices
      */
+    @SuppressLint("MissingPermission")
     private fun getNearbyBluetoothDevices(): List<String> {
         if (!checkBluetoothPermission()) {
             return emptyList()
@@ -387,6 +380,23 @@ class SensorService : Service(), SensorEventListener {
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
+    }
+    
+    /**
+     * Start location updates (permission already checked by caller)
+     */
+    @SuppressLint("MissingPermission")
+    private fun startLocationUpdates() {
+        try {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                LOCATION_UPDATE_INTERVAL_MS,
+                MIN_LOCATION_DISTANCE_M,
+                locationListener
+            )
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Location permission denied", e)
+        }
     }
     
     /**
