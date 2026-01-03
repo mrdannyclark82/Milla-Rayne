@@ -384,6 +384,10 @@ class SensorService : Service(), SensorEventListener {
     
     /**
      * Start location updates (permission already checked by caller)
+     * 
+     * Note: The @SuppressLint annotation is used because permissions are checked at runtime
+     * before calling this method. The try-catch block handles the edge case where
+     * permissions might be revoked between the check and this call.
      */
     @SuppressLint("MissingPermission")
     private fun startLocationUpdates() {
@@ -395,6 +399,7 @@ class SensorService : Service(), SensorEventListener {
                 locationListener
             )
         } catch (e: SecurityException) {
+            // Permission could be revoked between check and call
             Log.e(TAG, "Location permission denied", e)
         }
     }
