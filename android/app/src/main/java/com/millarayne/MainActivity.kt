@@ -72,9 +72,10 @@ class ChatViewModel : ViewModel() {
     private lateinit var messageDao: MessageDao
     private var offlineGenerator: OfflineResponseGenerator? = null
 
-    fun initialize(database: AppDatabase, context: android.content.Context) {
+    fun initialize(database: AppDatabase, appContext: android.content.Context) {
         messageDao = database.messageDao()
-        offlineGenerator = OfflineResponseGenerator(context)
+        // Use Application context to avoid memory leaks
+        offlineGenerator = OfflineResponseGenerator(appContext.applicationContext)
         loadMessages()
     }
     

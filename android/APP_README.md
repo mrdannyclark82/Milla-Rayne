@@ -167,8 +167,12 @@ You can use the app without ever connecting to a server! The offline mode provid
 Update the API URL in one of these places:
 
 1. **Hardcoded** (for testing): `MillaApiClient.kt`
+   - Default: `http://10.0.2.2:5000/` (Android emulator localhost)
+   - For physical device: Use your computer's IP (e.g., `http://192.168.1.100:5000`)
 2. **Resources**: `res/values/strings.xml`
 3. **Environment** (production): Use BuildConfig
+
+**Note:** The default server URL (`10.0.2.2:5000`) is for Android emulator to access the host machine's localhost. For physical devices, you need to change this to your computer's actual IP address on the local network.
 
 ### Database
 

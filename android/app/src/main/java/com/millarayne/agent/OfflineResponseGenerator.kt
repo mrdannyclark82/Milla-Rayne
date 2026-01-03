@@ -233,13 +233,14 @@ class OfflineResponseGenerator(private val context: Context) {
                     "+" -> num1 + num2
                     "-" -> num1 - num2
                     "*" -> num1 * num2
-                    "/" -> if (num2 != 0.0) num1 / num2 else return "I can't divide by zero! 😅"
+                    "/" -> if (kotlin.math.abs(num2) > 1e-10) num1 / num2 else return "I can't divide by zero! 😅"
                     else -> return "I couldn't understand that math operation."
                 }
                 
                 // Format result - show decimal if not a whole number
-                val formattedResult = if (result % 1.0 == 0.0) {
-                    result.toInt().toString()
+                // Use robust comparison for floating point
+                val formattedResult = if (kotlin.math.abs(result - result.toLong()) < 1e-10) {
+                    result.toLong().toString()
                 } else {
                     String.format("%.2f", result)
                 }

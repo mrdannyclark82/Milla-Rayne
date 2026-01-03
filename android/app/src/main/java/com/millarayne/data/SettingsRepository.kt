@@ -20,7 +20,7 @@ class SettingsRepository(private val context: Context) {
         private val AUTO_FALLBACK_KEY = booleanPreferencesKey("auto_fallback")
         
         // Default values
-        const val DEFAULT_SERVER_URL = "http://192.168.1.66:5000/"
+        const val DEFAULT_SERVER_URL = "http://10.0.2.2:5000/" // Android emulator localhost
         const val DEFAULT_OFFLINE_MODE_ENABLED = false
         const val DEFAULT_AUTO_FALLBACK = true
     }
