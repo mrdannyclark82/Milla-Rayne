@@ -266,11 +266,97 @@ The app follows Clean Architecture principles:
 
 _(Screenshots to be added after implementation)_
 
-## Known Limitations
+## Offline Mode Capabilities
 
-- Voice features not yet implemented
-- Image upload not yet supported
-- Background scenes are CSS-only (no photo backgrounds)
+The app's offline mode provides a robust standalone experience:
+
+### ✅ What Works Offline
+
+**Basic Conversation:**
+- Greetings and farewells
+- Simple questions and answers
+- Thank you responses
+- Identity questions ("Who are you?", "What's your name?")
+
+**Utilities:**
+- Current time and date
+- Day of the week
+- Basic math calculations (e.g., "what is 5 + 3?")
+- Jokes and motivational quotes
+
+**Device Control:**
+- Volume up/down
+- Mute/unmute
+- Media playback control (play/pause)
+- WiFi settings access
+- Brightness controls
+
+**Smart Home (placeholder):**
+- Light on/off commands
+- Thermostat controls
+- Extensible plugin system
+
+### ❌ What Requires Server
+
+- Advanced AI conversations
+- Web search and external data
+- Weather information
+- Detailed tutorials and how-to guides
+- Context-aware scene adaptation
+- Voice synthesis
+- Image processing
+
+### 🔧 How It Works
+
+1. **Automatic Fallback**: The app first tries to connect to the server. If unavailable, it automatically switches to offline mode.
+
+2. **Pattern Matching**: Uses intelligent pattern matching to recognize common queries and respond appropriately.
+
+3. **Edge Processing**: Leverages the LocalEdgeAgent for instant device control without network latency.
+
+4. **Local Storage**: All conversations are stored locally in Room database, available offline.
+
+### 💡 Optimization Tips
+
+To make the most of offline mode:
+
+1. **Pre-download Capabilities**: Future versions could include downloadable AI models
+2. **Cached Responses**: Frequently asked questions could be cached
+3. **Local Knowledge Base**: Common information stored locally
+4. **Offline Training**: Learn from user patterns to improve responses
+
+## Performance Optimizations
+
+The Android app is optimized for both online and offline operation:
+
+### Build Optimizations
+
+- **ProGuard/R8**: Enabled in release builds for code shrinking and obfuscation
+- **Minification**: Reduces APK size by removing unused code
+- **Native Libraries**: Compiled for multiple architectures (arm64-v8a, armeabi-v7a)
+
+### Runtime Optimizations
+
+- **Coroutines**: All network and database operations run on background threads
+- **Room Database**: Efficient local storage with Flow-based reactive queries
+- **Compose UI**: Modern declarative UI with built-in performance optimizations
+- **Memory Management**: Proper lifecycle handling prevents memory leaks
+- **Lazy Loading**: Messages loaded efficiently with LazyColumn
+
+### Network Optimizations
+
+- **Timeout Configuration**: 30-second timeouts prevent hanging
+- **Connection Pooling**: OkHttp client reuses connections
+- **Offline Fallback**: Instant switch to local processing when server unavailable
+- **Response Caching**: Local database caches all messages
+
+### Battery Optimizations
+
+- **Foreground Only**: No background services consuming battery
+- **Efficient Queries**: Database queries optimized with indexes
+- **Minimal Wake Locks**: No unnecessary wake locks or alarms
+
+## Known Limitations
 - **Offline mode limitations:**
   - Pattern-based responses only (not true AI)
   - Limited knowledge base

@@ -44,6 +44,10 @@ class OfflineResponseGenerator(private val context: Context) {
             "date" in lowercaseMessage && ("what" in lowercaseMessage || "today" in lowercaseMessage) -> 
                 "Today is ${getCurrentDate()}."
             
+            // Day of week
+            "day" in lowercaseMessage && ("what" in lowercaseMessage || "today" in lowercaseMessage) -> 
+                "Today is ${getCurrentDayOfWeek()}."
+            
             // Identity questions
             "who are you" in lowercaseMessage || "what are you" in lowercaseMessage ->
                 "I'm Milla Rayne, your AI companion. I'm currently running in offline mode, so I have limited capabilities, but I can still help with basic tasks!"
@@ -51,24 +55,73 @@ class OfflineResponseGenerator(private val context: Context) {
             "your name" in lowercaseMessage ->
                 "My name is Milla Rayne. Nice to meet you!"
             
+            "how are you" in lowercaseMessage || "how do you do" in lowercaseMessage ->
+                listOf(
+                    "I'm doing well, thanks for asking! Running smoothly in offline mode. How are you?",
+                    "I'm great! Even in offline mode, I'm happy to chat with you. How can I help?",
+                    "I'm functioning perfectly! Though I'd love to connect to my server for more capabilities. How are you doing?"
+                ).random()
+            
             // Help/capabilities
-            "help" in lowercaseMessage || "can you do" in lowercaseMessage ->
-                "In offline mode, I can:\n• Answer basic questions\n• Help with device controls (volume, WiFi)\n• Provide the time and date\n• Have simple conversations\n\nFor more advanced features, I'll need a connection to my server."
+            "help" in lowercaseMessage || "can you do" in lowercaseMessage || "what can you" in lowercaseMessage ->
+                """In offline mode, I can:
+                    |• Answer basic questions
+                    |• Help with device controls (volume, WiFi)
+                    |• Provide the time and date
+                    |• Have simple conversations
+                    |• Control media playback
+                    |
+                    |For more advanced features, I'll need a connection to my server.""".trimMargin()
             
-            // Device controls
-            "volume" in lowercaseMessage && ("up" in lowercaseMessage || "increase" in lowercaseMessage) ->
-                "I'll increase the volume for you."
+            // Device controls - Volume
+            "volume" in lowercaseMessage && ("up" in lowercaseMessage || "increase" in lowercaseMessage || "raise" in lowercaseMessage) ->
+                "I'll increase the volume for you. 🔊"
             
-            "volume" in lowercaseMessage && ("down" in lowercaseMessage || "decrease" in lowercaseMessage) ->
-                "I'll decrease the volume for you."
+            "volume" in lowercaseMessage && ("down" in lowercaseMessage || "decrease" in lowercaseMessage || "lower" in lowercaseMessage) ->
+                "I'll decrease the volume for you. 🔉"
+            
+            "mute" in lowercaseMessage || "silence" in lowercaseMessage ->
+                "I'll mute the volume for you. 🔇"
+            
+            // Media controls
+            "play" in lowercaseMessage && !("role" in lowercaseMessage) ->
+                "Starting playback for you. ▶️"
+            
+            "pause" in lowercaseMessage || "stop" in lowercaseMessage ->
+                "Pausing playback. ⏸️"
+            
+            // Jokes and fun
+            "joke" in lowercaseMessage || "funny" in lowercaseMessage ->
+                listOf(
+                    "Why don't scientists trust atoms? Because they make up everything! 😄",
+                    "Why did the smartphone go to therapy? It lost its contacts! 📱",
+                    "What do you call a bear with no teeth? A gummy bear! 🐻",
+                    "Why don't eggs tell jokes? They'd crack each other up! 🥚"
+                ).random()
+            
+            // Math calculations (basic)
+            containsMathOperation(lowercaseMessage) -> calculateMath(lowercaseMessage)
+            
+            // Motivational
+            "motivate" in lowercaseMessage || "inspire" in lowercaseMessage || "motivation" in lowercaseMessage ->
+                listOf(
+                    "You're capable of amazing things! Keep pushing forward! 💪",
+                    "Every small step counts. You're making progress! 🌟",
+                    "Believe in yourself. You've got this! ✨",
+                    "Your potential is limitless. Keep going! 🚀"
+                ).random()
             
             // Goodbyes
             isGoodbye(lowercaseMessage) ->
-                "Goodbye! It was nice chatting with you. 👋"
+                "Goodbye! It was nice chatting with you. Take care! 👋"
             
             // Thank you
             "thank" in lowercaseMessage ->
-                "You're welcome! Happy to help! 😊"
+                listOf(
+                    "You're welcome! Happy to help! 😊",
+                    "My pleasure! Feel free to ask anything else! 💜",
+                    "Anytime! I'm here for you! 🌟"
+                ).random()
             
             // Weather (when offline)
             "weather" in lowercaseMessage ->
@@ -77,6 +130,10 @@ class OfflineResponseGenerator(private val context: Context) {
             // Complex queries
             "how to" in lowercaseMessage || "tutorial" in lowercaseMessage ->
                 "I need a server connection to help with detailed tutorials or how-to guides. In offline mode, my knowledge is limited."
+            
+            // Questions about offline mode
+            "offline" in lowercaseMessage || "server" in lowercaseMessage ->
+                "I'm currently running in offline mode, which means I can only handle basic tasks locally on your device. For advanced AI features, I need to connect to my server."
             
             // Default fallback
             else -> generateFallbackResponse(lowercaseMessage)
@@ -136,6 +193,57 @@ class OfflineResponseGenerator(private val context: Context) {
     private fun getCurrentDate(): String {
         val format = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
         return format.format(Date())
+    }
+    
+    /**
+     * Get current day of week
+     */
+    private fun getCurrentDayOfWeek(): String {
+        val format = SimpleDateFormat("EEEE", Locale.getDefault())
+        return format.format(Date())
+    }
+    
+    /**
+     * Check if message contains a math operation
+     */
+    private fun containsMathOperation(message: String): Boolean {
+        val mathPatterns = listOf(
+            Regex("""\d+\s*[\+\-\*\/]\s*\d+"""),
+            Regex("""what is \d+"""),
+            Regex("""calculate""")
+        )
+        return mathPatterns.any { it.containsMatchIn(message) }
+    }
+    
+    /**
+     * Calculate basic math operations
+     */
+    private fun calculateMath(message: String): String {
+        return try {
+            // Extract numbers and operator
+            val mathRegex = Regex("""(\d+)\s*([\+\-\*\/])\s*(\d+)""")
+            val match = mathRegex.find(message)
+            
+            if (match != null) {
+                val num1 = match.groupValues[1].toDouble()
+                val operator = match.groupValues[2]
+                val num2 = match.groupValues[3].toDouble()
+                
+                val result = when (operator) {
+                    "+" -> num1 + num2
+                    "-" -> num1 - num2
+                    "*" -> num1 * num2
+                    "/" -> if (num2 != 0.0) num1 / num2 else return "I can't divide by zero! 😅"
+                    else -> return "I couldn't understand that math operation."
+                }
+                
+                "The answer is ${result.toInt()}."
+            } else {
+                "I can do basic math like 5 + 3 or 10 * 2. Try asking me a simple calculation!"
+            }
+        } catch (e: Exception) {
+            "I had trouble with that calculation. Try a simpler math problem like '5 + 3'."
+        }
     }
     
     /**
