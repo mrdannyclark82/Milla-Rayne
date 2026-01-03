@@ -12,6 +12,9 @@ This is a native Android app built with Kotlin and Jetpack Compose that connects
 - 🎨 **Adaptive Scenes**: Beautiful background scenes that adapt to context
 - 💾 **Local Storage**: Conversation history stored locally
 - 🌐 **Server Integration**: Connects to Milla server API
+- 🔌 **Offline Mode**: Works standalone without server connection
+- 🤖 **Local AI Responses**: Pattern-based response generation for common queries
+- ⚡ **Edge Agent**: Local command processing for device controls
 - 📱 **Material Design**: Modern Material 3 design components
 
 ## Requirements
@@ -93,11 +96,20 @@ Click "Sync Project with Gradle Files" or let Android Studio do it automatically
 ### 5. Run the App
 
 1. Connect an Android device or start an emulator
-2. Make sure the Milla server is running on your computer:
-   ```bash
-   cd .. && npm run dev
-   ```
-3. Click the "Run" button (green triangle) in Android Studio
+2. Click the "Run" button (green triangle) in Android Studio
+
+**The app now works in two modes:**
+
+- **Online Mode** (with server): Full AI capabilities when server is running
+  ```bash
+  cd .. && npm run dev
+  ```
+  
+- **Offline Mode** (standalone): Works without server with limited features
+  - Pattern-based responses for common queries
+  - Local device controls (volume, WiFi, etc.)
+  - Time and date queries
+  - Basic conversation capabilities
 
 ## Building
 
@@ -133,6 +145,22 @@ Main dependencies used:
 See `app/build.gradle.kts` for complete dependency list.
 
 ## Configuration
+
+### Offline vs Online Mode
+
+The app automatically detects if the server is available:
+
+- **Offline Mode**: When the server is unreachable, the app uses a local AI response generator
+  - Handles basic queries and conversations
+  - Provides device control commands
+  - Shows "🔌 Offline Mode" indicator
+  
+- **Online Mode**: When connected to the server, full AI capabilities are available
+  - Advanced AI responses
+  - Full context awareness
+  - Scene adaptation
+
+You can use the app without ever connecting to a server! The offline mode provides a standalone AI companion experience.
 
 ### API Endpoint
 
@@ -243,7 +271,11 @@ _(Screenshots to be added after implementation)_
 - Voice features not yet implemented
 - Image upload not yet supported
 - Background scenes are CSS-only (no photo backgrounds)
-- No offline mode (requires server connection)
+- **Offline mode limitations:**
+  - Pattern-based responses only (not true AI)
+  - Limited knowledge base
+  - Cannot access external services (weather, web search, etc.)
+  - Basic command processing only
 
 ## Contributing
 
