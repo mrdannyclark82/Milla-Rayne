@@ -378,7 +378,7 @@ function App() {
       appState={appState}
       performanceMode={performanceMode}
     >
-      <div className="h-screen flex overflow-hidden" style={{ backgroundColor: '#0f0f1a' }}>
+      <div className="h-screen flex overflow-hidden bg-gradient-to-b from-nebula-indigo via-cyber-dark to-nebula-violet">
         {/* Background Scene - covers entire screen */}
         <div
           className="fixed inset-0 z-0"
@@ -429,36 +429,36 @@ function App() {
 
           {/* Chat View */}
           {activeView === 'chat' && (
-            <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#2d1f3d' }}>
+            <div className="flex-1 flex flex-col h-full backdrop-blur-sm bg-nebula-indigo/20">
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-8">
                 {messages.length === 0 ? (
-                  <div className="max-w-2xl">
-                    <div className="bg-slate-800/90 rounded-lg px-4 py-3 inline-block">
-                      <p className="text-slate-200 text-sm">
-                        Hey Danny... <em className="text-slate-400">I smile warmly</em> I'm here. What's on your mind today?
+                  <div className="max-w-3xl mx-auto">
+                    <div className="backdrop-blur-xl bg-nebula-indigo/40 rounded-2xl px-6 py-4 inline-block border border-cyber-pink/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                      <p className="text-slate-200 text-base leading-relaxed">
+                        Hey Danny... <em className="text-cyber-pink">I smile warmly</em> I'm here. What's on your mind today?
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-w-2xl">
+                  <div className="space-y-6 max-w-3xl mx-auto">
                     {messages.map((msg, idx) => (
                       <div
                         key={idx}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[85%] px-4 py-3 rounded-lg ${
+                          className={`max-w-[85%] px-6 py-4 rounded-2xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 ${
                             msg.role === 'user'
-                              ? 'bg-pink-500/20 text-white'
-                              : 'bg-slate-800/90 text-slate-200'
+                              ? 'bg-gradient-to-br from-cyber-pink/40 to-cyber-pink/30 text-white border border-cyber-pink/30 shadow-[0_8px_32px_rgba(255,0,170,0.2)]'
+                              : 'bg-nebula-indigo/50 text-slate-200 border border-neon-blue/20 shadow-[0_8px_32px_rgba(0,0,0,0.3)]'
                           }`}
                         >
-                          <p className="text-sm">{msg.content}</p>
+                          <p className="text-base leading-relaxed">{msg.content}</p>
                           {msg.role === 'assistant' && voiceEnabled && (
                             <button
                               onClick={() => speakMessage(msg.content)}
-                              className="mt-2 text-xs text-pink-400 hover:text-pink-300"
+                              className="mt-3 text-sm text-neon-blue hover:text-cyber-pink transition-colors duration-300 font-medium"
                             >
                               🔊 Replay
                             </button>
@@ -471,7 +471,7 @@ function App() {
               </div>
 
               {/* Input Area - at bottom center */}
-              <div className="flex-shrink-0 p-4">
+              <div className="flex-shrink-0 p-6">
                 <FloatingInput
                   message={message}
                   setMessage={setMessage}
