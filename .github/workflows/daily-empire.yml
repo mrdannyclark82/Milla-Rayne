@@ -1,0 +1,97 @@
+name: Daily Empire Report
+
+on:
+  schedule:
+    # Runs at 1:00 PM UTC (8:00 AM CST)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  daily-analysis:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.1.1
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4.0.1
+        with:
+          node-version: '20.10.0'
+          cache: 'npm'
+
+      - name: Install analysis dependencies
+        run: |
+          npm install --no-save \
+            axios@1.6.5 \
+            cheerio@1.0.0-rc.12 \
+            adm-zip@0.5.10 \
+            nodemailer@6.9.8
+        env:
+          NODE_ENV: production
+
+      - name: Run daily analysis
+        run: node daily-analysis.cjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_ENV: production
+
+      - name: Verify outputs
+        run: |
+          if [ ! -f report.md ]; then
+            echo "Error: report.md not generated"
+            exit 1
+          fi
+          if [ ! -f updates.zip ]; then
+            echo "Error: updates.zip not generated"
+            exit 1
+          fi
+          echo "✓ All outputs generated successfully"
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4.0.0
+        with:
+          name: daily-report-${{ github.run_number }}
+          path: |
+            report.md
+            updates.zip
+          retention-days: 30
+
+      - name: Send email with report
+        uses: dawidd6/action-send-mail@v3.12.0
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: true
+          username: ${{ secrets.EMAIL_FROM }}
+          password: ${{ secrets.EMAIL_PASS }}
+          subject: "🚀 Daily Empire Report - ${{ github.run_number }}"
+          to: ${{ secrets.EMAIL_TO }}
+          from: Milla-Rayne Empire <${{ secrets.EMAIL_FROM }}>
+          body: |
+            Daily Empire Analysis Report
+            
+            Generated: ${{ github.event.repository.updated_at }}
+            Run Number: ${{ github.run_number }}
+            Repository: ${{ github.repository }}
+            
+            Please see the attached report and code updates.
+            
+            ---
+            Automated by Milla-Rayne Daily Empire
+          attachments: |
+            report.md
+            updates.zip
+          priority: normal
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -rf generated/
+          rm -f updates.zip
