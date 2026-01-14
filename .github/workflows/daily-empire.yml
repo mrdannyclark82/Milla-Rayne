@@ -68,7 +68,7 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          secure: true
+          starttls: true
           username: ${{ secrets.EMAIL_FROM }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: "🚀 Daily Empire Report - ${{ github.run_number }}"
