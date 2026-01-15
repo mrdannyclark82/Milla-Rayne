@@ -65,7 +65,18 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1768507354162_yaolanfwx": {
+      "id": "sandbox_1768507354162_yaolanfwx",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768507354162",
+      "status": "active",
+      "createdAt": 1768507354162,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1768507259648
+  "lastUpdated": 1768507354162
 }
