@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { MessageCircle, Send, Mic, Settings, BookOpen, Youtube, Sparkles, Palette, Brain, Volume2, LogIn, Zap, GitBranch, X } from 'lucide-react';
+import { MessageCircle, Send, Mic, Settings, BookOpen, Youtube, Sparkles, Palette, Brain, Volume2, LogIn, Zap, GitBranch, X, Code } from 'lucide-react';
 import { YoutubePlayerCyberpunk } from '../components/YoutubePlayerCyberpunk';
+import { SandboxManager } from '../components/SandboxManager';
+import { Sandbox } from '../components/Sandbox';
 
 export default function MockDesigns() {
   return <CombinedDesign />;
@@ -11,6 +13,8 @@ function CombinedDesign() {
   const [showYoutubePlayer, setShowYoutubePlayer] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(undefined);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showSandboxManager, setShowSandboxManager] = useState(false);
+  const [showIDE, setShowIDE] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeNav, setActiveNav] = useState('chat');
 
@@ -251,10 +255,37 @@ function CombinedDesign() {
                   </div>
                 ))}
               </div>
+              <button
+                onClick={() => { setShowSettingsPanel(false); setShowSandboxManager(true); }}
+                className="sandbox-manage-btn"
+              >
+                <GitBranch style={{ width: '0.875rem', height: '0.875rem' }} />
+                Manage Sandboxes
+              </button>
+              <button
+                onClick={() => { setShowSettingsPanel(false); setShowIDE(true); }}
+                className="ide-btn"
+              >
+                <Code style={{ width: '0.875rem', height: '0.875rem' }} />
+                Open IDE
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Sandbox Manager */}
+      <SandboxManager
+        isOpen={showSandboxManager}
+        onClose={() => setShowSandboxManager(false)}
+        onOpenIDE={() => { setShowSandboxManager(false); setShowIDE(true); }}
+      />
+
+      {/* IDE Sandbox */}
+      <Sandbox
+        isOpen={showIDE}
+        onClose={() => setShowIDE(false)}
+      />
 
       <style>{`
         * { box-sizing: border-box; }
@@ -848,6 +879,42 @@ function CombinedDesign() {
           background: rgba(139, 92, 246, 0.2);
           color: #a78bfa;
           border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        
+        .sandbox-manage-btn,
+        .ide-btn {
+          width: 100%;
+          margin-top: 0.75rem;
+          padding: 0.625rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          font-size: 0.8125rem;
+          font-weight: 500;
+          transition: all 0.2s;
+        }
+        
+        .sandbox-manage-btn {
+          background: linear-gradient(to right, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.2));
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          color: #a78bfa;
+        }
+        
+        .sandbox-manage-btn:hover {
+          background: linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(34, 211, 238, 0.3));
+        }
+        
+        .ide-btn {
+          background: rgba(34, 211, 238, 0.15);
+          border: 1px solid rgba(34, 211, 238, 0.4);
+          color: #22d3ee;
+        }
+        
+        .ide-btn:hover {
+          background: rgba(34, 211, 238, 0.25);
         }
         
         @media (max-width: 768px) {
