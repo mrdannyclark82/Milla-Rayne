@@ -1,13 +1,16 @@
 # Milla Rayne AI Companion
 
 ## Overview
-A full-stack AI companion application with an Express REST API backend and React frontend. Features a premium futuristic UI with glassmorphism effects and neon accents.
+A full-stack AI companion application with an Express REST API backend and React frontend. Features a premium futuristic cyberpunk UI with glassmorphism effects and neon accents.
 
 ## Recent Changes (January 2026)
-- **UI Redesign**: Complete premium futuristic theme implementation
-- **Color Palette**: Deep indigo-violet-black gradients, electric sapphire blue (#00f2ff), hot magenta (#ff00aa)
-- **Effects**: Glassmorphism, backdrop blur, neon glows, ambient animations
-- **Components Updated**: Sidebar, FloatingInput (CommandBar), App layout, chat bubbles
+- **Complete UI Redesign**: Cyberpunk theme with narrow icon sidebar and responsive layout
+- **Color Palette**: Pure black background, neon cyan (#22d3ee), violet (#8b5cf6), magenta accents
+- **Responsive Design**: Desktop sidebar transforms to bottom navigation on mobile
+- **YouTube PiP Player**: Cyberpunk-styled draggable video player with video selection
+- **Google OAuth Integration**: Authentication flow for YouTube, Calendar, Gmail, Drive access
+- **Proactive Features Panel**: Repository health, sandbox environments, enhancement tracking
+- **PWA Support**: Manifest and mobile app capabilities for home screen installation
 
 ## Project Architecture
 
