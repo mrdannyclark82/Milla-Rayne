@@ -1,0 +1,52 @@
+{
+  "tokenBalance": 0,
+  "transactions": [],
+  "goals": [
+    {
+      "id": "goal_1768500011994_p2ainl9li",
+      "name": "First Bug Hunter",
+      "description": "Fix your first 5 bugs",
+      "targetTokens": 250,
+      "currentTokens": 0,
+      "reward": "UNLOCK_ADVANCED_DEBUGGING",
+      "priority": "medium",
+      "createdAt": 1768500011994,
+      "status": "active"
+    },
+    {
+      "id": "goal_1768500011995_zix5x66ft",
+      "name": "Scene Designer",
+      "description": "Successfully analyze and respond to 50 messages",
+      "targetTokens": 300,
+      "currentTokens": 0,
+      "reward": "UNLOCK_BACKGROUND_CONTROL",
+      "priority": "high",
+      "createdAt": 1768500011995,
+      "status": "active"
+    },
+    {
+      "id": "goal_1768500011995_p6r7mn1tv",
+      "name": "User Champion",
+      "description": "Achieve 90%+ user satisfaction across 20 interactions",
+      "targetTokens": 500,
+      "currentTokens": 0,
+      "reward": "UNLOCK_PERSONALITY_CUSTOMIZATION",
+      "priority": "high",
+      "createdAt": 1768500011995,
+      "status": "active"
+    },
+    {
+      "id": "goal_1768500011996_uxw3q0j78",
+      "name": "Code Optimizer",
+      "description": "Optimize 10 functions for better performance",
+      "targetTokens": 300,
+      "currentTokens": 0,
+      "reward": "UNLOCK_PERFORMANCE_PROFILING",
+      "priority": "medium",
+      "createdAt": 1768500011996,
+      "status": "active"
+    }
+  ],
+  "unlockedRewards": [],
+  "lastUpdated": 1768500011996
+}
