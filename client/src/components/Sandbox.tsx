@@ -97,11 +97,11 @@ export const Sandbox: React.FC<SandboxProps> = ({
   const [files, setFiles] = useState<VirtualFile[]>([
     { name: 'index.html', content: getDefaultHtml(), language: 'html' },
     { name: 'style.css', content: getDefaultCss(), language: 'css' },
-    {
-      name: 'script.js',
-      content: initialCode || getDefaultJs(),
-      language: 'javascript',
-    },
+    { name: 'script.js', content: initialCode || getDefaultJs(), language: 'javascript' },
+    { name: 'main.py', content: getDefaultPython(), language: 'python' },
+    { name: 'app.ts', content: getDefaultTypeScript(), language: 'typescript' },
+    { name: 'README.md', content: getDefaultMarkdown(), language: 'markdown' },
+    { name: 'setup.sh', content: getDefaultShell(), language: 'bash' },
   ]);
   const [activeFileIndex, setActiveFileIndex] = useState(2); // Start on script.js
 
@@ -169,6 +169,22 @@ export const Sandbox: React.FC<SandboxProps> = ({
       html: 'html',
       css: 'css',
       json: 'json',
+      py: 'python',
+      md: 'markdown',
+      sh: 'bash',
+      bash: 'bash',
+      yaml: 'yaml',
+      yml: 'yaml',
+      sql: 'sql',
+      go: 'go',
+      rs: 'rust',
+      rb: 'ruby',
+      php: 'php',
+      java: 'java',
+      c: 'c',
+      cpp: 'cpp',
+      h: 'c',
+      hpp: 'cpp',
     };
 
     setFiles((prev) => [
@@ -866,6 +882,120 @@ document.querySelector('h1').addEventListener('click', () => {
   console.log('Title clicked!');
   alert('You clicked the title!');
 });`;
+}
+
+function getDefaultPython() {
+  return `# Python Script
+# Welcome to the Sandbox IDE!
+
+def greet(name: str) -> str:
+    """Return a greeting message."""
+    return f"Hello, {name}! Welcome to Milla."
+
+def main():
+    print(greet("Developer"))
+    
+    # Example: List comprehension
+    numbers = [1, 2, 3, 4, 5]
+    squares = [n ** 2 for n in numbers]
+    print(f"Squares: {squares}")
+
+if __name__ == "__main__":
+    main()
+`;
+}
+
+function getDefaultTypeScript() {
+  return `// TypeScript Application
+// Type-safe code with modern features
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Message {
+  content: string;
+  timestamp: Date;
+  sender: User;
+}
+
+function createMessage(content: string, sender: User): Message {
+  return {
+    content,
+    timestamp: new Date(),
+    sender,
+  };
+}
+
+const user: User = {
+  id: 1,
+  name: "Developer",
+  email: "dev@milla.ai",
+};
+
+const message = createMessage("Hello from TypeScript!", user);
+console.log(message);
+`;
+}
+
+function getDefaultMarkdown() {
+  return `# Milla Rayne AI Companion
+
+## Overview
+This is the sandbox development environment for Milla Rayne.
+
+## Features
+- **AI Chat**: Intelligent conversation with context awareness
+- **Voice Integration**: Speech-to-text and text-to-speech
+- **Memory System**: Long-term memory and context retention
+
+## Quick Start
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+## API Reference
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| /api/chat | POST | Send a message |
+| /api/memory | GET | Retrieve memories |
+
+---
+*Built with love by the Milla team*
+`;
+}
+
+function getDefaultShell() {
+  return `#!/bin/bash
+# Setup script for Milla Rayne
+
+echo "=== Milla Rayne Setup ==="
+
+# Check Node.js version
+if command -v node &> /dev/null; then
+    echo "Node.js version: $(node --version)"
+else
+    echo "Error: Node.js is not installed"
+    exit 1
+fi
+
+# Install dependencies
+echo "Installing dependencies..."
+npm install
+
+# Build the project
+echo "Building project..."
+npm run build
+
+# Run tests
+echo "Running tests..."
+npm test
+
+echo "=== Setup Complete ==="
+`;
 }
 
 export default Sandbox;
