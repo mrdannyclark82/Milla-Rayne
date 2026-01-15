@@ -1,0 +1,38 @@
+{
+  "sandboxes": {
+    "sandbox_1768500078426_r2josrgoa": {
+      "id": "sandbox_1768500078426_r2josrgoa",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768500078426",
+      "status": "active",
+      "createdAt": 1768500078426,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1768502147763_y8ssqu44u": {
+      "id": "sandbox_1768502147763_y8ssqu44u",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768502147764",
+      "status": "active",
+      "createdAt": 1768502147764,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1768502962818_awj6qhwyq": {
+      "id": "sandbox_1768502962818_awj6qhwyq",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768502962818",
+      "status": "active",
+      "createdAt": 1768502962818,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    }
+  },
+  "lastUpdated": 1768502962818
+}
