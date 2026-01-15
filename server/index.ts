@@ -43,27 +43,16 @@ export async function initApp() {
   });
   app.use(limiter);
 
-  // P1.4: Strict CORS Policy - Only allow trusted origins
-  const trustedOrigins = process.env.TRUSTED_ORIGINS
-    ? process.env.TRUSTED_ORIGINS.split(',')
-    : [
-        'http://localhost:5000',
-        'http://localhost:5173',
-        'http://127.0.0.1:5000',
-      ];
-
+  // CORS Policy - Allow all origins in development for Replit preview
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-
-    // Check if origin is trusted
-    if (origin && trustedOrigins.includes(origin)) {
+    
+    // In development, allow all origins for Replit preview compatibility
+    if (origin) {
       res.header('Access-Control-Allow-Origin', origin);
       res.header('Access-Control-Allow-Credentials', 'true');
-    } else if (!origin) {
-      // Allow requests without origin (e.g., server-to-server)
-      res.header('Access-Control-Allow-Origin', trustedOrigins[0]);
     } else {
-      console.warn(`⚠️  Blocked CORS request from untrusted origin: ${origin}`);
+      res.header('Access-Control-Allow-Origin', '*');
     }
 
     res.header(
