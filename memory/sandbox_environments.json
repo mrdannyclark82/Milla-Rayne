@@ -263,7 +263,18 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1768523613197_k9ltqtfoq": {
+      "id": "sandbox_1768523613197_k9ltqtfoq",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768523613198",
+      "status": "active",
+      "createdAt": 1768523613198,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1768523525733
+  "lastUpdated": 1768523613198
 }
