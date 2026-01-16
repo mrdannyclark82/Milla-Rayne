@@ -30,6 +30,8 @@ function CombinedDesign() {
   const [showMemoryPanel, setShowMemoryPanel] = useState(false);
   const [showKnowledgePanel, setShowKnowledgePanel] = useState(false);
   const [showCreatePanel, setShowCreatePanel] = useState(false);
+  const [youtubeVideos, setYoutubeVideos] = useState<Array<{id: string; title: string; channel: string; thumbnail?: string}>>([]);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const sampleVideos = [
@@ -52,6 +54,55 @@ function CombinedDesign() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Fetch YouTube feed when authenticated
+  const fetchYouTubeFeed = async () => {
+    setIsLoadingFeed(true);
+    try {
+      const response = await fetch('/api/youtube/subscriptions');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Transform subscription data to video format
+          const videos = data.data.map((sub: any) => ({
+            id: sub.snippet?.resourceId?.channelId || sub.id,
+            title: sub.snippet?.title || 'Unknown Channel',
+            channel: sub.snippet?.title || 'Unknown',
+            thumbnail: sub.snippet?.thumbnails?.medium?.url || sub.snippet?.thumbnails?.default?.url
+          }));
+          setYoutubeVideos(videos);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch YouTube feed:', error);
+    } finally {
+      setIsLoadingFeed(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchYouTubeFeed();
+    }
+  }, [isAuthenticated]);
+
+  // Check authentication status on page load
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/api/oauth/authenticated');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.isAuthenticated) {
+            setIsAuthenticated(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check auth status:', error);
+      }
+    };
+    checkAuthStatus();
+  }, []);
 
   const handleNavClick = (id: string) => {
     setActiveNav(id);
@@ -313,7 +364,7 @@ function CombinedDesign() {
       {showYoutubePlayer && (
         <YoutubePlayerCyberpunk
           videoId={currentVideoId}
-          videos={sampleVideos}
+          videos={youtubeVideos.length > 0 ? youtubeVideos : sampleVideos}
           onClose={() => { setShowYoutubePlayer(false); setCurrentVideoId(undefined); }}
           onSelectVideo={handleSelectVideo}
           onAnalyzeVideo={(id) => console.log('Analyze video:', id)}
