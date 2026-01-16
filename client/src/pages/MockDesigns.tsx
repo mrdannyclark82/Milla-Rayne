@@ -1,8 +1,14 @@
-import { useState } from 'react';
-import { MessageCircle, Send, Mic, Settings, BookOpen, Youtube, Sparkles, Palette, Brain, Volume2, LogIn, Zap, GitBranch, X, Code } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { MessageCircle, Send, Mic, Settings, BookOpen, Youtube, Sparkles, Palette, Brain, Volume2, LogIn, Zap, GitBranch, X, Code, Loader2, Image } from 'lucide-react';
 import { YoutubePlayerCyberpunk } from '../components/YoutubePlayerCyberpunk';
 import { SandboxManager } from '../components/SandboxManager';
 import { Sandbox } from '../components/Sandbox';
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 export default function MockDesigns() {
   return <CombinedDesign />;
@@ -10,6 +16,10 @@ export default function MockDesigns() {
 
 function CombinedDesign() {
   const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: '1', role: 'assistant', content: 'Systems online. Neural pathways synchronized. Ready to assist with any task - from complex analysis to creative exploration. What would you like to explore today?' }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
   const [showYoutubePlayer, setShowYoutubePlayer] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(undefined);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
@@ -17,11 +27,20 @@ function CombinedDesign() {
   const [showIDE, setShowIDE] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeNav, setActiveNav] = useState('chat');
+  const [showMemoryPanel, setShowMemoryPanel] = useState(false);
+  const [showKnowledgePanel, setShowKnowledgePanel] = useState(false);
+  const [showCreatePanel, setShowCreatePanel] = useState(false);
+  const [youtubeVideos, setYoutubeVideos] = useState<Array<{id: string; title: string; channel: string; thumbnail?: string}>>([]);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const sampleVideos = [
-    { id: 'dQw4w9WgXcQ', title: 'AI and the Future of Creativity', channel: 'TechTalks', thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg' },
-    { id: 'jNQXAC9IVRw', title: 'Building Neural Networks from Scratch', channel: 'ML Academy', thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg' },
-    { id: '9bZkp7q19f0', title: 'The Art of Prompt Engineering', channel: 'AI Insights', thumbnail: 'https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg' },
+    { id: 'aircAruvnKk', title: 'What is Artificial Intelligence?', channel: 'Simplilearn', thumbnail: 'https://i.ytimg.com/vi/aircAruvnKk/mqdefault.jpg' },
+    { id: 'ad79nYk2keg', title: 'How AI Works in 10 Minutes', channel: 'ColdFusion', thumbnail: 'https://i.ytimg.com/vi/ad79nYk2keg/mqdefault.jpg' },
+    { id: 'JMUxmLyrhSk', title: 'The Future of AI - Must Watch', channel: 'Two Minute Papers', thumbnail: 'https://i.ytimg.com/vi/JMUxmLyrhSk/mqdefault.jpg' },
+    { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up', channel: 'Rick Astley', thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg' },
+    { id: 'jNQXAC9IVRw', title: 'Me at the zoo - First YouTube Video', channel: 'jawed', thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg' },
+    { id: 'kJQP7kiw5Fk', title: 'Despacito', channel: 'Luis Fonsi', thumbnail: 'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg' },
   ];
 
   const navItems = [
@@ -32,10 +51,69 @@ function CombinedDesign() {
     { id: 'create', icon: Palette, label: 'Create' },
   ];
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Fetch YouTube feed when authenticated
+  const fetchYouTubeFeed = async () => {
+    setIsLoadingFeed(true);
+    try {
+      const response = await fetch('/api/youtube/subscriptions');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          // Transform subscription data to video format
+          const videos = data.data.map((sub: any) => ({
+            id: sub.snippet?.resourceId?.channelId || sub.id,
+            title: sub.snippet?.title || 'Unknown Channel',
+            channel: sub.snippet?.title || 'Unknown',
+            thumbnail: sub.snippet?.thumbnails?.medium?.url || sub.snippet?.thumbnails?.default?.url
+          }));
+          setYoutubeVideos(videos);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch YouTube feed:', error);
+    } finally {
+      setIsLoadingFeed(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchYouTubeFeed();
+    }
+  }, [isAuthenticated]);
+
+  // Check authentication status on page load
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/api/oauth/authenticated');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.isAuthenticated) {
+            setIsAuthenticated(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to check auth status:', error);
+      }
+    };
+    checkAuthStatus();
+  }, []);
+
   const handleNavClick = (id: string) => {
     setActiveNav(id);
     if (id === 'youtube') {
       setShowYoutubePlayer(true);
+    } else if (id === 'memory') {
+      setShowMemoryPanel(true);
+    } else if (id === 'knowledge') {
+      setShowKnowledgePanel(true);
+    } else if (id === 'create') {
+      setShowCreatePanel(true);
     }
   };
 
@@ -52,13 +130,101 @@ function CombinedDesign() {
         if (response.ok) {
           const data = await response.json();
           if (data.url) {
-            window.open(data.url, '_blank', 'width=500,height=600');
+            const popup = window.open(
+              data.url, 
+              'googleAuth', 
+              'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
+            );
+            if (!popup || popup.closed) {
+              window.location.href = data.url;
+            }
           }
         }
-        setIsAuthenticated(true);
       } catch (error) {
-        setIsAuthenticated(true);
+        console.error('OAuth error:', error);
       }
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+
+    const trimmedMessage = message.trim();
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: trimmedMessage
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setMessage('');
+
+    // Handle /youtube command locally - open YouTube player with sample videos
+    if (trimmedMessage.toLowerCase().startsWith('/youtube')) {
+      setShowYoutubePlayer(true);
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I've opened the YouTube player for you! Click on any video in the list to start watching. You can search for specific videos by asking me naturally, like 'play some relaxing music' or 'show me cooking tutorials'."
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: trimmedMessage,
+          userId: 'default-user'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Handle YouTube video responses from backend
+        if (data.youtube_videos && data.youtube_videos.length > 0) {
+          setShowYoutubePlayer(true);
+        }
+        if (data.youtube_play?.videoId) {
+          setCurrentVideoId(data.youtube_play.videoId);
+          setShowYoutubePlayer(true);
+        }
+
+        const assistantMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: data.content || data.response || 'I received your message but encountered an issue processing it.'
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      } else {
+        const assistantMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'I apologize, but I encountered an error processing your request. Please try again.'
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+      }
+    } catch (error) {
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Connection error. Please check your network and try again.'
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -109,43 +275,33 @@ function CombinedDesign() {
 
           <div className="chat-area">
             <div className="chat-container">
-              <div className="message-row ai">
-                <div className="avatar ai-avatar" />
-                <div className="message-bubble ai-bubble">
-                  <div className="bubble-highlight" />
-                  <p className="message-text">
-                    <span className="ai-tag">[MILLA.AI]</span> Systems online. Neural pathways synchronized. 
-                    {isAuthenticated ? ' Google services connected. ' : ' '} 
-                    Ready to assist with any task — from complex analysis to creative exploration. What would you like to explore today?
-                  </p>
+              {messages.map((msg) => (
+                <div key={msg.id} className={`message-row ${msg.role === 'assistant' ? 'ai' : 'user'}`}>
+                  {msg.role === 'assistant' && <div className="avatar ai-avatar" />}
+                  <div className={`message-bubble ${msg.role === 'assistant' ? 'ai-bubble' : 'user-bubble'}`}>
+                    <div className="bubble-highlight" />
+                    <p className="message-text">
+                      {msg.role === 'assistant' && <span className="ai-tag">[MILLA.AI]</span>}
+                      {msg.content}
+                    </p>
+                  </div>
+                  {msg.role === 'user' && <div className="avatar user-avatar" />}
                 </div>
-              </div>
-
-              <div className="message-row user">
-                <div className="message-bubble user-bubble">
-                  <div className="bubble-highlight" />
-                  <p className="message-text">Show me some interesting videos about AI</p>
-                </div>
-                <div className="avatar user-avatar" />
-              </div>
-
-              <div className="message-row ai">
-                <div className="avatar ai-avatar" />
-                <div className="message-bubble ai-bubble">
-                  <div className="bubble-highlight" />
-                  <p className="message-text">
-                    <span className="ai-tag">[MILLA.AI]</span> I found some great AI content for you! Click below to open the player.
-                  </p>
-                  <button onClick={() => { setShowYoutubePlayer(true); setCurrentVideoId(undefined); }} className="youtube-btn">
-                    <Youtube style={{ width: '1rem', height: '1rem' }} />
-                    Open YouTube Player
-                  </button>
-                  <div className="tag-row">
-                    <span className="tag cyan">AI</span>
-                    <span className="tag violet">Videos</span>
+              ))}
+              {isLoading && (
+                <div className="message-row ai">
+                  <div className="avatar ai-avatar" />
+                  <div className="message-bubble ai-bubble">
+                    <div className="bubble-highlight" />
+                    <p className="message-text">
+                      <span className="ai-tag">[MILLA.AI]</span>
+                      <Loader2 className="loading-spinner" style={{ width: '1rem', height: '1rem', display: 'inline-block', marginLeft: '0.5rem', animation: 'spin 1s linear infinite' }} />
+                      Thinking...
+                    </p>
                   </div>
                 </div>
-              </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
           </div>
 
@@ -158,18 +314,39 @@ function CombinedDesign() {
                   placeholder="Message Milla..."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={handleKeyPress}
                   className="message-input"
+                  disabled={isLoading}
                 />
                 <button className="input-btn mic-btn">
                   <Mic style={{ width: '1.125rem', height: '1.125rem' }} />
                 </button>
-                <button className="input-btn send-btn">
-                  <Send style={{ width: '1rem', height: '1rem' }} />
+                <button 
+                  className="input-btn send-btn" 
+                  onClick={sendMessage}
+                  disabled={isLoading || !message.trim()}
+                >
+                  {isLoading ? (
+                    <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
+                  ) : (
+                    <Send style={{ width: '1rem', height: '1rem' }} />
+                  )}
                 </button>
               </div>
               <div className="command-chips">
                 {['/analyze', '/create', '/remember', '/youtube'].map((cmd) => (
-                  <span key={cmd} onClick={() => cmd === '/youtube' && setShowYoutubePlayer(true)} className="chip">{cmd}</span>
+                  <span 
+                    key={cmd} 
+                    onClick={() => {
+                      if (cmd === '/youtube') setShowYoutubePlayer(true);
+                      else if (cmd === '/create') setShowCreatePanel(true);
+                      else if (cmd === '/remember') setShowMemoryPanel(true);
+                      else if (cmd === '/analyze') setShowKnowledgePanel(true);
+                    }} 
+                    className="chip"
+                  >
+                    {cmd}
+                  </span>
                 ))}
               </div>
             </div>
@@ -193,7 +370,7 @@ function CombinedDesign() {
       {showYoutubePlayer && (
         <YoutubePlayerCyberpunk
           videoId={currentVideoId}
-          videos={sampleVideos}
+          videos={youtubeVideos.length > 0 ? youtubeVideos : sampleVideos}
           onClose={() => { setShowYoutubePlayer(false); setCurrentVideoId(undefined); }}
           onSelectVideo={handleSelectVideo}
           onAnalyzeVideo={(id) => console.log('Analyze video:', id)}
@@ -287,7 +464,124 @@ function CombinedDesign() {
         onClose={() => setShowIDE(false)}
       />
 
+      {/* Memory Panel */}
+      {showMemoryPanel && (
+        <div className="panel-overlay">
+          <div className="panel-backdrop" onClick={() => setShowMemoryPanel(false)} />
+          <div className="feature-panel">
+            <div className="panel-header">
+              <h2 className="panel-title"><Brain style={{ width: '1.25rem', height: '1.25rem' }} /> Memory Core</h2>
+              <button onClick={() => setShowMemoryPanel(false)} className="close-btn">
+                <X style={{ width: '1.25rem', height: '1.25rem' }} />
+              </button>
+            </div>
+            <div className="panel-content">
+              <div className="memory-section">
+                <h3>Recent Memories</h3>
+                <div className="memory-list">
+                  <div className="memory-item">
+                    <span className="memory-date">Today</span>
+                    <p>Discussed AI video recommendations and YouTube integration</p>
+                  </div>
+                  <div className="memory-item">
+                    <span className="memory-date">Yesterday</span>
+                    <p>Configured cyberpunk UI theme preferences</p>
+                  </div>
+                  <div className="memory-item">
+                    <span className="memory-date">3 days ago</span>
+                    <p>Set up sandbox development environment</p>
+                  </div>
+                </div>
+              </div>
+              <div className="memory-stats">
+                <div className="stat-item">
+                  <span className="stat-value">247</span>
+                  <span className="stat-label">Total Memories</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">12</span>
+                  <span className="stat-label">Topics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Knowledge Panel */}
+      {showKnowledgePanel && (
+        <div className="panel-overlay">
+          <div className="panel-backdrop" onClick={() => setShowKnowledgePanel(false)} />
+          <div className="feature-panel">
+            <div className="panel-header">
+              <h2 className="panel-title"><BookOpen style={{ width: '1.25rem', height: '1.25rem' }} /> Knowledge Base</h2>
+              <button onClick={() => setShowKnowledgePanel(false)} className="close-btn">
+                <X style={{ width: '1.25rem', height: '1.25rem' }} />
+              </button>
+            </div>
+            <div className="panel-content">
+              <div className="knowledge-section">
+                <h3>Analyzed Content</h3>
+                <div className="knowledge-list">
+                  <div className="knowledge-item">
+                    <Youtube style={{ width: '1rem', height: '1rem', color: '#ff0000' }} />
+                    <span>3 YouTube Videos Analyzed</span>
+                  </div>
+                  <div className="knowledge-item">
+                    <BookOpen style={{ width: '1rem', height: '1rem', color: '#22d3ee' }} />
+                    <span>Documentation indexed</span>
+                  </div>
+                </div>
+              </div>
+              <button className="action-btn" onClick={() => setShowYoutubePlayer(true)}>
+                <Youtube style={{ width: '1rem', height: '1rem' }} />
+                Analyze New Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Panel */}
+      {showCreatePanel && (
+        <div className="panel-overlay">
+          <div className="panel-backdrop" onClick={() => setShowCreatePanel(false)} />
+          <div className="feature-panel">
+            <div className="panel-header">
+              <h2 className="panel-title"><Palette style={{ width: '1.25rem', height: '1.25rem' }} /> Create</h2>
+              <button onClick={() => setShowCreatePanel(false)} className="close-btn">
+                <X style={{ width: '1.25rem', height: '1.25rem' }} />
+              </button>
+            </div>
+            <div className="panel-content">
+              <div className="create-grid">
+                <button className="create-option" onClick={() => { setShowCreatePanel(false); setShowIDE(true); }}>
+                  <Code style={{ width: '1.5rem', height: '1.5rem' }} />
+                  <span>Code</span>
+                </button>
+                <button className="create-option" onClick={() => setMessage('Generate an image of ')}>
+                  <Image style={{ width: '1.5rem', height: '1.5rem' }} />
+                  <span>Image</span>
+                </button>
+                <button className="create-option" onClick={() => setMessage('Write a ')}>
+                  <BookOpen style={{ width: '1.5rem', height: '1.5rem' }} />
+                  <span>Document</span>
+                </button>
+                <button className="create-option" onClick={() => { setShowCreatePanel(false); setShowSandboxManager(true); }}>
+                  <GitBranch style={{ width: '1.5rem', height: '1.5rem' }} />
+                  <span>Sandbox</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         * { box-sizing: border-box; }
         
         .milla-container {
@@ -915,6 +1209,174 @@ function CombinedDesign() {
         
         .ide-btn:hover {
           background: rgba(34, 211, 238, 0.25);
+        }
+        
+        .panel-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .panel-backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(4px);
+        }
+        
+        .feature-panel {
+          position: relative;
+          width: 90%;
+          max-width: 28rem;
+          background: linear-gradient(135deg, rgba(20, 10, 40, 0.95), rgba(10, 5, 25, 0.95));
+          border: 1px solid rgba(139, 92, 246, 0.3);
+          border-radius: 1rem;
+          overflow: hidden;
+        }
+        
+        .panel-header {
+          padding: 1rem 1.25rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        
+        .panel-title {
+          color: white;
+          font-size: 1rem;
+          font-weight: 600;
+          margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .panel-content {
+          padding: 1.25rem;
+        }
+        
+        .memory-section h3,
+        .knowledge-section h3 {
+          color: #a78bfa;
+          font-size: 0.875rem;
+          margin: 0 0 0.75rem;
+        }
+        
+        .memory-list,
+        .knowledge-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 1rem;
+        }
+        
+        .memory-item {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 0.5rem;
+          padding: 0.75rem;
+        }
+        
+        .memory-date {
+          color: #22d3ee;
+          font-size: 0.6875rem;
+          font-weight: 500;
+        }
+        
+        .memory-item p {
+          color: #d1d5db;
+          font-size: 0.8125rem;
+          margin: 0.25rem 0 0;
+        }
+        
+        .knowledge-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #d1d5db;
+          font-size: 0.8125rem;
+          padding: 0.5rem;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 0.375rem;
+        }
+        
+        .memory-stats {
+          display: flex;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+        
+        .stat-item {
+          flex: 1;
+          text-align: center;
+          padding: 0.75rem;
+          background: rgba(139, 92, 246, 0.1);
+          border: 1px solid rgba(139, 92, 246, 0.2);
+          border-radius: 0.5rem;
+        }
+        
+        .stat-value {
+          display: block;
+          color: #22d3ee;
+          font-size: 1.25rem;
+          font-weight: 600;
+        }
+        
+        .stat-label {
+          color: #9ca3af;
+          font-size: 0.6875rem;
+        }
+        
+        .action-btn {
+          width: 100%;
+          padding: 0.75rem;
+          background: linear-gradient(to right, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.2));
+          border: 1px solid rgba(139, 92, 246, 0.4);
+          border-radius: 0.5rem;
+          color: #a78bfa;
+          font-size: 0.875rem;
+          font-weight: 500;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+          background: linear-gradient(to right, rgba(139, 92, 246, 0.3), rgba(34, 211, 238, 0.3));
+        }
+        
+        .create-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+        
+        .create-option {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 1.25rem;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 0.75rem;
+          color: #d1d5db;
+          font-size: 0.8125rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        
+        .create-option:hover {
+          background: rgba(139, 92, 246, 0.15);
+          border-color: rgba(139, 92, 246, 0.4);
+          color: #a78bfa;
         }
         
         @media (max-width: 768px) {

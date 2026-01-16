@@ -69,6 +69,7 @@ import {
   getRecognitionInsights,
 } from './visualRecognitionService';
 import { analyzeVideo, generateVideoInsights } from './gemini';
+import { getAllSandboxes, getSandbox, testFeature } from './sandboxEnvironmentService';
 import { generateXAIResponse } from './xaiService';
 import { generateOpenRouterResponse } from './openrouterService';
 import { generateGeminiResponse } from './geminiService';
@@ -687,8 +688,94 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   });
 
   /**
+   * Sandbox Environment Routes
+   */
+  app.get('/api/sandboxes', async (req, res) => {
+    try {
+      const sandboxes = getAllSandboxes();
+      res.json(sandboxes);
+    } catch (error) {
+      console.error('Error getting sandboxes:', error);
+      res.status(500).json({ error: 'Failed to get sandboxes' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/approve', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'approved';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error approving feature:', error);
+      res.status(500).json({ error: 'Failed to approve feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/reject', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'rejected';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error rejecting feature:', error);
+      res.status(500).json({ error: 'Failed to reject feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/test', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const results = await testFeature(sandboxId, featureId);
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error('Error running feature tests:', error);
+      res.status(500).json({ error: 'Failed to run feature tests' });
+    }
+  });
+
+  /**
    * Google OAuth Routes - For Authentication (Login/Register)
    */
+
+  // Get Google OAuth URL (returns JSON for popup-based auth)
+  app.get('/api/auth/google/url', async (req, res) => {
+    try {
+      const { getAuthorizationUrl } = await import('./oauthService');
+
+      // Derive redirect URI
+      const configuredRedirect = config.google?.redirectUri;
+      const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      const redirectUriToUse =
+        configuredRedirect && configuredRedirect.length > 0
+          ? configuredRedirect
+          : requestDerived;
+
+      console.log(`Google OAuth URL: using redirect URI -> ${redirectUriToUse}`);
+
+      const authUrl = getAuthorizationUrl(redirectUriToUse) + '&state=auth';
+      res.json({ url: authUrl, success: true });
+    } catch (error) {
+      console.error('Error getting Google auth URL:', error);
+      res.status(500).json({
+        error: 'Failed to get Google authentication URL',
+        success: false,
+      });
+    }
+  });
 
   // Initiate Google OAuth for user authentication
   app.get('/api/auth/google', async (req, res) => {

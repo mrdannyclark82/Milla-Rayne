@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// @ts-expect-error - react-simple-code-editor does not ship TypeScript types
-// TODO: Consider adding @types/react-simple-code-editor if types become available
 import Editor from 'react-simple-code-editor';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '@/components/ui/button';
@@ -471,8 +469,8 @@ export const Sandbox: React.FC<SandboxProps> = ({
 
   return (
     <div
-      className="fixed inset-4 z-50 flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden"
-      style={{ width: width ? `${width}px` : undefined }}
+      className="fixed inset-4 flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden"
+      style={{ width: width ? `${width}px` : undefined, zIndex: 300 }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#0a0a12]/60">

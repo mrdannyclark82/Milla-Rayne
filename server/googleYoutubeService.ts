@@ -143,7 +143,7 @@ export async function searchVideos(
   try {
     // Try using Google API key first (doesn't require OAuth)
     const apiKey =
-      process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY;
+      process.env.YOUTUBE_DATA_API_KEY || process.env.GOOGLE_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY;
 
     if (apiKey) {
       console.log('Using YouTube Data API with API key for search:', query);
@@ -175,17 +175,33 @@ export async function searchVideos(
       } else {
         const errorData = await response.json().catch(() => ({}));
         console.error('YouTube API error with key:', errorData);
+        // Return error instead of falling through to OAuth
+        return {
+          success: false,
+          message: `YouTube API error: ${errorData.error?.message || 'Unknown error'}`,
+          error: 'API_KEY_ERROR',
+        };
       }
     }
 
-    // Fall back to OAuth if API key doesn't work or isn't available
-    const accessToken = await getValidAccessToken(userId, 'google');
+    // Fall back to OAuth if API key isn't available
+    let accessToken: string | null = null;
+    try {
+      accessToken = await getValidAccessToken(userId, 'google');
+    } catch (oauthError) {
+      console.log('[YouTube] OAuth not available, returning no results');
+      return {
+        success: false,
+        message: 'YouTube search requires either a YOUTUBE_DATA_API_KEY or Google authentication.',
+        error: 'NO_AUTH',
+      };
+    }
 
     if (!accessToken) {
       return {
         success: false,
         message:
-          'You need to connect your Google account first, or add a GOOGLE_API_KEY to your .env file.',
+          'You need to connect your Google account first, or add a YOUTUBE_DATA_API_KEY to your environment.',
         error: 'NO_TOKEN',
       };
     }
