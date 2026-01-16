@@ -690,6 +690,32 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
    * Google OAuth Routes - For Authentication (Login/Register)
    */
 
+  // Get Google OAuth URL (returns JSON for popup-based auth)
+  app.get('/api/auth/google/url', async (req, res) => {
+    try {
+      const { getAuthorizationUrl } = await import('./oauthService');
+
+      // Derive redirect URI
+      const configuredRedirect = config.google?.redirectUri;
+      const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      const redirectUriToUse =
+        configuredRedirect && configuredRedirect.length > 0
+          ? configuredRedirect
+          : requestDerived;
+
+      console.log(`Google OAuth URL: using redirect URI -> ${redirectUriToUse}`);
+
+      const authUrl = getAuthorizationUrl(redirectUriToUse) + '&state=auth';
+      res.json({ url: authUrl, success: true });
+    } catch (error) {
+      console.error('Error getting Google auth URL:', error);
+      res.status(500).json({
+        error: 'Failed to get Google authentication URL',
+        success: false,
+      });
+    }
+  });
+
   // Initiate Google OAuth for user authentication
   app.get('/api/auth/google', async (req, res) => {
     try {

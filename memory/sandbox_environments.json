@@ -296,7 +296,29 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1768524463534_d5i2ppcmj": {
+      "id": "sandbox_1768524463534_d5i2ppcmj",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768524463534",
+      "status": "active",
+      "createdAt": 1768524463534,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1768524783163_ey9m0gzkw": {
+      "id": "sandbox_1768524783163_ey9m0gzkw",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1768524783163",
+      "status": "active",
+      "createdAt": 1768524783163,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1768524298119
+  "lastUpdated": 1768524783163
 }

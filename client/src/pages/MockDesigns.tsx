@@ -130,12 +130,18 @@ function CombinedDesign() {
         if (response.ok) {
           const data = await response.json();
           if (data.url) {
-            window.open(data.url, '_blank', 'width=500,height=600');
+            const popup = window.open(
+              data.url, 
+              'googleAuth', 
+              'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
+            );
+            if (!popup || popup.closed) {
+              window.location.href = data.url;
+            }
           }
         }
-        setIsAuthenticated(true);
       } catch (error) {
-        setIsAuthenticated(true);
+        console.error('OAuth error:', error);
       }
     }
   };
