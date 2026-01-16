@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// @ts-expect-error - react-simple-code-editor does not ship TypeScript types
-// TODO: Consider adding @types/react-simple-code-editor if types become available
 import Editor from 'react-simple-code-editor';
 import { Highlight, themes } from 'prism-react-renderer';
 import { Button } from '@/components/ui/button';
