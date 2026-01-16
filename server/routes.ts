@@ -69,6 +69,7 @@ import {
   getRecognitionInsights,
 } from './visualRecognitionService';
 import { analyzeVideo, generateVideoInsights } from './gemini';
+import { getAllSandboxes, getSandbox, testFeature } from './sandboxEnvironmentService';
 import { generateXAIResponse } from './xaiService';
 import { generateOpenRouterResponse } from './openrouterService';
 import { generateGeminiResponse } from './geminiService';
@@ -683,6 +684,66 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         error: 'Failed to check authentication status',
         success: false,
       });
+    }
+  });
+
+  /**
+   * Sandbox Environment Routes
+   */
+  app.get('/api/sandboxes', async (req, res) => {
+    try {
+      const sandboxes = getAllSandboxes();
+      res.json(sandboxes);
+    } catch (error) {
+      console.error('Error getting sandboxes:', error);
+      res.status(500).json({ error: 'Failed to get sandboxes' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/approve', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'approved';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error approving feature:', error);
+      res.status(500).json({ error: 'Failed to approve feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/reject', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'rejected';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error rejecting feature:', error);
+      res.status(500).json({ error: 'Failed to reject feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/test', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const results = await testFeature(sandboxId, featureId);
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error('Error running feature tests:', error);
+      res.status(500).json({ error: 'Failed to run feature tests' });
     }
   });
 
