@@ -36,6 +36,9 @@ function CombinedDesign() {
     { id: 'aircAruvnKk', title: 'What is Artificial Intelligence?', channel: 'Simplilearn', thumbnail: 'https://i.ytimg.com/vi/aircAruvnKk/mqdefault.jpg' },
     { id: 'ad79nYk2keg', title: 'How AI Works in 10 Minutes', channel: 'ColdFusion', thumbnail: 'https://i.ytimg.com/vi/ad79nYk2keg/mqdefault.jpg' },
     { id: 'JMUxmLyrhSk', title: 'The Future of AI - Must Watch', channel: 'Two Minute Papers', thumbnail: 'https://i.ytimg.com/vi/JMUxmLyrhSk/mqdefault.jpg' },
+    { id: 'dQw4w9WgXcQ', title: 'Never Gonna Give You Up', channel: 'Rick Astley', thumbnail: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg' },
+    { id: 'jNQXAC9IVRw', title: 'Me at the zoo - First YouTube Video', channel: 'jawed', thumbnail: 'https://i.ytimg.com/vi/jNQXAC9IVRw/mqdefault.jpg' },
+    { id: 'kJQP7kiw5Fk', title: 'Despacito', channel: 'Luis Fonsi', thumbnail: 'https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg' },
   ];
 
   const navItems = [
@@ -89,14 +92,28 @@ function CombinedDesign() {
   const sendMessage = async () => {
     if (!message.trim() || isLoading) return;
 
+    const trimmedMessage = message.trim();
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content: message.trim()
+      content: trimmedMessage
     };
 
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
+
+    // Handle /youtube command locally - open YouTube player with sample videos
+    if (trimmedMessage.toLowerCase().startsWith('/youtube')) {
+      setShowYoutubePlayer(true);
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "I've opened the YouTube player for you! Click on any video in the list to start watching. You can search for specific videos by asking me naturally, like 'play some relaxing music' or 'show me cooking tutorials'."
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -104,13 +121,23 @@ function CombinedDesign() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          message: userMessage.content,
+          message: trimmedMessage,
           userId: 'default-user'
         })
       });
 
       if (response.ok) {
         const data = await response.json();
+        
+        // Handle YouTube video responses from backend
+        if (data.youtube_videos && data.youtube_videos.length > 0) {
+          setShowYoutubePlayer(true);
+        }
+        if (data.youtube_play?.videoId) {
+          setCurrentVideoId(data.youtube_play.videoId);
+          setShowYoutubePlayer(true);
+        }
+
         const assistantMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
