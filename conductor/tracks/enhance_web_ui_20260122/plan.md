@@ -8,7 +8,7 @@
     - [ ] Write backend tests to assert the correct fallback chain.
     - [ ] Refactor the centralized AI service (likely in `server/routes.ts` or a dedicated service file) to strictly follow the `.env` priority.
     - [ ] Ensure all API keys are correctly loaded and checked before attempting a call.
-- [ ] Task: Conductor - User Manual Verification 'AI Model Orchestration Refactoring' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'AI Model Orchestration Refactoring' (Protocol in workflow.md) de900b4
 
 ## Phase 2: Web UI Modernization (Futuristic Minimalist)
 - [ ] Task: Setup Design Tokens & Global Styles
