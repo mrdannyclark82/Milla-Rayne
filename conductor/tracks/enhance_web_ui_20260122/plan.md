@@ -29,6 +29,6 @@
 - [x] Task: End-to-End Testing 18edfcf
     - [ ] Perform a full user session: Login -> Select Model -> Chat -> Visualize Response.
     - [ ] Verify that the UI remains responsive and the correct AI model is being used.
-- [ ] Task: Documentation Update
+- [x] Task: Documentation Update d6ec05f
     - [ ] Update `README.md` or `docs/` with any new UI configuration options or architectural changes.
 - [ ] Task: Conductor - User Manual Verification 'Final Integration & Polish' (Protocol in workflow.md)
