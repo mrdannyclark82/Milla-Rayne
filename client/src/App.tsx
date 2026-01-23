@@ -1,7 +1,7 @@
-import MockDesigns from '@/pages/MockDesigns';
+import Chat from '@/pages/Chat';
 
 function App() {
-  return <MockDesigns />;
+  return <Chat />;
 }
 
 export default App;

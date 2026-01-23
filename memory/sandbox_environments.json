@@ -8,8 +8,74 @@
       "status": "active",
       "createdAt": 1768500078426,
       "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
+      "features": [
+        {
+          "id": "feat_1769156399925_blrqo4fpo",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "testing",
+          "testsPassed": 1,
+          "testsFailed": 2,
+          "addedAt": 1769156399925
+        },
+        {
+          "id": "feat_1769156471668_pf38vashz",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1769156471668
+        },
+        {
+          "id": "feat_1769156561651_19asnja2y",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1769156561651
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769156399930_u247rdpd9",
+          "featureId": "feat_1769156399925_blrqo4fpo",
+          "timestamp": 1769156399930,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1134.8422350828305
+        },
+        {
+          "id": "test_1769156471669_pblr74p79",
+          "featureId": "feat_1769156399925_blrqo4fpo",
+          "timestamp": 1769156471669,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 2460.0444751029545
+        },
+        {
+          "id": "test_1769156561662_kzinp5gqa",
+          "featureId": "feat_1769156399925_blrqo4fpo",
+          "timestamp": 1769156561662,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 585.5581911579039
+        }
+      ]
     },
     "sandbox_1768502147763_y8ssqu44u": {
       "id": "sandbox_1768502147763_y8ssqu44u",
@@ -340,7 +406,148 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1769156077742_kixchigcl": {
+      "id": "sandbox_1769156077742_kixchigcl",
+      "name": "Real-time Chat",
+      "description": "Feature inspired by NextChat: Real-time Chat",
+      "branchName": "sandbox/real-time-chat_1769156077742",
+      "status": "active",
+      "createdAt": 1769156077742,
+      "createdBy": "milla",
+      "features": [
+        {
+          "id": "feat_1769156077960_qvg5wl6fs",
+          "name": "Real-time Chat",
+          "description": "Feature inspired by NextChat: Real-time Chat",
+          "files": [],
+          "status": "testing",
+          "testsPassed": 1,
+          "testsFailed": 0,
+          "addedAt": 1769156077960
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769156078157_bqbp87vnl",
+          "featureId": "feat_1769156077960_qvg5wl6fs",
+          "timestamp": 1769156078157,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 608.8760731176505
+        }
+      ]
+    },
+    "sandbox_1769156077963_47v7nqci5": {
+      "id": "sandbox_1769156077963_47v7nqci5",
+      "name": "Message History",
+      "description": "Feature inspired by NextChat: Message History",
+      "branchName": "sandbox/message-history_1769156077963",
+      "status": "active",
+      "createdAt": 1769156077963,
+      "createdBy": "milla",
+      "features": [
+        {
+          "id": "feat_1769156078154_k3abxlakh",
+          "name": "Message History",
+          "description": "Feature inspired by NextChat: Message History",
+          "files": [],
+          "status": "testing",
+          "testsPassed": 1,
+          "testsFailed": 0,
+          "addedAt": 1769156078154
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769156078159_q4bm94nmi",
+          "featureId": "feat_1769156078154_k3abxlakh",
+          "timestamp": 1769156078159,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1696.5443778097936
+        }
+      ]
+    },
+    "sandbox_1769156078170_iclej8or4": {
+      "id": "sandbox_1769156078170_iclej8or4",
+      "name": "fix-security-1769156078170",
+      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
+      "branchName": "sandbox/fix-security-1769156078170_1769156078170",
+      "status": "active",
+      "createdAt": 1769156078170,
+      "createdBy": "milla",
+      "features": [
+        {
+          "id": "feat_1769156078351_cx8w39tg8",
+          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
+          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
+          "files": [],
+          "status": "testing",
+          "testsPassed": 2,
+          "testsFailed": 0,
+          "addedAt": 1769156078351
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769156078352_mrs9vgk24",
+          "featureId": "feat_1769156078351_cx8w39tg8",
+          "timestamp": 1769156078352,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1543.233904937058
+        },
+        {
+          "id": "test_1769156078353_ngjtbqzro",
+          "featureId": "feat_1769156078351_cx8w39tg8",
+          "timestamp": 1769156078353,
+          "testType": "integration",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2165.05315406992
+        }
+      ]
+    },
+    "sandbox_1769156399911_s13s9enxs": {
+      "id": "sandbox_1769156399911_s13s9enxs",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1769156399911",
+      "status": "active",
+      "createdAt": 1769156399911,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1769156471665_ouesk8fdv": {
+      "id": "sandbox_1769156471665_ouesk8fdv",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1769156471665",
+      "status": "active",
+      "createdAt": 1769156471665,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1769156561639_l14ae27fr": {
+      "id": "sandbox_1769156561639_l14ae27fr",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1769156561639",
+      "status": "active",
+      "createdAt": 1769156561639,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1768525108221
+  "lastUpdated": 1769156561662
 }

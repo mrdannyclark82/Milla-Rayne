@@ -1,52 +1,200 @@
 {
-  "tokenBalance": 0,
-  "transactions": [],
+  "tokenBalance": 870,
+  "transactions": [
+    {
+      "id": "txn_1769156078158_ohrhabd1d",
+      "timestamp": 1769156078158,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Real-time Chat in Real-time Chat",
+      "relatedId": "feat_1769156077960_qvg5wl6fs"
+    },
+    {
+      "id": "txn_1769156078160_wc34bz9pt",
+      "timestamp": 1769156078160,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Message History in Message History",
+      "relatedId": "feat_1769156078154_k3abxlakh"
+    },
+    {
+      "id": "txn_1769156399936_nvzm1vnra",
+      "timestamp": 1769156399936,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769156399938_cfr7xcgwe",
+      "timestamp": 1769156399938,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1769156471672_cu8wvnmu6",
+      "timestamp": 1769156471672,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769156471674_7oiicwwwy",
+      "timestamp": 1769156471674,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1769156471674_jxfgv1zjm",
+      "timestamp": 1769156471674,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: First Bug Hunter",
+      "relatedId": "goal_1768500011994_p2ainl9li"
+    },
+    {
+      "id": "txn_1769156471674_et3pm6qlm",
+      "timestamp": 1769156471674,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Scene Designer",
+      "relatedId": "goal_1768500011995_zix5x66ft"
+    },
+    {
+      "id": "txn_1769156471674_ekyygu2fb",
+      "timestamp": 1769156471674,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1768500011996_uxw3q0j78"
+    },
+    {
+      "id": "txn_1769156471675_67rq49evg",
+      "timestamp": 1769156471675,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1768500011996_uxw3q0j78"
+    },
+    {
+      "id": "txn_1769156471675_80b0ijopf",
+      "timestamp": 1769156471675,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: User Champion",
+      "relatedId": "goal_1768500011995_p6r7mn1tv"
+    },
+    {
+      "id": "txn_1769156471675_agip1jlzw",
+      "timestamp": 1769156471675,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Scene Designer",
+      "relatedId": "goal_1768500011995_zix5x66ft"
+    },
+    {
+      "id": "txn_1769156471675_qw0qcd2ut",
+      "timestamp": 1769156471675,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: User Champion",
+      "relatedId": "goal_1768500011995_p6r7mn1tv"
+    },
+    {
+      "id": "txn_1769156471676_wk5qe5ls4",
+      "timestamp": 1769156471676,
+      "amount": 50,
+      "type": "earn",
+      "category": "goal_achievement",
+      "description": "Completed goal: Code Optimizer",
+      "relatedId": "goal_1768500011996_uxw3q0j78"
+    },
+    {
+      "id": "txn_1769156561665_r3z6gyxoo",
+      "timestamp": 1769156561665,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769156561667_wwccxnxuo",
+      "timestamp": 1769156561667,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    }
+  ],
   "goals": [
     {
       "id": "goal_1768500011994_p2ainl9li",
       "name": "First Bug Hunter",
       "description": "Fix your first 5 bugs",
       "targetTokens": 250,
-      "currentTokens": 0,
+      "currentTokens": 320,
       "reward": "UNLOCK_ADVANCED_DEBUGGING",
       "priority": "medium",
       "createdAt": 1768500011994,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1769156471674
     },
     {
       "id": "goal_1768500011995_zix5x66ft",
       "name": "Scene Designer",
       "description": "Successfully analyze and respond to 50 messages",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 570,
       "reward": "UNLOCK_BACKGROUND_CONTROL",
       "priority": "high",
       "createdAt": 1768500011995,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1769156471675
     },
     {
       "id": "goal_1768500011995_p6r7mn1tv",
       "name": "User Champion",
       "description": "Achieve 90%+ user satisfaction across 20 interactions",
       "targetTokens": 500,
-      "currentTokens": 0,
+      "currentTokens": 620,
       "reward": "UNLOCK_PERSONALITY_CUSTOMIZATION",
       "priority": "high",
       "createdAt": 1768500011995,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1769156471675
     },
     {
       "id": "goal_1768500011996_uxw3q0j78",
       "name": "Code Optimizer",
       "description": "Optimize 10 functions for better performance",
       "targetTokens": 300,
-      "currentTokens": 0,
+      "currentTokens": 670,
       "reward": "UNLOCK_PERFORMANCE_PROFILING",
       "priority": "medium",
       "createdAt": 1768500011996,
-      "status": "active"
+      "status": "completed",
+      "completedAt": 1769156471676
     }
   ],
-  "unlockedRewards": [],
-  "lastUpdated": 1768500011996
+  "unlockedRewards": [
+    "UNLOCK_ADVANCED_DEBUGGING",
+    "UNLOCK_BACKGROUND_CONTROL",
+    "UNLOCK_PERFORMANCE_PROFILING",
+    "UNLOCK_PERSONALITY_CUSTOMIZATION"
+  ],
+  "lastUpdated": 1769156561667
 }
