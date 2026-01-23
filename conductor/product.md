@@ -16,6 +16,7 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 ## 4.0 Key Features
 - **Adaptive Multimodal Interface:** A modern React + Vite client featuring dynamic 3D scenes (Three.js) and visual recognition capabilities.
 - **Poly-Model Hybrid Architecture:** Seamlessly dispatching tasks between high-performance cloud models (Gemini, OpenAI, Anthropic) and privacy-focused local models.
+- **Smart AI Orchestration:** Strict priority-based model dispatch (OpenAI → Anthropic → xAI → Mistral → OpenRouter) ensuring high availability and optimal performance.
 - **Intelligent Long-Term Memory:** SQLite-based memory system with session tracking, encrypted artifacts, and proactive assistance.
 - **Cross-Platform Accessibility:** Native Android agent for local tasks and a terminal-based CLI for developer-centric interaction.
 
