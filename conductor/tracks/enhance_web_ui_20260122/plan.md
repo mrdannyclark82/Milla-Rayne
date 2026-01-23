@@ -11,7 +11,7 @@
 - [x] Task: Conductor - User Manual Verification 'AI Model Orchestration Refactoring' (Protocol in workflow.md) de900b4
 
 ## Phase 2: Web UI Modernization (Futuristic Minimalist)
-- [ ] Task: Setup Design Tokens & Global Styles
+- [x] Task: Setup Design Tokens & Global Styles c2bc076
     - [ ] Update `tailwind.config.ts` (or `.js`) to include the custom neon colors (Cyan, Purple).
     - [ ] Create global CSS utility classes for "glassmorphism" if not already present (using `backdrop-filter`, `bg-opacity`, etc.).
 - [ ] Task: Refactor Main Layout Components
