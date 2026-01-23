@@ -50,10 +50,33 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setActivityLog(prev => [timestamped(entry), ...prev].slice(0, 8));
   };
 
-  const handleSendMessage = (message: string) => {
+  const handleSendMessage = async (message: string) => {
     logActivity(`Command sent: ${message}`);
     setIsProcessing(true);
-    setTimeout(() => setIsProcessing(false), 900);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          userId: 'default-user',
+          userName: 'Danny Ray',
+          conversationHistory: [], // TODO: Persist history
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        logActivity(`Milla: ${data.content.substring(0, 60)}${data.content.length > 60 ? '...' : ''}`);
+      } else {
+        logActivity(`System: ${data.error || 'Response failed'}`);
+      }
+    } catch (e) {
+      logActivity('System: Connection lost');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleListeningStart = () => {
