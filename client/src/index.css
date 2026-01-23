@@ -13,6 +13,7 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
+    --foreground-contrast: 220 15% 92%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
@@ -41,6 +42,7 @@
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
+    --foreground-contrast: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
@@ -69,7 +71,8 @@
 @layer base {
   body {
     background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    color: hsl(var(--foreground-contrast, var(--foreground)));
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
     font-family:
       -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -161,6 +164,7 @@
 :root {
   --scene-anim-speed: 1;
   --radius: 0.625rem;
+  --foreground-contrast: 220 15% 92%;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -273,6 +277,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  .glass {
+    @apply bg-background/60 backdrop-blur-lg border border-white/10 shadow-lg;
+  }
+  
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl;
+  }
+  
+  .glass-button {
+    @apply bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 transition-all duration-300;
+  }
 }
 
 .background-layer {
@@ -316,4 +332,3 @@
     filter: brightness(1.3) blur(0.5px);
   }
 }
-

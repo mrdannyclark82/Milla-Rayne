@@ -38,13 +38,14 @@ export function CommandBar({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
-      <div className="max-w-3xl mx-auto">
+      <div className="relative max-w-5xl mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#00f2ff]/10 via-[#120428]/40 to-[#ff00aa]/10 blur-3xl pointer-events-none" />
         <form onSubmit={handleSubmit}>
           <div
-            className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl transition-all duration-300 ${
+            className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-3xl transition-all duration-300 border ${
               isFocused
-                ? 'bg-white/10 border border-[#00f2ff]/50 shadow-[0_0_30px_rgba(0,242,255,0.2)]'
-                : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                ? 'bg-white/10 border-[#00f2ff]/50 shadow-[0_0_40px_rgba(0,242,255,0.25)]'
+                : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
             }`}
           >
             {/* AI indicator */}

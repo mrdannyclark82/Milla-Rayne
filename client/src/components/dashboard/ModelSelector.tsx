@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, Cpu, Check, Zap, Brain, Star } from 'lucide-react';
 
-interface AIModel {
+export interface AIModel {
   id: string;
   name: string;
   provider: string;
@@ -10,7 +10,7 @@ interface AIModel {
   icon: React.ReactNode;
 }
 
-const models: AIModel[] = [
+const defaultModels: AIModel[] = [
   {
     id: 'nitish-surya',
     name: 'Nitish Surya',
@@ -45,12 +45,35 @@ const models: AIModel[] = [
   },
 ];
 
-export function ModelSelector() {
+interface ModelSelectorProps {
+  value?: AIModel;
+  models?: AIModel[];
+  onChange?: (model: AIModel) => void;
+}
+
+export function ModelSelector({ value, models = defaultModels, onChange }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<AIModel>(models[0]);
+  const [internalModel, setInternalModel] = useState<AIModel>(value ?? models[0]);
+  const hasAnnouncedInitial = useRef(false);
+
+  const selectedModel = useMemo(() => value ?? internalModel, [value, internalModel]);
+
+  useEffect(() => {
+    if (value) {
+      setInternalModel(value);
+    }
+  }, [value]);
+
+  useEffect(() => {
+    if (!value && onChange && !hasAnnouncedInitial.current) {
+      onChange(internalModel);
+      hasAnnouncedInitial.current = true;
+    }
+  }, [value, onChange, internalModel]);
 
   const handleSelect = (model: AIModel) => {
-    setSelectedModel(model);
+    setInternalModel(model);
+    onChange?.(model);
     setIsOpen(false);
   };
 
