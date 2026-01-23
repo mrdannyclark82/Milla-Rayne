@@ -21,7 +21,7 @@
     - [ ] Update `CommandBar.tsx` for the floating, high-tech look.
     - [ ] Update `ModelSelector.tsx` to match the new aesthetic.
     - [ ] Update `VideoAnalysisPanel.tsx` and other overlays.
-- [ ] Task: Verify 3D Scene Integration
+- [x] Task: Verify 3D Scene Integration 69300d3
     - [ ] Ensure the new UI styles do not negatively impact the rendering or interactivity of the Three.js scene (`components/scene/...`).
 - [ ] Task: Conductor - User Manual Verification 'Web UI Modernization' (Protocol in workflow.md)
 
