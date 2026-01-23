@@ -14,7 +14,7 @@
 - [x] Task: Setup Design Tokens & Global Styles c2bc076
     - [ ] Update `tailwind.config.ts` (or `.js`) to include the custom neon colors (Cyan, Purple).
     - [ ] Create global CSS utility classes for "glassmorphism" if not already present (using `backdrop-filter`, `bg-opacity`, etc.).
-- [ ] Task: Refactor Main Layout Components
+- [x] Task: Refactor Main Layout Components 88615f6
     - [ ] Update `DashboardLayout.tsx` to apply the dark theme and background integration.
     - [ ] Update `DashboardSidebar.tsx` to use glassmorphism styles.
 - [ ] Task: Refactor Interactive Panels
