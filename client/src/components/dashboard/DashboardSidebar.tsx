@@ -67,10 +67,10 @@ export function DashboardSidebar({
     <aside
       className={`fixed top-0 left-0 h-full z-40 transition-all duration-300 ease-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } ${isMobile ? 'w-72' : 'w-64'}`}
+      } ${isMobile ? 'w-72' : 'w-72'}`}
     >
       {/* Glassmorphism background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0c021a]/95 to-[#1a0033]/95 backdrop-blur-xl border-r border-white/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0c021a]/95 via-[#120428]/95 to-[#1a0033]/95 backdrop-blur-2xl border-r border-white/10 shadow-[0_0_60px_rgba(0,0,0,0.45)]" />
       
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col">
@@ -84,8 +84,15 @@ export function DashboardSidebar({
               <h1 className="text-lg font-semibold bg-gradient-to-r from-[#00f2ff] to-[#ff00aa] bg-clip-text text-transparent">
                 Milla Rayne
               </h1>
-              <p className="text-xs text-white/40">Your AI Companion</p>
+              <p className="text-xs text-white/40">Private Orbit</p>
             </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <span className="text-[11px] text-white/60">Connected</span>
+            <span className="flex items-center gap-1 text-[11px] text-[#00f2ff]">
+              <span className="h-2 w-2 rounded-full bg-[#00f2ff] animate-pulse" />
+              Live
+            </span>
           </div>
         </div>
 
@@ -116,7 +123,7 @@ export function DashboardSidebar({
                     }}
                     className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-300 ${
                       activeSection === item.id
-                        ? 'bg-gradient-to-r from-[#00f2ff]/20 to-[#ff00aa]/10 text-white border border-[#00f2ff]/30 shadow-[0_0_15px_rgba(0,242,255,0.15)]'
+                        ? 'bg-gradient-to-r from-[#00f2ff]/20 to-[#ff00aa]/10 text-white border border-[#00f2ff]/30 shadow-[0_0_20px_rgba(0,242,255,0.2)]'
                         : 'text-white/60 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -162,7 +169,7 @@ export function DashboardSidebar({
                     }}
                     className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-300 ${
                       activeSection === item.id
-                        ? 'bg-gradient-to-r from-[#00f2ff]/20 to-[#ff00aa]/10 text-white border border-[#00f2ff]/30 shadow-[0_0_15px_rgba(0,242,255,0.15)]'
+                        ? 'bg-gradient-to-r from-[#00f2ff]/20 to-[#ff00aa]/10 text-white border border-[#00f2ff]/30 shadow-[0_0_20px_rgba(0,242,255,0.2)]'
                         : 'text-white/60 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -181,19 +188,19 @@ export function DashboardSidebar({
 
         {/* Footer */}
         <div className="px-4 py-4 border-t border-white/5">
-          <div className="flex items-center justify-between px-2 py-2 rounded-xl bg-white/5">
-            <span className="text-xs text-white/50">Developer Mode</span>
+          <div className="flex items-center justify-between px-2 py-2 rounded-xl bg-white/5 border border-white/10">
+            <span className="text-xs text-white/60">Developer Mode</span>
             <button
               onClick={() => onDeveloperModeChange(!developerMode)}
-              className={`relative w-10 h-5 rounded-full transition-all duration-300 ${
+              className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
                 developerMode
                   ? 'bg-gradient-to-r from-[#00f2ff] to-[#ff00aa]'
                   : 'bg-white/20'
               }`}
             >
               <span
-                className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md transition-all duration-300 ${
-                  developerMode ? 'left-5' : 'left-0.5'
+                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300 ${
+                  developerMode ? 'left-6' : 'left-0.5'
                 }`}
               />
             </button>
