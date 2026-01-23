@@ -17,7 +17,7 @@
 - [x] Task: Refactor Main Layout Components 88615f6
     - [ ] Update `DashboardLayout.tsx` to apply the dark theme and background integration.
     - [ ] Update `DashboardSidebar.tsx` to use glassmorphism styles.
-- [ ] Task: Refactor Interactive Panels
+- [x] Task: Refactor Interactive Panels f86c9fd
     - [ ] Update `CommandBar.tsx` for the floating, high-tech look.
     - [ ] Update `ModelSelector.tsx` to match the new aesthetic.
     - [ ] Update `VideoAnalysisPanel.tsx` and other overlays.
