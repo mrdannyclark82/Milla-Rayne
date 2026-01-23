@@ -19,6 +19,9 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
   },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
   xai: {
     apiKey: process.env.XAI_API_KEY,
     model: process.env.XAI_MODEL,
