@@ -4,7 +4,7 @@
 - [x] Task: Analyze current AI dispatch logic b062cb1
     - [ ] Review `server/` AI service handlers to understand current prioritization.
     - [ ] Create a test case (or mock) that verifies the current order of execution.
-- [ ] Task: Enforce Model Priority (OpenAI -> Anthropic -> xAI -> Mistral -> OpenRouter)
+- [x] Task: Enforce Model Priority (OpenAI -> Anthropic -> xAI -> Mistral -> OpenRouter) 6da57ff
     - [ ] Write backend tests to assert the correct fallback chain.
     - [ ] Refactor the centralized AI service (likely in `server/routes.ts` or a dedicated service file) to strictly follow the `.env` priority.
     - [ ] Ensure all API keys are correctly loaded and checked before attempting a call.
