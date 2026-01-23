@@ -7,6 +7,8 @@ Milla-Rayne is a pioneering digital intelligence platform designed as a devoted 
 ---
 
 ## ✨ Key Features
+- **Enhanced Web UI**: Modern "Futuristic Minimalist" interface featuring glassmorphism, neon accents (Cyan/Purple), and seamless 3D scene integration.
+- **Smart AI Orchestration**: Robust multi-provider dispatch system with strict priority (OpenAI → Anthropic → xAI → Mistral → OpenRouter) and automatic fallback.
 - **Poly-Model Synthesis**: Integrates Gemini, Mistral, OpenAI, xAI Grok, and more via secure dispatch.
 - **🔒 Local LLM Support**: Run models locally with Ollama for complete privacy (see [LOCAL_LLM_SETUP.md](LOCAL_LLM_SETUP.md))
 - **Adaptive Multimodal Frontend**: React + Vite client with dynamic scenes, voice interaction, and visual recognition.
