@@ -45,6 +45,11 @@ class FaraService {
   }
 
   public async startFaraModelServer() {
+    if (!process.env.FARA_MODEL_PATH) {
+      console.log('Fara model server is disabled. Set FARA_MODEL_PATH to enable it.');
+      return;
+    }
+
     if (this.vllmProcess || this.isStarting) {
       console.log('Fara model server is already starting or running.');
       return;

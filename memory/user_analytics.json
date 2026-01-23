@@ -6,8 +6,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 0",
-      "id": "int_1764706348523_y1n1pki4i",
-      "timestamp": 1764706348523
+      "id": "int_1769156554397_2sb9lu9zb",
+      "timestamp": 1769156554397
     },
     {
       "type": "message",
@@ -15,8 +15,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 1",
-      "id": "int_1764706348524_kth1ykrkl",
-      "timestamp": 1764706348524
+      "id": "int_1769156554399_7fdpw679w",
+      "timestamp": 1769156554399
     },
     {
       "type": "message",
@@ -24,17 +24,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 2",
-      "id": "int_1764706348524_ufl0lesb5",
-      "timestamp": 1764706348524
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Load test message 3",
-      "id": "int_1764706348524_z8of7f7u5",
-      "timestamp": 1764706348524
+      "id": "int_1769156554400_1hmwkhz3f",
+      "timestamp": 1769156554400
     },
     {
       "type": "message",
@@ -42,8 +33,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 4",
-      "id": "int_1764706348525_tspadyuf6",
-      "timestamp": 1764706348525
+      "id": "int_1769156554401_bdx1u1y54",
+      "timestamp": 1769156554401
     },
     {
       "type": "message",
@@ -51,17 +42,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 5",
-      "id": "int_1764706348525_5uwgojjmi",
-      "timestamp": 1764706348525
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Load test message 6",
-      "id": "int_1764706348525_yoctkfp6j",
-      "timestamp": 1764706348525
+      "id": "int_1769156554402_tzsafuoey",
+      "timestamp": 1769156554402
     },
     {
       "type": "message",
@@ -69,8 +51,17 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 7",
-      "id": "int_1764706348526_88aa9o85b",
-      "timestamp": 1764706348526
+      "id": "int_1769156554403_6yveg9118",
+      "timestamp": 1769156554403
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Load test message 3",
+      "id": "int_1769156554404_j367iqssw",
+      "timestamp": 1769156554404
     },
     {
       "type": "message",
@@ -78,8 +69,17 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 8",
-      "id": "int_1764706348526_a0cemun30",
-      "timestamp": 1764706348526
+      "id": "int_1769156554405_ztjc1um39",
+      "timestamp": 1769156554405
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Load test message 6",
+      "id": "int_1769156554406_16wfyfvdx",
+      "timestamp": 1769156554406
     },
     {
       "type": "message",
@@ -87,17 +87,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 9",
-      "id": "int_1764706348526_yqjqvcbei",
-      "timestamp": 1764706348526
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Load test message 10",
-      "id": "int_1764706348527_t0lwfkjyj",
-      "timestamp": 1764706348527
+      "id": "int_1769156554408_g55kur4d5",
+      "timestamp": 1769156554408
     },
     {
       "type": "message",
@@ -105,8 +96,17 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 11",
-      "id": "int_1764706348527_ef31mvpma",
-      "timestamp": 1764706348527
+      "id": "int_1769156554409_vy5ohxtxj",
+      "timestamp": 1769156554409
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Load test message 10",
+      "id": "int_1769156554409_ehuqx6lqe",
+      "timestamp": 1769156554409
     },
     {
       "type": "message",
@@ -114,8 +114,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 12",
-      "id": "int_1764706348527_rxldlaee3",
-      "timestamp": 1764706348527
+      "id": "int_1769156554410_qkar750ws",
+      "timestamp": 1769156554410
     },
     {
       "type": "message",
@@ -123,8 +123,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 13",
-      "id": "int_1764706348528_q2ax5x9p9",
-      "timestamp": 1764706348528
+      "id": "int_1769156554411_n8ml2u39d",
+      "timestamp": 1769156554411
     },
     {
       "type": "message",
@@ -132,8 +132,8 @@
       "success": true,
       "duration": 0,
       "context": "Load test message 14",
-      "id": "int_1764706348528_jeq4jf35q",
-      "timestamp": 1764706348528
+      "id": "int_1769156554412_4ugyc9rds",
+      "timestamp": 1769156554412
     },
     {
       "type": "message",
@@ -141,8 +141,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 0 - analyze weather and calendar",
-      "id": "int_1764706348615_cgmyn4d2n",
-      "timestamp": 1764706348615
+      "id": "int_1769156554524_6nosmklnw",
+      "timestamp": 1769156554524
     },
     {
       "type": "message",
@@ -150,8 +150,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 1 - analyze weather and calendar",
-      "id": "int_1764706348616_5bus1n2xd",
-      "timestamp": 1764706348616
+      "id": "int_1769156554525_jd6fcm5yc",
+      "timestamp": 1769156554525
     },
     {
       "type": "message",
@@ -159,26 +159,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 2 - analyze weather and calendar",
-      "id": "int_1764706348617_zo14540gy",
-      "timestamp": 1764706348617
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 4 - analyze weather and calendar",
-      "id": "int_1764706348617_5mhihbuaf",
-      "timestamp": 1764706348617
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 5 - analyze weather and calendar",
-      "id": "int_1764706348618_c1le7b5u9",
-      "timestamp": 1764706348618
+      "id": "int_1769156554525_mjj2yq0ki",
+      "timestamp": 1769156554525
     },
     {
       "type": "message",
@@ -186,8 +168,26 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 3 - analyze weather and calendar",
-      "id": "int_1764706348619_ks6oyssl7",
-      "timestamp": 1764706348619
+      "id": "int_1769156554526_rjkatk9sd",
+      "timestamp": 1769156554526
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 4 - analyze weather and calendar",
+      "id": "int_1769156554527_0xs7ccsad",
+      "timestamp": 1769156554527
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 5 - analyze weather and calendar",
+      "id": "int_1769156554528_lthm1llhk",
+      "timestamp": 1769156554528
     },
     {
       "type": "message",
@@ -195,8 +195,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 6 - analyze weather and calendar",
-      "id": "int_1764706348620_6zrlr7n9b",
-      "timestamp": 1764706348620
+      "id": "int_1769156554528_mf0jh8x9j",
+      "timestamp": 1769156554528
     },
     {
       "type": "message",
@@ -204,17 +204,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 7 - analyze weather and calendar",
-      "id": "int_1764706348621_zdp1kxw43",
-      "timestamp": 1764706348621
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 8 - analyze weather and calendar",
-      "id": "int_1764706348626_13hfx4wok",
-      "timestamp": 1764706348626
+      "id": "int_1769156554529_d8l5jd2d5",
+      "timestamp": 1769156554529
     },
     {
       "type": "message",
@@ -222,8 +213,17 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 9 - analyze weather and calendar",
-      "id": "int_1764706348626_2uox3nim8",
-      "timestamp": 1764706348626
+      "id": "int_1769156554530_kbruv7wkh",
+      "timestamp": 1769156554530
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 8 - analyze weather and calendar",
+      "id": "int_1769156554530_y350tx3xa",
+      "timestamp": 1769156554530
     },
     {
       "type": "message",
@@ -231,8 +231,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 11 - analyze weather and calendar",
-      "id": "int_1764706348627_n3dw9g6ur",
-      "timestamp": 1764706348627
+      "id": "int_1769156554531_nlw5pkvox",
+      "timestamp": 1769156554531
     },
     {
       "type": "message",
@@ -240,8 +240,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 12 - analyze weather and calendar",
-      "id": "int_1764706348628_q1nc0nz8r",
-      "timestamp": 1764706348628
+      "id": "int_1769156554532_rg0q498e7",
+      "timestamp": 1769156554532
     },
     {
       "type": "message",
@@ -249,44 +249,8 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 13 - analyze weather and calendar",
-      "id": "int_1764706348628_w2g3m83aw",
-      "timestamp": 1764706348628
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 14 - analyze weather and calendar",
-      "id": "int_1764706348629_g8witfgvo",
-      "timestamp": 1764706348629
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 16 - analyze weather and calendar",
-      "id": "int_1764706348630_wu10695k9",
-      "timestamp": 1764706348630
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 17 - analyze weather and calendar",
-      "id": "int_1764706348631_d6k88424z",
-      "timestamp": 1764706348631
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Test PFC message 18 - analyze weather and calendar",
-      "id": "int_1764706348632_gv4z6j75w",
-      "timestamp": 1764706348632
+      "id": "int_1769156554532_b03g8ni1m",
+      "timestamp": 1769156554532
     },
     {
       "type": "message",
@@ -294,17 +258,17 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 15 - analyze weather and calendar",
-      "id": "int_1764706348633_1qypoa81j",
-      "timestamp": 1764706348633
+      "id": "int_1769156554533_kexgpnpp3",
+      "timestamp": 1769156554533
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "Test PFC message 19 - analyze weather and calendar",
-      "id": "int_1764706348633_owss42qkh",
-      "timestamp": 1764706348633
+      "context": "Test PFC message 14 - analyze weather and calendar",
+      "id": "int_1769156554534_pgwuyb7a4",
+      "timestamp": 1769156554534
     },
     {
       "type": "message",
@@ -312,8 +276,44 @@
       "success": true,
       "duration": 0,
       "context": "Test PFC message 10 - analyze weather and calendar",
-      "id": "int_1764706348638_0imvifqpm",
-      "timestamp": 1764706348638
+      "id": "int_1769156554535_alacvply0",
+      "timestamp": 1769156554535
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 16 - analyze weather and calendar",
+      "id": "int_1769156554535_8ccpha1s2",
+      "timestamp": 1769156554535
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 18 - analyze weather and calendar",
+      "id": "int_1769156554536_en6skqc1x",
+      "timestamp": 1769156554536
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 19 - analyze weather and calendar",
+      "id": "int_1769156554536_scaa4gqag",
+      "timestamp": 1769156554536
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Test PFC message 17 - analyze weather and calendar",
+      "id": "int_1769156554537_hprpf39wx",
+      "timestamp": 1769156554537
     },
     {
       "type": "message",
@@ -321,8 +321,8 @@
       "success": true,
       "duration": 0,
       "context": "What's the weather in city 0?",
-      "id": "int_1764706348647_g2mv39mz7",
-      "timestamp": 1764706348647
+      "id": "int_1769156554553_fvclfqlaa",
+      "timestamp": 1769156554553
     },
     {
       "type": "message",
@@ -330,8 +330,8 @@
       "success": true,
       "duration": 0,
       "context": "What's the weather in city 1?",
-      "id": "int_1764706348648_3rxqzjqor",
-      "timestamp": 1764706348648
+      "id": "int_1769156554555_ku76ph53g",
+      "timestamp": 1769156554555
     },
     {
       "type": "message",
@@ -339,8 +339,8 @@
       "success": true,
       "duration": 0,
       "context": "What's the weather in city 2?",
-      "id": "int_1764706348649_j18im7scd",
-      "timestamp": 1764706348649
+      "id": "int_1769156554556_fp4qz7r57",
+      "timestamp": 1769156554556
     },
     {
       "type": "message",
@@ -348,8 +348,8 @@
       "success": true,
       "duration": 0,
       "context": "What's the weather in city 3?",
-      "id": "int_1764706348650_3p5g4xssg",
-      "timestamp": 1764706348650
+      "id": "int_1769156554558_d3u181z0g",
+      "timestamp": 1769156554558
     },
     {
       "type": "message",
@@ -357,8 +357,8 @@
       "success": true,
       "duration": 0,
       "context": "What's the weather in city 4?",
-      "id": "int_1764706348651_bsmo96p29",
-      "timestamp": 1764706348651
+      "id": "int_1769156554559_pr16rw53y",
+      "timestamp": 1769156554559
     },
     {
       "type": "message",
@@ -366,8 +366,8 @@
       "success": true,
       "duration": 0,
       "context": "Show my schedule for day 0",
-      "id": "int_1764706348669_wm7ovm9p3",
-      "timestamp": 1764706348669
+      "id": "int_1769156554583_w2ifmey8d",
+      "timestamp": 1769156554583
     },
     {
       "type": "message",
@@ -375,8 +375,8 @@
       "success": true,
       "duration": 0,
       "context": "Show my schedule for day 1",
-      "id": "int_1764706348671_t81t1mqzy",
-      "timestamp": 1764706348671
+      "id": "int_1769156554584_uf4sqk3p8",
+      "timestamp": 1769156554584
     },
     {
       "type": "message",
@@ -384,17 +384,8 @@
       "success": true,
       "duration": 0,
       "context": "Show my schedule for day 2",
-      "id": "int_1764706348674_ja2ojjojn",
-      "timestamp": 1764706348674
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "Show my schedule for day 3",
-      "id": "int_1764706348679_o8p02my12",
-      "timestamp": 1764706348679
+      "id": "int_1769156554585_ul6bx655u",
+      "timestamp": 1769156554585
     },
     {
       "type": "message",
@@ -402,8 +393,17 @@
       "success": true,
       "duration": 0,
       "context": "Show my schedule for day 4",
-      "id": "int_1764706348681_u3srocouh",
-      "timestamp": 1764706348681
+      "id": "int_1769156554586_lqssz83rh",
+      "timestamp": 1769156554586
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "Show my schedule for day 3",
+      "id": "int_1769156554586_3emah4b81",
+      "timestamp": 1769156554586
     },
     {
       "type": "message",
@@ -411,26 +411,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 0 batch 0",
-      "id": "int_1764706348694_f1r9ugd55",
-      "timestamp": 1764706348694
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "PFC load test iteration 0 batch 3",
-      "id": "int_1764706348694_rnsh093lq",
-      "timestamp": 1764706348694
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "PFC load test iteration 0 batch 2",
-      "id": "int_1764706348695_xtbrqa7q8",
-      "timestamp": 1764706348695
+      "id": "int_1769156554608_95ddkhc4r",
+      "timestamp": 1769156554608
     },
     {
       "type": "message",
@@ -438,8 +420,26 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 0 batch 1",
-      "id": "int_1764706348695_jicfhvvxo",
-      "timestamp": 1764706348695
+      "id": "int_1769156554609_4lplgiwb3",
+      "timestamp": 1769156554609
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "PFC load test iteration 0 batch 2",
+      "id": "int_1769156554609_ks1pyq3un",
+      "timestamp": 1769156554609
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": 0,
+      "context": "PFC load test iteration 0 batch 3",
+      "id": "int_1769156554610_f0ic832u7",
+      "timestamp": 1769156554610
     },
     {
       "type": "message",
@@ -447,8 +447,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 1 batch 0",
-      "id": "int_1764706349708_4z2qb81du",
-      "timestamp": 1764706349708
+      "id": "int_1769156555629_dqj5ebyj3",
+      "timestamp": 1769156555629
     },
     {
       "type": "message",
@@ -456,8 +456,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 1 batch 1",
-      "id": "int_1764706349708_e4klvcy0r",
-      "timestamp": 1764706349708
+      "id": "int_1769156555630_hpjsn61co",
+      "timestamp": 1769156555630
     },
     {
       "type": "message",
@@ -465,8 +465,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 1 batch 2",
-      "id": "int_1764706349709_4q8f2dy31",
-      "timestamp": 1764706349709
+      "id": "int_1769156555631_0hukhxx08",
+      "timestamp": 1769156555631
     },
     {
       "type": "message",
@@ -474,17 +474,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 1 batch 3",
-      "id": "int_1764706349710_695h88gm3",
-      "timestamp": 1764706349710
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "PFC load test iteration 2 batch 0",
-      "id": "int_1764706350722_nkh4l37s4",
-      "timestamp": 1764706350722
+      "id": "int_1769156555633_lgsm1tlhy",
+      "timestamp": 1769156555633
     },
     {
       "type": "message",
@@ -492,8 +483,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 2 batch 1",
-      "id": "int_1764706350722_fhzxnejjp",
-      "timestamp": 1764706350722
+      "id": "int_1769156556648_q3yzewwlb",
+      "timestamp": 1769156556648
     },
     {
       "type": "message",
@@ -501,8 +492,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 2 batch 2",
-      "id": "int_1764706350723_6bb0wredc",
-      "timestamp": 1764706350723
+      "id": "int_1769156556649_6brzww25t",
+      "timestamp": 1769156556649
     },
     {
       "type": "message",
@@ -510,8 +501,17 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 2 batch 3",
-      "id": "int_1764706350723_1b1763iz0",
-      "timestamp": 1764706350723
+      "id": "int_1769156556650_dcbsjgl0o",
+      "timestamp": 1769156556650
+    },
+    {
+      "type": "message",
+      "feature": "chat",
+      "success": true,
+      "duration": -1,
+      "context": "PFC load test iteration 2 batch 0",
+      "id": "int_1769156556651_vegm42o36",
+      "timestamp": 1769156556651
     },
     {
       "type": "message",
@@ -519,8 +519,8 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 3 batch 0",
-      "id": "int_1764706351738_yn0axw8qs",
-      "timestamp": 1764706351738
+      "id": "int_1769156557666_ii0kutbjt",
+      "timestamp": 1769156557666
     },
     {
       "type": "message",
@@ -528,118 +528,28 @@
       "success": true,
       "duration": 0,
       "context": "PFC load test iteration 3 batch 1",
-      "id": "int_1764706351738_k7had7gl1",
-      "timestamp": 1764706351738
+      "id": "int_1769156557667_aq94hbaf4",
+      "timestamp": 1769156557667
     },
     {
       "type": "message",
       "feature": "chat",
       "success": true,
       "duration": 0,
-      "context": "PFC load test iteration 3 batch 2",
-      "id": "int_1764706351739_wxzs6jp75",
-      "timestamp": 1764706351739
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "are you running off local memory",
-      "id": "int_1768522127411_bh1rm77ua",
-      "timestamp": 1768522127411
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "play carpetman you will never know",
-      "id": "int_1768522244813_snupvszq1",
-      "timestamp": 1768522244813
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "/youtube play carpetman you will never know",
-      "id": "int_1768522262685_bj165b4cw",
-      "timestamp": 1768522262685
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "/youtube play carpetman",
-      "id": "int_1768522277287_2mzwagjf3",
-      "timestamp": 1768522277287
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "play music",
-      "id": "int_1768522287148_c0qbh9adj",
-      "timestamp": 1768522287148
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "/youtube play music",
-      "id": "int_1768522299240_jgwe83dax",
-      "timestamp": 1768522299240
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "hi",
-      "id": "int_1768522674841_yxt4i4hr7",
-      "timestamp": 1768522674841
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "hi",
-      "id": "int_1768522801155_14gq6mywv",
-      "timestamp": 1768522801155
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "hello",
-      "id": "int_1768522999352_deqg88rpj",
-      "timestamp": 1768522999352
-    },
-    {
-      "type": "message",
-      "feature": "chat",
-      "success": true,
-      "duration": 0,
-      "context": "hows your day going",
-      "id": "int_1768523035519_rcxtkkgap",
-      "timestamp": 1768523035519
+      "context": "PFC load test iteration 3 batch 3",
+      "id": "int_1769156557668_jydzzlnyq",
+      "timestamp": 1769156557668
     }
   ],
   "patterns": {
     "chat": {
       "feature": "chat",
-      "usageCount": 70,
+      "usageCount": 60,
       "successRate": 1,
-      "averageDuration": 0,
-      "lastUsed": 1768523035519
+      "averageDuration": -0.017543859649122806,
+      "lastUsed": 1769156557668
     }
   },
   "suggestions": [],
-  "lastUpdated": 1768523035519
+  "lastUpdated": 1769156557668
 }

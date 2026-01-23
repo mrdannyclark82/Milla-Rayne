@@ -10,11 +10,7 @@ interface ChatMessage {
   content: string;
 }
 
-export default function MockDesigns() {
-  return <CombinedDesign />;
-}
-
-function CombinedDesign() {
+export default function Chat() {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: '1', role: 'assistant', content: 'Systems online. Neural pathways synchronized. Ready to assist with any task - from complex analysis to creative exploration. What would you like to explore today?' }
@@ -158,26 +154,13 @@ function CombinedDesign() {
 
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
-
-    // Handle /youtube command locally - open YouTube player with sample videos
-    if (trimmedMessage.toLowerCase().startsWith('/youtube')) {
-      setShowYoutubePlayer(true);
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I've opened the YouTube player for you! Click on any video in the list to start watching. You can search for specific videos by asking me naturally, like 'play some relaxing music' or 'show me cooking tutorials'."
-      };
-      setMessages(prev => [...prev, assistantMessage]);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           message: trimmedMessage,
           userId: 'default-user'
         })
@@ -185,7 +168,7 @@ function CombinedDesign() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Handle YouTube video responses from backend
         if (data.youtube_videos && data.youtube_videos.length > 0) {
           setShowYoutubePlayer(true);
@@ -198,14 +181,15 @@ function CombinedDesign() {
         const assistantMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: data.content || data.response || 'I received your message but encountered an issue processing it.'
+          content: data.response || 'I received your message but encountered an issue processing it.'
         };
         setMessages(prev => [...prev, assistantMessage]);
       } else {
+        const errorData = await response.json();
         const assistantMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: 'I apologize, but I encountered an error processing your request. Please try again.'
+          content: errorData.response || 'I apologize, but I encountered an error processing your request. Please try again.'
         };
         setMessages(prev => [...prev, assistantMessage]);
       }
@@ -325,6 +309,7 @@ function CombinedDesign() {
                   className="input-btn send-btn" 
                   onClick={sendMessage}
                   disabled={isLoading || !message.trim()}
+                  aria-label="Send message"
                 >
                   {isLoading ? (
                     <Loader2 style={{ width: '1rem', height: '1rem', animation: 'spin 1s linear infinite' }} />
