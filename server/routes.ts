@@ -118,6 +118,7 @@ import { UserProfile } from './profileService';
 // Proactive routes now run on separate server (proactiveServer.ts) on port 5001
 // import { registerProactiveRoutes } from './proactiveRoutes';
 import { trackUserInteraction } from './userInteractionAnalyticsService';
+import merchRoutes from './api/hoodie-api';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
@@ -313,6 +314,9 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
   // Fara integration
   // app.use('/api/fara', faraRoutes);
+
+  // Merch/Hoodie API
+  app.use('/api/merch', merchRoutes);
 
   // Initialize enhancement task system
   const { initializeEnhancementTaskSystem } = await import(

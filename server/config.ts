@@ -3,6 +3,36 @@ dotenv.config();
 
 console.log('Loading config.ts');
 
+/**
+ * Memoization helper for config values with key-based caching
+ * Caches computed values to avoid repeated processing
+ */
+const memoize = <T>(fn: (...args: any[]) => T): ((...args: any[]) => T) => {
+  const cache = new Map<string, T>();
+  
+  return (...args: any[]) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+// Helper to get boolean config values with memoization
+const getBoolConfig = memoize((key: string, defaultValue: boolean = false): boolean => {
+  return process.env[key] === 'true' || 
+         (defaultValue && process.env[key] !== 'false');
+});
+
+// Helper to get integer config values with memoization
+const getIntConfig = memoize((key: string, defaultValue: number): number => {
+  const value = process.env[key];
+  return value ? parseInt(value, 10) : defaultValue;
+});
+
 export const config = {
   huggingface: {
     apiKey: process.env.HUGGINGFACE_API_KEY,
