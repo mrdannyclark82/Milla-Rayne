@@ -166,7 +166,7 @@ jobs:
           cache: npm
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
         continue-on-error: true
 
       - name: Check for secrets

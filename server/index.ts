@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express, { type Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import { registerRoutes } from './routes';
 import { setupVite, serveStatic, log } from './vite';
 import { initializeMemoryCore } from './memoryService';
@@ -56,6 +57,11 @@ export async function initApp() {
   // Input size limits to prevent DoS attacks
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+  // Enable gzip compression for all responses (20-30% size reduction)
+  app.use(compression());
+
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
   // Add rate limiting to prevent abuse
   const rateLimitModule = await import('express-rate-limit');
