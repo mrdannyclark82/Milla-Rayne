@@ -111,8 +111,8 @@ class Dispatcher {
    * Invoke a specific model
    */
   private async invokeModel(model: string, query: string): Promise<string> {
-    // Check for offline fallback
-    if (model === 'gemma-local' && !navigator.onLine) {
+    // Local model always available for offline fallback
+    if (model === 'gemma-local') {
       return await this.localGemmaInference(query);
     }
 

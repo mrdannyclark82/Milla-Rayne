@@ -129,9 +129,10 @@ export class Gemma3AIEdge {
     // For example: return await this.model.generate(prompt, this.config);
     
     // Mock implementation
+    const MAX_PROMPT_PREVIEW_LENGTH = 50;
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(`Gemma3 response to: ${prompt.substring(0, 50)}...`);
+        resolve(`Gemma3 response to: ${prompt.substring(0, MAX_PROMPT_PREVIEW_LENGTH)}...`);
       }, 100);
     });
   }

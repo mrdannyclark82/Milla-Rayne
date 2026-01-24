@@ -332,7 +332,7 @@ router.patch('/order/:orderId', (req: Request, res: Response) => {
  * Generate unique order ID
  */
 function generateOrderId(): string {
-  return `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+  return `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 }
 
 export default router;

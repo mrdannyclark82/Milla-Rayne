@@ -4,19 +4,20 @@ dotenv.config();
 console.log('Loading config.ts');
 
 /**
- * Memoization helper for config values
+ * Memoization helper for config values with key-based caching
  * Caches computed values to avoid repeated processing
  */
-const memoize = <T>(fn: () => T): (() => T) => {
-  let cached: T | undefined;
-  let computed = false;
+const memoize = <T>(fn: (...args: any[]) => T): ((...args: any[]) => T) => {
+  const cache = new Map<string, T>();
   
-  return () => {
-    if (!computed) {
-      cached = fn();
-      computed = true;
+  return (...args: any[]) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key)!;
     }
-    return cached as T;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
   };
 };
 
