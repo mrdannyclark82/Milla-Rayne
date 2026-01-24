@@ -17,8 +17,8 @@
             "test.ts"
           ],
           "status": "testing",
-          "testsPassed": 1,
-          "testsFailed": 2,
+          "testsPassed": 2,
+          "testsFailed": 3,
           "addedAt": 1769156399925
         },
         {
@@ -44,6 +44,30 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1769156561651
+        },
+        {
+          "id": "feat_1769273890438_3oottvpee",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1769273890438
+        },
+        {
+          "id": "feat_1769274117051_o7qo6o3un",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1769274117051
         }
       ],
       "readyForProduction": false,
@@ -74,6 +98,24 @@
           "passed": false,
           "details": "Some tests failed - review needed",
           "duration": 585.5581911579039
+        },
+        {
+          "id": "test_1769273890439_5uhvxd9is",
+          "featureId": "feat_1769156399925_blrqo4fpo",
+          "timestamp": 1769273890439,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1918.650081648459
+        },
+        {
+          "id": "test_1769274117053_24l7u70sd",
+          "featureId": "feat_1769156399925_blrqo4fpo",
+          "timestamp": 1769274117053,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1542.46842746234
         }
       ]
     },
@@ -547,7 +589,29 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1769273890437_c48ubq94a": {
+      "id": "sandbox_1769273890437_c48ubq94a",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1769273890437",
+      "status": "active",
+      "createdAt": 1769273890437,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1769274117049_a0u2rw2jp": {
+      "id": "sandbox_1769274117049_a0u2rw2jp",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1769274117049",
+      "status": "active",
+      "createdAt": 1769274117049,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1769156561662
+  "lastUpdated": 1769274117053
 }

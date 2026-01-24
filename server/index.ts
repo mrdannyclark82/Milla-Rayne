@@ -29,8 +29,33 @@ export async function initApp() {
   // Enable trust proxy for proper IP detection behind proxies (fixes X-Forwarded-For warning)
   app.set('trust proxy', 1);
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  // Add Helmet security middleware
+  try {
+    const helmet = (await import('helmet')).default;
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "https:", "wss:"],
+          fontSrc: ["'self'", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for development
+    }));
+    console.log('[Security] Helmet middleware enabled');
+  } catch (error) {
+    console.warn('[Security] Helmet not available, continuing without it');
+  }
+
+  // Input size limits to prevent DoS attacks
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
   // Add rate limiting to prevent abuse
   const rateLimitModule = await import('express-rate-limit');
