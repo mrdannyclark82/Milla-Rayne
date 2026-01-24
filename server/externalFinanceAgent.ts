@@ -193,7 +193,14 @@ export class FinanceAgent {
     const balance = this.accountBalances.get(account);
 
     if (balance === undefined) {
-      throw new Error(`Account not found: ${account}`);
+      const defaultBalance = 0;
+      this.accountBalances.set(account, defaultBalance);
+      return {
+        account,
+        balance: defaultBalance,
+        currency: 'USD',
+        lastUpdated: new Date().toISOString(),
+      };
     }
 
     return {

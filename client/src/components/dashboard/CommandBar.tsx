@@ -28,11 +28,17 @@ export function CommandBar({
     }
   };
 
-  const handleMicClick = () => {
+  const handleMicClick = async () => {
     if (isListening) {
       onStopListening?.();
     } else {
-      onStartListening?.();
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        onStartListening?.();
+      } catch (err) {
+        console.error('Microphone access denied:', err);
+        alert('Please allow microphone access to use voice commands.');
+      }
     }
   };
 

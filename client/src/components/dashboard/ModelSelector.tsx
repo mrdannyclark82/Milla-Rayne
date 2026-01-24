@@ -71,10 +71,22 @@ export function ModelSelector({ value, models = defaultModels, onChange }: Model
     }
   }, [value, onChange, internalModel]);
 
-  const handleSelect = (model: AIModel) => {
+  const handleSelect = async (model: AIModel) => {
     setInternalModel(model);
     onChange?.(model);
     setIsOpen(false);
+
+    try {
+      // Map display model IDs to backend supported models if needed
+      const backendModel = model.id === 'gpt-4o' ? 'xai' : 'minimax';
+      await fetch('/api/ai-model/set', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: backendModel }),
+      });
+    } catch (e) {
+      console.error('Failed to persist model selection:', e);
+    }
   };
 
   return (

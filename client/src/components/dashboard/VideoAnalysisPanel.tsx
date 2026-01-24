@@ -20,25 +20,47 @@ export function VideoAnalysisPanel({
   const handleAnalyze = async () => {
     if (!videoUrl.trim()) return;
     setIsAnalyzing(true);
-    const label = videoUrl.trim();
-    setTimeout(() => {
-      onAnalyzeComplete?.(label);
-      setVideoUrl('');
+    try {
+      const response = await fetch('/api/analyze-youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: videoUrl.trim() }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        onAnalyzeComplete?.(data.analysis?.videoInfo?.title || videoUrl.trim());
+        setVideoUrl('');
+      } else {
+        console.error('Analysis failed:', data.error);
+      }
+    } catch (e) {
+      console.error('Analysis error:', e);
+    } finally {
       setIsAnalyzing(false);
-    }, 900);
+    }
   };
 
-  const handleFileSelect = (file?: File) => {
+  const handleFileSelect = async (file?: File) => {
     if (!file) return;
     setIsAnalyzing(true);
-    const label = file.name;
-    setTimeout(() => {
-      onAnalyzeComplete?.(label);
+    try {
+      const response = await fetch('/api/analyze-video', {
+        method: 'POST',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+      const data = await response.json();
+      if (data.insights) {
+        onAnalyzeComplete?.(file.name);
+      }
+    } catch (e) {
+      console.error('File analysis error:', e);
+    } finally {
       setIsAnalyzing(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-    }, 900);
+    }
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {

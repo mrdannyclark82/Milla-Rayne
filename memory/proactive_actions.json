@@ -25,8 +25,44 @@
         "feat_1768500074704_349xgf9c5",
         "sandbox_1769156077963_47v7nqci5"
       ]
+    },
+    {
+      "id": "action_1769161447937_j3sd03kmb",
+      "timestamp": 1769161447937,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769156078170",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769156078170_iclej8or4"
+      ]
+    },
+    {
+      "id": "action_1769163439113_9xnilanbz",
+      "timestamp": 1769163439113,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769163264152",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769163264152_opim6eezt"
+      ]
+    },
+    {
+      "id": "action_1769183053127_i4sz6vvrd",
+      "timestamp": 1769183053127,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769174179114",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769174179114_rloykde77"
+      ]
     }
   ],
   "lastCheck": 1769156077741,
-  "lastUpdated": 1769156078354
+  "lastUpdated": 1769231950316
 }

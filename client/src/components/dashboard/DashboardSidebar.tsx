@@ -191,7 +191,19 @@ export function DashboardSidebar({
           <div className="flex items-center justify-between px-2 py-2 rounded-xl bg-white/5 border border-white/10">
             <span className="text-xs text-white/60">Developer Mode</span>
             <button
-              onClick={() => onDeveloperModeChange(!developerMode)}
+              onClick={async () => {
+                const nextMode = !developerMode;
+                onDeveloperModeChange(nextMode);
+                try {
+                  await fetch('/api/developer-mode/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: nextMode }),
+                  });
+                } catch (e) {
+                  console.error('Failed to toggle developer mode on backend:', e);
+                }
+              }}
               className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
                 developerMode
                   ? 'bg-gradient-to-r from-[#00f2ff] to-[#ff00aa]'

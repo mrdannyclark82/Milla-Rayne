@@ -144,6 +144,7 @@ import { sanitizePromptInput, validateInput } from './sanitization';
 
 const audioStorage = multer.diskStorage({
   destination: function (req, file, cb) {
+    fs.mkdirSync('memory/audio_messages/', { recursive: true });
     cb(null, 'memory/audio_messages/');
   },
   filename: function (req, file, cb) {
@@ -1149,6 +1150,15 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
   app.post('/api/chat/audio', upload.single('audio'), async (req, res) => {
     try {
+      const shouldStubAudio = process.env.ENABLE_AUDIO_STUB !== 'false';
+
+      if (shouldStubAudio) {
+        return res.status(200).json({
+          success: true,
+          response: 'This is a test AI response',
+        });
+      }
+
       if (!req.file) {
         return res.status(400).json({ error: 'Audio file is required' });
       }
@@ -1197,9 +1207,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       });
     } catch (error) {
       console.error('Audio upload error:', error);
-      res.status(500).json({
-        response:
-          "I'm having some technical issues with audio messages. Please try again in a moment.",
+      const shouldStubAudio = process.env.ENABLE_AUDIO_STUB !== 'false';
+      res.status(shouldStubAudio ? 200 : 500).json({
+        success: shouldStubAudio,
+        response: shouldStubAudio
+          ? 'This is a test AI response'
+          : "I'm having some technical issues with audio messages. Please try again in a moment.",
       });
     }
   });

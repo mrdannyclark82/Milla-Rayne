@@ -55,11 +55,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     setIsProcessing(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message,
+          content: message,
+          role: 'user',
           userId: 'default-user',
           userName: 'Danny Ray',
           conversationHistory: [], // TODO: Persist history
@@ -67,8 +68,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       });
 
       const data = await response.json();
-      if (data.success) {
-        logActivity(`Milla: ${data.content.substring(0, 60)}${data.content.length > 60 ? '...' : ''}`);
+      if (data.aiMessage) {
+        logActivity(`Milla: ${data.aiMessage.content.substring(0, 60)}${data.aiMessage.content.length > 60 ? '...' : ''}`);
+      } else if (data.message) {
+        // Fallback for different API structure
+        logActivity(`Milla: ${data.message.content.substring(0, 60)}${data.message.content.length > 60 ? '...' : ''}`);
       } else {
         logActivity(`System: ${data.error || 'Response failed'}`);
       }
@@ -123,14 +127,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-[#0c021a] text-white font-sans overflow-hidden">
       {/* Ambient background */}
-      <div className="pointer-events-none fixed inset-0">
+      <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(0,242,255,0.08),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(255,0,170,0.08),transparent_30%),radial-gradient(circle_at_50%_70%,rgba(124,58,237,0.12),transparent_40%)]" />
         <div className="absolute inset-0 opacity-40 bg-[linear-gradient(120deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0)_35%,rgba(255,255,255,0)_65%,rgba(255,255,255,0.08)_100%)] animate-pulse" />
         <div className="absolute inset-0 bg-[length:120px_120px] bg-cyber-grid opacity-20 mix-blend-screen" />
       </div>
 
       {/* Floating particles */}
-      <div className="pointer-events-none fixed inset-0">
+      <div className="pointer-events-none fixed inset-0 z-0">
         {Array.from({ length: 24 }).map((_, i) => (
           <div
             key={i}

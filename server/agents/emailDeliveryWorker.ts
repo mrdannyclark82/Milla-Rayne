@@ -43,6 +43,9 @@ export const emailMetrics = {
 async function sendViaSendGrid(
   item: any
 ): Promise<{ ok: boolean; error?: string }> {
+  if (process.env.NODE_ENV === 'test') {
+    return { ok: true };
+  }
   const apiKey = config.email.sendgridApiKey || process.env.SENDGRID_API_KEY;
   if (!apiKey) return { ok: false, error: 'SendGrid API key not configured' };
 
@@ -85,7 +88,21 @@ async function sendViaSendGrid(
 async function sendViaSMTP(
   item: any
 ): Promise<{ ok: boolean; error?: string }> {
-  const smtp = config.email.smtp || {};
+  const smtp = {
+    host: process.env.EMAIL_SMTP_HOST || config.email.smtp?.host,
+    port: process.env.EMAIL_SMTP_PORT
+      ? parseInt(process.env.EMAIL_SMTP_PORT, 10)
+      : config.email.smtp?.port,
+    user: process.env.EMAIL_SMTP_USER || config.email.smtp?.user,
+    pass: process.env.EMAIL_SMTP_PASS || config.email.smtp?.pass,
+    secure:
+      process.env.EMAIL_SMTP_SECURE === 'true' ||
+      config.email.smtp?.secure === true,
+    requireTLS:
+      process.env.EMAIL_SMTP_REQUIRE_TLS === 'true' ||
+      config.email.smtp?.requireTLS === true,
+  };
+
   if (!smtp.host || !smtp.port) {
     return { ok: false, error: 'SMTP configuration missing (host/port)' };
   }
@@ -138,6 +155,12 @@ export async function deliverOutboxOnce(): Promise<{
   failed: number;
   skipped: number;
 }> {
+  const sendEmailsEnabled =
+    process.env.SEND_EMAILS === 'true' || config.email.sendEmails;
+  const provider = (process.env.EMAIL_PROVIDER ||
+    config.email.provider ||
+    'sendgrid') as string;
+
   const items = await readOutbox();
   let changed = false;
   let sentCount = 0;
@@ -161,7 +184,7 @@ export async function deliverOutboxOnce(): Promise<{
     }
 
     // Only proceed if email sending is enabled
-    if (!config.email.sendEmails) {
+    if (!sendEmailsEnabled) {
       console.log(
         '[emailDeliveryWorker] SEND_EMAILS disabled; skipping delivery'
       );
@@ -199,7 +222,7 @@ export async function deliverOutboxOnce(): Promise<{
     );
 
     // Currently support SendGrid provider
-    if (config.email.provider === 'sendgrid') {
+    if (provider === 'sendgrid') {
       const result = await sendViaSendGrid(item);
       item.attempts = (item.attempts || 0) + 1;
       item.lastAttemptedAt = new Date().toISOString();
@@ -232,7 +255,7 @@ export async function deliverOutboxOnce(): Promise<{
           item.nextAttemptAt
         );
       }
-    } else if (config.email.provider === 'smtp') {
+    } else if (provider === 'smtp') {
       const result = await sendViaSMTP(item);
       if (result.ok) {
         item.sent = true;

@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { X, Sun, Waves, Activity, Volume2 } from 'lucide-react';
 
 interface ScoreSettingsProps {
+  values: {
+    ambientLight: number;
+    amplitude: number;
+    status: number;
+    volume: number;
+  };
+  onChange: (values: ScoreSettingsProps['values']) => void;
   onClose: () => void;
 }
 
@@ -38,11 +45,13 @@ function SettingSlider({ label, value, onChange, icon, color }: SettingSliderPro
   );
 }
 
-export function ScoreSettings({ onClose }: ScoreSettingsProps) {
-  const [ambientLight, setAmbientLight] = useState(65);
-  const [amplitude, setAmplitude] = useState(50);
-  const [status, setStatus] = useState(80);
-  const [volume, setVolume] = useState(70);
+export function ScoreSettings({ values, onChange, onClose }: ScoreSettingsProps) {
+  const updateValue = (key: keyof ScoreSettingsProps['values'], value: number) => {
+    onChange({
+      ...values,
+      [key]: value,
+    });
+  };
 
   return (
     <div className="backdrop-blur-xl bg-[#0c021a]/90 border border-white/10 rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)]">
@@ -61,32 +70,32 @@ export function ScoreSettings({ onClose }: ScoreSettingsProps) {
       <div className="p-4 space-y-5">
         <SettingSlider
           label="Ambient Light"
-          value={ambientLight}
-          onChange={setAmbientLight}
+          value={values.ambientLight}
+          onChange={(v) => updateValue('ambientLight', v)}
           icon={<Sun className="w-4 h-4" />}
           color="text-[#00f2ff]"
         />
         
         <SettingSlider
           label="Amplitude"
-          value={amplitude}
-          onChange={setAmplitude}
+          value={values.amplitude}
+          onChange={(v) => updateValue('amplitude', v)}
           icon={<Waves className="w-4 h-4" />}
           color="text-[#ff00aa]"
         />
         
         <SettingSlider
           label="Status"
-          value={status}
-          onChange={setStatus}
+          value={values.status}
+          onChange={(v) => updateValue('status', v)}
           icon={<Activity className="w-4 h-4" />}
           color="text-[#7c3aed]"
         />
         
         <SettingSlider
           label="Volume"
-          value={volume}
-          onChange={setVolume}
+          value={values.volume}
+          onChange={(v) => updateValue('volume', v)}
           icon={<Volume2 className="w-4 h-4" />}
           color="text-[#00f2ff]"
         />

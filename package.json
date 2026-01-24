@@ -88,6 +88,7 @@
     "@types/node-cron": "^3.0.11",
     "@types/node-fetch": "^2.6.13",
     "@upstash/redis": "^1.35.8",
+    "@vitejs/plugin-react": "^5.1.0",
     "ai": "^5.0.113",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.3",
@@ -159,11 +160,9 @@
     "zod-validation-error": "^4.0.2"
   },
   "devDependencies": {
-    "@replit/vite-plugin-cartographer": "^0.4.1",
-    "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
     "@tailwindcss/postcss": "^4.1.14",
     "@tailwindcss/typography": "^0.5.15",
-    "@tailwindcss/vite": "^4.1.3",
+    "@tailwindcss/vite": "^4.1.18",
     "@types/better-sqlite3": "^7.6.13",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "^5.0.5",
@@ -181,7 +180,6 @@
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
-    "@vitejs/plugin-react": "^5.1.0",
     "@vitest/coverage-v8": "^4.0.6",
     "autoprefixer": "^10.4.21",
     "canvas": "^3.2.0",
