@@ -76,6 +76,11 @@ Make sure to add the following to your `.env` file:
 ```bash
 # For Gemini 3 Reasoner fallback
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# For local model support (optional)
+ENABLE_LOCAL_MODEL=true
+PREFER_LOCAL_MODEL=true
+LOCAL_MODEL_PATH=locallm/gemma.tflite
 ```
 
 ## Integration Steps

@@ -16,4 +16,14 @@ export class Gemini3Reasoner {
   }
 }
 
-export const gemini3R = new Gemini3Reasoner(process.env.GEMINI_API_KEY || '');
+// Export a function to get the reasoner instance with proper validation
+export function getGemini3Reasoner(): Gemini3Reasoner {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.warn('[Gemini3Reasoner] Warning: GEMINI_API_KEY not set in environment variables. Gemini 3 fallback will not work.');
+  }
+  return new Gemini3Reasoner(apiKey || '');
+}
+
+// Export singleton instance for backwards compatibility
+export const gemini3R = getGemini3Reasoner();

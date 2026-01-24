@@ -9,6 +9,9 @@ export async function dispatchQuery(
   preferred: LLMProvider = 'gemma-local'
 ): Promise<string> {
   try {
+    // Note: Currently both 'gemma-local' and 'ollama' use gemmaMP wrapper
+    // In the future, 'ollama' should integrate with the existing OfflineModelService
+    // See: server/offlineModelService.ts for Ollama integration
     if (preferred === 'gemma-local' || preferred === 'ollama') {
       return await gemmaMP.generate(query);
     }
