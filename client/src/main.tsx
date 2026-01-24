@@ -3,6 +3,23 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
+// Environment guard - ensure environment is loaded before rendering
+const envLoaded = typeof import.meta.env !== 'undefined';
+if (!envLoaded) {
+  const FallbackUI = () => (
+    <div style={{ padding: '20px', textAlign: 'center' }}>
+      <h1>Environment Not Loaded</h1>
+      <p>Please refresh the page or check your configuration.</p>
+    </div>
+  );
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <FallbackUI />
+    </React.StrictMode>
+  );
+  throw new Error('Environment not loaded');
+}
+
 // Global client-side error reporter (development helper)
 if (import.meta.env.DEV) {
   window.addEventListener('error', (evt) => {
