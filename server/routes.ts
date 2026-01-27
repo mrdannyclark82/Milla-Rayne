@@ -1115,7 +1115,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         });
       }
 
-      const validModels = ['minimax', 'xai'];
+      const validModels = ['minimax', 'xai', 'venice-uncensored', 'deepseek-coder', 'grok-2', 'gemini-2-flash'];
       if (!validModels.includes(model)) {
         return res.status(400).json({
           success: false,
@@ -7327,7 +7327,10 @@ This message requires you to be fully present as ${userName}'s partner, companio
       contextualInfo += `\nUser Profile:\nName: ${userProfile.name}\nInterests: ${userProfile.interests.join(', ')}\nPreferences: ${JSON.stringify(userProfile.preferences)}\n`;
     }
 
-    if (memoryCoreContext) {
+    // Only inject memory context if the user explicitly asks for it
+    const isMemoryRequest = /remember|recall|memory|when we|last time|did I|what did we/.test(userMessage.toLowerCase());
+
+    if (memoryCoreContext && isMemoryRequest) {
       // Truncate Memory Core context if it's too long
       const truncatedMemoryCore =
         memoryCoreContext.length > 10000

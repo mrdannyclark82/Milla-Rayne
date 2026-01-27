@@ -12,34 +12,34 @@ export interface AIModel {
 
 const defaultModels: AIModel[] = [
   {
-    id: 'nitish-surya',
-    name: 'Nitish Surya',
-    provider: 'Custom',
-    description: 'Optimized for creative tasks',
+    id: 'venice-uncensored',
+    name: 'Venice Uncensored',
+    provider: 'Venice',
+    description: 'Unfiltered general conversation',
     speed: 'fast',
     icon: <Star className="w-4 h-4" />,
   },
   {
-    id: 'claude-4',
-    name: 'Claude 4',
-    provider: 'Anthropic',
-    description: 'Advanced reasoning & analysis',
+    id: 'deepseek-coder',
+    name: 'DeepSeek Coder',
+    provider: 'DeepSeek',
+    description: 'Specialized for coding tasks',
     speed: 'medium',
     icon: <Brain className="w-4 h-4" />,
   },
   {
-    id: 'gpt-4o',
-    name: 'GPT-4o',
-    provider: 'OpenAI',
-    description: 'Multimodal capabilities',
+    id: 'grok-2',
+    name: 'Grok 2',
+    provider: 'xAI',
+    description: 'Creative & Visual capabilities',
     speed: 'fast',
     icon: <Zap className="w-4 h-4" />,
   },
   {
-    id: 'gemini-pro',
-    name: 'Gemini Pro',
+    id: 'gemini-2-flash',
+    name: 'Gemini 2.0 Flash',
     provider: 'Google',
-    description: 'Fast & efficient',
+    description: 'Fastest response time',
     speed: 'fast',
     icon: <Cpu className="w-4 h-4" />,
   },
@@ -77,12 +77,11 @@ export function ModelSelector({ value, models = defaultModels, onChange }: Model
     setIsOpen(false);
 
     try {
-      // Map display model IDs to backend supported models if needed
-      const backendModel = model.id === 'gpt-4o' ? 'xai' : 'minimax';
+      // Send the selected model ID directly to the backend
       await fetch('/api/ai-model/set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: backendModel }),
+        body: JSON.stringify({ model: model.id }),
       });
     } catch (e) {
       console.error('Failed to persist model selection:', e);

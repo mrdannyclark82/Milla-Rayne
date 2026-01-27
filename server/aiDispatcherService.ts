@@ -2,6 +2,9 @@ import {
   generateXAIResponse,
   PersonalityContext as XAIPersonalityContext,
 } from './xaiService';
+import { generateMinimaxResponse } from './minimaxService';
+import { generateVeniceResponse } from './veniceService';
+import { getUserAIModel } from './authService';
 import {
   generateOpenRouterResponse,
   generateGrokResponse,
@@ -205,6 +208,7 @@ export async function dispatchAIResponse(
     const memoryResults = await searchMemoryCore(userMessage, 5, userId);
     const topScore = memoryResults.length > 0 ? memoryResults[0].relevanceScore : 0;
     
+    /* Memory short-circuit disabled by request
     if (topScore >= MEMORY_RELEVANCE_THRESHOLD && memoryResults.length > 0) {
       console.log(`🧠 [TRACE:${requestTraceId}] Using memory-based response (score ${topScore.toFixed(2)})`);
       const memoryBasedResponse = generateMemoryBasedResponse(userMessage, memoryResults, context.userName);
@@ -212,6 +216,7 @@ export async function dispatchAIResponse(
       responseCache.set(cacheKey, { response, timestamp: Date.now() });
       return response;
     }
+    */
   } catch (error) {
     console.error(`🔍 [TRACE:${requestTraceId}] Memory search error:`, error);
   }
@@ -241,13 +246,56 @@ export async function dispatchAIResponse(
   if (ambientContext) augmentedMessage += buildAmbientContextString(ambientContext);
 
   // === DYNAMIC MODEL SELECTION & FALLBACK CHAIN ===
-  // Priority: OpenAI -> Anthropic -> xAI -> Mistral -> OpenRouter
+  // Priority: User Preference -> OpenAI -> Anthropic -> xAI -> Mistral -> OpenRouter
   
   let response: AIResponse = { content: '', success: false };
   let modelUsed = 'none';
 
-  // 0. Local Model Preference (Highest Priority if enabled)
-  if (config.localModel?.enabled && config.localModel?.preferLocal) {
+  // Check user preference
+  let preferredModel = null;
+  if (userId && userId !== 'default-user') {
+    try {
+      const result = await getUserAIModel(userId);
+      if (result.success) preferredModel = result.model;
+    } catch (error) {
+      console.error('Error fetching user AI model:', error);
+    }
+  }
+
+  // 0. User Preferred Model (Direct Routing)
+  if (preferredModel) {
+    console.log(`🤖 User preferred model: ${preferredModel}`);
+    
+    if (preferredModel === 'minimax') {
+        response = await generateMinimaxResponse(augmentedMessage, {
+            conversationHistory: context.conversationHistory,
+            userName: context.userName,
+            userEmotionalState: context.userEmotionalState,
+            urgency: context.urgency,
+        }, maxTokens);
+        if (response.success) modelUsed = 'minimax';
+    } else if (preferredModel === 'venice' || preferredModel === 'venice-uncensored') {
+        response = await generateVeniceResponse(augmentedMessage, {
+            conversationHistory: context.conversationHistory,
+            userName: context.userName,
+            userEmotionalState: context.userEmotionalState,
+            urgency: context.urgency,
+        }, maxTokens);
+        if (response.success) modelUsed = 'venice';
+    } else if (preferredModel === 'xai' || preferredModel === 'grok-2') {
+         // Pass model preference if needed, or rely on config
+         response = await generateXAIResponse(augmentedMessage, {
+            conversationHistory: context.conversationHistory,
+            userEmotionalState: context.userEmotionalState,
+            urgency: context.urgency,
+            userName: context.userName,
+        } as XAIPersonalityContext, maxTokens);
+        if (response.success) modelUsed = 'xai';
+    }
+  }
+
+  // 0.5 Local Model Preference (Highest Priority if enabled and no direct match above)
+  if (!response.success && config.localModel?.enabled && config.localModel?.preferLocal) {
     console.log('🤖 Local model preference enabled');
     const { offlineService } = await import('./offlineModelService');
     const localResponse = await offlineService.generateResponse(augmentedMessage, '');

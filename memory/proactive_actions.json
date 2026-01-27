@@ -61,8 +61,200 @@
       "relatedIds": [
         "sandbox_1769174179114_rloykde77"
       ]
+    },
+    {
+      "id": "action_1769282552388_j2mk96onh",
+      "timestamp": 1769282552388,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769280873951",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769280873952_roahy1cyu"
+      ]
+    },
+    {
+      "id": "action_1769283783526_6a2xcz3nv",
+      "timestamp": 1769283783526,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769282552400",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769282552401_0u84r6hgp"
+      ]
+    },
+    {
+      "id": "action_1769294523509_0ngr6r7ax",
+      "timestamp": 1769294523509,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769283783543",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769283783544_9yd1b48at"
+      ]
+    },
+    {
+      "id": "action_1769305323510_82e1lm7mm",
+      "timestamp": 1769305323510,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769294523513",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769294523513_dq8tg6aub"
+      ]
+    },
+    {
+      "id": "action_1769308824464_fcf5m5wv4",
+      "timestamp": 1769308824464,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769308629261",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769308629261_v73m17uj9"
+      ]
+    },
+    {
+      "id": "action_1769320553507_venle796c",
+      "timestamp": 1769320553507,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769309814913",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769309814914_bpxida7ga"
+      ]
+    },
+    {
+      "id": "action_1769417753540_k0lkp568i",
+      "timestamp": 1769417753540,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769406954689",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769406954689_i9udy930g"
+      ]
+    },
+    {
+      "id": "action_1769439353547_0sdki6x4m",
+      "timestamp": 1769439353547,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769428554939",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769428554939_x38x2lua8"
+      ]
+    },
+    {
+      "id": "action_1769450153552_v85mfyhux",
+      "timestamp": 1769450153552,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769439354902",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769439354902_ozxocg00d"
+      ]
+    },
+    {
+      "id": "action_1769471755564_7a2j5offw",
+      "timestamp": 1769471755564,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769460955047",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769460955047_bogw4qb6g"
+      ]
+    },
+    {
+      "id": "action_1769493354031_v7ns4rwib",
+      "timestamp": 1769493354031,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769482556403",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769482556403_ky8tarb3z"
+      ]
+    },
+    {
+      "id": "action_1769504153569_9kf5vm8yb",
+      "timestamp": 1769504153569,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769493355764",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769493355764_t19pjbs7u"
+      ]
+    },
+    {
+      "id": "action_1769514953573_w5r3xn3b8",
+      "timestamp": 1769514953573,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769504154691",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769504154691_t0ol7c6ui"
+      ]
+    },
+    {
+      "id": "action_1769536553581_mjdrxavll",
+      "timestamp": 1769536553581,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769525754523",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769525754523_rog5m6952"
+      ]
+    },
+    {
+      "id": "action_1769547353581_8pbmmrzaz",
+      "timestamp": 1769547353581,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769536557959",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769536557959_7ippotua6"
+      ]
+    },
+    {
+      "id": "action_1769557734477_8tyfmkj7u",
+      "timestamp": 1769557734477,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769557491774",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769557491775_him83eplp"
+      ]
     }
   ],
-  "lastCheck": 1769156077741,
-  "lastUpdated": 1769231950316
+  "lastCheck": 1769471755527,
+  "lastUpdated": 1769557737046
 }

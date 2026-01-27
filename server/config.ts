@@ -56,6 +56,14 @@ export const config = {
     apiKey: process.env.XAI_API_KEY,
     model: process.env.XAI_MODEL,
   },
+  venice: {
+    apiKey: process.env.VENICE_API_KEY,
+    model: process.env.VENICE_MODEL || 'venice/venice-uncensored',
+  },
+  minimax: {
+    apiKey: process.env.MINIMAX_API_KEY,
+    model: process.env.MINIMAX_MODEL || 'abab6.5s-chat',
+  },
   openrouter: {
     apiKey: process.env.OPENROUTER_API_KEY ?? '',
     minimaxApiKey: process.env.OPENROUTER_MINIMAX_API_KEY,
