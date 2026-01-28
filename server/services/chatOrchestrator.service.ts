@@ -88,8 +88,8 @@ export function canDiscussDev(userUtterance?: string): boolean {
   if (userUtterance) {
     const utteranceLower = userUtterance.toLowerCase();
     const explicitDevVerbs = [
-      'analyze', 'analyse', 'improve', 'apply updates', 'create pr',
-      'create pull request', 'repository analysis', 'code analysis',
+      'analyze', 'analyse', 'improve', 'apply updates', 'create pr', 
+      'create pull request', 'repository analysis', 'code analysis', 
       'suggest improvements', 'review code', 'check repository',
     ];
 
@@ -408,4 +408,39 @@ export async function generateAIResponse(
 
   const fallback = generateIntelligentFallback(userMessage, memoryCoreContext, analysis, userName);
   return { content: fallback };
+}
+
+/**
+ * Generate autonomous follow-up messages
+ */
+export async function generateFollowUpMessages(
+  initialResponse: string,
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  userName?: string
+): Promise<string[]> {
+  // DISABLED for performance
+  return [];
+}
+
+/**
+ * Generate proactive repository status messages
+ */
+export async function generateProactiveRepositoryMessage(): Promise<string | null> {
+  // Only generate if proactive repository management is enabled
+  if (!config.enableProactiveRepositoryManagement) {
+    return null;
+  }
+  return null;
+}
+
+/**
+ * Milla decides whether she wants to respond
+ */
+export async function shouldMillaRespond(
+  userMessage: string,
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  userName?: string
+): Promise<{ shouldRespond: boolean; reason?: string }> {
+  return { shouldRespond: true, reason: 'Always respond (performance mode)' };
 }

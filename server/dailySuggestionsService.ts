@@ -238,3 +238,25 @@ export function initializeDailySuggestionScheduler(): void {
 
   scheduleNextRun();
 }
+
+/**
+ * Check if we should surface today's daily suggestion
+ */
+export async function shouldSurfaceDailySuggestion(
+  userMessage: string,
+  conversationHistory: any[]
+): Promise<boolean> {
+  // Only surface if enabled
+  if (process.env.ENABLE_PREDICTIVE_UPDATES !== 'true') return false;
+
+  // Check if already delivered
+  const isDelivered = await isTodaySuggestionDelivered();
+  if (isDelivered) return false;
+
+  // Only surface on the first few messages of the day to avoid interrupting deep flow
+  // Ideally we'd check message timestamp, but here we'll approximate with history length
+  // If history is empty or very short, it's likely start of session
+  if (conversationHistory.length < 5) return true;
+
+  return false;
+}
