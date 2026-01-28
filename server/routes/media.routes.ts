@@ -9,6 +9,11 @@ import {
   getCachedMoodBackgrounds, 
   pregenerateAllMoodBackgrounds 
 } from '../moodBackgroundService';
+import {
+  generateImage,
+  formatImageResponse,
+} from '../imageService';
+import { generateImageWithVenice } from '../veniceImageService';
 import { dispatchAIResponse } from '../aiDispatcherService';
 import { upload } from '../middleware/upload.middleware';
 import { asyncHandler } from '../utils/routeHelpers';
@@ -94,6 +99,27 @@ export function registerMediaRoutes(app: Express) {
     stopActiveListening();
 
     res.json({ success: true, message: 'Active listening stopped' });
+  }));
+
+  // Image Generation
+  router.post('/image/generate', asyncHandler(async (req, res) => {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    let imageResult;
+    if (process.env.VENICE_API_KEY) {
+      imageResult = await generateImageWithVenice(prompt);
+    } else {
+      imageResult = await generateImage(prompt);
+    }
+
+    res.json({
+      success: imageResult.success,
+      imageUrl: imageResult.imageUrl,
+      response: formatImageResponse(prompt, imageResult.success, imageResult.imageUrl, imageResult.error)
+    });
   }));
 
   // Scene Mood Backgrounds

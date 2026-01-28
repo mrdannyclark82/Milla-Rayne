@@ -291,6 +291,29 @@ export async function generateAIResponse(
     }
   }
 
+  // YouTube URL Detection
+  const youtubeUrlMatch = userMessage.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/i);
+  if (!hasCoreTrigger && youtubeUrlMatch && !bypassFunctionCalls) {
+    const videoId = youtubeUrlMatch[1];
+    const url = `https://www.youtube.com/watch?v=${videoId}`;
+    try {
+        const aiService = {
+            generateResponse: async (prompt: string, options: any) => {
+                const response = await dispatchAIResponse(prompt, { userId: null, conversationHistory: [], userName: 'System' }, options.maxTokens);
+                return response.content;
+            }
+        };
+        const analysis = await analyzeYouTubeVideo(url, aiService);
+        return { 
+            content: `I've analyzed that YouTube video for you! \n\n**${analysis.videoInfo.title}**\n\n${analysis.summary}\n\nKey topics: ${analysis.keyTopics.join(', ')}`,
+            youtube_play: videoId
+        };
+    } catch (error) {
+        console.error('YouTube analysis error:', error);
+        return { content: `I noticed you shared a YouTube video! I tried to analyze it but ran into a hiccup. You can still watch it here: ${url}` };
+    }
+  }
+
   // Repository Improvement Workflow
   if (!hasCoreTrigger && (message.includes('apply these updates automatically') || message.includes('create pull request'))) {
     if (!canDiscussDev(userMessage)) {
