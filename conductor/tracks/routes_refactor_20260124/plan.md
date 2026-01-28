@@ -8,11 +8,11 @@ This plan follows a Test-Driven Development (TDD) approach to refactoring the `s
 
 ## Phase 2: Modular Route Migration (TDD)
 - [x] Task: Migrate Auth Routes [6766f24]
-- [~] Task: Migrate Chat and AI Routes
+- [x] Task: Migrate Chat and AI Routes [25253a3]
     - [ ] Write integration tests for `/api/chat`, image generation, and weather endpoints.
     - [ ] Extract logic to `server/routes/chat.routes.ts`.
     - [ ] Verify tests pass.
-- [ ] Task: Migrate Agent and Task Routes
+- [~] Task: Migrate Agent and Task Routes
     - [ ] Write integration tests for agent management and task storage endpoints.
     - [ ] Extract logic to `server/routes/agent.routes.ts`.
     - [ ] Verify tests pass.
