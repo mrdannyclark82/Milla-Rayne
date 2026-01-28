@@ -4,6 +4,7 @@ import { performWebSearch, shouldPerformSearch } from '../searchService';
 import {
   generateImage,
   formatImageResponse,
+  extractImagePrompt,
 } from '../imageService';
 import { generateImageWithVenice } from '../veniceImageService';
 import {
@@ -306,7 +307,7 @@ export async function generateAIResponse(
         const analysis = await analyzeYouTubeVideo(url, aiService);
         return { 
             content: `I've analyzed that YouTube video for you! \n\n**${analysis.videoInfo.title}**\n\n${analysis.summary}\n\nKey topics: ${analysis.keyTopics.join(', ')}`,
-            youtube_play: videoId
+            youtube_play: { videoId }
         };
     } catch (error) {
         console.error('YouTube analysis error:', error);
@@ -350,16 +351,16 @@ export async function generateAIResponse(
   }
 
   // Image Generation
-  const imagePrompt = userMessage.toLowerCase().includes('generate image') || userMessage.toLowerCase().includes('create image') ? userMessage : null;
+  const imagePrompt = extractImagePrompt(userMessage);
   if (imagePrompt && !bypassFunctionCalls) {
     try {
         let imageResult;
         if (process.env.VENICE_API_KEY) {
-            imageResult = await generateImageWithVenice(userMessage);
+            imageResult = await generateImageWithVenice(imagePrompt);
         } else {
-            imageResult = await generateImage(userMessage);
+            imageResult = await generateImage(imagePrompt);
         }
-        return { content: formatImageResponse(userMessage, imageResult.success, imageResult.imageUrl, imageResult.error), imageUrl: imageResult.imageUrl };
+        return { content: formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error), imageUrl: imageResult.imageUrl };
     } catch (err) {
         console.error('Image generation error:', err);
     }

@@ -289,8 +289,20 @@
       "relatedIds": [
         "sandbox_1769561175127_or41pbk7a"
       ]
+    },
+    {
+      "id": "action_1769569351937_vkbbhoclf",
+      "timestamp": 1769569351937,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769567306801",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769567306801_v1ggsa2ak"
+      ]
     }
   ],
   "lastCheck": 1769560175627,
-  "lastUpdated": 1769567308972
+  "lastUpdated": 1769569353884
 }
