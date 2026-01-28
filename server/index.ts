@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express, { type Request, Response, NextFunction } from 'express';
 import compression from 'compression';
-import { registerRoutes } from './routes';
+import { registerModularRoutes } from './routes/index';
 import { setupVite, serveStatic, log } from './vite';
 import { initializeMemoryCore } from './memoryService';
 import { initializePersonalTaskSystem } from './personalTaskService';
@@ -292,8 +292,9 @@ export async function initApp() {
   });
 
   // Register API routes BEFORE Vite setup to prevent catch-all interference
-  // registerRoutes will return an http.Server instance that we should use
-  httpServer = await registerRoutes(app);
+  // registerModularRoutes will return the express app
+  await registerModularRoutes(app);
+  httpServer = createServer(app);
 
   // Setup sensor data WebSocket for mobile clients
   const { setupSensorDataWebSocket } = await import('./websocketService');

@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 4810,
+  "tokenBalance": 5260,
   "transactions": [
     {
       "id": "txn_1769156078158_ohrhabd1d",
@@ -3446,6 +3446,54 @@
       "category": "test_pass",
       "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769561996303",
       "relatedId": "feat_1769561997209_pr7aewt03"
+    },
+    {
+      "id": "txn_1769565739549_rf7nagq2v",
+      "timestamp": 1769565739550,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769565739562_chjq2l8qn",
+      "timestamp": 1769565739562,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1769565899947_bm0mu739v",
+      "timestamp": 1769565899947,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769565899955_49fmhs7u9",
+      "timestamp": 1769565899955,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
+    },
+    {
+      "id": "txn_1769566305794_zb8rbacby",
+      "timestamp": 1769566305794,
+      "amount": 50,
+      "type": "earn",
+      "category": "bug_fix",
+      "description": "Fixed bug: Fixed test bug"
+    },
+    {
+      "id": "txn_1769566305818_cl9cxope2",
+      "timestamp": 1769566305818,
+      "amount": 100,
+      "type": "earn",
+      "category": "feature_development",
+      "description": "Developed feature: Implemented test feature"
     }
   ],
   "goals": [
@@ -3504,5 +3552,5 @@
     "UNLOCK_PERFORMANCE_PROFILING",
     "UNLOCK_PERSONALITY_CUSTOMIZATION"
   ],
-  "lastUpdated": 1769562459156
+  "lastUpdated": 1769566305818
 }

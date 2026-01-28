@@ -5,22 +5,20 @@
  * Focus on Parallel Function Calling (PFC) and Metacognitive Loop endpoints
  */
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import { registerRoutes } from '../routes';
+import { registerModularRoutes } from '../routes/index';
+import { storage } from '../storage';
 
 describe('API Load Testing', () => {
   let app: express.Application;
   let server: any;
 
-  beforeAll(async () => {
-    // Create test app instance
+  beforeEach(async () => {
     app = express();
     app.use(express.json());
-
-    // Setup routes
-    await registerRoutes(app);
+    await registerModularRoutes(app);
   });
 
   afterAll(async () => {
