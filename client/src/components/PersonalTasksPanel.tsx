@@ -9,7 +9,7 @@ import {
   Play,
   Check,
   Moon,
-  Mirror,
+  User,
   ArrowUp,
   Bug,
   Heart,
@@ -87,7 +87,7 @@ export function PersonalTasksPanel() {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'self_reflection': return <Mirror className="w-3 h-3" />;
+      case 'self_reflection': return <User className="w-3 h-3" />;
       case 'improvement': return <ArrowUp className="w-3 h-3" />;
       case 'glitch_analysis': return <Bug className="w-3 h-3" />;
       case 'memory_processing': return <Brain className="w-3 h-3" />;
