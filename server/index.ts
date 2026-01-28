@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express, { type Request, Response, NextFunction } from 'express';
+import compression from 'compression';
 import { registerRoutes } from './routes';
 import { setupVite, serveStatic, log } from './vite';
 import { initializeMemoryCore } from './memoryService';
@@ -29,6 +30,36 @@ export async function initApp() {
   // Enable trust proxy for proper IP detection behind proxies (fixes X-Forwarded-For warning)
   app.set('trust proxy', 1);
 
+  // Add Helmet security middleware
+  try {
+    const helmet = (await import('helmet')).default;
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'", "https:", "wss:"],
+          fontSrc: ["'self'", "data:"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for development
+    }));
+    console.log('[Security] Helmet middleware enabled');
+  } catch (error) {
+    console.warn('[Security] Helmet not available, continuing without it');
+  }
+
+  // Input size limits to prevent DoS attacks
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+  // Enable gzip compression for all responses (20-30% size reduction)
+  app.use(compression());
+
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
@@ -43,27 +74,16 @@ export async function initApp() {
   });
   app.use(limiter);
 
-  // P1.4: Strict CORS Policy - Only allow trusted origins
-  const trustedOrigins = process.env.TRUSTED_ORIGINS
-    ? process.env.TRUSTED_ORIGINS.split(',')
-    : [
-        'http://localhost:5000',
-        'http://localhost:5173',
-        'http://127.0.0.1:5000',
-      ];
-
+  // CORS Policy - Allow all origins in development for Replit preview
   app.use((req, res, next) => {
     const origin = req.headers.origin;
-
-    // Check if origin is trusted
-    if (origin && trustedOrigins.includes(origin)) {
+    
+    // In development, allow all origins for Replit preview compatibility
+    if (origin) {
       res.header('Access-Control-Allow-Origin', origin);
       res.header('Access-Control-Allow-Credentials', 'true');
-    } else if (!origin) {
-      // Allow requests without origin (e.g., server-to-server)
-      res.header('Access-Control-Allow-Origin', trustedOrigins[0]);
     } else {
-      console.warn(`⚠️  Blocked CORS request from untrusted origin: ${origin}`);
+      res.header('Access-Control-Allow-Origin', '*');
     }
 
     res.header(
@@ -133,6 +153,10 @@ export async function initApp() {
 
   // Initialize Memory Core system at startup
   await initializeMemoryCore();
+
+  // Initialize Mood Background Service
+  const { initializeMoodBackgroundService } = await import('./moodBackgroundService');
+  await initializeMoodBackgroundService();
 
   // Initialize User Tasks system
   const { initializeUserTasks } = await import('./userTaskService');

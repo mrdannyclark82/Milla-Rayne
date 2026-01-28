@@ -2,6 +2,10 @@
 
 This guide explains how to build the Android app using GitHub Actions since local builds require x86/x64 architecture.
 
+## 🎯 Recent Updates
+
+**Offline Mode Optimization**: The Android app now works completely standalone without requiring a server connection! Build the APK and use it anywhere with full offline capabilities.
+
 ## Quick Start
 
 ### Option 1: Automatic Build on Push

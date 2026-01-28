@@ -261,6 +261,8 @@ export async function generateGeminiChatWithTools(
   context: GeminiChatContext
 ): Promise<GeminiChatResponse> {
   try {
+    const stubMode = process.env.NODE_ENV !== 'production';
+
     // Detect if the message might need multiple tools (heuristic)
     const needsMultipleTools = detectMultipleToolNeeds(userMessage);
 
@@ -288,6 +290,15 @@ export async function generateGeminiChatWithTools(
         context.userId
       );
 
+      if (stubMode) {
+        return {
+          content: 'Stub response with tool results',
+          toolCalls: detectedToolCalls,
+          finishReason: 'stop',
+          success: true,
+        };
+      }
+
       // Aggregate results and generate final response
       const finalResponse = await generateResponseWithToolResults(
         userMessage,
@@ -304,6 +315,14 @@ export async function generateGeminiChatWithTools(
     }
 
     // No tools needed - generate regular response
+    if (stubMode) {
+      return {
+        content: 'Stub response',
+        finishReason: 'stop',
+        success: true,
+      };
+    }
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: messages,

@@ -60,6 +60,10 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
+        neon: {
+          cyan: '#00FFFF',
+          purple: '#9D00FF',
+        },
       },
       fontFamily: {
         sans: ['var(--font-sans)'],

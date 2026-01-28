@@ -5,6 +5,8 @@ import {
   getCurrentTimeOfDay,
   getLocationMood,
   SEASONAL_SCENES,
+  getSeasonalScene,
+  getCurrentSeason,
 } from '@/utils/scenePresets';
 import { CSSSceneRenderer } from './CSSSceneRenderer';
 import { RealisticSceneBackground } from './RealisticSceneBackground';

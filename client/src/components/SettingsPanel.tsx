@@ -33,6 +33,8 @@ type AvatarSettings = {
 
 interface SettingsPanelProps {
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   voiceEnabled?: boolean;
   onVoiceToggle?: (enabled: boolean) => void;
   speechRate?: number;
@@ -63,6 +65,8 @@ interface SettingsPanelProps {
 
 export default function SettingsPanel({
   children,
+  open: externalOpen,
+  onOpenChange,
   voiceEnabled = false,
   onVoiceToggle,
   speechRate = 1.0,
@@ -86,6 +90,17 @@ export default function SettingsPanel({
   onPersonalitySettingsChange,
 }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Use external open state if provided, otherwise use internal
+  const open = externalOpen !== undefined ? externalOpen : isOpen;
+  const handleOpenChange = (newOpen: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(newOpen);
+    } else {
+      setIsOpen(newOpen);
+    }
+  };
+  
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
@@ -130,11 +145,11 @@ export default function SettingsPanel({
       }
     };
 
-    if (isOpen) {
+    if (open) {
       fetchOauthStatus();
       checkAuthStatus();
     }
-  }, [isOpen]);
+  }, [open]);
 
   const handleLogout = async () => {
     try {
@@ -229,11 +244,11 @@ export default function SettingsPanel({
 
   // Fetch voice consents when panel opens
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       fetchVoiceConsents();
       fetchDeveloperModeStatus();
     }
-  }, [isOpen]);
+  }, [open]);
 
   const fetchDeveloperModeStatus = async () => {
     try {
@@ -323,8 +338,8 @@ export default function SettingsPanel({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>{children}</DialogTrigger>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        {children && <DialogTrigger asChild>{children}</DialogTrigger>}
         <DialogContent className="sm:max-w-[600px] max-w-[90vw] max-h-[85vh] overflow-y-auto bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 backdrop-blur-md border border-white/20 text-white">
           <DialogHeader className="sticky top-0 z-10 bg-gradient-to-br from-gray-900/95 via-black/95 to-gray-900/95 pb-2 border-b border-white/10">
             <DialogTitle className="text-2xl font-bold text-white">
@@ -923,7 +938,7 @@ export default function SettingsPanel({
               </CardContent>
             </Card>
             {/* Personal Tasks Section */}
-            \n\n <PersonalTasksSection />
+            <PersonalTasksSection />
             {/* Accessibility Section */}
             <AccessibilitySettings
               highContrast={false}
@@ -1005,13 +1020,13 @@ export default function SettingsPanel({
           <div className="flex justify-between items-center pt-4">
             <Button
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleOpenChange(false)}
               className="border-white/30 text-white/70 hover:text-white"
             >
               Cancel
             </Button>
             <Button
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleOpenChange(false)}
               className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
             >
               Save Settings

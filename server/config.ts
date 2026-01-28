@@ -3,6 +3,36 @@ dotenv.config();
 
 console.log('Loading config.ts');
 
+/**
+ * Memoization helper for config values with key-based caching
+ * Caches computed values to avoid repeated processing
+ */
+const memoize = <T>(fn: (...args: any[]) => T): ((...args: any[]) => T) => {
+  const cache = new Map<string, T>();
+  
+  return (...args: any[]) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+};
+
+// Helper to get boolean config values with memoization
+const getBoolConfig = memoize((key: string, defaultValue: boolean = false): boolean => {
+  return process.env[key] === 'true' || 
+         (defaultValue && process.env[key] !== 'false');
+});
+
+// Helper to get integer config values with memoization
+const getIntConfig = memoize((key: string, defaultValue: number): number => {
+  const value = process.env[key];
+  return value ? parseInt(value, 10) : defaultValue;
+});
+
 export const config = {
   huggingface: {
     apiKey: process.env.HUGGINGFACE_API_KEY,
@@ -19,9 +49,20 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
   },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+  },
   xai: {
     apiKey: process.env.XAI_API_KEY,
     model: process.env.XAI_MODEL,
+  },
+  venice: {
+    apiKey: process.env.VENICE_API_KEY,
+    model: process.env.VENICE_MODEL || 'venice/venice-uncensored',
+  },
+  minimax: {
+    apiKey: process.env.MINIMAX_API_KEY,
+    model: process.env.MINIMAX_MODEL || 'abab6.5s-chat',
   },
   openrouter: {
     apiKey: process.env.OPENROUTER_API_KEY ?? '',
@@ -97,4 +138,40 @@ export const config = {
   enableProactiveMessages: process.env.ENABLE_PROACTIVE_MESSAGES !== 'false', // default true
   enableAutonomousCodeImprovement: process.env.ENABLE_AUTONOMOUS_CODE_IMPROVEMENT !== 'false', // default true
   maxOutputTokens: parseInt(process.env.MAX_OUTPUT_TOKENS || '1024', 10),
+  proactiveRepoManager: {
+    checkInterval: parseInt(
+      process.env.PROACTIVE_CHECK_INTERVAL || '10800000',
+      10
+    ), // 3 hours
+    suggestionsSlice: parseInt(
+      process.env.PROACTIVE_SUGGESTIONS_SLICE || '3',
+      10
+    ),
+    featureDiscoveryInterval: parseInt(
+      process.env.PROACTIVE_FEATURE_DISCOVERY_INTERVAL || '86400000',
+      10
+    ), // 24 hours
+    topFeatureRecommendations: parseInt(
+      process.env.PROACTIVE_TOP_FEATURE_RECOMMENDATIONS || '3',
+      10
+    ),
+    featureRelevanceThreshold: parseInt(
+      process.env.PROACTIVE_FEATURE_RELEVANCE_THRESHOLD || '7',
+      10
+    ),
+    initialCheckTimeout: parseInt(
+      process.env.PROACTIVE_INITIAL_CHECK_TIMEOUT || '60000',
+      10
+    ), // 1 minute
+    optimizationTokenAward: parseInt(
+      process.env.PROACTIVE_OPTIMIZATION_TOKEN_AWARD || '30',
+      10
+    ),
+  },
+  // Local model configuration
+  localModel: {
+    enabled: process.env.ENABLE_LOCAL_MODEL === 'true',
+    modelPath: process.env.LOCAL_MODEL_PATH || 'locallm/gemma.tflite',
+    preferLocal: process.env.PREFER_LOCAL_MODEL === 'true', // If true, use local by default
+  },
 };
