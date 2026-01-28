@@ -16,11 +16,11 @@ This plan follows a Test-Driven Development (TDD) approach to refactoring the `s
     - [ ] Write integration tests for agent management and task storage endpoints.
     - [ ] Extract logic to `server/routes/agent.routes.ts`.
     - [ ] Verify tests pass.
-- [~] Task: Migrate Media and Analysis Routes (YouTube/Video)
+- [x] Task: Migrate Media and Analysis Routes (YouTube/Video) [b081bba]
     - [ ] Write integration tests for YouTube analysis and video insights endpoints.
     - [ ] Extract logic to `server/routes/media.routes.ts`.
     - [ ] Verify tests pass.
-- [ ] Task: Migrate Monitoring and System Routes
+- [~] Task: Migrate Monitoring and System Routes
     - [ ] Write integration tests for health, metrics, and evolution endpoints.
     - [ ] Extract logic to `server/routes/system.routes.ts`.
     - [ ] Verify tests pass.
