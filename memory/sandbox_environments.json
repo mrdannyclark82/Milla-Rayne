@@ -15,8 +15,8 @@
           "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
           "files": [],
           "status": "testing",
-          "testsPassed": 1,
-          "testsFailed": 1,
+          "testsPassed": 2,
+          "testsFailed": 2,
           "addedAt": 1769578714591
         }
       ],
@@ -39,9 +39,120 @@
           "passed": true,
           "details": "All tests passed successfully",
           "duration": 1190.7884577903797
+        },
+        {
+          "id": "test_1769579198889_en5xc2yt4",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1769579198889,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2177.6146550044023
+        },
+        {
+          "id": "test_1769582785293_qghy0m7ex",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1769582785293,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 609.9937330985595
+        }
+      ]
+    },
+    "sandbox_1769579199262_lpzlpiwbp": {
+      "id": "sandbox_1769579199262_lpzlpiwbp",
+      "name": "fix-security-1769579199261",
+      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
+      "branchName": "sandbox/fix-security-1769579199261_1769579199262",
+      "status": "active",
+      "createdAt": 1769579199262,
+      "createdBy": "milla",
+      "features": [
+        {
+          "id": "feat_1769579200231_fw5lqj4br",
+          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
+          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
+          "files": [],
+          "status": "testing",
+          "testsPassed": 2,
+          "testsFailed": 1,
+          "addedAt": 1769579200231
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769579200231_ui48oc28q",
+          "featureId": "feat_1769579200231_fw5lqj4br",
+          "timestamp": 1769579200231,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1507.158287494408
+        },
+        {
+          "id": "test_1769579200232_1p2m7j49c",
+          "featureId": "feat_1769579200231_fw5lqj4br",
+          "timestamp": 1769579200232,
+          "testType": "integration",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 945.7655893463498
+        },
+        {
+          "id": "test_1769582785307_a55g6ssy9",
+          "featureId": "feat_1769579200231_fw5lqj4br",
+          "timestamp": 1769582785307,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1017.7943189346963
+        }
+      ]
+    },
+    "sandbox_1769582785905_77btqnx7p": {
+      "id": "sandbox_1769582785905_77btqnx7p",
+      "name": "fix-security-1769582785905",
+      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
+      "branchName": "sandbox/fix-security-1769582785905_1769582785905",
+      "status": "active",
+      "createdAt": 1769582785905,
+      "createdBy": "milla",
+      "features": [
+        {
+          "id": "feat_1769582787292_kkose31qm",
+          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
+          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
+          "files": [],
+          "status": "testing",
+          "testsPassed": 1,
+          "testsFailed": 1,
+          "addedAt": 1769582787292
+        }
+      ],
+      "readyForProduction": false,
+      "testResults": [
+        {
+          "id": "test_1769582787296_ff05iknba",
+          "featureId": "feat_1769582787292_kkose31qm",
+          "timestamp": 1769582787296,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 524.8312349354376
+        },
+        {
+          "id": "test_1769582787296_49r4c9prp",
+          "featureId": "feat_1769582787292_kkose31qm",
+          "timestamp": 1769582787296,
+          "testType": "integration",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1402.6247357521493
         }
       ]
     }
   },
-  "lastUpdated": 1769578714593
+  "lastUpdated": 1769582787296
 }
