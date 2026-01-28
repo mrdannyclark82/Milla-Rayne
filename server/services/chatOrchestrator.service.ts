@@ -354,17 +354,9 @@ export async function generateAIResponse(
   const imagePrompt = extractImagePrompt(userMessage);
   if (imagePrompt && !bypassFunctionCalls) {
     try {
-        let imageResult;
-        if (process.env.VENICE_API_KEY) {
-            imageResult = await generateImageWithVenice(imagePrompt);
-            // Fallback to Hugging Face if Venice fails
-            if (!imageResult.success) {
-                console.warn('Venice image generation failed, falling back to Hugging Face:', imageResult.error);
-                imageResult = await generateImage(imagePrompt);
-            }
-        } else {
-            imageResult = await generateImage(imagePrompt);
-        }
+        // Default to Hugging Face (generateImage) as per user preference (avoiding Venice)
+        // Future: Implement direct Grok/Gemini image generation when APIs are available
+        const imageResult = await generateImage(imagePrompt);
         return { content: formatImageResponse(imagePrompt, imageResult.success, imageResult.imageUrl, imageResult.error), imageUrl: imageResult.imageUrl };
     } catch (err) {
         console.error('Image generation error:', err);
