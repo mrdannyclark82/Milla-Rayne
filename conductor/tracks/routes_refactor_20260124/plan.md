@@ -7,11 +7,8 @@ This plan follows a Test-Driven Development (TDD) approach to refactoring the `s
 - [x] Task: Conductor - User Manual Verification 'Shared Infrastructure Extraction' (Protocol in workflow.md)
 
 ## Phase 2: Modular Route Migration (TDD)
-- [~] Task: Migrate Auth Routes
-    - [ ] Write integration tests for auth endpoints (login, register, session, etc.).
-    - [ ] Extract logic to `server/routes/auth.routes.ts`.
-    - [ ] Verify tests pass.
-- [ ] Task: Migrate Chat and AI Routes
+- [x] Task: Migrate Auth Routes [6766f24]
+- [~] Task: Migrate Chat and AI Routes
     - [ ] Write integration tests for `/api/chat`, image generation, and weather endpoints.
     - [ ] Extract logic to `server/routes/chat.routes.ts`.
     - [ ] Verify tests pass.
