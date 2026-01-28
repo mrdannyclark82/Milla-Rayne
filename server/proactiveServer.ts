@@ -93,7 +93,12 @@ export async function initProactiveServer() {
 }
 
 // Only start server if not in test mode and not imported as a module
-if (process.env.NODE_ENV !== 'test' && require.main === module) {
+// ES module compatible check
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const isMainModule = process.argv[1] === __filename;
+
+if (process.env.NODE_ENV !== 'test' && isMainModule) {
   initProactiveServer().then((httpServer) => {
     httpServer.listen(
       {

@@ -29,7 +29,7 @@ class FaraService {
   private runCommand(command: string, cwd: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const [cmd, ...args] = command.split(' ');
-      const process = spawn(cmd, args, { cwd, shell: true });
+      const process = spawn(cmd, args, { cwd, shell: '/bin/bash' });
 
       process.stdout.on('data', (data) => console.log(data.toString()));
       process.stderr.on('data', (data) => console.error(data.toString()));
@@ -45,6 +45,11 @@ class FaraService {
   }
 
   public async startFaraModelServer() {
+    if (!process.env.FARA_MODEL_PATH) {
+      console.log('Fara model server is disabled. Set FARA_MODEL_PATH to enable it.');
+      return;
+    }
+
     if (this.vllmProcess || this.isStarting) {
       console.log('Fara model server is already starting or running.');
       return;
@@ -70,7 +75,7 @@ class FaraService {
       
       this.vllmProcess = spawn(cmd, args, {
         cwd: './fara_repo',
-        shell: true,
+        shell: '/bin/bash',
         detached: true, // Allows the child to run independently of the parent
       });
       
