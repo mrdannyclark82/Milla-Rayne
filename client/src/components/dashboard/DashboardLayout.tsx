@@ -7,6 +7,10 @@ import { ModelSelector, type AIModel } from './ModelSelector';
 import { VideoAnalysisPanel } from './VideoAnalysisPanel';
 import { ScoreSettings } from './ScoreSettings';
 import { ChatThreadPanel } from './ChatThreadPanel';
+import { Sandbox } from '@/components/Sandbox';
+import { KnowledgeBaseSearch } from '@/components/KnowledgeBaseSearch';
+import { DailyNewsDigest } from '@/components/DailyNewsDigest';
+import type { DailyNewsDigest as DailyNewsDigestType } from '@/types/millalyzer';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -91,6 +95,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     database: 'Data Storage',
     models: 'AI Models',
     settings: 'Settings',
+    ide: 'IDE Sandbox',
+  };
+
+  const emptyDigest: DailyNewsDigestType = {
+    date: new Date().toLocaleDateString(),
+    totalVideos: 0,
+    analysisCount: 0,
+    categories: {},
+    topStories: []
   };
 
   const statusCards = [
@@ -328,69 +341,105 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                  </div>
                </section>
 
-               <ChatThreadPanel onPlayVideo={(videoId) => {
-                   setShowVideoPanel(true);
-                   setActiveVideoId(videoId);
-                   handleAnalyzeComplete(`YouTube Video ${videoId}`); 
-               }} />
+               {activeSection === 'hub' ? (
+                 <>
+                   <ChatThreadPanel onPlayVideo={(videoId) => {
+                       setShowVideoPanel(true);
+                       setActiveVideoId(videoId);
+                       handleAnalyzeComplete(`YouTube Video ${videoId}`); 
+                   }} />
 
-               {/* Experience grid */}
-               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                 {[
-                   {
-                     title: 'Knowledge Base',
-                     desc: `Focused on ${sectionLabels[activeSection] ?? 'Milla Hub'}.`,
-                     accent: '#00f2ff',
-                   },
-                   {
-                     title: 'Daily News Digest',
-                     desc: developerMode ? 'Diagnostics surfaced for news streams.' : 'Briefings ready without noise.',
-                     accent: '#ff00aa',
-                   },
-                   {
-                     title: 'Milla Hub',
-                     desc: selectedModel ? `Running on ${selectedModel.name}.` : 'Pick a model to engage.',
-                     accent: '#7c3aed',
-                   },
-                   {
-                     title: 'Gmail & Tasks',
-                     desc: isListening ? 'Voice triage armed.' : 'Tap mic to triage inbox.',
-                     accent: '#00f2ff',
-                   },
-                   {
-                     title: 'Video Analysis',
-                     desc: recentAnalyses[0] ? `Latest: ${recentAnalyses[0]}` : 'Drop a YouTube link or file for insight.',
-                     accent: '#ff00aa',
-                   },
-                   {
-                     title: 'Score Settings',
-                     desc: `Ambient ${scoreSettings.ambientLight}% · Volume ${scoreSettings.volume}%`,
-                     accent: '#7c3aed',
-                   },
-                 ].map(card => (
-                   <div
-                     key={card.title}
-                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-[0_15px_60px_rgba(0,0,0,0.35)]"
-                  >
-                    <div
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        background: `radial-gradient(circle at 30% 20%, ${card.accent}22, transparent 55%)`,
-                      }}
-                    />
-                    <div className="relative z-10 flex flex-col gap-2">
-                      <div className="text-sm font-semibold flex items-center gap-2">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full"
-                          style={{ backgroundColor: card.accent }}
+                   {/* Experience grid */}
+                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                     {[
+                       {
+                         title: 'Knowledge Base',
+                         desc: `Focused on ${sectionLabels[activeSection] ?? 'Milla Hub'}.`,
+                         accent: '#00f2ff',
+                       },
+                       {
+                         title: 'Daily News Digest',
+                         desc: developerMode ? 'Diagnostics surfaced for news streams.' : 'Briefings ready without noise.',
+                         accent: '#ff00aa',
+                       },
+                       {
+                         title: 'Milla Hub',
+                         desc: selectedModel ? `Running on ${selectedModel.name}.` : 'Pick a model to engage.',
+                         accent: '#7c3aed',
+                       },
+                       {
+                         title: 'Gmail & Tasks',
+                         desc: isListening ? 'Voice triage armed.' : 'Tap mic to triage inbox.',
+                         accent: '#00f2ff',
+                       },
+                       {
+                         title: 'Video Analysis',
+                         desc: recentAnalyses[0] ? `Latest: ${recentAnalyses[0]}` : 'Drop a YouTube link or file for insight.',
+                         accent: '#ff00aa',
+                       },
+                       {
+                         title: 'Score Settings',
+                         desc: `Ambient ${scoreSettings.ambientLight}% · Volume ${scoreSettings.volume}%`,
+                         accent: '#7c3aed',
+                       },
+                     ].map(card => (
+                       <div
+                         key={card.title}
+                        className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:shadow-[0_15px_60px_rgba(0,0,0,0.35)]"
+                      >
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{
+                            background: `radial-gradient(circle at 30% 20%, ${card.accent}22, transparent 55%)`,
+                          }}
                         />
-                        {card.title}
+                        <div className="relative z-10 flex flex-col gap-2">
+                          <div className="text-sm font-semibold flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ backgroundColor: card.accent }}
+                            />
+                            {card.title}
+                          </div>
+                          <p className="text-xs text-white/50 leading-relaxed">{card.desc}</p>
+                        </div>
                       </div>
-                      <p className="text-xs text-white/50 leading-relaxed">{card.desc}</p>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                 </>
+               ) : activeSection === 'ide' ? (
+                 <div className="h-[600px] relative">
+                   <Sandbox isOpen={true} onClose={() => setActiveSection('hub')} embedded={true} />
+                 </div>
+               ) : activeSection === 'knowledge' ? (
+                 <KnowledgeBaseSearch className="min-h-[500px]" onClose={() => setActiveSection('hub')} />
+               ) : activeSection === 'news' ? (
+                 <DailyNewsDigest digest={emptyDigest} className="min-h-[500px]" />
+               ) : activeSection === 'settings' ? (
+                 <div className="bg-[#0c021a]/90 border border-white/10 rounded-2xl p-6">
+                   <h3 className="text-xl font-semibold text-white mb-6">System Settings</h3>
+                   <div className="grid gap-8 md:grid-cols-2">
+                     <ScoreSettings values={scoreSettings} onChange={handleScoreChange} onClose={() => {}} />
+                     {/* Add more settings components here if available */}
+                   </div>
+                 </div>
+               ) : (
+                 <div className="flex-1 flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-10 text-center min-h-[400px]">
+                   <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                     <Sparkles className="w-8 h-8 text-white/20" />
+                   </div>
+                   <h3 className="text-xl font-semibold text-white mb-2">{sectionLabels[activeSection]}</h3>
+                   <p className="text-white/50 max-w-md">
+                     This module is currently being initialized. Please check back shortly or return to Milla Hub.
+                   </p>
+                   <button 
+                     onClick={() => setActiveSection('hub')}
+                     className="mt-6 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors"
+                   >
+                     Return to Hub
+                   </button>
+                 </div>
+               )}
             </div>
 
             {/* Right rail */}

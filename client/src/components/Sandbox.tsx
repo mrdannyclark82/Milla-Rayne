@@ -32,6 +32,7 @@ interface SandboxProps {
   onClose: () => void;
   onDiscuss?: (code: string) => void;
   width?: number;
+  embedded?: boolean;
 }
 
 interface LogEntry {
@@ -90,6 +91,7 @@ export const Sandbox: React.FC<SandboxProps> = ({
   onClose,
   onDiscuss,
   width,
+  embedded = false,
 }) => {
   // Virtual file system
   const [files, setFiles] = useState<VirtualFile[]>([
@@ -467,10 +469,14 @@ export const Sandbox: React.FC<SandboxProps> = ({
 
   if (!isOpen) return null;
 
+  const containerClasses = embedded 
+    ? "relative w-full h-full min-h-[600px] flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden"
+    : "fixed inset-4 flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden";
+
   return (
     <div
-      className="fixed inset-4 flex flex-col bg-[#0f0f1a]/98 backdrop-blur-lg rounded-xl border border-cyan-500/20 shadow-2xl overflow-hidden"
-      style={{ width: width ? `${width}px` : undefined, zIndex: 300 }}
+      className={containerClasses}
+      style={{ width: !embedded && width ? `${width}px` : undefined, zIndex: embedded ? 1 : 300 }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#0a0a12]/60">

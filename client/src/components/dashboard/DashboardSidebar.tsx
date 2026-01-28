@@ -11,6 +11,7 @@ import {
   Database,
   Cpu,
   Sparkles,
+  Code,
 } from 'lucide-react';
 
 interface NavItem {
@@ -58,6 +59,7 @@ export function DashboardSidebar({
   ];
 
   const systemItems: NavItem[] = [
+    { id: 'ide', label: 'IDE Sandbox', icon: <Code className="w-4 h-4" /> },
     { id: 'database', label: 'Data Storage', icon: <Database className="w-4 h-4" /> },
     { id: 'models', label: 'AI Models', icon: <Cpu className="w-4 h-4" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
