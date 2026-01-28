@@ -10,6 +10,9 @@ import { ChatThreadPanel } from './ChatThreadPanel';
 import { Sandbox } from '@/components/Sandbox';
 import { KnowledgeBaseSearch } from '@/components/KnowledgeBaseSearch';
 import { DailyNewsDigest } from '@/components/DailyNewsDigest';
+import { GmailTasksView } from '@/components/GmailTasksView';
+import { DatabaseView } from '@/components/DatabaseView';
+import AIModelSelector from '@/components/AIModelSelector';
 import type { DailyNewsDigest as DailyNewsDigestType } from '@/types/millalyzer';
 
 interface DashboardLayoutProps {
@@ -415,6 +418,21 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                  <KnowledgeBaseSearch className="min-h-[500px]" onClose={() => setActiveSection('hub')} />
                ) : activeSection === 'news' ? (
                  <DailyNewsDigest digest={emptyDigest} className="min-h-[500px]" />
+               ) : activeSection === 'gmail' ? (
+                 <GmailTasksView />
+               ) : activeSection === 'database' ? (
+                 <DatabaseView />
+               ) : activeSection === 'models' ? (
+                 <div className="flex justify-center p-10">
+                   <div className="w-full max-w-2xl">
+                     <AIModelSelector currentModel={selectedModel?.id as any} onModelChange={(id) => {
+                       // The selector updates the backend, we just need to reflect it locally if needed
+                       // But the header selector might be independent state.
+                       // Ideally they sync via the parent or context.
+                       // For now, let's just let it be.
+                     }} />
+                   </div>
+                 </div>
                ) : activeSection === 'settings' ? (
                  <div className="bg-[#0c021a]/90 border border-white/10 rounded-2xl p-6">
                    <h3 className="text-xl font-semibold text-white mb-6">System Settings</h3>
