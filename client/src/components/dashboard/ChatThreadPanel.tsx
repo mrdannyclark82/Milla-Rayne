@@ -1,7 +1,7 @@
 import { MessageSquare, MoreHorizontal, Send, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
-export function ChatThreadPanel() {
+export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: string) => void }) {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hello! I'm Milla. I'm online and synced with your hub. How can I assist you today?" },
   ]);
@@ -39,22 +39,13 @@ export function ChatThreadPanel() {
           role: 'assistant', 
           content: data.response || data.content 
         }]);
+        
+        // Handle YouTube video playback
+        if (data.youtube_play && data.youtube_play.videoId && onPlayVideo) {
+            onPlayVideo(data.youtube_play.videoId);
+        }
       } else if (data.error) {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: `Error: ${data.error}` 
-        }]);
-      }
-    } catch (error) {
-      console.error('Chat error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "I'm having trouble connecting to my neural network right now. Please try again." 
-      }]);
-    } finally {
-      setIsSending(false);
-    }
-  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {

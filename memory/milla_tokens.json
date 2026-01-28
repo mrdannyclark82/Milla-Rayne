@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 3860,
+  "tokenBalance": 3970,
   "transactions": [
     {
       "id": "txn_1769156078158_ohrhabd1d",
@@ -2591,6 +2591,105 @@
       "category": "test_pass",
       "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769557491774",
       "relatedId": "feat_1769557492862_g3azbbr0m"
+    },
+    {
+      "id": "txn_1769558138460_vvmm1zwmh",
+      "timestamp": 1769558138460,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769309165039",
+      "relatedId": "feat_1769309166018_n2oef6atn"
+    },
+    {
+      "id": "txn_1769558138474_gm31ximmo",
+      "timestamp": 1769558138474,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769320554724",
+      "relatedId": "feat_1769320555755_4je9o6art"
+    },
+    {
+      "id": "txn_1769558138481_njc8jyzjj",
+      "timestamp": 1769558138481,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769331357680",
+      "relatedId": "feat_1769331358682_outsidbal"
+    },
+    {
+      "id": "txn_1769558138493_vngi27t33",
+      "timestamp": 1769558138493,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769352955074",
+      "relatedId": "feat_1769352956199_tr04m6pwv"
+    },
+    {
+      "id": "txn_1769558138516_p2fttjotp",
+      "timestamp": 1769558138516,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769374556361",
+      "relatedId": "feat_1769374557216_amgsdpc19"
+    },
+    {
+      "id": "txn_1769558138529_imx0ox4u8",
+      "timestamp": 1769558138529,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769385356467",
+      "relatedId": "feat_1769385357456_c0o62o81z"
+    },
+    {
+      "id": "txn_1769558138551_tmt593fpn",
+      "timestamp": 1769558138551,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769450157571",
+      "relatedId": "feat_1769450158469_5f5ylfl3k"
+    },
+    {
+      "id": "txn_1769558138570_nrjxvskf6",
+      "timestamp": 1769558138570,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769471759861",
+      "relatedId": "feat_1769471760862_p2m6k9619"
+    },
+    {
+      "id": "txn_1769558138588_k9nmx6prk",
+      "timestamp": 1769558138588,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769514957796",
+      "relatedId": "feat_1769514958706_uvhhroenq"
+    },
+    {
+      "id": "txn_1769558138618_xroxa2i4w",
+      "timestamp": 1769558138618,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769547354830",
+      "relatedId": "feat_1769547355737_tl5y5nt8j"
+    },
+    {
+      "id": "txn_1769558138639_wl7lktk9q",
+      "timestamp": 1769558138639,
+      "amount": 10,
+      "type": "earn",
+      "category": "test_pass",
+      "description": "Test passed: Fix: Consider adding security scanning to your CI/CD pipeline in fix-security-1769557254162",
+      "relatedId": "feat_1769557255436_e8xio8anh"
     }
   ],
   "goals": [
@@ -2649,5 +2748,5 @@
     "UNLOCK_PERFORMANCE_PROFILING",
     "UNLOCK_PERSONALITY_CUSTOMIZATION"
   ],
-  "lastUpdated": 1769557734474
+  "lastUpdated": 1769558138639
 }

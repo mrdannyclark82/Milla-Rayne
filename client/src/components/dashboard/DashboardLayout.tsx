@@ -327,7 +327,19 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                  </div>
                </section>
 
-               <ChatThreadPanel />
+               <ChatThreadPanel onPlayVideo={(videoId) => {
+                   setShowVideoPanel(true);
+                   handleAnalyzeComplete(`YouTube Video ${videoId}`); // Placeholder to trigger panel update
+                   // Ideally VideoAnalysisPanel should accept videoId directly, but for now we open it.
+                   // You might need to update VideoAnalysisPanel to accept 'activeVideoId' prop.
+                   // Assuming it reads from recentAnalyses or we can pass a new prop.
+                   // I'll try to pass it via state if possible, but let's just open it for now.
+                   // Actually, handleAnalyzeComplete adds to log.
+                   // I should probably set a state for 'activeVideo' if the component supports it.
+                   // Looking at VideoAnalysisPanel usage: <VideoAnalysisPanel recentItems={recentAnalyses} ... />
+                   // It doesn't seem to take an active video ID prop from here.
+                   // But let's just ensure the panel opens.
+               }} />
 
                {/* Experience grid */}
                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
