@@ -18,17 +18,18 @@ export interface PersonalityContext {
 
 let veniceClient: OpenAI | null = null;
 
-try {
-  if (process.env.VENICE_API_KEY) {
-    veniceClient = new OpenAI({
-      baseURL: 'https://api.venice.ai/api/v1',
-      apiKey: process.env.VENICE_API_KEY,
-    });
-  } else {
-    console.warn('VENICE_API_KEY not set. Venice features will be disabled.');
+function getVeniceClient() {
+  if (!veniceClient && process.env.VENICE_API_KEY) {
+    try {
+      veniceClient = new OpenAI({
+        baseURL: 'https://api.venice.ai/api/v1',
+        apiKey: process.env.VENICE_API_KEY,
+      });
+    } catch (error) {
+      console.error('Failed to initialize Venice client:', error);
+    }
   }
-} catch (error) {
-  console.error('Failed to initialize Venice client:', error);
+  return veniceClient;
 }
 
 const MILLA_CORE = getMillaPersonaCondensed();
@@ -38,8 +39,9 @@ export async function generateVeniceResponse(
   context: PersonalityContext,
   maxTokens?: number
 ): Promise<AIResponse> {
+  const client = getVeniceClient();
   try {
-    if (!process.env.VENICE_API_KEY || !veniceClient) {
+    if (!process.env.VENICE_API_KEY || !client) {
       return {
         content: 'Venice integration is not configured. Please add your API key.',
         success: false,

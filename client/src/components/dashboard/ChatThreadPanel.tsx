@@ -1,8 +1,14 @@
 import { MessageSquare, MoreHorizontal, Send, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
+interface Message {
+  role: string;
+  content: string;
+  image?: string;
+}
+
 export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: string) => void }) {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: "Hello! I'm Milla. I'm online and synced with your hub. How can I assist you today?" },
   ]);
   const [inputValue, setInputValue] = useState('');
@@ -37,7 +43,8 @@ export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: strin
       if (data.response || data.content) {
         setMessages(prev => [...prev, { 
           role: 'assistant', 
-          content: data.response || data.content 
+          content: data.response || data.content,
+          image: data.imageUrl || data.image_url // Support both casing
         }]);
         
         // Handle YouTube video playback
@@ -45,7 +52,21 @@ export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: strin
             onPlayVideo(data.youtube_play.videoId);
         }
       } else if (data.error) {
-
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: `Error: ${data.error}` 
+        }]);
+      }
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I'm having trouble connecting to my neural network right now. Please try again." 
+      }]);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -93,6 +114,11 @@ export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: strin
                             : 'bg-[#7c3aed]/20 border border-[#7c3aed]/30 text-white rounded-tr-none shadow-[0_0_15px_rgba(124,58,237,0.1)]'
                     }`}>
                         {msg.content}
+                        {msg.image && (
+                            <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
+                                <img src={msg.image} alt="Generated content" className="w-full h-auto object-cover" />
+                            </div>
+                        )}
                     </div>
                 </div>
             ))}

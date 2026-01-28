@@ -5,17 +5,22 @@ interface VideoAnalysisPanelProps {
   onClose: () => void;
   recentItems?: string[];
   onAnalyzeComplete?: (label: string) => void;
+  activeVideoId?: string | null;
 }
 
 export function VideoAnalysisPanel({
   onClose,
   recentItems = [],
   onAnalyzeComplete,
+  activeVideoId,
 }: VideoAnalysisPanelProps) {
   const [videoUrl, setVideoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // If we have an active video ID, switch to player view automatically or show it above
+  // For now, let's render the player prominently if activeVideoId exists.
 
   const handleAnalyze = async () => {
     if (!videoUrl.trim()) return;
@@ -112,6 +117,20 @@ export function VideoAnalysisPanel({
 
       {/* Content */}
       <div className="p-4">
+        {activeVideoId && (
+          <div className="mb-4 rounded-xl overflow-hidden shadow-lg border border-white/10 aspect-video">
+            <iframe
+              width="100%"
+              height="100%"
+              src={`https://www.youtube.com/embed/${activeVideoId}?autoplay=1&mute=1&modestbranding=1&rel=0&origin=${window.location.origin}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
+
         {activeTab === 'url' ? (
           <div className="space-y-4">
             <div className="relative">

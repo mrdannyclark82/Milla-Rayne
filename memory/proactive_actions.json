@@ -253,8 +253,44 @@
       "relatedIds": [
         "sandbox_1769557491775_him83eplp"
       ]
+    },
+    {
+      "id": "action_1769560175821_82ovl8yuf",
+      "timestamp": 1769560175821,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769558140049",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769558140049_3el37ydt8"
+      ]
+    },
+    {
+      "id": "action_1769560885612_4qvq49l0i",
+      "timestamp": 1769560885612,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769560747574",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769560747574_7n63tgv1n"
+      ]
+    },
+    {
+      "id": "action_1769561991728_cmxcmddql",
+      "timestamp": 1769561991728,
+      "type": "pr_preparation",
+      "description": "Prepare PR for sandbox: fix-security-1769561175126",
+      "status": "planned",
+      "priority": "high",
+      "estimatedImpact": 8,
+      "relatedIds": [
+        "sandbox_1769561175127_or41pbk7a"
+      ]
     }
   ],
-  "lastCheck": 1769471755527,
-  "lastUpdated": 1769558141124
+  "lastCheck": 1769560175627,
+  "lastUpdated": 1769562460849
 }

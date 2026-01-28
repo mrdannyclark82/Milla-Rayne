@@ -62,7 +62,7 @@ export const config = {
   },
   minimax: {
     apiKey: process.env.MINIMAX_API_KEY,
-    model: process.env.MINIMAX_MODEL || 'abab6.5s-chat',
+    model: process.env.MINIMAX_MODEL || 'abab6.5-chat',
   },
   openrouter: {
     apiKey: process.env.OPENROUTER_API_KEY ?? '',

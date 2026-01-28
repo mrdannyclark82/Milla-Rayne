@@ -26,6 +26,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   ]);
   const [selectedModel, setSelectedModel] = useState<AIModel | null>(null);
   const [recentAnalyses, setRecentAnalyses] = useState<string[]>([]);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [scoreSettings, setScoreSettings] = useState({
     ambientLight: 65,
     amplitude: 50,
@@ -329,16 +330,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
                <ChatThreadPanel onPlayVideo={(videoId) => {
                    setShowVideoPanel(true);
-                   handleAnalyzeComplete(`YouTube Video ${videoId}`); // Placeholder to trigger panel update
-                   // Ideally VideoAnalysisPanel should accept videoId directly, but for now we open it.
-                   // You might need to update VideoAnalysisPanel to accept 'activeVideoId' prop.
-                   // Assuming it reads from recentAnalyses or we can pass a new prop.
-                   // I'll try to pass it via state if possible, but let's just open it for now.
-                   // Actually, handleAnalyzeComplete adds to log.
-                   // I should probably set a state for 'activeVideo' if the component supports it.
-                   // Looking at VideoAnalysisPanel usage: <VideoAnalysisPanel recentItems={recentAnalyses} ... />
-                   // It doesn't seem to take an active video ID prop from here.
-                   // But let's just ensure the panel opens.
+                   setActiveVideoId(videoId);
+                   handleAnalyzeComplete(`YouTube Video ${videoId}`); 
                }} />
 
                {/* Experience grid */}
@@ -414,6 +407,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                    recentItems={recentAnalyses}
                    onAnalyzeComplete={handleAnalyzeComplete}
                    onClose={() => setShowVideoPanel(false)}
+                   activeVideoId={activeVideoId}
                  />
                )}
 

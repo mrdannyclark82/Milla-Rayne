@@ -44,10 +44,11 @@ export async function initApp() {
           fontSrc: ["'self'", "data:"],
           objectSrc: ["'none'"],
           mediaSrc: ["'self'"],
-          frameSrc: ["'none'"],
+          frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
         },
       },
       crossOriginEmbedderPolicy: false, // Disable for development
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
     }));
     console.log('[Security] Helmet middleware enabled');
   } catch (error) {

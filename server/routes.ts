@@ -13,6 +13,8 @@ import {
   extractImagePrompt as extractImagePromptXAI,
   formatImageResponse,
 } from './imageService';
+import { generateImageWithVenice } from './veniceImageService';
+import { generateImageWithGrok } from './xaiImageService';
 import {
   generateImageWithGemini,
   extractImagePrompt as extractImagePromptGemini,
@@ -6922,175 +6924,38 @@ Could you share the repository URL again so I can take another look?
     }
 
     // Check for image generation requests - prefer Banana (Gemini via Banana/OpenRouter) then OpenRouter/Gemini preview, fallback to XAI
-    const imagePrompt = extractImagePromptGemini(userMessage);
-    if (imagePrompt) {
-      try {
-        // If a Banana/Gemini key is configured, try Banana first
-        if (
-          process.env.OPENROUTER_GEMINI_API_KEY ||
-          process.env.BANANA_API_KEY
-        ) {
-          const bananaResult = await generateImageWithBanana(imagePrompt);
-          if (bananaResult.success) {
-            // If Banana returned a direct image URL or data URI, return it
-            if (
-              bananaResult.imageUrl &&
-              (bananaResult.imageUrl.startsWith('http://') ||
-                bananaResult.imageUrl.startsWith('https://') ||
-                bananaResult.imageUrl.startsWith('data:image/'))
-            ) {
-              const response = formatImageResponseGemini(
-                imagePrompt,
-                true,
-                bananaResult.imageUrl,
-                bananaResult.error
-              );
-              return { content: response };
+      // Image generation requested
+      if (imagePrompt) {
+        console.log(`🎨 Generating image for prompt: "${imagePrompt}"`);
+        
+        let imageResult;
+        try {
+            // Prioritize Venice for image generation if the key is configured
+            if (process.env.VENICE_API_KEY) {
+                 console.log('🎨 Using Venice for image generation (Configured Priority)');
+                 imageResult = await generateImageWithVenice(imagePrompt);
+            } else {
+                 // Fallback to Hugging Face
+                 console.log('🎨 Using Hugging Face for image generation');
+                 imageResult = await generateImage(imagePrompt);
             }
-
-            // If Banana returned only a text description (data:text or plain text), return that directly
-            if (
-              bananaResult.imageUrl &&
-              bananaResult.imageUrl.startsWith('data:text')
-            ) {
-              const response = formatImageResponseGemini(
-                imagePrompt,
-                true,
-                bananaResult.imageUrl,
-                bananaResult.error
-              );
-              return { content: response };
-            }
-
-            // Otherwise return whatever Banana provided
-            const response = formatImageResponseGemini(
-              imagePrompt,
-              bananaResult.success,
-              bananaResult.imageUrl,
-              bananaResult.error
-            );
-            return { content: response };
-          }
-          // If Banana failed, log and fall through to OpenRouter
-          console.warn(
-            'Banana image generation failed, falling back to OpenRouter/Gemini preview:',
-            bananaResult.error
-          );
+        } catch (err) {
+            console.error('Image generation error:', err);
+            imageResult = { success: false, error: 'Internal generation error' };
         }
 
-        // Try OpenRouter (Gemini preview) next (may return an image URL, data URI, or enhanced description)
-        const geminiResult = await generateImageWithGemini(imagePrompt);
-        if (geminiResult.success) {
-          // If OpenRouter returned a direct image URL or data URI, return it directly
-          if (
-            geminiResult.imageUrl &&
-            (geminiResult.imageUrl.startsWith('http://') ||
-              geminiResult.imageUrl.startsWith('https://') ||
-              geminiResult.imageUrl.startsWith('data:image/'))
-          ) {
-            const response = formatImageResponseGemini(
-              imagePrompt,
-              true,
-              geminiResult.imageUrl,
-              geminiResult.error
-            );
-            return { content: response };
-          }
-
-          // If OpenRouter returned a textual enhanced description (data:text or plain text), extract description
-          let descriptionText: string | null = null;
-          if (
-            geminiResult.imageUrl &&
-            geminiResult.imageUrl.startsWith('data:text')
-          ) {
-            try {
-              descriptionText = decodeURIComponent(
-                geminiResult.imageUrl.split(',')[1]
-              );
-            } catch (err) {
-              descriptionText = null;
-            }
-          }
-
-          // If no data:text URI, but gemini returned a non-URL content in .imageUrl, treat that as description
-          if (
-            !descriptionText &&
-            geminiResult.imageUrl &&
-            !geminiResult.imageUrl.startsWith('http') &&
-            !geminiResult.imageUrl.startsWith('data:')
-          ) {
-            descriptionText = geminiResult.imageUrl;
-          }
-
-          // If we have an enhanced description, return it directly and do not pipe to xAI
-          if (descriptionText) {
-            const response = formatImageResponseGemini(
-              imagePrompt,
-              true,
-              `data:text/plain;charset=utf-8,${encodeURIComponent(descriptionText)}`,
-              geminiResult.error
-            );
-            return { content: response };
-          }
-
-          // Otherwise return what OpenRouter provided (description or other)
-          const response = formatImageResponseGemini(
-            imagePrompt,
-            geminiResult.success,
-            geminiResult.imageUrl,
-            geminiResult.error
-          );
-          return { content: response };
-        }
-
-        // If OpenRouter failed completely, fallback to Pollinations.AI (free, no API key needed)
-        console.log(
-          'Attempting Pollinations.AI image generation (free service)...'
-        );
-        const pollinationsResult = await generateImageWithPollinations(
+        const responseContent = formatImageResponse(
           imagePrompt,
-          {
-            model: 'flux',
-            width: 1024,
-            height: 1024,
-          }
+          imageResult.success,
+          imageResult.imageUrl,
+          imageResult.error
         );
-        if (pollinationsResult.success && pollinationsResult.imageUrl) {
-          const response = formatPollinationsImageResponse(
-            imagePrompt,
-            true,
-            pollinationsResult.imageUrl,
-            pollinationsResult.error
-          );
-          return { content: response };
-        }
 
-        // If Pollinations failed, try Hugging Face as last resort
-        if (process.env.HUGGINGFACE_API_KEY) {
-          console.log('Attempting Hugging Face image generation via MCP...');
-          const hfResult = await generateImage(imagePrompt);
-          if (hfResult.success && hfResult.imageUrl) {
-            const response = formatImageResponse(
-              imagePrompt,
-              true,
-              hfResult.imageUrl,
-              hfResult.error
-            );
-            return { content: response };
-          }
-        }
-
-        // If all providers failed, return a clear message
-        const responseText =
-          `I'd love to create an image of "${imagePrompt}", but all image generation services are currently unavailable. ` +
-          `The free service (Pollinations.AI) may be temporarily down. Please try again in a moment, babe.`;
-        return { content: responseText };
-      } catch (error) {
-        console.error('Image generation error:', error);
-        const response = `I apologize, but I encountered an issue generating the image for "${imagePrompt}". Please try again or try a different prompt.`;
-        return { content: response };
+        return { 
+            content: responseContent,
+            imageUrl: imageResult.imageUrl 
+        };
       }
-    }
 
     // Check for weather queries
     const weatherMatch = message.match(

@@ -17,17 +17,18 @@ export interface PersonalityContext {
 
 let minimaxClient: OpenAI | null = null;
 
-try {
-  if (process.env.MINIMAX_API_KEY) {
-    minimaxClient = new OpenAI({
-      baseURL: 'https://api.minimax.chat/v1',
-      apiKey: process.env.MINIMAX_API_KEY,
-    });
-  } else {
-    console.warn('MINIMAX_API_KEY not set. Minimax features will be disabled.');
+function getMinimaxClient() {
+  if (!minimaxClient && process.env.MINIMAX_API_KEY) {
+    try {
+      minimaxClient = new OpenAI({
+        baseURL: 'https://api.minimaxi.chat/v1',
+        apiKey: process.env.MINIMAX_API_KEY,
+      });
+    } catch (error) {
+      console.error('Failed to initialize Minimax client:', error);
+    }
   }
-} catch (error) {
-  console.error('Failed to initialize Minimax client:', error);
+  return minimaxClient;
 }
 
 const MILLA_CORE = getMillaPersonaCondensed();
@@ -37,8 +38,9 @@ export async function generateMinimaxResponse(
   context: PersonalityContext,
   maxTokens?: number
 ): Promise<AIResponse> {
+  const client = getMinimaxClient();
   try {
-    if (!process.env.MINIMAX_API_KEY || !minimaxClient) {
+    if (!process.env.MINIMAX_API_KEY || !client) {
       return {
         content: 'Minimax integration is not configured. Please add your API key.',
         success: false,
@@ -69,7 +71,7 @@ export async function generateMinimaxResponse(
 
     console.log('Sending messages to Minimax API');
 
-    const response = await minimaxClient.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: config.minimax.model || 'abab6.5s-chat',
       messages: messages as any,
       max_tokens: maxTokens || 2048,
