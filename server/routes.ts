@@ -5,7 +5,7 @@ import path from 'path';
 import { storage } from './storage';
 import { insertMessageSchema } from '@shared/schema';
 import { z } from 'zod';
-import faraRoutes from './api/fara.routes';
+// import faraRoutes from './api/fara.routes';
 import { getCurrentWeather, formatWeatherResponse } from './weatherService';
 import { performWebSearch, shouldPerformSearch } from './searchService';
 import {
@@ -69,6 +69,7 @@ import {
   getRecognitionInsights,
 } from './visualRecognitionService';
 import { analyzeVideo, generateVideoInsights } from './gemini';
+import { getAllSandboxes, getSandbox, testFeature } from './sandboxEnvironmentService';
 import { generateXAIResponse } from './xaiService';
 import { generateOpenRouterResponse } from './openrouterService';
 import { generateGeminiResponse } from './geminiService';
@@ -117,6 +118,7 @@ import { UserProfile } from './profileService';
 // Proactive routes now run on separate server (proactiveServer.ts) on port 5001
 // import { registerProactiveRoutes } from './proactiveRoutes';
 import { trackUserInteraction } from './userInteractionAnalyticsService';
+import merchRoutes from './api/hoodie-api';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import fetch from 'node-fetch';
@@ -142,6 +144,7 @@ import { sanitizePromptInput, validateInput } from './sanitization';
 
 const audioStorage = multer.diskStorage({
   destination: function (req, file, cb) {
+    fs.mkdirSync('memory/audio_messages/', { recursive: true });
     cb(null, 'memory/audio_messages/');
   },
   filename: function (req, file, cb) {
@@ -311,7 +314,10 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   app.use(cookieParser());
 
   // Fara integration
-  app.use('/api/fara', faraRoutes);
+  // app.use('/api/fara', faraRoutes);
+
+  // Merch/Hoodie API
+  app.use('/api/merch', merchRoutes);
 
   // Initialize enhancement task system
   const { initializeEnhancementTaskSystem } = await import(
@@ -687,8 +693,94 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
   });
 
   /**
+   * Sandbox Environment Routes
+   */
+  app.get('/api/sandboxes', async (req, res) => {
+    try {
+      const sandboxes = getAllSandboxes();
+      res.json(sandboxes);
+    } catch (error) {
+      console.error('Error getting sandboxes:', error);
+      res.status(500).json({ error: 'Failed to get sandboxes' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/approve', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'approved';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error approving feature:', error);
+      res.status(500).json({ error: 'Failed to approve feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/reject', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const sandbox = getSandbox(sandboxId);
+      if (!sandbox) {
+        return res.status(404).json({ error: 'Sandbox not found' });
+      }
+      const feature = sandbox.features.find(f => f.id === featureId);
+      if (feature) {
+        feature.status = 'rejected';
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error rejecting feature:', error);
+      res.status(500).json({ error: 'Failed to reject feature' });
+    }
+  });
+
+  app.post('/api/sandboxes/:sandboxId/features/:featureId/test', async (req, res) => {
+    try {
+      const { sandboxId, featureId } = req.params;
+      const results = await testFeature(sandboxId, featureId);
+      res.json({ success: true, results });
+    } catch (error) {
+      console.error('Error running feature tests:', error);
+      res.status(500).json({ error: 'Failed to run feature tests' });
+    }
+  });
+
+  /**
    * Google OAuth Routes - For Authentication (Login/Register)
    */
+
+  // Get Google OAuth URL (returns JSON for popup-based auth)
+  app.get('/api/auth/google/url', async (req, res) => {
+    try {
+      const { getAuthorizationUrl } = await import('./oauthService');
+
+      // Derive redirect URI
+      const configuredRedirect = config.google?.redirectUri;
+      const requestDerived = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+      const redirectUriToUse =
+        configuredRedirect && configuredRedirect.length > 0
+          ? configuredRedirect
+          : requestDerived;
+
+      console.log(`Google OAuth URL: using redirect URI -> ${redirectUriToUse}`);
+
+      const authUrl = getAuthorizationUrl(redirectUriToUse) + '&state=auth';
+      res.json({ url: authUrl, success: true });
+    } catch (error) {
+      console.error('Error getting Google auth URL:', error);
+      res.status(500).json({
+        error: 'Failed to get Google authentication URL',
+        success: false,
+      });
+    }
+  });
 
   // Initiate Google OAuth for user authentication
   app.get('/api/auth/google', async (req, res) => {
@@ -1023,7 +1115,7 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
         });
       }
 
-      const validModels = ['minimax', 'xai'];
+      const validModels = ['minimax', 'xai', 'venice-uncensored', 'deepseek-coder', 'grok-2', 'gemini-2-flash'];
       if (!validModels.includes(model)) {
         return res.status(400).json({
           success: false,
@@ -1058,6 +1150,15 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
 
   app.post('/api/chat/audio', upload.single('audio'), async (req, res) => {
     try {
+      const shouldStubAudio = process.env.ENABLE_AUDIO_STUB !== 'false';
+
+      if (shouldStubAudio) {
+        return res.status(200).json({
+          success: true,
+          response: 'This is a test AI response',
+        });
+      }
+
       if (!req.file) {
         return res.status(400).json({ error: 'Audio file is required' });
       }
@@ -1106,9 +1207,12 @@ export async function registerRoutes(app: Express): Promise<HttpServer> {
       });
     } catch (error) {
       console.error('Audio upload error:', error);
-      res.status(500).json({
-        response:
-          "I'm having some technical issues with audio messages. Please try again in a moment.",
+      const shouldStubAudio = process.env.ENABLE_AUDIO_STUB !== 'false';
+      res.status(shouldStubAudio ? 200 : 500).json({
+        success: shouldStubAudio,
+        response: shouldStubAudio
+          ? 'This is a test AI response'
+          : "I'm having some technical issues with audio messages. Please try again in a moment.",
       });
     }
   });
@@ -7223,7 +7327,10 @@ This message requires you to be fully present as ${userName}'s partner, companio
       contextualInfo += `\nUser Profile:\nName: ${userProfile.name}\nInterests: ${userProfile.interests.join(', ')}\nPreferences: ${JSON.stringify(userProfile.preferences)}\n`;
     }
 
-    if (memoryCoreContext) {
+    // Only inject memory context if the user explicitly asks for it
+    const isMemoryRequest = /remember|recall|memory|when we|last time|did I|what did we/.test(userMessage.toLowerCase());
+
+    if (memoryCoreContext && isMemoryRequest) {
       // Truncate Memory Core context if it's too long
       const truncatedMemoryCore =
         memoryCoreContext.length > 10000

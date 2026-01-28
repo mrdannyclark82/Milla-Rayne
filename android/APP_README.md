@@ -12,6 +12,9 @@ This is a native Android app built with Kotlin and Jetpack Compose that connects
 - 🎨 **Adaptive Scenes**: Beautiful background scenes that adapt to context
 - 💾 **Local Storage**: Conversation history stored locally
 - 🌐 **Server Integration**: Connects to Milla server API
+- 🔌 **Offline Mode**: Works standalone without server connection
+- 🤖 **Local AI Responses**: Pattern-based response generation for common queries
+- ⚡ **Edge Agent**: Local command processing for device controls
 - 📱 **Material Design**: Modern Material 3 design components
 
 ## Requirements
@@ -93,11 +96,20 @@ Click "Sync Project with Gradle Files" or let Android Studio do it automatically
 ### 5. Run the App
 
 1. Connect an Android device or start an emulator
-2. Make sure the Milla server is running on your computer:
-   ```bash
-   cd .. && npm run dev
-   ```
-3. Click the "Run" button (green triangle) in Android Studio
+2. Click the "Run" button (green triangle) in Android Studio
+
+**The app now works in two modes:**
+
+- **Online Mode** (with server): Full AI capabilities when server is running
+  ```bash
+  cd .. && npm run dev
+  ```
+  
+- **Offline Mode** (standalone): Works without server with limited features
+  - Pattern-based responses for common queries
+  - Local device controls (volume, WiFi, etc.)
+  - Time and date queries
+  - Basic conversation capabilities
 
 ## Building
 
@@ -134,13 +146,33 @@ See `app/build.gradle.kts` for complete dependency list.
 
 ## Configuration
 
+### Offline vs Online Mode
+
+The app automatically detects if the server is available:
+
+- **Offline Mode**: When the server is unreachable, the app uses a local AI response generator
+  - Handles basic queries and conversations
+  - Provides device control commands
+  - Shows "🔌 Offline Mode" indicator
+  
+- **Online Mode**: When connected to the server, full AI capabilities are available
+  - Advanced AI responses
+  - Full context awareness
+  - Scene adaptation
+
+You can use the app without ever connecting to a server! The offline mode provides a standalone AI companion experience.
+
 ### API Endpoint
 
 Update the API URL in one of these places:
 
 1. **Hardcoded** (for testing): `MillaApiClient.kt`
+   - Default: `http://10.0.2.2:5000/` (Android emulator localhost)
+   - For physical device: Use your computer's IP (e.g., `http://192.168.1.100:5000`)
 2. **Resources**: `res/values/strings.xml`
 3. **Environment** (production): Use BuildConfig
+
+**Note:** The default server URL (`10.0.2.2:5000`) is for Android emulator to access the host machine's localhost. For physical devices, you need to change this to your computer's actual IP address on the local network.
 
 ### Database
 
@@ -238,12 +270,102 @@ The app follows Clean Architecture principles:
 
 _(Screenshots to be added after implementation)_
 
-## Known Limitations
+## Offline Mode Capabilities
 
-- Voice features not yet implemented
-- Image upload not yet supported
-- Background scenes are CSS-only (no photo backgrounds)
-- No offline mode (requires server connection)
+The app's offline mode provides a robust standalone experience:
+
+### ✅ What Works Offline
+
+**Basic Conversation:**
+- Greetings and farewells
+- Simple questions and answers
+- Thank you responses
+- Identity questions ("Who are you?", "What's your name?")
+
+**Utilities:**
+- Current time and date
+- Day of the week
+- Basic math calculations (e.g., "what is 5 + 3?")
+- Jokes and motivational quotes
+
+**Device Control:**
+- Volume up/down
+- Mute/unmute
+- Media playback control (play/pause)
+- WiFi settings access
+- Brightness controls
+
+**Smart Home (placeholder):**
+- Light on/off commands
+- Thermostat controls
+- Extensible plugin system
+
+### ❌ What Requires Server
+
+- Advanced AI conversations
+- Web search and external data
+- Weather information
+- Detailed tutorials and how-to guides
+- Context-aware scene adaptation
+- Voice synthesis
+- Image processing
+
+### 🔧 How It Works
+
+1. **Automatic Fallback**: The app first tries to connect to the server. If unavailable, it automatically switches to offline mode.
+
+2. **Pattern Matching**: Uses intelligent pattern matching to recognize common queries and respond appropriately.
+
+3. **Edge Processing**: Leverages the LocalEdgeAgent for instant device control without network latency.
+
+4. **Local Storage**: All conversations are stored locally in Room database, available offline.
+
+### 💡 Optimization Tips
+
+To make the most of offline mode:
+
+1. **Pre-download Capabilities**: Future versions could include downloadable AI models
+2. **Cached Responses**: Frequently asked questions could be cached
+3. **Local Knowledge Base**: Common information stored locally
+4. **Offline Training**: Learn from user patterns to improve responses
+
+## Performance Optimizations
+
+The Android app is optimized for both online and offline operation:
+
+### Build Optimizations
+
+- **ProGuard/R8**: Enabled in release builds for code shrinking and obfuscation
+- **Minification**: Reduces APK size by removing unused code
+- **Native Libraries**: Compiled for multiple architectures (arm64-v8a, armeabi-v7a)
+
+### Runtime Optimizations
+
+- **Coroutines**: All network and database operations run on background threads
+- **Room Database**: Efficient local storage with Flow-based reactive queries
+- **Compose UI**: Modern declarative UI with built-in performance optimizations
+- **Memory Management**: Proper lifecycle handling prevents memory leaks
+- **Lazy Loading**: Messages loaded efficiently with LazyColumn
+
+### Network Optimizations
+
+- **Timeout Configuration**: 30-second timeouts prevent hanging
+- **Connection Pooling**: OkHttp client reuses connections
+- **Offline Fallback**: Instant switch to local processing when server unavailable
+- **Response Caching**: Local database caches all messages
+
+### Battery Optimizations
+
+- **Foreground Only**: No background services consuming battery
+- **Efficient Queries**: Database queries optimized with indexes
+- **Minimal Wake Locks**: No unnecessary wake locks or alarms
+
+## Known Limitations
+- **Offline mode limitations:**
+  - Pattern-based responses only (not true AI)
+  - Limited knowledge base
+  - Cannot access external services (weather, web search, etc.)
+  - Basic command processing only
 
 ## Contributing
 
