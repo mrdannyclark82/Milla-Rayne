@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface FloatingInputProps {
@@ -29,107 +29,31 @@ export function FloatingInput({
   cancelListening,
   onSendAudio,
 }: FloatingInputProps) {
-  const [position, setPosition] = useState({ x: 20, y: 20 });
-  const [size, setSize] = useState({ width: 500, height: 150 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [resizeStart, setResizeStart] = useState({
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Handle dragging
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('.resize-handle')) return;
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
-  };
-
-  useEffect(() => {
-    const handleMove = (e: MouseEvent) => {
-      if (isDragging) {
-        setPosition({
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-        });
-      } else if (isResizing) {
-        const newWidth = Math.max(
-          300,
-          resizeStart.width + (e.clientX - resizeStart.x)
-        );
-        const newHeight = Math.max(
-          100,
-          resizeStart.height + (e.clientY - resizeStart.y)
-        );
-        setSize({ width: newWidth, height: newHeight });
-      }
-    };
-
-    const handleUp = () => {
-      setIsDragging(false);
-      setIsResizing(false);
-    };
-
-    if (isDragging || isResizing) {
-      window.addEventListener('mousemove', handleMove);
-      window.addEventListener('mouseup', handleUp);
-      return () => {
-        window.removeEventListener('mousemove', handleMove);
-        window.removeEventListener('mouseup', handleUp);
-      };
-    }
-  }, [isDragging, isResizing, dragStart, resizeStart, position, size]);
-
-  // Handle resize
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsResizing(true);
-    setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
-      width: size.width,
-      height: size.height,
-    });
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: 'audio/webm',
-        });
-        onSendAudio(audioBlob);
-        audioChunksRef.current = [];
-        setIsRecording(false);
-      };
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-    }
-  };
+  const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <div className="w-full max-w-xl mx-auto">
-      <div className="relative flex items-center gap-2 bg-slate-800/90 backdrop-blur-sm border border-slate-700/50 rounded-full px-3 py-2">
+    <div className="w-full max-w-3xl mx-auto">
+      <div className={`relative flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl transition-all duration-300 ${
+        isFocused
+          ? 'bg-white/10 border border-[#00f2ff]/50 shadow-[0_0_30px_rgba(0,242,255,0.2)]'
+          : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+      }`}>
+        {/* AI indicator */}
+        <div className={`flex-shrink-0 transition-all duration-300 ${isLoading ? 'animate-pulse' : ''}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            isLoading
+              ? 'bg-gradient-to-r from-[#00f2ff] to-[#ff00aa]'
+              : 'bg-gradient-to-r from-[#00f2ff]/20 to-[#ff00aa]/20'
+          }`}>
+            <svg className={`w-4 h-4 ${isLoading ? 'text-white animate-spin' : 'text-[#00f2ff]'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 3l1.912 5.813a2 2 0 001.275 1.275L21 12l-5.813 1.912a2 2 0 00-1.275 1.275L12 21l-1.912-5.813a2 2 0 00-1.275-1.275L3 12l5.813-1.912a2 2 0 001.275-1.275L12 3z" />
+            </svg>
+          </div>
+        </div>
+
         {/* Attachment button */}
         <button
-          className="p-2 text-slate-400 hover:text-white transition-colors rounded-full hover:bg-slate-700/50"
+          className="flex-shrink-0 p-2 text-white/40 hover:text-white hover:bg-white/10 transition-all duration-300 rounded-xl"
           title="Attach file"
         >
           <svg
@@ -152,25 +76,31 @@ export function FloatingInput({
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           onKeyPress={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
               onSendMessage();
             }
           }}
-          placeholder="Message Milla..."
-          className="flex-1 bg-transparent border-none outline-none text-white placeholder-slate-500 text-sm"
+          placeholder="Type or Speak Command..."
+          className="flex-1 bg-transparent text-white placeholder:text-white/40 text-sm focus:outline-none disabled:opacity-50"
           disabled={isLoading}
         />
 
-        {/* Send button - pink/red circle */}
+        {/* Send button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onSendMessage();
           }}
           disabled={isLoading || !message.trim()}
-          className="p-2 bg-pink-500 hover:bg-pink-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+          className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+            message.trim() && !isLoading
+              ? 'bg-gradient-to-r from-[#00f2ff] to-[#ff00aa] text-white shadow-[0_0_20px_rgba(0,242,255,0.4)] hover:shadow-[0_0_30px_rgba(0,242,255,0.6)] hover:scale-105'
+              : 'bg-white/5 text-white/30 border border-white/10'
+          } disabled:cursor-not-allowed`}
           title="Send message"
         >
           <svg
@@ -196,11 +126,11 @@ export function FloatingInput({
             toggleListening();
           }}
           disabled={isLoading}
-          className={`p-2 rounded-full transition-colors ${
+          className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
             isListening 
-              ? 'bg-red-500 text-white animate-pulse' 
-              : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-          }`}
+              ? 'bg-[#ff00aa]/20 text-[#ff00aa] border border-[#ff00aa]/50 shadow-[0_0_20px_rgba(255,0,170,0.3)] animate-pulse' 
+              : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10 hover:text-white hover:border-white/30'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
           title={isListening ? 'Stop listening' : 'Start voice input'}
         >
           <svg
@@ -219,6 +149,11 @@ export function FloatingInput({
             <line x1="12" x2="12" y1="19" y2="22" />
           </svg>
         </button>
+      </div>
+      
+      {/* Keyboard hint */}
+      <div className="flex justify-center mt-2">
+        <span className="text-xs text-white/30">Press Enter to send, or click the mic to speak</span>
       </div>
     </div>
   );

@@ -228,17 +228,16 @@ Please provide:
 
 Format your response as JSON with keys: description, changes, reasoning`;
 
-      // Use OpenRouter service that's already configured
-      const { generateOpenRouterResponse } = await import(
-        '../openrouterService'
+      // Use Minimax service for coding tasks
+      const { generateMinimaxResponse } = await import(
+        '../minimaxService'
       );
 
-      const result = await generateOpenRouterResponse(
+      const result = await generateMinimaxResponse(
         prompt,
         {
           conversationHistory: [],
           userName: 'CodingAgent',
-          model: 'x-ai/grok-4.1-fast:free', // Use free model for coding tasks
         },
         4096 // Higher token limit for code generation
       );

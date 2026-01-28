@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.millarayne.agent.OfflineResponseGenerator
 import com.millarayne.api.MillaApiClient
 import com.millarayne.data.*
 import com.millarayne.ui.theme.*
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
         
         // Initialize database
         val database = AppDatabase.getDatabase(applicationContext)
-        viewModel.initialize(database)
+        viewModel.initialize(database, applicationContext)
         
         setContent {
             MillaTheme {
@@ -64,12 +65,23 @@ class ChatViewModel : ViewModel() {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+    
+    private val _isOfflineMode = MutableStateFlow(false)
+    val isOfflineMode: StateFlow<Boolean> = _isOfflineMode
 
     private lateinit var messageDao: MessageDao
+    private var offlineGenerator: OfflineResponseGenerator? = null
 
-    fun initialize(database: AppDatabase) {
+    fun initialize(database: AppDatabase, appContext: android.content.Context) {
         messageDao = database.messageDao()
+        // Use Application context to avoid memory leaks
+        offlineGenerator = OfflineResponseGenerator(appContext.applicationContext)
         loadMessages()
+    }
+    
+    override fun onCleared() {
+        super.onCleared()
+        offlineGenerator?.shutdown()
     }
 
     private fun loadMessages() {
@@ -112,38 +124,38 @@ class ChatViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Send to API
-                val request = ChatRequest(message = content.trim())
-                val response = try {
-                    MillaApiClient.apiService.sendMessage(request)
-                } catch (networkException: Exception) {
-                    android.util.Log.e("ChatViewModel", "Network request failed", networkException)
-                    throw networkException
-                }
+                // Try to send to API, fallback to offline mode
+                // Solution
+                  var responseText: String? = null
+// ... your logic ...
+// Do not assign responseText from inside closures or lambdas
 
-                if (response.isSuccessful) {
-                    val chatResponse = response.body()
-                    if (chatResponse != null && chatResponse.response.isNotBlank()) {
-                        // Save assistant message
-                        val assistantMessage = Message(
-                            content = chatResponse.response,
-                            role = "assistant",
-                            timestamp = System.currentTimeMillis()
-                        )
-                        try {
-                            messageDao.insertMessage(assistantMessage)
-                        } catch (dbException: Exception) {
-                            android.util.Log.e("ChatViewModel", "Failed to save assistant message to database", dbException)
-                            _error.value = "Message sent but failed to save response locally: ${dbException.localizedMessage ?: "Database error"}"
-                            return@launch
-                        }
-                    } else {
-                        _error.value = "Received empty response from server"
+                  if (responseText != null) {
+                  val assistantMessage = Message(
+                  content = responseText!!,
+                  role = "assistant",
+                  timestamp = System.currentTimeMillis()
+    )
+                  try {
+                    messageDao.insertMessage(assistantMessage)
+                  } catch (dbException: Exception) {
+        // ...
+    }
+}
+                // Save assistant message
+                if (responseText != null) {
+                    val assistantMessage = Message(
+                        content = responseText,
+                        role = "assistant",
+                        timestamp = System.currentTimeMillis()
+                    )
+                    try {
+                        messageDao.insertMessage(assistantMessage)
+                    } catch (dbException: Exception) {
+                        android.util.Log.e("ChatViewModel", "Failed to save assistant message to database", dbException)
+                        _error.value = "Message sent but failed to save response locally: ${dbException.localizedMessage ?: "Database error"}"
+                        return@launch
                     }
-                } else {
-                    val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("ChatViewModel", "Server error: ${response.code()} - $errorBody")
-                    _error.value = "Server error: ${response.code()} - ${response.message()}"
                 }
             } catch (e: Exception) {
                 android.util.Log.e("ChatViewModel", "Error in sendMessage", e)
@@ -170,6 +182,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val isOfflineMode by viewModel.isOfflineMode.collectAsState()
     
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
@@ -191,8 +204,9 @@ fun ChatScreen(viewModel: ChatViewModel) {
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Your AI Companion",
-                            style = MaterialTheme.typography.bodySmall
+                            if (isOfflineMode) "Offline Mode" else "Your AI Companion",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isOfflineMode) Color.Yellow else Color.White.copy(alpha = 0.9f)
                         )
                     }
                 },
@@ -277,6 +291,19 @@ fun ChatScreen(viewModel: ChatViewModel) {
                         style = MaterialTheme.typography.bodyLarge,
                         color = Color.Gray
                     )
+                    if (isOfflineMode) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "🔌 Running in offline mode",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF9C27B0)
+                        )
+                        Text(
+                            "Limited features available",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
                 }
             } else {
                 LazyColumn(

@@ -1,96 +1,32 @@
-node_modules
-dist
+# Dependencies
+node_modules/
+.npm
+.yarn
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
 .DS_Store
-server/public
-vite.config.ts.*
-*.tar.gz
-.avatar-backup
+Thumbs.db
 
-# Test coverage
-coverage
-.nyc_output
-*.lcov
-
-# Generated documentation (TypeDoc output)
-docs/api/
-
-.venv
-.local
-.config
-.idx
-python/
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-
-# Logs and debug files
-*.log
-*.pid
-debug*.html
-audit*.log
-
-# Memory backups and personal data
-memory/*.backup-*
-memory/milla.db
-memory/visual_memories.json
-memory/memories.txt
-memory/memories_encrypted.txt
-memory/merged_memories.txt
-memory/*.csv
-memory/audio_messages/
-memory/pr_memories/
-memory/milla_tokens.json
-memory/sandbox_environments.json
-memory/proactive_actions.json
-memory/feature_discovery.json
-
-# SQLite database files (may contain sensitive data)
-*.db
-*.db-shm
-*.db-wal
-
-# SQLite database files (local development data)
-memory/*.db
-memory/*.db-shm
-memory/*.db-wal
-
-# Environment variables with sensitive data (NEVER commit these!)
-.env
-.env.local
-.env.production
-.env.development
-.env.*.local
-*.env
-.env.save*
-.env.backup*
-
-# Storage audit and cleanup temporary files
-audit_report.txt
-.bfg-deletions.txt
-
-# Scene background images (keep README and .gitkeep, ignore actual images)
-# Users should add their own images - don't commit large image files to repo
-client/public/assets/scenes/*.jpg
-client/public/assets/scenes/*.jpeg
-client/public/assets/scenes/*.png
-client/public/assets/scenes/*.webp
-client/public/assets/scenes/*.gif
-!client/public/assets/scenes/README.md
-!client/public/assets/scenes/.gitkeep
-.gemini/
-gha-creds-*.json
-
-# Android build artifacts
-android/.gradle/
-android/build/
-android/app/build/
-android/.idea/
-android/local.properties
-android/*.iml
-android/.DS_Store
--e 
-# JDK directory (too large for Git)
- jdk-17.0.2/
+.Python
+venv/
+.venv/

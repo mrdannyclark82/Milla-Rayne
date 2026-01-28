@@ -192,7 +192,19 @@ export function initializeDailySuggestionScheduler(): void {
   );
 
   // Parse cron schedule (simple implementation for common patterns)
-  const [minute, hour] = cronSchedule.split(' ').map((v) => parseInt(v));
+  const cronParts = cronSchedule.split(' ');
+  if (cronParts.length < 2) {
+    console.error(`Invalid cron expression: "${cronSchedule}"`);
+    return;
+  }
+  
+  const minute = parseInt(cronParts[0]);
+  const hour = parseInt(cronParts[1]);
+  
+  if (isNaN(minute) || isNaN(hour)) {
+    console.error(`Invalid cron expression: "${cronSchedule}"`);
+    return;
+  }
 
   // Calculate milliseconds until next scheduled time
   const scheduleNextRun = () => {
@@ -213,7 +225,11 @@ export function initializeDailySuggestionScheduler(): void {
 
     setTimeout(async () => {
       console.log("Daily suggestions: Creating today's suggestion...");
-      await getOrCreateTodaySuggestion();
+      try {
+        await getOrCreateTodaySuggestion();
+      } catch (error) {
+        console.error('Error creating daily suggestion:', error);
+      }
 
       // Schedule next run (24 hours from now)
       scheduleNextRun();

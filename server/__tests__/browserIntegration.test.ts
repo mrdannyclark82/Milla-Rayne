@@ -21,6 +21,7 @@ process.env.MEMORY_KEY =
   'test-memory-key-with-at-least-32-characters-for-encryption';
 
 import { vi } from 'vitest';
+import { addNoteToGoogleTasks } from '../googleTasksService';
 
 describe('Browser Integration Service', () => {
   beforeAll(() => {

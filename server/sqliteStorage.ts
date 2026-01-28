@@ -881,7 +881,7 @@ export class SqliteStorage implements IStorage {
     const stmt = this.db.prepare(`
       SELECT * FROM suggestion_updates
       WHERE applied_at IS NULL
-      ORDER BY priority DESC, relevance DESC, created_at DESC
+      ORDER BY priority DESC, relevance_score DESC, created_at DESC
       LIMIT ?
     `);
 
@@ -892,7 +892,7 @@ export class SqliteStorage implements IStorage {
       description: u.description,
       category: u.category,
       priority: u.priority,
-      relevanceScore: u.relevance,
+      relevanceScore: u.relevance_score,
       metadata: u.metadata ? JSON.parse(u.metadata) : null,
       createdAt: new Date(u.created_at),
       appliedAt: u.applied_at ? new Date(u.applied_at) : null,
