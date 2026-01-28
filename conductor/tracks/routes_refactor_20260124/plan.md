@@ -14,10 +14,7 @@ This plan follows a Test-Driven Development (TDD) approach to refactoring the `s
 - [x] Task: Migrate Monitoring and System Routes [4bdd7dc]
 - [x] Task: Conductor - User Manual Verification 'Modular Route Migration' (Protocol in workflow.md)
 
-## Phase 3: Centralization and Cleanup
-- [~] Task: Implement Router Index and Switchover
-- [ ] Task: Final Polish and Monolith Removal
-    - [ ] Verify 100% endpoint coverage.
-    - [ ] Remove the now-redundant `server/routes.ts` file.
-    - [ ] Update project documentation to reflect the new architecture.
-- [ ] Task: Conductor - User Manual Verification 'Centralization and Cleanup' (Protocol in workflow.md)
+## Phase 3: Centralization and Cleanup [checkpoint: d8411f7]
+- [x] Task: Implement Router Index and Switchover
+- [x] Task: Final Polish and Monolith Removal
+- [x] Task: Conductor - User Manual Verification 'Centralization and Cleanup' (Protocol in workflow.md)
