@@ -116,7 +116,7 @@ export function ChatThreadPanel({ onPlayVideo }: { onPlayVideo?: (videoId: strin
                         {msg.content}
                         {msg.image && (
                             <div className="mt-3 rounded-lg overflow-hidden border border-white/10">
-                                <img src={msg.image} alt="Generated content" className="w-full h-auto object-cover" />
+                                <img src={msg.image} alt="Generated content" className="w-full max-h-[300px] object-contain bg-black/20" />
                             </div>
                         )}
                     </div>
