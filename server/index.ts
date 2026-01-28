@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express, { type Request, Response, NextFunction } from 'express';
+import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { registerModularRoutes } from './routes/index';
 import { setupVite, serveStatic, log } from './vite';
@@ -63,6 +64,7 @@ export async function initApp() {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
 
   // Add rate limiting to prevent abuse
   const rateLimitModule = await import('express-rate-limit');
