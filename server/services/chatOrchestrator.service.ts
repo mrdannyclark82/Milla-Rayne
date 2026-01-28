@@ -357,6 +357,11 @@ export async function generateAIResponse(
         let imageResult;
         if (process.env.VENICE_API_KEY) {
             imageResult = await generateImageWithVenice(imagePrompt);
+            // Fallback to Hugging Face if Venice fails
+            if (!imageResult.success) {
+                console.warn('Venice image generation failed, falling back to Hugging Face:', imageResult.error);
+                imageResult = await generateImage(imagePrompt);
+            }
         } else {
             imageResult = await generateImage(imagePrompt);
         }
