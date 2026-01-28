@@ -52,6 +52,7 @@ export async function dispatchExternalCommand(
     'SmartHomeAgent',
     'CalendarAgent',
     'TestAgent',
+    'CustomAgent',
   ];
 
   if (!allowedAgents.includes(command.target)) {

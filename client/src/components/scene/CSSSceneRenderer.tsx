@@ -146,8 +146,6 @@ const ParticleLayer: React.FC<{
             filter: config.type === "snowflakes" ? "blur(0.5px)" : "blur(1px)",
             left: `${p.left}%`,
             top: `${p.top}%`,
-            animation: `float ${p.duration / animationSpeed}s linear ${p.delay}s infinite, twinkle ${3 / animationSpeed}s ease-in-out infinite`,
-            filter: 'blur(1px)',
           }}
           aria-hidden="true"
         />

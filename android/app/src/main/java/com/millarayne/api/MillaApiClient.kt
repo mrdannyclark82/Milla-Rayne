@@ -14,7 +14,7 @@ object MillaApiClient {
     // Update this with your server's IP address
     // For emulator: use 10.0.2.2 to access host machine's localhost
     // For physical device: use your computer's IP (e.g., 192.168.1.100)
-    private const val BASE_URL = "http://192.168.1.66:5000/"
+    private const val BASE_URL = "http://10.0.2.2:5000/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

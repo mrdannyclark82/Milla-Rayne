@@ -70,10 +70,19 @@ export default {
           darker: '#05070d',
         },
         neon: {
-          pink: '#ff0080', // More vibrant/saturated pink for neon effects
-          blue: '#00ffff', // Pure cyan for neon effects
-          purple: '#bf40ff', // More vibrant purple for neon effects
+          pink: '#ff0080',
+          blue: '#00ffff',
+          purple: '#bf40ff',
           green: '#01ff89',
+        },
+        // Milla premium palette
+        milla: {
+          void: '#0c021a',
+          abyss: '#120428',
+          deep: '#1a0033',
+          sapphire: '#00f2ff',
+          magenta: '#ff00aa',
+          violet: '#7c3aed',
         },
       },
       fontFamily: {
@@ -143,6 +152,40 @@ export default {
             backgroundPosition: '200% center',
           },
         },
+        'float': {
+          '0%, 100%': {
+            transform: 'translateY(0px)',
+          },
+          '50%': {
+            transform: 'translateY(-10px)',
+          },
+        },
+        'spin': {
+          from: {
+            transform: 'rotate(0deg)',
+          },
+          to: {
+            transform: 'rotate(360deg)',
+          },
+        },
+        'scanlines': {
+          '0%': {
+            backgroundPosition: '0 0',
+          },
+          '100%': {
+            backgroundPosition: '0 100%',
+          },
+        },
+        'pulse': {
+          '0%, 100%': {
+            opacity: '1',
+            transform: 'scale(1)',
+          },
+          '50%': {
+            opacity: '0.7',
+            transform: 'scale(1.05)',
+          },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -150,6 +193,10 @@ export default {
         'glow-pulse': 'glow-pulse 2s ease-in-out infinite',
         'float-up': 'float-up 3s ease-in-out infinite',
         'shimmer': 'shimmer 3s linear infinite',
+        'float': 'float 4s ease-in-out infinite',
+        'spin': 'spin 10s linear infinite',
+        'scanlines': 'scanlines 8s linear infinite',
+        'pulse': 'pulse 2s ease-in-out infinite',
       },
     },
   },
