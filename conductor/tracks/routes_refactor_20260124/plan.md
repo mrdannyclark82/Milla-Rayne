@@ -20,11 +20,11 @@ This plan follows a Test-Driven Development (TDD) approach to refactoring the `s
     - [ ] Write integration tests for YouTube analysis and video insights endpoints.
     - [ ] Extract logic to `server/routes/media.routes.ts`.
     - [ ] Verify tests pass.
-- [~] Task: Migrate Monitoring and System Routes
+- [x] Task: Migrate Monitoring and System Routes [4bdd7dc]
     - [ ] Write integration tests for health, metrics, and evolution endpoints.
     - [ ] Extract logic to `server/routes/system.routes.ts`.
     - [ ] Verify tests pass.
-- [ ] Task: Conductor - User Manual Verification 'Modular Route Migration' (Protocol in workflow.md)
+- [~] Task: Conductor - User Manual Verification 'Modular Route Migration' (Protocol in workflow.md)
 
 ## Phase 3: Centralization and Cleanup
 - [ ] Task: Implement Router Index and Switchover
