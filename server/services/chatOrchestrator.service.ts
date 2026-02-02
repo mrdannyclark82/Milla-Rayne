@@ -417,7 +417,7 @@ export async function generateAIResponse(
       userId,
       conversationHistory,
       userName,
-      userEmotionalState: userEmotionalState || analysis.sentiment,
+      userEmotionalState: (userEmotionalState === 'unknown' ? undefined : userEmotionalState) || analysis.sentiment,
       urgency: analysis.urgency,
     },
     config.maxOutputTokens

@@ -37,7 +37,7 @@ export interface TrainingData {
 }
 
 export class SceneDetectionModel {
-  private model: tf.Sequential;
+  private model: tf.LayersModel;
   private isTrained: boolean = false;
   private readonly NUM_LOCATIONS = LOCATIONS.length;
   // Features:
@@ -207,15 +207,19 @@ export class SceneDetectionModel {
 
         fs.writeFileSync(path.join(dirPath, 'model.json'), JSON.stringify(modelJson, null, 2));
 
+        let weightData: ArrayBuffer | undefined;
         if (artifacts.weightData) {
-          fs.writeFileSync(path.join(dirPath, 'weights.bin'), Buffer.from(artifacts.weightData));
+          weightData = artifacts.weightData instanceof ArrayBuffer ? artifacts.weightData : (Array.isArray(artifacts.weightData) ? artifacts.weightData[0] : artifacts.weightData) as ArrayBuffer;
+          if (weightData) {
+             fs.writeFileSync(path.join(dirPath, 'weights.bin'), Buffer.from(weightData));
+          }
         }
 
         return {
           modelArtifactsInfo: {
             dateSaved: new Date(),
             modelTopologyType: 'JSON',
-            weightDataBytes: artifacts.weightData ? artifacts.weightData.byteLength : 0
+            weightDataBytes: weightData ? weightData.byteLength : 0
           }
         };
       }));

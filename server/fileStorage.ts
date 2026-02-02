@@ -229,6 +229,7 @@ export class FileStorage implements IStorage {
       id,
       timestamp: new Date(),
       personalityMode: insertMessage.personalityMode || null,
+      displayRole: insertMessage.displayRole || null,
       userId: insertMessage.userId || null,
     };
     this.messages.set(id, message);

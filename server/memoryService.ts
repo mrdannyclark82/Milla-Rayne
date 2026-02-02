@@ -1163,7 +1163,7 @@ export async function storeSensitiveMemory(
       console.log('🔒 Encrypted medical notes with HE');
     }
 
-    await storage.saveSensitiveMemory(userId, encryptedData);
+    await storage.saveSensitiveMemory(userId, { ...encryptedData, userId });
     console.log('[MemoryService] Sensitive data encrypted and stored in DB');
 
     return { success: true };

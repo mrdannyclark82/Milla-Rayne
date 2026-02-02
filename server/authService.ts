@@ -12,6 +12,8 @@ import type { InsertUser, User, UserSession } from '@shared/schema';
 
 const SESSION_EXPIRY_HOURS = 24 * 7; // 7 days
 
+export type SafeUser = Pick<User, 'id' | 'username' | 'email'>;
+
 /**
  * Register a new user
  */
@@ -19,7 +21,7 @@ export async function registerUser(
   username: string,
   email: string,
   password: string
-): Promise<{ success: boolean; user?: Partial<User>; error?: string }> {
+): Promise<{ success: boolean; user?: SafeUser; error?: string }> {
   try {
     // Check if username or email already exists
     const existingUser = await storage.getUserByUsername(username);
@@ -66,7 +68,7 @@ export async function loginUser(
   password: string
 ): Promise<{
   success: boolean;
-  user?: Partial<User>;
+  user?: SafeUser;
   sessionToken?: string;
   error?: string;
 }> {
@@ -119,7 +121,7 @@ export async function loginUser(
  */
 export async function validateSession(
   sessionToken: string
-): Promise<{ valid: boolean; user?: Partial<User>; session?: UserSession }> {
+): Promise<{ valid: boolean; user?: SafeUser; session?: UserSession }> {
   try {
     const session = await storage.getUserSessionByToken(sessionToken);
     if (!session) {
@@ -216,7 +218,7 @@ export async function loginOrRegisterWithGoogle(
   name: string
 ): Promise<{
   success: boolean;
-  user?: Partial<User>;
+  user?: SafeUser;
   sessionToken?: string;
   error?: string;
   isNewUser?: boolean;
@@ -317,7 +319,7 @@ export async function loginUserWithZKP(
   zkProof: string
 ): Promise<{
   success: boolean;
-  user?: Partial<User>;
+  user?: SafeUser;
   sessionToken?: string;
   error?: string;
 }> {

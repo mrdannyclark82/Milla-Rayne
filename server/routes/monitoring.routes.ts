@@ -37,7 +37,7 @@ export function registerMonitoringRoutes(app: Express) {
 
   // XAI Reasoning session data
   router.get('/xai/session/:sessionId', asyncHandler(async (req, res) => {
-    const data = getReasoningData(req.params.sessionId);
+    const data = getReasoningData(req.params.sessionId as string);
     res.json({ success: true, data, timestamp: Date.now() });
   }));
 

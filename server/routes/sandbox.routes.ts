@@ -23,7 +23,7 @@ export function registerSandboxRoutes(app: Express) {
   }));
 
   router.post('/sandboxes/:sandboxId/features/:featureId/test', asyncHandler(async (req, res) => {
-    const result = await testFeature(req.params.sandboxId, req.params.featureId);
+    const result = await testFeature(req.params.sandboxId as string, req.params.featureId as string, req.body.testType || 'unit');
     res.json(result);
   }));
 

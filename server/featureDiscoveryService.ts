@@ -400,26 +400,27 @@ class FeatureDiscoveryService {
       const { performWebSearch } = await import('./searchService');
 
       for (const term of searchTerms) {
-        const results = await performWebSearch(term);
+        const response = await performWebSearch(term);
 
-        for (const result of results.slice(0, 5)) {
+        if (response && response.results) {
+        for (const result of response.results.slice(0, 5)) {
           // Extract features from web search results
           const feature: DiscoveredFeature = {
             id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             name: this.extractFeatureNameFromText(result.title),
-            description: result.snippet || result.title,
+            description: result.description || result.title,
             source: 'web',
             sourceUrl: result.url,
             popularity: 5, // Base popularity for web sources
             relevance: this.calculateWebResultRelevance(
               result.title,
-              result.snippet
+              result.description
             ),
             implementationComplexity: 'medium',
             estimatedValue: 6,
             discoveredAt: Date.now(),
             status: 'discovered',
-            tags: this.extractTagsFromText(result.title + ' ' + result.snippet),
+            tags: this.extractTagsFromText(result.title + ' ' + result.description),
           };
 
           const existing = this.discoveredFeatures.find(
@@ -432,6 +433,7 @@ class FeatureDiscoveryService {
             this.discoveredFeatures.push(feature);
             newFeatures.push(feature);
           }
+        }
         }
       }
 
@@ -453,10 +455,16 @@ class FeatureDiscoveryService {
     const newFeatures: DiscoveredFeature[] = [];
 
     try {
-      const { searchYouTubeVideos } = await import('./youtubeService');
+      const { searchVideos } = await import('./googleYoutubeService');
 
       for (const term of searchTerms) {
-        const videos = await searchYouTubeVideos(term, 5);
+        const result = await searchVideos('default-user', term, 5);
+        const videos = result.success && result.data ? result.data.map((v: any) => ({
+            title: v.snippet.title,
+            description: v.snippet.description,
+            videoId: v.id.videoId,
+            views: 1000 // Mock views
+        })) : [];
 
         for (const video of videos) {
           // Extract features from YouTube video titles and descriptions
@@ -629,8 +637,8 @@ class FeatureDiscoveryService {
       if (filters.source) {
         features = features.filter((f) => f.source === filters.source);
       }
-      if (filters.minRelevance) {
-        features = features.filter((f) => f.relevance >= filters.minRelevance);
+        if (filters.minRelevance !== undefined) {
+          features = features.filter((f) => f.relevance >= filters.minRelevance!);
       }
       if (filters.tags && filters.tags.length > 0) {
         features = features.filter((f) =>
