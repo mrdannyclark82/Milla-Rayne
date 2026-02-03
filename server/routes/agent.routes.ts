@@ -53,13 +53,13 @@ export function registerAgentRoutes(app: Express) {
   }));
 
   router.get('/agent/tasks/:id', asyncHandler(async (req, res) => {
-    const task = await getAgentTask(req.params.id);
+    const task = await getAgentTask(req.params.id as string);
     if (!task) return res.status(404).json({ error: 'Task not found' });
     res.json({ success: true, task });
   }));
 
   router.post('/agent/tasks/:id/run', asyncHandler(async (req, res) => {
-    const task = await getAgentTask(req.params.id);
+    const task = await getAgentTask(req.params.id as string);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
     if (task.status === 'in_progress') {
@@ -76,16 +76,16 @@ export function registerAgentRoutes(app: Express) {
 
   router.patch('/agent/tasks/:id', asyncHandler(async (req, res) => {
     const patch = req.body || {};
-    const updated = await updateAgentTask(req.params.id, patch as any);
+    const updated = await updateAgentTask(req.params.id as string, patch as any);
     if (!updated) return res.status(404).json({ error: 'Task not found' });
     res.json({ success: true, task: updated });
   }));
 
   router.post('/agent/tasks/:id/approve', asyncHandler(async (req, res) => {
-    const task = await getAgentTask(req.params.id);
+    const task = await getAgentTask(req.params.id as string);
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
-    const updated = await updateAgentTask(req.params.id, {
+    const updated = await updateAgentTask(req.params.id as string, {
       metadata: { ...task.metadata, approved: true },
     });
 
@@ -127,19 +127,19 @@ export function registerAgentRoutes(app: Express) {
   }));
 
   router.put('/user-tasks/:id', asyncHandler(async (req, res) => {
-    const task = await updateUserTask(req.params.id, req.body);
+    const task = await updateUserTask(req.params.id as string, req.body);
     if (!task) return res.status(404).json({ message: 'Task not found' });
     res.json(task);
   }));
 
   router.delete('/user-tasks/:id', asyncHandler(async (req, res) => {
-    const deleted = await deleteUserTask(req.params.id);
+    const deleted = await deleteUserTask(req.params.id as string);
     if (!deleted) return res.status(404).json({ message: 'Task not found' });
     res.json({ message: 'Task deleted successfully' });
   }));
 
   router.get('/user-tasks/upcoming', asyncHandler(async (req, res) => {
-    const days = parseInt(req.query.days as string) || 7;
+    const days = parseInt((req.query.days as string) || '7');
     const tasks = getUpcomingTasks(days);
     res.json(tasks);
   }));

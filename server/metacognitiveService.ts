@@ -305,11 +305,15 @@ export async function reportAgentFailure(
 
     const fixTaskId = uuidv4();
     await addTask({
-      id: fixTaskId,
-      agentName: 'codingAgent', // P2.5 will implement the fix generation
+      taskId: fixTaskId,
+      supervisor: 'SCPA',
+      agent: 'codingAgent', // P2.5 will implement the fix generation
+      action: 'self_correct',
       status: 'pending',
-      description: `Self-correct failure in ${failureContext.agentName}: ${errorMessage}`,
-      priority: isCritical ? 'high' : 'medium',
+      payload: {
+        description: `Self-correct failure in ${failureContext.agentName}: ${errorMessage}`,
+        priority: isCritical ? 'high' : 'medium',
+      },
       createdAt: new Date().toISOString(),
       metadata: {
         scpaFailure: true,

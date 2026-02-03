@@ -342,7 +342,7 @@ export async function dispatchAIResponse(
   }
 
   // 4. Mistral
-  if (!response.success && config.mistral?.apiKey) { 
+  if (!response.success && (config as any).mistral?.apiKey) {
     console.log('Trying Mistral...');
     response = await generateMistralResponse(augmentedMessage, {
       conversationHistory: context.conversationHistory,

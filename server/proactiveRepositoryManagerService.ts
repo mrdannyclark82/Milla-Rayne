@@ -52,7 +52,7 @@ export enum ProactiveActionType {
 
 export interface Suggestion {
   id: string;
-  type: 'bug_fix' | 'optimization';
+  type: 'bug_fix' | 'optimization' | 'performance' | 'feature_enhancement' | 'new_feature';
   description: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
   estimatedImpact: number;

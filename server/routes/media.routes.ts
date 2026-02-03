@@ -83,7 +83,7 @@ export function registerMediaRoutes(app: Express) {
     }
 
     const { startActiveListening } = await import('../activeListeningService');
-    const result = await startActiveListening(videoId, videoContext);
+    const result = await startActiveListening(videoId as string, videoContext);
 
     res.json({
       success: true,
@@ -124,7 +124,7 @@ export function registerMediaRoutes(app: Express) {
 
   // Scene Mood Backgrounds
   router.get('/scene/mood-background/:mood', asyncHandler(async (req, res) => {
-    const { mood } = req.params;
+    const mood = req.params.mood as string;
     const forceRegenerate = req.query.regenerate === 'true';
     
     const validMoods = ['calm', 'energetic', 'romantic', 'mysterious', 'playful'];

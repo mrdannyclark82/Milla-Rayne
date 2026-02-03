@@ -55,7 +55,7 @@ class CodingAgent extends BaseAgent {
    */
   async performAutomatedFixLifecycle(params: {
     repositoryPath: string;
-    issueSource?: 'error_log' | 'code_analysis' | 'manual';
+    issueSource?: 'error_log' | 'code_analysis' | 'manual' | 'proactive_cycle';
   }): Promise<{
     success: boolean;
     sandboxId?: string;

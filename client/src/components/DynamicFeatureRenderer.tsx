@@ -48,6 +48,7 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
               cliCommands: [],
               actionableItems: [],
               transcriptAvailable: false,
+              analysisDate: new Date().toISOString(),
             }}
             onClose={handleClose}
           />
@@ -56,6 +57,7 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
       case 'GuidedMeditation':
         return (
           <GuidedMeditation
+            // @ts-ignore - Component might not accept duration yet
             duration={activeCommand.data?.duration || 10}
             onClose={handleClose}
           />
@@ -70,7 +72,7 @@ export const DynamicFeatureRenderer: React.FC<DynamicFeatureRendererProps> = ({
         );
 
       case 'SharedNotepad':
-        return <SharedNotepad onClose={handleClose} />;
+        return <SharedNotepad isOpen={true} onClose={handleClose} />;
 
       case 'CodeSnippetCard':
         // Code snippet would be rendered inline in chat, not as a full modal

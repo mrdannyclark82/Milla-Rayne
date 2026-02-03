@@ -24,12 +24,12 @@ export function registerPersonalTaskRoutes(app: Express) {
   }));
 
   router.post('/personal-tasks/:taskId/start', asyncHandler(async (req, res) => {
-    const task = await startTask(req.params.taskId);
+    const task = await startTask(req.params.taskId as string);
     res.json({ success: !!task, task });
   }));
 
   router.post('/personal-tasks/:taskId/complete', asyncHandler(async (req, res) => {
-    const task = await completeTask(req.params.taskId);
+    const task = await completeTask(req.params.taskId as string, req.body.insights || 'Task completed via API');
     res.json({ success: !!task, task });
   }));
 
