@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-import { useChat } from 'ai/react';
-import type { Message } from 'ai/react';
+import { useChat } from 'ai';
+import type { Message } from 'ai';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
@@ -58,7 +58,7 @@ export function AssistantUI({
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
-          {messages.map((message) => (
+          {messages.map((message: Message) => (
             <MessageBubble
               key={message.id}
               role={message.role}
