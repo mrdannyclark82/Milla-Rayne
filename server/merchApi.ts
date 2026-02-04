@@ -16,7 +16,8 @@ export interface MerchItem {
 // Initialize Stripe if secret key is available
 const stripe = config.stripe.secretKey
   ? new Stripe(config.stripe.secretKey, {
-      apiVersion: '2025-02-24.acacia',
+      // TODO: Remove this cast once Stripe SDK types are updated to include version '2026-01-28.clover'
+      apiVersion: '2025-02-24.acacia' as any,
     })
   : null;
 

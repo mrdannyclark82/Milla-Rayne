@@ -147,7 +147,10 @@ export function registerMediaRoutes(app: Express) {
   router.get(
     '/scene/mood-background/:mood',
     asyncHandler(async (req, res) => {
-      const mood = req.params.mood as string;
+      const { mood } = req.params;
+      if (typeof mood !== 'string' || !mood) {
+        return res.status(400).json({ error: 'Invalid mood parameter' });
+      }
       const forceRegenerate = req.query.regenerate === 'true';
 
       const validMoods = [

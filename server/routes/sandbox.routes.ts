@@ -23,6 +23,13 @@ export function registerSandboxRoutes(app: Express) {
   router.post(
     '/sandboxes/:sandboxId/features/:featureId/approve',
     asyncHandler(async (req, res) => {
+      const { sandboxId, featureId } = req.params;
+      if (typeof sandboxId !== 'string' || !sandboxId) {
+        return res.status(400).json({ success: false, error: 'Invalid sandbox ID' });
+      }
+      if (typeof featureId !== 'string' || !featureId) {
+        return res.status(400).json({ success: false, error: 'Invalid feature ID' });
+      }
       // Implementation for approval logic (likely in sandbox service)
       res.json({ success: true, message: 'Feature approved' });
     })
@@ -31,10 +38,14 @@ export function registerSandboxRoutes(app: Express) {
   router.post(
     '/sandboxes/:sandboxId/features/:featureId/test',
     asyncHandler(async (req, res) => {
-      const result = await testFeature(
-        req.params.sandboxId,
-        req.params.featureId
-      );
+      const { sandboxId, featureId } = req.params;
+      if (typeof sandboxId !== 'string' || !sandboxId) {
+        return res.status(400).json({ success: false, error: 'Invalid sandbox ID' });
+      }
+      if (typeof featureId !== 'string' || !featureId) {
+        return res.status(400).json({ success: false, error: 'Invalid feature ID' });
+      }
+      const result = await testFeature(sandboxId, featureId);
       res.json(result);
     })
   );

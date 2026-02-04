@@ -21,7 +21,53 @@ export function registerGoogleRoutes(app: Express) {
       const { code } = req.query;
       if (!code) return res.status(400).send('Code is required');
 
-      const result = await loginOrRegisterWithGoogle(code as string);
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: config.google.clientId || '',
+          client_secret: config.google.clientSecret || '',
+          redirect_uri: config.google.redirectUri || '',
+          grant_type: 'authorization_code',
+        }),
+      });
+
+      if (!tokenResponse.ok) {
+        const error = await tokenResponse.text();
+        console.error('Token exchange failed:', error);
+        return res.status(401).send('Failed to exchange authorization code');
+      }
+
+      const tokenData = await tokenResponse.json();
+      const accessToken = tokenData.access_token;
+
+      // Fetch user profile information from Google
+      const profileResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (!profileResponse.ok) {
+        return res.status(401).send('Failed to fetch user profile');
+      }
+
+      const profile = await profileResponse.json();
+      
+      // Now call loginOrRegisterWithGoogle with the correct parameters
+      const result = await loginOrRegisterWithGoogle(
+        profile.email,
+        profile.id,
+        profile.name || profile.email.split('@')[0]
+      );
+      
       if (!result.success) return res.status(401).send(result.error);
 
       res.cookie('session_token', result.sessionToken, {

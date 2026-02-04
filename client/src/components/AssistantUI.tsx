@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-// @ts-expect-error - ai/react types may not be available yet
 import { useChat } from 'ai/react';
+import type { Message } from 'ai/react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
