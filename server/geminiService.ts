@@ -2,7 +2,7 @@
  * Gemini AI Service
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { config } from './config';
 import { performWebSearch, SearchResult } from './searchService'; // Import the search service
 
@@ -13,17 +13,23 @@ export interface GeminiResponse {
   toolExecuted?: boolean; // Indicate if a tool was executed
 }
 
-// Define the tool for Gemini
+// Define interface for function call arguments
+interface FunctionCallArgs {
+  query?: string;
+  [key: string]: any;
+}
+
+// Define the tool for Gemini with proper SchemaType enum
 const searchTool = {
   functionDeclarations: [
     {
       name: 'performWebSearch',
       description: 'Performs a web search to find information online.',
       parameters: {
-        type: 'OBJECT',
+        type: SchemaType.OBJECT,
         properties: {
           query: {
-            type: 'STRING',
+            type: SchemaType.STRING,
             description: 'The search query string.',
           },
         },
@@ -47,8 +53,7 @@ export async function generateGeminiResponse(
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    // Cast tools to any to bypass strict type checking if SchemaType mismatch persists with string literals
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', tools: [searchTool] as any });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', tools: [searchTool] });
 
     // Start a chat session with the model
     const chat = model.startChat({});
@@ -67,9 +72,10 @@ export async function generateGeminiResponse(
 
       if (functionCall.name === 'performWebSearch') {
         toolExecuted = true;
-        // args might be an object or map, depending on SDK. Usually object.
-        console.log('Gemini called performWebSearch with query:', functionCall.args.query);
-        const searchResponse = await performWebSearch(functionCall.args.query);
+        // Use proper type for args
+        const args = functionCall.args as FunctionCallArgs;
+        console.log('Gemini called performWebSearch with query:', args.query);
+        const searchResponse = await performWebSearch(args.query || '');
         toolResult = searchResponse ? searchResponse.results : null; // Pass the results array
       }
 

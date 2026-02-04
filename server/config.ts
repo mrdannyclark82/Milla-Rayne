@@ -89,6 +89,9 @@ export const config = {
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GEMINI_API_KEY,
   },
+  mistral: {
+    apiKey: process.env.MISTRAL_API_KEY,
+  },
   google: {
     mapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
     clientId: process.env.GOOGLE_CLIENT_ID,

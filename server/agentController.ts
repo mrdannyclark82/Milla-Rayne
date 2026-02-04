@@ -20,8 +20,11 @@ class AgentController {
    * Register an agent (must extend BaseAgent)
    */
   registerAgent(agent: BaseAgent) {
+    // Type-safe way to get agent name even if it's not a BaseAgent
+    const agentName = (typeof agent === 'object' && agent !== null && 'name' in agent) ? (agent as any).name : 'unknown agent';
+    
     if (!(agent instanceof BaseAgent)) {
-      throw new Error(`Agent '${agent.name}' must extend BaseAgent class`);
+      throw new Error(`Agent '${agentName}' must extend BaseAgent class`);
     }
 
     this.agents.set(agent.name, agent);

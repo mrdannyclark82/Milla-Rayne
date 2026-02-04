@@ -61,7 +61,11 @@ export function registerAgentRoutes(app: Express) {
   router.get(
     '/agent/tasks/:id',
     asyncHandler(async (req, res) => {
-      const task = await getAgentTask(req.params.id as string);
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ error: 'Invalid task ID' });
+      }
+      const task = await getAgentTask(id);
       if (!task) return res.status(404).json({ error: 'Task not found' });
       res.json({ success: true, task });
     })
@@ -70,7 +74,11 @@ export function registerAgentRoutes(app: Express) {
   router.post(
     '/agent/tasks/:id/run',
     asyncHandler(async (req, res) => {
-      const task = await getAgentTask(req.params.id as string);
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ error: 'Invalid task ID' });
+      }
+      const task = await getAgentTask(id);
       if (!task) return res.status(404).json({ error: 'Task not found' });
 
       if (task.status === 'in_progress') {
@@ -93,11 +101,12 @@ export function registerAgentRoutes(app: Express) {
   router.patch(
     '/agent/tasks/:id',
     asyncHandler(async (req, res) => {
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ error: 'Invalid task ID' });
+      }
       const patch = req.body || {};
-      const updated = await updateAgentTask(
-        req.params.id as string,
-        patch as any
-      );
+      const updated = await updateAgentTask(id, patch as any);
       if (!updated) return res.status(404).json({ error: 'Task not found' });
       res.json({ success: true, task: updated });
     })
@@ -106,10 +115,14 @@ export function registerAgentRoutes(app: Express) {
   router.post(
     '/agent/tasks/:id/approve',
     asyncHandler(async (req, res) => {
-      const task = await getAgentTask(req.params.id as string);
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ error: 'Invalid task ID' });
+      }
+      const task = await getAgentTask(id);
       if (!task) return res.status(404).json({ error: 'Task not found' });
 
-      const updated = await updateAgentTask(req.params.id as string, {
+      const updated = await updateAgentTask(id, {
         metadata: { ...task.metadata, approved: true },
       });
 
@@ -141,13 +154,16 @@ export function registerAgentRoutes(app: Express) {
     '/agent/:agentName',
     asyncHandler(async (req, res) => {
       const { agentName } = req.params;
+      if (typeof agentName !== 'string' || !agentName) {
+        return res.status(400).json({ error: 'Invalid agent name' });
+      }
       const { task } = req.body;
 
       if (!task) {
         return res.status(400).json({ error: 'Task is required' });
       }
 
-      const result = await agentController.dispatch(agentName as string, task);
+      const result = await agentController.dispatch(agentName, task);
       res.json({ response: result, success: true });
     })
   );
@@ -172,7 +188,11 @@ export function registerAgentRoutes(app: Express) {
   router.put(
     '/user-tasks/:id',
     asyncHandler(async (req, res) => {
-      const task = await updateUserTask(req.params.id as string, req.body);
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ message: 'Invalid task ID' });
+      }
+      const task = await updateUserTask(id, req.body);
       if (!task) return res.status(404).json({ message: 'Task not found' });
       res.json(task);
     })
@@ -181,7 +201,11 @@ export function registerAgentRoutes(app: Express) {
   router.delete(
     '/user-tasks/:id',
     asyncHandler(async (req, res) => {
-      const deleted = await deleteUserTask(req.params.id as string);
+      const { id } = req.params;
+      if (typeof id !== 'string' || !id) {
+        return res.status(400).json({ message: 'Invalid task ID' });
+      }
+      const deleted = await deleteUserTask(id);
       if (!deleted) return res.status(404).json({ message: 'Task not found' });
       res.json({ message: 'Task deleted successfully' });
     })
