@@ -433,8 +433,14 @@ export function conceptualZKPAuthenticationFlow(): void {
 export async function refreshAccessTokenIfExpired(
   userId: string,
   accessToken: string,
-  refreshToken?: string
-): Promise<{ success: boolean; newAccessToken?: string; error?: string }> {
+  refreshToken?: string,
+  tokenExpiresAt?: Date
+): Promise<{
+  success: boolean;
+  newAccessToken?: string;
+  newExpiresAt?: Date;
+  error?: string;
+}> {
   // Stub implementation - to be completed with actual OAuth provider integration
   console.log(`[Auth] Token refresh check for user ${userId}`);
 
@@ -445,10 +451,16 @@ export async function refreshAccessTokenIfExpired(
       return { success: false, error: 'No access token provided' };
     }
 
-    // Mock token expiration check (in production, decode JWT and check exp claim)
-    const mockTokenAge = Date.now(); // Placeholder
-    const mockTokenExpiry = mockTokenAge + 3600 * 1000; // 1 hour
-    const timeUntilExpiry = mockTokenExpiry - Date.now();
+    let timeUntilExpiry: number;
+
+    if (tokenExpiresAt) {
+      timeUntilExpiry = tokenExpiresAt.getTime() - Date.now();
+    } else {
+      // Mock token expiration check (in production, decode JWT and check exp claim)
+      const mockTokenAge = Date.now(); // Placeholder
+      const mockTokenExpiry = mockTokenAge + 3600 * 1000; // 1 hour
+      timeUntilExpiry = mockTokenExpiry - Date.now();
+    }
 
     // Refresh if token expires in less than 5 minutes
     if (timeUntilExpiry < 5 * 60 * 1000) {
@@ -462,10 +474,17 @@ export async function refreshAccessTokenIfExpired(
       return {
         success: true,
         newAccessToken: accessToken, // In production, return new token
+        newExpiresAt: tokenExpiresAt // In production, return new expiry
+          ? new Date(tokenExpiresAt.getTime() + 3600 * 1000)
+          : undefined,
       };
     }
 
-    return { success: true, newAccessToken: accessToken };
+    return {
+      success: true,
+      newAccessToken: accessToken,
+      newExpiresAt: tokenExpiresAt,
+    };
   } catch (error) {
     console.error('[Auth] Token refresh error:', error);
     return {
@@ -483,18 +502,52 @@ export async function refreshAccessTokenIfExpired(
 export async function scheduleTokenRotation(): Promise<void> {
   console.log('[Auth] Starting token rotation scheduler...');
 
-  // TODO: Get all active sessions from storage
-  // TODO: For each session, check if token needs refresh
-  // TODO: Call refreshAccessTokenIfExpired for expiring tokens
+  try {
+    const sessions = await storage.getActiveUserSessions();
+    // De-duplicate users to avoid multiple refreshes for the same user
+    const uniqueUserIds = [...new Set(sessions.map((s) => s.userId))];
+
+    console.log(
+      `[Auth] Found ${sessions.length} active sessions for ${uniqueUserIds.length} users.`
+    );
+
+    for (const userId of uniqueUserIds) {
+      // Get OAuth token for Google (currently the only provider)
+      // In a multi-provider scenario, we would iterate through all providers
+      const token = await storage.getOAuthToken(userId, 'google');
+
+      if (token && token.expiresAt) {
+        // Check if token needs refresh
+        const result = await refreshAccessTokenIfExpired(
+          userId,
+          token.accessToken,
+          token.refreshToken,
+          token.expiresAt
+        );
+
+        // Update if we got a new token (and it's different)
+        // Note: The stub currently returns the same token, so this won't trigger in stub mode
+        // unless we mock a change.
+        if (
+          result.success &&
+          result.newAccessToken &&
+          (result.newAccessToken !== token.accessToken ||
+            (result.newExpiresAt &&
+              result.newExpiresAt.getTime() !== token.expiresAt.getTime()))
+        ) {
+          console.log(`[Auth] Refreshed token for user ${userId}`);
+          await storage.updateOAuthToken(token.id, {
+            ...token,
+            accessToken: result.newAccessToken,
+            expiresAt: result.newExpiresAt || token.expiresAt,
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error('[Auth] Token rotation scheduler error:', error);
+  }
 
   // Stub: Log that scheduler would run
-  console.log('[Auth] Token rotation scheduler initialized (stub)');
-
-  // In production, set up interval:
-  // setInterval(async () => {
-  //   const sessions = await storage.getActiveSessions();
-  //   for (const session of sessions) {
-  //     await refreshAccessTokenIfExpired(session.userId, session.accessToken, session.refreshToken);
-  //   }
-  // }, 30 * 60 * 1000); // Every 30 minutes
+  console.log('[Auth] Token rotation scheduler completed');
 }
