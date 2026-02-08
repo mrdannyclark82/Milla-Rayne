@@ -23,9 +23,7 @@
           "id": "feat_1770000243679_seszmrtr2",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -35,9 +33,7 @@
           "id": "feat_1770006439823_ifsovg6ji",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -47,9 +43,7 @@
           "id": "feat_1770137349157_i5t4rfm96",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -59,9 +53,7 @@
           "id": "feat_1770137475677_fx5itnlth",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -71,9 +63,7 @@
           "id": "feat_1770480408206_lq1c0ctj8",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -83,9 +73,7 @@
           "id": "feat_1770480982865_6n70twmbw",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -95,9 +83,7 @@
           "id": "feat_1770481236468_b2gk53aug",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,

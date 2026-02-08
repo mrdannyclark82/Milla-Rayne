@@ -320,7 +320,10 @@ export async function reportAgentFailure(
   // Infer severity if not provided
   let severity = context.severity;
   if (!severity) {
-    if (errorMessage.toLowerCase().includes('critical') || errorMessage.toLowerCase().includes('fatal')) {
+    if (
+      errorMessage.toLowerCase().includes('critical') ||
+      errorMessage.toLowerCase().includes('fatal')
+    ) {
       severity = 'critical';
     } else if (errorMessage.toLowerCase().includes('high')) {
       severity = 'high';
@@ -384,7 +387,8 @@ export async function reportAgentFailure(
       agent: 'codingAgent',
       action: 'self_correct', // Assuming action is required
       supervisor: 'SCPA',
-      payload: { // Moved metadata to payload or appropriate field
+      payload: {
+        // Moved metadata to payload or appropriate field
         description: `Self-correct failure in ${failureContext.agentName}: ${errorMessage}`,
         priority: isCritical ? 'high' : 'medium',
         scpaFailure: true,
@@ -393,7 +397,8 @@ export async function reportAgentFailure(
       },
       status: 'pending',
       createdAt: new Date().toISOString(),
-      metadata: { // Keep metadata if allowed, but AgentTask structure might be strict
+      metadata: {
+        // Keep metadata if allowed, but AgentTask structure might be strict
         scpaFailure: true,
         originalError: failureContext,
         attemptCount: failureContext.attemptCount,

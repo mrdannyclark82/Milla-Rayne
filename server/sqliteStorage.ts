@@ -22,6 +22,7 @@ import type {
   InsertYoutubeKnowledge,
 } from '../shared/schema';
 import { randomUUID } from 'crypto';
+import { VectorClock, LWWRegister, ORSet, PNCounter, RGA } from './lib/crdt';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
@@ -1533,35 +1534,94 @@ export class SqliteStorage implements IStorage {
    * @returns Merged data with conflicts resolved
    */
   mergeCRDT(localData: any, remoteData: any): any {
-    console.log('📡 [CRDT] Merge operation called (STUB)');
+    console.log('📡 [CRDT] Merge operation called');
     console.log('📡 [CRDT] Local entries:', Object.keys(localData).length);
     console.log('📡 [CRDT] Remote entries:', Object.keys(remoteData).length);
-
-    // STUB: In production, implement actual CRDT merge logic
-    // For now, return a simple last-write-wins merge
 
     const merged = { ...localData };
 
     for (const [key, remoteValue] of Object.entries(remoteData)) {
       const localValue = localData[key];
 
-      // TODO: Replace with proper CRDT merge based on type
-      // - For LWW: Compare timestamps, keep newer
-      // - For OR-Set: Union of additions, apply removals
-      // - For Counters: Sum increments, handle decrements
-      // - For RGA: Merge ordered lists preserving causality
-
       if (!localValue) {
         // New entry from remote
         merged[key] = remoteValue;
         console.log(`📡 [CRDT] Added new entry: ${key}`);
-      } else if (this.shouldKeepRemoteValue(localValue, remoteValue)) {
-        // Remote is newer/preferred
-        merged[key] = remoteValue;
-        console.log(`📡 [CRDT] Updated entry: ${key}`);
+        continue;
+      }
+
+      // Check for CRDT types based on _t discriminator
+      if (
+        remoteValue &&
+        typeof remoteValue === 'object' &&
+        '_t' in remoteValue
+      ) {
+        try {
+          switch (remoteValue._t) {
+            case 'vc': {
+              const localVC = VectorClock.fromJSON(localValue);
+              const remoteVC = VectorClock.fromJSON(remoteValue);
+              localVC.merge(remoteVC);
+              merged[key] = localVC.toJSON();
+              console.log(`📡 [CRDT] Merged VectorClock: ${key}`);
+              break;
+            }
+            case 'lww': {
+              const localReg = LWWRegister.fromJSON(localValue);
+              const remoteReg = LWWRegister.fromJSON(remoteValue);
+              localReg.merge(remoteReg);
+              merged[key] = localReg.toJSON();
+              console.log(`📡 [CRDT] Merged LWWRegister: ${key}`);
+              break;
+            }
+            case 'orset': {
+              const localSet = ORSet.fromJSON(localValue);
+              const remoteSet = ORSet.fromJSON(remoteValue);
+              localSet.merge(remoteSet);
+              merged[key] = localSet.toJSON();
+              console.log(`📡 [CRDT] Merged ORSet: ${key}`);
+              break;
+            }
+            case 'pnc': {
+              const localCounter = PNCounter.fromJSON(localValue);
+              const remoteCounter = PNCounter.fromJSON(remoteValue);
+              localCounter.merge(remoteCounter);
+              merged[key] = localCounter.toJSON();
+              console.log(`📡 [CRDT] Merged PNCounter: ${key}`);
+              break;
+            }
+            case 'rga': {
+              const localRGA = RGA.fromJSON(localValue);
+              const remoteRGA = RGA.fromJSON(remoteValue);
+              localRGA.merge(remoteRGA);
+              merged[key] = localRGA.toJSON();
+              console.log(`📡 [CRDT] Merged RGA: ${key}`);
+              break;
+            }
+            default:
+              console.warn(
+                `📡 [CRDT] Unknown CRDT type: ${remoteValue._t}, falling back to LWW`
+              );
+              if (this.shouldKeepRemoteValue(localValue, remoteValue)) {
+                merged[key] = remoteValue;
+                console.log(`📡 [CRDT] Updated entry (LWW fallback): ${key}`);
+              }
+          }
+        } catch (e) {
+          console.error(`📡 [CRDT] Error merging ${key}:`, e);
+          // Fallback to LWW on error
+          if (this.shouldKeepRemoteValue(localValue, remoteValue)) {
+            merged[key] = remoteValue;
+          }
+        }
       } else {
-        // Keep local value
-        console.log(`📡 [CRDT] Kept local entry: ${key}`);
+        // Standard object merge (LWW)
+        if (this.shouldKeepRemoteValue(localValue, remoteValue)) {
+          merged[key] = remoteValue;
+          console.log(`📡 [CRDT] Updated entry (LWW): ${key}`);
+        } else {
+          console.log(`📡 [CRDT] Kept local entry: ${key}`);
+        }
       }
     }
 
@@ -1574,24 +1634,49 @@ export class SqliteStorage implements IStorage {
   }
 
   /**
-   * P3.4: Helper to determine if remote value should be kept (STUB)
-   * In production, would use vector clocks or Lamport timestamps
+   * P3.4: Helper to determine if remote value should be kept
+   * Uses vector clocks if available, otherwise falls back to LWW
    */
   private shouldKeepRemoteValue(localValue: any, remoteValue: any): boolean {
-    // STUB: Simple timestamp comparison
-    // TODO: Implement proper causality checking with vector clocks
+    // 1. Vector Clock Causality Check
+    if (localValue.vector_clock && remoteValue.vector_clock) {
+      try {
+        // Handle both stringified (legacy) and object vector clocks
+        const localVCJson =
+          typeof localValue.vector_clock === 'string'
+            ? JSON.parse(localValue.vector_clock)
+            : localValue.vector_clock;
+        const remoteVCJson =
+          typeof remoteValue.vector_clock === 'string'
+            ? JSON.parse(remoteValue.vector_clock)
+            : remoteValue.vector_clock;
 
-    const localTimestamp = localValue.timestamp || localValue.updated_at || 0;
-    const remoteTimestamp =
-      remoteValue.timestamp || remoteValue.updated_at || 0;
+        const localVC = VectorClock.fromJSON(localVCJson);
+        const remoteVC = VectorClock.fromJSON(remoteVCJson);
 
-    // LWW (Last-Write-Wins) strategy
+        const comparison = localVC.compare(remoteVC);
+        if (comparison === 'less') return true; // Remote is strictly newer
+        if (comparison === 'greater') return false; // Local is strictly newer
+        if (comparison === 'equal') return false; // Same
+        // If concurrent, fall through to LWW
+      } catch (e) {
+        console.warn('Error parsing vector clocks during merge comparison', e);
+      }
+    }
+
+    // 2. LWW (Last-Write-Wins) Strategy based on timestamp
+    const localTimestamp = new Date(
+      localValue.timestamp || localValue.updated_at || 0
+    ).getTime();
+    const remoteTimestamp = new Date(
+      remoteValue.timestamp || remoteValue.updated_at || 0
+    ).getTime();
+
     if (remoteTimestamp > localTimestamp) {
       return true;
     }
 
-    // If timestamps equal, use deterministic tie-breaking
-    // (e.g., higher site_id wins)
+    // 3. Tie-breaking with Site ID
     if (remoteTimestamp === localTimestamp) {
       const localSiteId = localValue.site_id || '';
       const remoteSiteId = remoteValue.site_id || '';
@@ -1601,10 +1686,6 @@ export class SqliteStorage implements IStorage {
     return false;
   }
 
-  /**
-   * P3.4: Sync state with remote replica (STUB)
-   * Would be called periodically or on connection to sync devices
-   */
   async syncWithReplica(
     replicaUrl: string
   ): Promise<{ success: boolean; synced: number }> {
