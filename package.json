@@ -39,6 +39,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@huggingface/inference": "^4.11.3",
     "@jridgewell/trace-mapping": "^0.3.25",
+    "@mediapipe/tasks-genai": "^0.10.26",
     "@mistralai/mistralai": "^1.10.0",
     "@modelcontextprotocol/sdk": "^1.20.1",
     "@neondatabase/serverless": "^1.0.2",

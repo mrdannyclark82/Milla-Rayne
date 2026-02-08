@@ -158,11 +158,9 @@ export function registerMediaRoutes(app: Express) {
         'playful',
       ];
       if (!validMoods.includes(mood)) {
-        return res
-          .status(400)
-          .json({
-            error: `Invalid mood. Must be one of: ${validMoods.join(', ')}`,
-          });
+        return res.status(400).json({
+          error: `Invalid mood. Must be one of: ${validMoods.join(', ')}`,
+        });
       }
 
       const result = await getMoodBackground(mood as any, forceRegenerate);
@@ -175,12 +173,10 @@ export function registerMediaRoutes(app: Express) {
           cached: result.cached,
         });
       } else {
-        res
-          .status(500)
-          .json({
-            success: false,
-            error: result.error || 'Failed to generate mood background',
-          });
+        res.status(500).json({
+          success: false,
+          error: result.error || 'Failed to generate mood background',
+        });
       }
     })
   );
