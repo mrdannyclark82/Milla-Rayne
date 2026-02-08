@@ -226,12 +226,73 @@ export interface AgentFailureContext {
     timestamp: number;
     error: string;
   }>;
+  severity?: 'critical' | 'high' | 'medium' | 'low';
+  impact?: 'high' | 'medium' | 'low';
+  priorityScore?: number;
 }
 
 /**
  * SCPA task queue for self-correction
  */
 const scpaQueue: AgentFailureContext[] = [];
+
+/**
+ * Calculate priority score for a failure
+ */
+export function calculatePriorityScore(context: AgentFailureContext): number {
+  let score = 0;
+
+  // Severity score
+  const severityMap: Record<string, number> = {
+    critical: 40,
+    high: 30,
+    medium: 20,
+    low: 10,
+  };
+  score += severityMap[context.severity || 'medium'] || 20;
+
+  // Impact score
+  const impactMap: Record<string, number> = {
+    high: 30,
+    medium: 20,
+    low: 10,
+  };
+  score += impactMap[context.impact || 'medium'] || 20;
+
+  // Attempt score (capped at 30)
+  score += Math.min(context.attemptCount * 10, 30);
+
+  return score;
+}
+
+/**
+ * Enqueue a failure with priority
+ */
+export function enqueueFailure(context: AgentFailureContext): void {
+  // Add priority score
+  const priorityScore = calculatePriorityScore(context);
+  const enrichedContext = { ...context, priorityScore };
+
+  scpaQueue.push(enrichedContext);
+  // Sort by priority score descending
+  scpaQueue.sort(
+    (a, b) => (b.priorityScore || 0) - (a.priorityScore || 0)
+  );
+}
+
+/**
+ * Peek at the next highest priority failure
+ */
+export function peekNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue[0];
+}
+
+/**
+ * Get and remove the next highest priority failure
+ */
+export function getNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue.shift();
+}
 
 /**
  * P2.4: Report agent failure to metacognitive service for SCPA processing
@@ -265,20 +326,6 @@ export async function reportAgentFailure(
   console.error(`🚨 [SCPA] Error: ${errorMessage}`);
   console.error(`🚨 [SCPA] Task ID: ${failureContext.taskId}`);
 
-  // Add to SCPA queue for processing
-  scpaQueue.push(failureContext);
-
-  // TODO: In production, implement priority queue based on:
-  // - Severity of error
-  // - Number of attempts
-  // - Impact on user experience
-  // - Time since last failure
-
-  // Log for monitoring
-  console.log(
-    `🔧 [SCPA] Failure queued for self-correction (queue size: ${scpaQueue.length})`
-  );
-
   // Check if this is a critical/recurring failure
   const isCritical =
     failureContext.attemptCount > 2 ||
@@ -290,6 +337,25 @@ export async function reportAgentFailure(
       `🚨 [SCPA] CRITICAL failure detected - immediate attention required`
     );
 
+    if (!failureContext.severity) {
+        failureContext.severity = 'critical';
+    }
+  }
+
+  // Add to SCPA queue with priority
+  if (context.severity) {
+    failureContext.severity = context.severity as any;
+  }
+
+  // Use enqueueFailure to handle priority sorting
+  enqueueFailure(failureContext);
+
+  // Log for monitoring
+  console.log(
+    `🔧 [SCPA] Failure queued for self-correction (queue size: ${scpaQueue.length})`
+  );
+
+  if (isCritical) {
     // TODO: In production:
     // 1. Trigger immediate notification to admin
     // 2. Create high-priority task for coding agent

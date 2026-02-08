@@ -1,5 +1,24 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import request from 'supertest';
+
+// Mock the Gemini client to prevent top-level initialization errors
+vi.mock('@google/genai', () => {
+  return {
+    GoogleGenAI: class {
+      getGenerativeModel() {
+        return {
+          generateContent: vi.fn().mockResolvedValue({
+            response: {
+              text: () => 'Mock response',
+              functionCalls: [],
+            },
+          }),
+        };
+      }
+    },
+  };
+});
+
 import { initApp } from '../index'; // Import initApp
 import path from 'path';
 import fs from 'fs';

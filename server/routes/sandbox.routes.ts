@@ -32,8 +32,9 @@ export function registerSandboxRoutes(app: Express) {
     '/sandboxes/:sandboxId/features/:featureId/test',
     asyncHandler(async (req, res) => {
       const result = await testFeature(
-        req.params.sandboxId,
-        req.params.featureId
+        req.params.sandboxId as string,
+        req.params.featureId as string,
+        (req.body.testType as any) || 'unit'
       );
       res.json(result);
     })

@@ -104,7 +104,7 @@ export async function generateVeniceResponse(
 
     console.log('Sending messages to Venice API');
 
-    const response = await veniceClient.chat.completions.create({
+    const response = await client.chat.completions.create({
       model: config.venice.model || 'llama-3.1-405b', // Default to a strong model if not specified
       messages: messages as any,
       max_tokens: maxTokens || 1000,

@@ -164,7 +164,9 @@ async function getDefaultTaskList(accessToken: string): Promise<string | null> {
  */
 
 export async function listTasks(
-  userId: string = 'default-user'
+  userId: string = 'default-user',
+  maxResults: number = 20,
+  showCompleted: boolean = false
 ): Promise<TasksAPIResult & { tasks?: any[] }> {
   try {
     const accessToken = await getValidAccessToken(userId, 'google');
@@ -191,8 +193,13 @@ export async function listTasks(
       };
     }
 
+    const queryParams = new URLSearchParams({
+      maxResults: maxResults.toString(),
+      showCompleted: showCompleted.toString(),
+    });
+
     const response = await fetch(
-      `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks`,
+      `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks?${queryParams.toString()}`,
 
       {
         headers: {

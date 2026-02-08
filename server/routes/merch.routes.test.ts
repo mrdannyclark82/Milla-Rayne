@@ -36,6 +36,18 @@ vi.mock('axios', () => ({
   },
 }));
 
+// Mock config to ensure Stripe key is present
+vi.mock('../config', () => ({
+  config: {
+    stripe: {
+      secretKey: 'sk_test_mock_key',
+      publishableKey: 'pk_test_mock_key',
+    },
+    // Mock other required config sections if necessary
+    google: {},
+  },
+}));
+
 // Import modules AFTER mocking
 import { registerMerchRoutes } from './merch.routes';
 import { config } from '../config';

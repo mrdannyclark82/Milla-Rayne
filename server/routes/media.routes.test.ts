@@ -1,6 +1,28 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+
+// Mock the Gemini client to prevent top-level initialization errors
+vi.mock('@google/genai', () => {
+  return {
+    GoogleGenAI: class {
+      getGenerativeModel() {
+        return {
+          generateContent: vi.fn().mockResolvedValue({
+            response: {
+              text: () => 'Mock analysis',
+              functionCalls: [],
+            },
+          }),
+        };
+      }
+    },
+  };
+});
+
+beforeAll(() => {
+  vi.stubEnv('GEMINI_API_KEY', 'mock-key');
+});
 import { registerMediaRoutes } from './media.routes';
 import * as youtubeAnalysis from '../youtubeAnalysisService';
 import * as moodBackground from '../moodBackgroundService';

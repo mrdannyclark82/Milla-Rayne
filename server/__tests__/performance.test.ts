@@ -5,9 +5,28 @@
  * Focus on Parallel Function Calling (PFC) and Metacognitive Loop endpoints
  */
 
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+
+// Mock the Gemini client to prevent top-level initialization errors
+vi.mock('@google/genai', () => {
+  return {
+    GoogleGenAI: class {
+      getGenerativeModel() {
+        return {
+          generateContent: vi.fn().mockResolvedValue({
+            response: {
+              text: () => 'Mock response',
+              functionCalls: [],
+            },
+          }),
+        };
+      }
+    },
+  };
+});
+
 import { registerModularRoutes } from '../routes/index';
 import { storage } from '../storage';
 

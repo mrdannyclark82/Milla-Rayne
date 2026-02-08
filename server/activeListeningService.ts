@@ -220,26 +220,11 @@ export async function saveInsightToMemory(
   videoTitle: string,
   userId: string
 ): Promise<void> {
-  const memoryEntry = {
-    type: 'youtube_insight',
-    videoId,
-    videoTitle,
-    category: insight.category,
-    content: insight.content,
-    timestamp: insight.timestamp,
-    relevance: insight.relevance,
-  };
+  const content = `[YouTube Insight] ${videoTitle} (${insight.category}): ${insight.content}`;
 
-  await updateMemories(
-    userId,
-    `youtube_insight_${videoId}_${insight.timestamp}`,
-    {
-      insights: [memoryEntry],
-      lastUpdated: new Date().toISOString(),
-    }
-  );
+  await updateMemories(content, userId);
 
-  console.log('💾 Saved insight to memory:', memoryEntry);
+  console.log('💾 Saved insight to memory:', content);
 }
 
 /**

@@ -1,6 +1,14 @@
 import React, { useState, useCallback } from 'react';
 
-export function GuidedMeditation() {
+interface GuidedMeditationProps {
+  duration?: number;
+  onClose?: () => void;
+}
+
+export function GuidedMeditation({
+  duration = 5,
+  onClose,
+}: GuidedMeditationProps) {
   const [meditation, setMeditation] = useState('');
   const [isMeditating, setIsMeditating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +26,7 @@ export function GuidedMeditation() {
         },
         body: JSON.stringify({
           topic: 'letting go of stress',
-          duration: 5, // 5 minutes
+          duration: duration,
         }),
       });
 
