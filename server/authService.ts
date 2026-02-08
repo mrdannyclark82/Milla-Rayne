@@ -435,37 +435,24 @@ export async function refreshAccessTokenIfExpired(
   accessToken: string,
   refreshToken?: string
 ): Promise<{ success: boolean; newAccessToken?: string; error?: string }> {
-  // Stub implementation - to be completed with actual OAuth provider integration
   console.log(`[Auth] Token refresh check for user ${userId}`);
 
   try {
-    // TODO: Implement actual token refresh logic with OAuth provider
-    // For now, return success if token exists
-    if (!accessToken) {
-      return { success: false, error: 'No access token provided' };
-    }
+    // Use the actual OAuth service to get a valid token, which handles refresh if needed
+    const { getValidAccessToken } = await import('./oauthService');
+    const newAccessToken = await getValidAccessToken(userId, 'google');
 
-    // Mock token expiration check (in production, decode JWT and check exp claim)
-    const mockTokenAge = Date.now(); // Placeholder
-    const mockTokenExpiry = mockTokenAge + 3600 * 1000; // 1 hour
-    const timeUntilExpiry = mockTokenExpiry - Date.now();
-
-    // Refresh if token expires in less than 5 minutes
-    if (timeUntilExpiry < 5 * 60 * 1000) {
-      console.log('[Auth] Token expiring soon, would refresh here');
-
-      // TODO: Call OAuth provider refresh endpoint
-      // const newTokens = await oauthProvider.refreshToken(refreshToken);
-      // await storage.updateUserSession(userId, newTokens);
-
-      // Return mock success for now
+    if (newAccessToken) {
       return {
         success: true,
-        newAccessToken: accessToken, // In production, return new token
+        newAccessToken,
       };
     }
 
-    return { success: true, newAccessToken: accessToken };
+    return {
+      success: false,
+      error: 'Failed to refresh or no valid token available',
+    };
   } catch (error) {
     console.error('[Auth] Token refresh error:', error);
     return {
@@ -483,18 +470,34 @@ export async function refreshAccessTokenIfExpired(
 export async function scheduleTokenRotation(): Promise<void> {
   console.log('[Auth] Starting token rotation scheduler...');
 
-  // TODO: Get all active sessions from storage
-  // TODO: For each session, check if token needs refresh
-  // TODO: Call refreshAccessTokenIfExpired for expiring tokens
+  try {
+    // Get all active user sessions from storage
+    const sessions = await storage.getActiveUserSessions();
 
-  // Stub: Log that scheduler would run
-  console.log('[Auth] Token rotation scheduler initialized (stub)');
+    // Extract unique user IDs from active sessions to avoid redundant checks
+    const userIds = [...new Set(sessions.map((s) => s.userId))];
 
-  // In production, set up interval:
-  // setInterval(async () => {
-  //   const sessions = await storage.getActiveSessions();
-  //   for (const session of sessions) {
-  //     await refreshAccessTokenIfExpired(session.userId, session.accessToken, session.refreshToken);
-  //   }
-  // }, 30 * 60 * 1000); // Every 30 minutes
+    console.log(`[Auth] Found ${sessions.length} active sessions for ${userIds.length} unique users`);
+
+    let refreshCount = 0;
+    for (const userId of userIds) {
+      // Check if user has Google OAuth tokens
+      const token = await storage.getOAuthToken(userId, 'google');
+      if (token) {
+        const result = await refreshAccessTokenIfExpired(
+          userId,
+          token.accessToken,
+          token.refreshToken || undefined
+        );
+
+        if (result.success) {
+          refreshCount++;
+        }
+      }
+    }
+
+    console.log(`[Auth] Token rotation completed. Successfully processed tokens for ${refreshCount} users out of ${userIds.length} active users.`);
+  } catch (error) {
+    console.error('[Auth] Token rotation scheduler error:', error);
+  }
 }
