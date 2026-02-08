@@ -179,7 +179,7 @@ enhancedRouter.delete(
       const { id } = req.params;
 
       const ragService = getRAGService();
-      await ragService.deleteDocument(id);
+      await ragService.deleteDocument(id as string);
 
       res.json({ success: true, message: `Document ${id} deleted` });
     } catch (error: any) {

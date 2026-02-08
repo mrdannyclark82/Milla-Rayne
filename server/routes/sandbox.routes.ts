@@ -31,9 +31,11 @@ export function registerSandboxRoutes(app: Express) {
   router.post(
     '/sandboxes/:sandboxId/features/:featureId/test',
     asyncHandler(async (req, res) => {
+      const testType = req.body.testType || 'unit';
       const result = await testFeature(
-        req.params.sandboxId,
-        req.params.featureId
+        req.params.sandboxId as string,
+        req.params.featureId as string,
+        testType
       );
       res.json(result);
     })

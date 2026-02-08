@@ -15,7 +15,7 @@
           "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
           "files": [],
           "status": "testing",
-          "testsPassed": 4,
+          "testsPassed": 12,
           "testsFailed": 4,
           "addedAt": 1769578714591
         },
@@ -66,6 +66,102 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1770137475677
+        },
+        {
+          "id": "feat_1770396397801_yuyb6h1vk",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770396397801
+        },
+        {
+          "id": "feat_1770396684248_qj965dync",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770396684248
+        },
+        {
+          "id": "feat_1770396979454_dmig6cr1n",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770396979454
+        },
+        {
+          "id": "feat_1770397328561_vk51lrnen",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770397328561
+        },
+        {
+          "id": "feat_1770537344045_0ek7uhclb",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770537344045
+        },
+        {
+          "id": "feat_1770537474995_882dbqs4z",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770537474995
+        },
+        {
+          "id": "feat_1770537956274_0y51difjf",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770537956274
+        },
+        {
+          "id": "feat_1770538073160_xvp1reels",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770538073160
         }
       ],
       "readyForProduction": false,
@@ -141,6 +237,78 @@
           "passed": true,
           "details": "All tests passed successfully",
           "duration": 1403.6738153965807
+        },
+        {
+          "id": "test_1770396397804_leg5a3hrl",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770396397804,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1711.2705927398965
+        },
+        {
+          "id": "test_1770396684250_njus26tzd",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770396684250,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1998.141938340283
+        },
+        {
+          "id": "test_1770396979455_d7hxmubda",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770396979455,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1296.280816421231
+        },
+        {
+          "id": "test_1770397328563_e7x9vkhqv",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770397328563,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1283.928257173693
+        },
+        {
+          "id": "test_1770537344047_mcfersuca",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770537344047,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1257.168540392938
+        },
+        {
+          "id": "test_1770537474996_j3waaexkg",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770537474996,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1534.3354709992316
+        },
+        {
+          "id": "test_1770537956276_muwwlmncb",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770537956276,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 2011.601979379457
+        },
+        {
+          "id": "test_1770538073161_hvcwbpv5q",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770538073161,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 1760.5800652871105
         }
       ]
     },
@@ -280,7 +448,95 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1770396397797_sg42iionx": {
+      "id": "sandbox_1770396397797_sg42iionx",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770396397797",
+      "status": "active",
+      "createdAt": 1770396397797,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770396684246_o6vnro80f": {
+      "id": "sandbox_1770396684246_o6vnro80f",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770396684246",
+      "status": "active",
+      "createdAt": 1770396684246,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770396979451_etiefd2b0": {
+      "id": "sandbox_1770396979451_etiefd2b0",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770396979452",
+      "status": "active",
+      "createdAt": 1770396979452,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770397328555_xo38z9btr": {
+      "id": "sandbox_1770397328555_xo38z9btr",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770397328555",
+      "status": "active",
+      "createdAt": 1770397328555,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770537343985_qhq4mdrqj": {
+      "id": "sandbox_1770537343985_qhq4mdrqj",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770537343985",
+      "status": "active",
+      "createdAt": 1770537343985,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770537474993_uqam38y1n": {
+      "id": "sandbox_1770537474993_uqam38y1n",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770537474993",
+      "status": "active",
+      "createdAt": 1770537474993,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770537956271_qevjik55t": {
+      "id": "sandbox_1770537956271_qevjik55t",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770537956271",
+      "status": "active",
+      "createdAt": 1770537956271,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770538073158_y4x5gpr1d": {
+      "id": "sandbox_1770538073158_y4x5gpr1d",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770538073158",
+      "status": "active",
+      "createdAt": 1770538073158,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1770137475678
+  "lastUpdated": 1770538073161
 }

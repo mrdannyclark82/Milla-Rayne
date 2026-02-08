@@ -1,4 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+vi.mock('../gemini', () => ({
+  analyzeVideo: vi.fn(),
+  generateText: vi.fn(),
+}));
+
+// Mock GoogleGenAI class constructor to prevent it from throwing error on import
+vi.mock('@google/genai', () => {
+  return {
+    GoogleGenAI: class MockGoogleGenAI {
+      constructor() {
+        // Do nothing
+      }
+    },
+  };
+});
+
 import {
   executeToolCallsInParallel,
   generateGeminiChatWithTools,

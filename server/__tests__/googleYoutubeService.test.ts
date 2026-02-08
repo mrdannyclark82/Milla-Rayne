@@ -73,7 +73,7 @@ describe('Google YouTube Service', () => {
       const result = await searchVideos('default-user', query);
       expect(result).toEqual({
         success: true,
-        message: 'Search successful',
+        message: 'Successfully found 0 videos.',
         data: [],
       });
     });

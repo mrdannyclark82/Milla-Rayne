@@ -9,7 +9,28 @@ import {
   cosineSimilarity,
 } from '../vectorDBService';
 
+// Mock OpenAI
+vi.mock('openai', () => {
+  return {
+    default: class OpenAI {
+      embeddings = {
+        create: vi.fn().mockImplementation(({ input }) => {
+          const inputs = Array.isArray(input) ? input : [input];
+          return Promise.resolve({
+            data: inputs.map(() => ({
+              embedding: new Array(1536).fill(0.1),
+            })),
+          });
+        }),
+      };
+    },
+  };
+});
+
 describe.sequential('Vector Database Service', () => {
+  // Set required env var
+  process.env.OPENAI_API_KEY = 'test-key';
+
   describe('Cosine Similarity', () => {
     it('should calculate similarity between identical vectors', () => {
       const vector = [1, 2, 3, 4, 5];

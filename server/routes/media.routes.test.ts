@@ -5,7 +5,10 @@ import { registerMediaRoutes } from './media.routes';
 import * as youtubeAnalysis from '../youtubeAnalysisService';
 import * as moodBackground from '../moodBackgroundService';
 
-vi.mock('../gemini');
+vi.mock('../gemini', () => ({
+  analyzeVideo: vi.fn(),
+  generateText: vi.fn(),
+}));
 vi.mock('../youtubeAnalysisService');
 vi.mock('../moodBackgroundService');
 vi.mock('../aiDispatcherService');

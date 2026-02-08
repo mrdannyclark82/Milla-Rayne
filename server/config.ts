@@ -56,6 +56,10 @@ export const config = {
   anthropic: {
     apiKey: process.env.ANTHROPIC_API_KEY,
   },
+  mistral: {
+    apiKey: process.env.MISTRAL_API_KEY,
+    model: process.env.MISTRAL_MODEL || 'mistral-large-latest',
+  },
   xai: {
     apiKey: process.env.XAI_API_KEY,
     model: process.env.XAI_MODEL,

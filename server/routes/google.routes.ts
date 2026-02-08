@@ -1,5 +1,6 @@
 import { Router, type Express } from 'express';
 import { loginOrRegisterWithGoogle } from '../authService';
+import { exchangeCodeForToken } from '../oauthService';
 import { config } from '../config';
 import { asyncHandler } from '../utils/routeHelpers';
 
@@ -21,7 +22,26 @@ export function registerGoogleRoutes(app: Express) {
       const { code } = req.query;
       if (!code) return res.status(400).send('Code is required');
 
-      const result = await loginOrRegisterWithGoogle(code as string);
+      const tokens = await exchangeCodeForToken(code as string);
+
+      const userInfoResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+        }
+      );
+
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to fetch user info from Google');
+      }
+
+      const userInfo = await userInfoResponse.json();
+
+      const result = await loginOrRegisterWithGoogle(
+        userInfo.email,
+        userInfo.id,
+        userInfo.name
+      );
       if (!result.success) return res.status(401).send(result.error);
 
       res.cookie('session_token', result.sessionToken, {

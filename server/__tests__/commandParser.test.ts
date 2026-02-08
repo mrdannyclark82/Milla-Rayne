@@ -1,4 +1,10 @@
 import { parseCommand } from '../commandParser';
+import { vi } from 'vitest';
+
+vi.mock('../gemini', () => ({
+  analyzeVideo: vi.fn(),
+  generateText: vi.fn(),
+}));
 
 describe('commandParser', () => {
   it('should parse "my name is" command', async () => {

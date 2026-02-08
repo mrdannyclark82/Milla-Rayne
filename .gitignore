@@ -35,3 +35,4 @@ venv/
 memory/*.db
 memory/*.db-shm
 memory/*.db-wal
+coverage/

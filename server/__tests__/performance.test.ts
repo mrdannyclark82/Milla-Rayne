@@ -21,6 +21,12 @@ describe('API Load Testing', () => {
     await registerModularRoutes(app);
   });
 
+  // Mock Gemini to avoid API key requirement
+  vi.mock('../gemini', () => ({
+    analyzeVideo: vi.fn(),
+    generateText: vi.fn(),
+  }));
+
   afterAll(async () => {
     if (server) {
       await new Promise((resolve) => server.close(resolve));

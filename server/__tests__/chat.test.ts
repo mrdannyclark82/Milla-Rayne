@@ -38,6 +38,11 @@ vi.mock('../authService', () => ({
   updateUserAIModel: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+vi.mock('../gemini', () => ({
+  analyzeVideo: vi.fn(),
+  generateText: vi.fn(),
+}));
+
 describe('Chat API', () => {
   let app: express.Express;
 

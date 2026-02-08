@@ -226,12 +226,82 @@ export interface AgentFailureContext {
     timestamp: number;
     error: string;
   }>;
+  severity?: 'critical' | 'high' | 'medium' | 'low';
+  impact?: 'high' | 'medium' | 'low';
 }
 
 /**
  * SCPA task queue for self-correction
  */
 const scpaQueue: AgentFailureContext[] = [];
+
+/**
+ * Calculate priority score for a failure
+ */
+export function calculatePriorityScore(context: AgentFailureContext): number {
+  let score = 0;
+
+  // Severity score
+  switch (context.severity) {
+    case 'critical':
+      score += 40;
+      break;
+    case 'high':
+      score += 30;
+      break;
+    case 'low':
+      score += 10;
+      break;
+    default:
+      score += 20; // medium or undefined
+  }
+
+  // Impact score
+  switch (context.impact) {
+    case 'high':
+      score += 30;
+      break;
+    case 'low':
+      score += 10;
+      break;
+    default:
+      score += 20; // medium or undefined
+  }
+
+  // Attempt count score (capped at 30)
+  score += Math.min(context.attemptCount * 10, 30);
+
+  return score;
+}
+
+/**
+ * Add failure to queue (exported for testing)
+ */
+export function enqueueFailure(context: AgentFailureContext): void {
+  // Insert based on priority score
+  const score = calculatePriorityScore(context);
+  const index = scpaQueue.findIndex((item) => calculatePriorityScore(item) < score);
+
+  if (index === -1) {
+    scpaQueue.push(context);
+  } else {
+    scpaQueue.splice(index, 0, context);
+  }
+}
+
+/**
+ * Get next failure from queue
+ */
+export function getNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue.shift();
+}
+
+/**
+ * Peek next failure
+ */
+export function peekNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue[0];
+}
 
 /**
  * P2.4: Report agent failure to metacognitive service for SCPA processing
@@ -257,6 +327,8 @@ export async function reportAgentFailure(
     taskContext: context.taskContext,
     stackTrace,
     previousAttempts: context.previousAttempts || [],
+    severity: context.severity,
+    impact: context.impact,
   };
 
   console.error(
@@ -286,6 +358,7 @@ export async function reportAgentFailure(
     errorMessage.includes('fatal');
 
   if (isCritical) {
+    failureContext.severity = 'critical';
     console.error(
       `🚨 [SCPA] CRITICAL failure detected - immediate attention required`
     );

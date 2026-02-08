@@ -22,6 +22,11 @@ vi.mock('../aiDispatcherService', () => ({
     .mockResolvedValue({ content: 'This is a test AI response' }),
 }));
 
+vi.mock('../gemini', () => ({
+  analyzeVideo: vi.fn(),
+  generateText: vi.fn(),
+}));
+
 let app: any; // Declare app variable
 
 describe('POST /api/chat/audio', () => {

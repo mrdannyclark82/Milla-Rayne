@@ -1,6 +1,15 @@
 import React, { useState, useCallback } from 'react';
+import { X } from 'lucide-react';
 
-export function GuidedMeditation() {
+interface GuidedMeditationProps {
+  duration?: number;
+  onClose?: () => void;
+}
+
+export function GuidedMeditation({
+  duration = 5,
+  onClose,
+}: GuidedMeditationProps) {
   const [meditation, setMeditation] = useState('');
   const [isMeditating, setIsMeditating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +27,7 @@ export function GuidedMeditation() {
         },
         body: JSON.stringify({
           topic: 'letting go of stress',
-          duration: 5, // 5 minutes
+          duration: duration,
         }),
       });
 
@@ -56,8 +65,19 @@ export function GuidedMeditation() {
   }, []);
 
   return (
-    <div className="guided-meditation-container p-4 border rounded-lg shadow-md bg-white/10 backdrop-blur-sm text-white">
-      <h2 className="text-xl font-bold mb-4">Guided Meditation</h2>
+    <div className="guided-meditation-container p-4 border rounded-lg shadow-md bg-white/10 backdrop-blur-sm text-white relative">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Guided Meditation</h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-1 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
       <button
         onClick={startMeditation}
         disabled={isMeditating}
@@ -65,7 +85,7 @@ export function GuidedMeditation() {
       >
         {isMeditating
           ? 'Meditation in Progress...'
-          : 'Start 5-Minute Meditation on Stress Relief'}
+          : `Start ${duration}-Minute Meditation on Stress Relief`}
       </button>
 
       {error && (
