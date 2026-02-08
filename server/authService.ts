@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { storage } from './storage';
 import type { InsertUser, User, UserSession } from '@shared/schema';
+import { getValidAccessToken } from './oauthService';
 
 const SESSION_EXPIRY_HOURS = 24 * 7; // 7 days
 
@@ -435,37 +436,26 @@ export async function refreshAccessTokenIfExpired(
   accessToken: string,
   refreshToken?: string
 ): Promise<{ success: boolean; newAccessToken?: string; error?: string }> {
-  // Stub implementation - to be completed with actual OAuth provider integration
+  // Delegate to OAuth service which handles expiration check and refresh
   console.log(`[Auth] Token refresh check for user ${userId}`);
 
   try {
-    // TODO: Implement actual token refresh logic with OAuth provider
-    // For now, return success if token exists
-    if (!accessToken) {
-      return { success: false, error: 'No access token provided' };
-    }
+    // Check if token is valid or needs refresh using oauthService
+    // This handles:
+    // 1. Fetching token from DB
+    // 2. Checking expiration
+    // 3. Refreshing if needed
+    // 4. Updating DB
+    const validToken = await getValidAccessToken(userId, 'google');
 
-    // Mock token expiration check (in production, decode JWT and check exp claim)
-    const mockTokenAge = Date.now(); // Placeholder
-    const mockTokenExpiry = mockTokenAge + 3600 * 1000; // 1 hour
-    const timeUntilExpiry = mockTokenExpiry - Date.now();
-
-    // Refresh if token expires in less than 5 minutes
-    if (timeUntilExpiry < 5 * 60 * 1000) {
-      console.log('[Auth] Token expiring soon, would refresh here');
-
-      // TODO: Call OAuth provider refresh endpoint
-      // const newTokens = await oauthProvider.refreshToken(refreshToken);
-      // await storage.updateUserSession(userId, newTokens);
-
-      // Return mock success for now
+    if (validToken) {
       return {
         success: true,
-        newAccessToken: accessToken, // In production, return new token
+        newAccessToken: validToken,
       };
     }
 
-    return { success: true, newAccessToken: accessToken };
+    return { success: false, error: 'Could not retrieve valid access token' };
   } catch (error) {
     console.error('[Auth] Token refresh error:', error);
     return {

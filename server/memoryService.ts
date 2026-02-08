@@ -1147,8 +1147,11 @@ export async function storeSensitiveMemory(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Encrypt sensitive fields
-    const encryptedData: { financialSummary?: string; medicalNotes?: string; userId: string } =
-      { userId }; // Fix: Added userId to conform to InsertSensitiveMemory type
+    const encryptedData: {
+      financialSummary?: string;
+      medicalNotes?: string;
+      userId: string;
+    } = { userId }; // Fix: Added userId to conform to InsertSensitiveMemory type
 
     if (data.financialSummary) {
       encryptedData.financialSummary = await encryptHomomorphic(

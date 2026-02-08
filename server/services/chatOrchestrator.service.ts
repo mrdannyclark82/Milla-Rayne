@@ -596,7 +596,9 @@ export async function generateAIResponse(
       userId,
       conversationHistory,
       userName,
-      userEmotionalState: (userEmotionalState === 'unknown' ? 'neutral' : userEmotionalState) || analysis.sentiment,
+      userEmotionalState:
+        (userEmotionalState === 'unknown' ? 'neutral' : userEmotionalState) ||
+        analysis.sentiment,
       urgency: analysis.urgency,
     },
     config.maxOutputTokens

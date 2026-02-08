@@ -230,25 +230,27 @@ export class SceneDetectionModel {
             let byteLength: number = 0;
 
             if (Array.isArray(artifacts.weightData)) {
-                // If it's an array of ArrayBuffers, concatenate them
-                buffer = Buffer.concat(artifacts.weightData.map(ab => Buffer.from(ab)));
-                byteLength = artifacts.weightData.reduce((acc, b) => acc + b.byteLength, 0);
+              // If it's an array of ArrayBuffers, concatenate them
+              buffer = Buffer.concat(
+                artifacts.weightData.map((ab) => Buffer.from(ab))
+              );
+              byteLength = artifacts.weightData.reduce(
+                (acc, b) => acc + b.byteLength,
+                0
+              );
             } else {
-                buffer = Buffer.from(artifacts.weightData);
-                byteLength = artifacts.weightData.byteLength;
+              buffer = Buffer.from(artifacts.weightData);
+              byteLength = artifacts.weightData.byteLength;
             }
 
-            fs.writeFileSync(
-              path.join(dirPath, 'weights.bin'),
-              buffer
-            );
+            fs.writeFileSync(path.join(dirPath, 'weights.bin'), buffer);
 
             return {
-                modelArtifactsInfo: {
-                  dateSaved: new Date(),
-                  modelTopologyType: 'JSON',
-                  weightDataBytes: byteLength
-                },
+              modelArtifactsInfo: {
+                dateSaved: new Date(),
+                modelTopologyType: 'JSON',
+                weightDataBytes: byteLength,
+              },
             };
           }
 
