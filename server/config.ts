@@ -98,6 +98,10 @@ export const config = {
       process.env.GOOGLE_REDIRECT_URI || process.env.GOOGLE_OAUTH_REDIRECT_URI,
     ttsApiKey: process.env.GOOGLE_CLOUD_TTS_API_KEY,
   },
+  azure: {
+    ttsApiKey: process.env.AZURE_TTS_API_KEY,
+    ttsRegion: process.env.AZURE_TTS_REGION || "eastus",
+  },
   smartHome: {
     enableIntegration: process.env.ENABLE_SMART_HOME === 'true',
   },
