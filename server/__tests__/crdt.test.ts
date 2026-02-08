@@ -6,11 +6,11 @@ describe('CRDT Library', () => {
     it('should increment correctly', () => {
       const vc = new VectorClock();
       vc.increment('A');
-      expect(vc.toJSON()).toEqual({ A: 1 });
+      expect(vc.toJSON()).toEqual({ _t: 'vc', clock: { A: 1 } });
       vc.increment('A');
-      expect(vc.toJSON()).toEqual({ A: 2 });
+      expect(vc.toJSON()).toEqual({ _t: 'vc', clock: { A: 2 } });
       vc.increment('B');
-      expect(vc.toJSON()).toEqual({ A: 2, B: 1 });
+      expect(vc.toJSON()).toEqual({ _t: 'vc', clock: { A: 2, B: 1 } });
     });
 
     it('should merge correctly', () => {
@@ -18,7 +18,7 @@ describe('CRDT Library', () => {
       const vc2 = new VectorClock({ A: 2, C: 1 });
 
       vc1.merge(vc2);
-      expect(vc1.toJSON()).toEqual({ A: 2, B: 2, C: 1 });
+      expect(vc1.toJSON()).toEqual({ _t: 'vc', clock: { A: 2, B: 2, C: 1 } });
     });
 
     it('should compare correctly', () => {
@@ -31,6 +31,18 @@ describe('CRDT Library', () => {
       expect(vc2.compare(vc1)).toBe('greater');
       expect(vc1.compare(vc4)).toBe('equal');
       expect(vc2.compare(vc3)).toBe('concurrent');
+    });
+
+    it('should deserialize correctly', () => {
+      const json = { _t: 'vc', clock: { A: 1, B: 2 } };
+      const vc = VectorClock.fromJSON(json);
+      expect(vc.toJSON()).toEqual(json);
+    });
+
+    it('should deserialize legacy format correctly', () => {
+      const json = { A: 1, B: 2 };
+      const vc = VectorClock.fromJSON(json);
+      expect(vc.toJSON()).toEqual({ _t: 'vc', clock: json });
     });
   });
 
@@ -54,6 +66,19 @@ describe('CRDT Library', () => {
 
       reg.set('siteA_again', 100, 'A'); // A < B
       expect(reg.value).toBe('siteB');
+    });
+
+    it('should serialize/deserialize correctly', () => {
+      const reg = new LWWRegister('val', 100, 'A');
+      const json = reg.toJSON();
+      expect(json).toEqual({
+        _t: 'lww',
+        value: 'val',
+        timestamp: 100,
+        siteId: 'A',
+      });
+      const reg2 = LWWRegister.fromJSON(json);
+      expect(reg2.value).toBe('val');
     });
   });
 
@@ -85,6 +110,17 @@ describe('CRDT Library', () => {
       setA.merge(setB);
       expect(setA.has('item1')).toBe(true);
     });
+
+    it('should serialize/deserialize correctly', () => {
+      const set = new ORSet<string>();
+      set.add('item1', 'tag1');
+      const json = set.toJSON();
+      expect(json._t).toBe('orset');
+      expect(json.elements['item1']).toContain('tag1');
+
+      const set2 = ORSet.fromJSON<string>(json);
+      expect(set2.has('item1')).toBe(true);
+    });
   });
 
   describe('PNCounter', () => {
@@ -105,6 +141,18 @@ describe('CRDT Library', () => {
 
       c1.merge(c2);
       expect(c1.value).toBe(10 + 5 - 2);
+    });
+
+    it('should serialize/deserialize correctly', () => {
+      const c1 = new PNCounter('A');
+      c1.increment(10);
+      const json = c1.toJSON();
+      expect(json._t).toBe('pnc');
+      expect(json.p['A']).toBe(10);
+
+      const c2 = PNCounter.fromJSON(json);
+      expect(c2.value).toBe(10);
+      expect(c2.id).toBe('A');
     });
   });
 
