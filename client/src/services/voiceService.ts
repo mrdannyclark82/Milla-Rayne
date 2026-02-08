@@ -443,22 +443,85 @@ class ElevenLabsTTS implements ITTSProvider {
 }
 
 /**
- * Coqui TTS implementation (placeholder)
+ * Coqui TTS implementation
  */
 class CoquiTTS implements ITTSProvider {
+  private audio: HTMLAudioElement | null = null;
+
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
-    // TODO: Implement Coqui TTS integration
-    console.warn(
-      'Coqui TTS not yet implemented, falling back to browser-native'
-    );
-    return {
-      success: false,
-      error: 'Coqui TTS not configured',
-    };
+    const { text, config } = request;
+    const voiceId = config.voiceName || 'female_en';
+
+    try {
+      const response = await fetch('/api/coqui/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          voiceId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || response.statusText;
+        console.error('Coqui TTS API Error:', errorMessage);
+        return {
+          success: false,
+          error: `Coqui TTS API Error: ${errorMessage}`,
+        };
+      }
+
+      const data = await response.json();
+      if (!data.success || !data.audioUrl) {
+        return {
+          success: false,
+          error: 'Coqui TTS failed to generate audio URL',
+        };
+      }
+
+      this.cancel(); // Cancel any previous audio
+      this.audio = new Audio(data.audioUrl);
+
+      request.onStart?.();
+
+      this.audio.play().catch(err => console.error('Playback failed', err));
+
+      return new Promise((resolve) => {
+        if (!this.audio) {
+           resolve({ success: false, error: 'Audio cancelled' });
+           return;
+        }
+        this.audio.onended = () => {
+          request.onEnd?.();
+          resolve({ success: true, audioUrl: data.audioUrl });
+        };
+        this.audio.onerror = (err) => {
+          const error = new Error('Error playing Coqui TTS audio.');
+          request.onError?.(error);
+          console.error('Error playing Coqui TTS audio:', err);
+          resolve({ success: false, error: error.message });
+        };
+      });
+    } catch (error) {
+      const err =
+        error instanceof Error
+          ? error
+          : new Error('Unknown error during Coqui TTS request.');
+      request.onError?.(err);
+      console.error('Coqui TTS request failed:', err);
+      return { success: false, error: err.message };
+    }
   }
 
   cancel(): void {
-    // TODO: Implement cancellation
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = '';
+      this.audio = null;
+    }
   }
 }
 
