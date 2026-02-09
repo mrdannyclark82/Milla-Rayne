@@ -48,7 +48,11 @@ export interface IStorage {
   deleteUserSession(sessionId: string): Promise<void>;
 
   createMessage(message: InsertMessage): Promise<Message>;
-  getMessages(userId?: string): Promise<Message[]>;
+  getMessages(
+    userId?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Message[]>;
   getMessageById(id: string): Promise<Message | undefined>;
 
   // Enhanced session tracking methods
@@ -486,7 +490,7 @@ export class SqliteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_daily_suggestions_date ON daily_suggestions(date);
       CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
       CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id);
-      CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
+      CREATE INDEX IF NOT EXISTS idx_messages_user_timestamp ON messages(user_id, timestamp);
       CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
       CREATE INDEX IF NOT EXISTS idx_sessions_start_time ON sessions(start_time);
       CREATE INDEX IF NOT EXISTS idx_youtube_knowledge_video_id ON youtube_knowledge_base(video_id);
@@ -684,17 +688,40 @@ export class SqliteStorage implements IStorage {
     };
   }
 
-  async getMessages(userId?: string): Promise<Message[]> {
-    let stmt;
-    let messages;
+  async getMessages(
+    userId?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Message[]> {
+    let query = 'SELECT * FROM messages';
+    const params: any[] = [];
+
     if (userId) {
-      stmt = this.db.prepare(
-        'SELECT * FROM messages WHERE user_id = ? ORDER BY timestamp ASC'
-      );
-      messages = stmt.all(userId) as any[];
+      query += ' WHERE user_id = ?';
+      params.push(userId);
+    }
+
+    if (limit !== undefined) {
+      query += ' ORDER BY timestamp DESC';
+      query += ' LIMIT ?';
+      params.push(limit);
+      if (offset !== undefined) {
+        query += ' OFFSET ?';
+        params.push(offset);
+      }
     } else {
-      stmt = this.db.prepare('SELECT * FROM messages ORDER BY timestamp ASC');
-      messages = stmt.all() as any[];
+      query += ' ORDER BY timestamp ASC';
+      if (offset !== undefined) {
+        query += ' LIMIT -1 OFFSET ?';
+        params.push(offset);
+      }
+    }
+
+    const stmt = this.db.prepare(query);
+    let messages = stmt.all(...params) as any[];
+
+    if (limit !== undefined) {
+      messages.reverse();
     }
 
     return messages.map((msg) => ({

@@ -43,10 +43,10 @@ export function registerMemoryRoutes(app: Express) {
     '/messages',
     asyncHandler(async (req, res) => {
       const limit = parseInt(req.query.limit as string) || 50;
-      const allMessages = await storage.getMessages();
+      const allMessages = await storage.getMessages(undefined, limit);
 
       if (allMessages && allMessages.length > 0) {
-        return res.json(allMessages.slice(-limit));
+        return res.json(allMessages);
       }
 
       try {
@@ -181,7 +181,8 @@ ${suggestion.suggestionText}`,
     '/memory',
     asyncHandler(async (req, res) => {
       const userId = (req.session as any)?.userId || 'default-user';
-      const messages = await storage.getMessages(userId);
+      const limit = parseInt(req.query.limit as string) || 100;
+      const messages = await storage.getMessages(userId, limit);
       const content = messages
         .map(
           (msg) =>

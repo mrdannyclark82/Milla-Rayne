@@ -25,7 +25,11 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
 
   createMessage(message: InsertMessage): Promise<Message>;
-  getMessages(userId?: string): Promise<Message[]>;
+  getMessages(
+    userId?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Message[]>;
   getMessageById(id: string): Promise<Message | undefined>;
 }
 
@@ -233,23 +237,37 @@ export class FileStorage implements IStorage {
     return message;
   }
 
-  async getMessages(userId?: string): Promise<Message[]> {
+  async getMessages(
+    userId?: string,
+    limit?: number,
+    offset?: number
+  ): Promise<Message[]> {
     await this.initPromise;
     try {
-      const allMessages = Array.from(this.messages.values());
+      let allMessages = Array.from(this.messages.values());
       if (userId) {
-        return allMessages.filter(
+        allMessages = allMessages.filter(
           (message) => message.userId === userId || message.userId === null
         );
       }
-      // Ensure timestamps are Date objects before sorting
-      return allMessages.sort((a, b) => {
+      // Ensure timestamps are Date objects before sorting and sort them
+      allMessages.sort((a, b) => {
         const timestampA =
           a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
         const timestampB =
           b.timestamp instanceof Date ? b.timestamp : new Date(b.timestamp);
         return timestampA.getTime() - timestampB.getTime();
       });
+
+      if (limit !== undefined) {
+        const end = offset !== undefined ? allMessages.length - offset : allMessages.length;
+        const start = Math.max(0, end - limit);
+        return allMessages.slice(start, end);
+      } else if (offset !== undefined) {
+        return allMessages.slice(offset);
+      }
+
+      return allMessages;
     } catch (error) {
       console.error('Error in getMessages:', error);
       // Return empty array as fallback
