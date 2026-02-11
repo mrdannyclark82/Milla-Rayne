@@ -24,19 +24,52 @@ vi.mock('../memoryService', () => ({
   searchMemoryCore: vi.fn().mockResolvedValue([]),
   getSemanticMemoryContext: vi.fn().mockResolvedValue(''),
 }));
+vi.mock('../youtubeKnowledgeBase', () => ({
+  semanticSearchVideos: vi.fn().mockResolvedValue([]),
+}));
 vi.mock('../xaiTracker', () => ({
   startReasoningSession: vi.fn().mockReturnValue('test-session-id'),
   trackCommandIntent: vi.fn(),
   trackToolSelection: vi.fn(),
   trackResponseGeneration: vi.fn(),
   addReasoningStep: vi.fn(),
+  getReasoningData: vi.fn().mockReturnValue({}),
+  trackMemoryRetrieval: vi.fn(),
 }));
 vi.mock('../storage', () => ({
   storage: {
     getUserPreferredAIModel: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
+    getUserById: vi.fn().mockResolvedValue({ id: 'u1', username: 'User' }),
   },
+}));
+vi.mock('../avRagService', () => ({
+  validateSceneContext: vi.fn(),
+  validateVoiceContext: vi.fn(),
+  createAVContext: vi.fn(),
+  enrichMessageWithAVContext: vi.fn((msg) => msg),
+}));
+vi.mock('../realWorldInfoService', () => ({
+  getAmbientContext: vi.fn().mockReturnValue(null),
+}));
+vi.mock('../personaFusionService', () => ({
+  generateActivePersona: vi.fn().mockResolvedValue(null),
+  formatPersonaForPrompt: vi.fn().mockReturnValue(''),
+}));
+vi.mock('../selfEvolutionService', () => ({
+  getActivePersonaConfig: vi.fn().mockReturnValue(null),
+}));
+vi.mock('../offlineModelService', () => ({
+  offlineService: {
+    generateResponse: vi.fn().mockResolvedValue({ success: false }),
+  },
+}));
+vi.mock('../minimaxService', () => ({
+  generateMinimaxResponse: vi.fn().mockResolvedValue({ success: false }),
+}));
+vi.mock('../veniceService', () => ({
+  generateVeniceResponse: vi.fn().mockResolvedValue({ success: false }),
 }));
 
 describe('AI Dispatcher Priority Chain', () => {
