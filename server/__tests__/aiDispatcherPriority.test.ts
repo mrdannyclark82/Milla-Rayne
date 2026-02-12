@@ -36,6 +36,7 @@ vi.mock('../storage', () => ({
     getUserPreferredAIModel: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
+    getUserById: vi.fn().mockResolvedValue(null),
   },
 }));
 
