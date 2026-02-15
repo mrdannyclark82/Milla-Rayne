@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import calendarAgentModule from '../agents/calendarAgent.js';
 import { millaAgent } from '../agents/millaAgent.js';
+// We import these to use in tests, but they will be mocked
 import {
   readTasks,
   writeTasks,
@@ -15,9 +16,41 @@ import * as registry from '../agents/registry.js';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
+// Define the shape of our mock storage
+let mockTasks: AgentTask[] = [];
+
+// Mock the taskStorage module
+vi.mock('../agents/taskStorage.js', () => {
+  return {
+    readTasks: vi.fn(async () => [...mockTasks]),
+    writeTasks: vi.fn(async (tasks: AgentTask[]) => {
+      mockTasks = [...tasks];
+    }),
+    addTask: vi.fn(async (task: AgentTask) => {
+      mockTasks.push(task);
+    }),
+    updateTask: vi.fn(async (taskId: string, patch: Partial<AgentTask>) => {
+      const idx = mockTasks.findIndex((t) => t.taskId === taskId);
+      if (idx === -1) return null;
+      const updated = {
+        ...mockTasks[idx],
+        ...patch,
+        updatedAt: new Date().toISOString(),
+      };
+      mockTasks[idx] = updated;
+      return updated;
+    }),
+    getTask: vi.fn(async (taskId: string) => {
+      return mockTasks.find((t) => t.taskId === taskId) || null;
+    }),
+    listTasks: vi.fn(async () => [...mockTasks]),
+  };
+});
+
 describe('CalendarAgent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTasks = []; // Reset mock storage
   });
 
   afterEach(() => {
@@ -136,8 +169,7 @@ describe('CalendarAgent', () => {
 describe('MillaAgent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear tasks before each test
-    writeTasks([]);
+    mockTasks = []; // Reset mock storage
   });
 
   afterEach(() => {
@@ -168,8 +200,6 @@ describe('MillaAgent', () => {
     const task = tasks[tasks.length - 1];
     expect(task.agent).toBe('EmailAgent');
     expect(task.action).toBe('draft');
-    // getAgent is called during task creation in MillaAgent
-    // but we can't easily assert it since it's internal
   });
 
   it('should auto-run low-safety tasks', async () => {
@@ -191,7 +221,7 @@ describe('MillaAgent', () => {
 
     expect(result).toContain('Created task');
 
-    // Wait for background task execution
+    // Wait for background task execution (simulated via promises resolving in mock)
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     const tasks = await readTasks();
@@ -217,7 +247,7 @@ describe('MillaAgent', () => {
 describe('Task Approval Workflow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    writeTasks([]);
+    mockTasks = []; // Reset mock storage
   });
 
   afterEach(() => {
@@ -244,13 +274,13 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
+    // Add task to mock storage directly
+    mockTasks.push(task);
 
     // Try to run without approval - should fail
     await expect(runTask(task)).rejects.toThrow('requires user approval');
 
+    // Fetch from mock storage to verify status update
     const updatedTask = await getTask(task.taskId);
     expect(updatedTask?.status).toBe('failed');
   });
@@ -275,9 +305,7 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
+    mockTasks.push(task);
 
     // Approve the task first
     const approvedTask = await updateTask(task.taskId, {
