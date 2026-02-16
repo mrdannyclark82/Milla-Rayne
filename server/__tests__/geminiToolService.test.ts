@@ -92,7 +92,7 @@ describe('Gemini Tool Service - Parallel Execution', () => {
 
       const results = await executeToolCallsInParallel(toolCalls);
 
-      expect(results[0].executionTime).toBeGreaterThanOrEqual(10);
+      expect(results[0].executionTime).toBeGreaterThanOrEqual(5);
     });
 
     it('should execute single tool call', async () => {

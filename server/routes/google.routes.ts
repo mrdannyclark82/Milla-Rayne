@@ -22,15 +22,19 @@ export function registerGoogleRoutes(app: Express) {
       if (!code) return res.status(400).send('Code is required');
 
       try {
-        const { exchangeCodeForToken, storeOAuthToken } = await import('../oauthService');
+        const { exchangeCodeForToken, storeOAuthToken } =
+          await import('../oauthService');
 
         // Exchange code for tokens
         const tokenData = await exchangeCodeForToken(code as string);
 
         // Fetch user info
-        const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-          headers: { Authorization: `Bearer ${tokenData.accessToken}` },
-        });
+        const userRes = await fetch(
+          'https://www.googleapis.com/oauth2/v2/userinfo',
+          {
+            headers: { Authorization: `Bearer ${tokenData.accessToken}` },
+          }
+        );
 
         if (!userRes.ok) {
           return res.status(401).send('Failed to fetch user info from Google');
@@ -51,14 +55,14 @@ export function registerGoogleRoutes(app: Express) {
 
         // Store OAuth token
         if (result.user.id) {
-            await storeOAuthToken(
+          await storeOAuthToken(
             result.user.id,
             'google',
             tokenData.accessToken,
             tokenData.refreshToken,
             tokenData.expiresIn,
             tokenData.scope
-            );
+          );
         }
 
         res.cookie('session_token', result.sessionToken, {
