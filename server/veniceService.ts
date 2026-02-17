@@ -106,9 +106,10 @@ export async function generateVeniceResponse(
 
     if (!veniceClient) {
       return {
-        content: "I'm sorry, the Venice AI service is not initialized properly.",
+        content:
+          "I'm sorry, the Venice AI service is not initialized properly.",
         success: false,
-        error: "Venice client not initialized"
+        error: 'Venice client not initialized',
       };
     }
 
