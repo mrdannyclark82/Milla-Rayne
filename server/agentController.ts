@@ -21,7 +21,9 @@ class AgentController {
    */
   registerAgent(agent: BaseAgent) {
     if (!(agent instanceof BaseAgent)) {
-      throw new Error(`Agent '${(agent as any).name}' must extend BaseAgent class`);
+      throw new Error(
+        `Agent '${(agent as any).name}' must extend BaseAgent class`
+      );
     }
 
     this.agents.set(agent.name, agent);
