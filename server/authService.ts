@@ -446,13 +446,13 @@ export async function refreshAccessTokenIfExpired(
     if (newToken) {
       return {
         success: true,
-        newAccessToken: newToken
+        newAccessToken: newToken,
       };
     }
 
     return {
       success: false,
-      error: 'Token refresh failed or not needed (no valid token found)'
+      error: 'Token refresh failed or not needed (no valid token found)',
     };
   } catch (error) {
     console.error('[Auth] Token refresh error:', error);
@@ -482,7 +482,9 @@ export async function scheduleTokenRotation(): Promise<void> {
       uniqueUserIds.add(session.userId);
     }
 
-    console.log(`[Auth] Checking tokens for ${uniqueUserIds.size} active users`);
+    console.log(
+      `[Auth] Checking tokens for ${uniqueUserIds.size} active users`
+    );
 
     // For each session's user, check if token needs refresh
     for (const userId of uniqueUserIds) {
@@ -497,7 +499,9 @@ export async function scheduleTokenRotation(): Promise<void> {
         const bufferMs = 10 * 60 * 1000; // 10 minutes
 
         if (expiresInMs < bufferMs) {
-          console.log(`[Auth] Refreshing token for user ${userId} (expires in ${Math.round(expiresInMs/1000)}s)`);
+          console.log(
+            `[Auth] Refreshing token for user ${userId} (expires in ${Math.round(expiresInMs / 1000)}s)`
+          );
 
           // Call refreshAccessTokenIfExpired for expiring tokens
           // We pass existing tokens (though the function will fetch fresh from DB)
