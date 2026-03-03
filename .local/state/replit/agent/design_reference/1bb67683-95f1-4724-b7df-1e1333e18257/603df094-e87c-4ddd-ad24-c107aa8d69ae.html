@@ -498,18 +498,117 @@
     <!-- @END_COMPONENT: App -->
 
     <script>
-      // TODO: Implement React components and state management
-      // TODO: Connect to Node.js/Express backend
-      // TODO: Integrate AI personality switching logic
-      // TODO: Implement real-time messaging
-
       (function () {
-        // Basic mockup interactions - replace with React implementation
         const textarea = document.querySelector('textarea');
         const sendButton = document.querySelector(
           'button[data-event="click:handleSendMessage"]'
         );
         const wordCountSpan = document.querySelector('[data-bind="wordCount"]');
+        const chatContainer = document.querySelector('.scroll-smooth');
+        const typingIndicator = document.querySelector('.typing-animation');
+
+        function createUserMessage(text) {
+          const div = document.createElement('div');
+          div.className = 'message-fade-in';
+          div.innerHTML = `
+            <div class="flex items-start space-x-4 justify-end">
+              <div class="flex-1 bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl">
+                <p class="text-primary-foreground leading-relaxed">${text}</p>
+                <div class="mt-3 text-xs text-primary-foreground/70 text-right">
+                  <i class="fas fa-clock mr-1"></i> Just now
+                </div>
+              </div>
+              <div class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i class="fas fa-user text-muted-foreground text-xs"></i>
+              </div>
+            </div>
+          `;
+          return div;
+        }
+
+        function createAIMessage(text, sceneContext) {
+          const div = document.createElement('div');
+          div.className = 'message-fade-in';
+
+          let personalityBadge = '';
+          if (sceneContext && sceneContext.mood) {
+             personalityBadge = `
+                <div class="flex items-center mb-2">
+                  <div class="bg-green-500/10 text-green-500 px-2 py-1 rounded-full text-xs font-medium">
+                    <i class="fas fa-lightbulb mr-1"></i>${sceneContext.mood} Mode
+                  </div>
+                </div>
+             `;
+          }
+
+          div.innerHTML = `
+            <div class="flex items-start space-x-4">
+              <div class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                <i class="fas fa-robot text-white text-xs"></i>
+              </div>
+              <div class="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl">
+                ${personalityBadge}
+                <p class="text-foreground leading-relaxed whitespace-pre-wrap">${text}</p>
+                <div class="mt-3 text-xs text-muted-foreground">
+                  <i class="fas fa-clock mr-1"></i> Just now
+                </div>
+              </div>
+            </div>
+          `;
+          return div;
+        }
+
+        async function sendMessage(text) {
+          if (!text.trim()) return;
+
+          // Add user message to UI
+          const userMsgElement = createUserMessage(text);
+          if (typingIndicator && typingIndicator.parentNode === chatContainer) {
+            chatContainer.insertBefore(userMsgElement, typingIndicator);
+          } else {
+            chatContainer.appendChild(userMsgElement);
+          }
+
+          // Show typing indicator
+          if (typingIndicator) typingIndicator.style.display = 'block';
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          try {
+            const response = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: text })
+            });
+
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+
+            // Add AI response to UI
+            const aiMsgElement = createAIMessage(data.response, data.sceneContext);
+            if (typingIndicator && typingIndicator.parentNode === chatContainer) {
+              chatContainer.insertBefore(aiMsgElement, typingIndicator);
+            } else {
+              chatContainer.appendChild(aiMsgElement);
+            }
+          } catch (error) {
+            console.error('Error sending message:', error);
+            const errorMsgElement = createAIMessage("I'm sorry, I encountered an error connecting to the server.", null);
+            if (typingIndicator && typingIndicator.parentNode === chatContainer) {
+              chatContainer.insertBefore(errorMsgElement, typingIndicator);
+            } else {
+              chatContainer.appendChild(errorMsgElement);
+            }
+          } finally {
+            // Hide typing indicator
+            if (typingIndicator) typingIndicator.style.display = 'none';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+        }
 
         if (textarea) {
           // Auto-resize textarea
@@ -541,8 +640,10 @@
               e.key === 'Enter' &&
               this.value.trim()
             ) {
-              // TODO: Implement message sending logic
-              console.log('Send message:', this.value);
+              e.preventDefault();
+              const text = this.value;
+
+              // Clear input early for better UX
               this.value = '';
               this.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
@@ -550,6 +651,8 @@
                 sendButton.disabled = true;
                 sendButton.style.opacity = '0.5';
               }
+
+              sendMessage(text);
             }
           });
         }
@@ -557,13 +660,16 @@
         if (sendButton) {
           sendButton.addEventListener('click', function () {
             if (textarea && textarea.value.trim()) {
-              // TODO: Implement message sending logic
-              console.log('Send message:', textarea.value);
+              const text = textarea.value;
+
+              // Clear input early
               textarea.value = '';
               textarea.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
               this.disabled = true;
               this.style.opacity = '0.5';
+
+              sendMessage(text);
             }
           });
         }
