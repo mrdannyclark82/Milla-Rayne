@@ -319,6 +319,8 @@ class GoogleCloudTTS implements ITTSProvider {
  * Azure TTS implementation (placeholder)
  */
 class AzureTTS implements ITTSProvider {
+  private audio: HTMLAudioElement | null = null;
+
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
     // TODO: Implement Azure TTS API integration
     console.warn(
@@ -331,7 +333,11 @@ class AzureTTS implements ITTSProvider {
   }
 
   cancel(): void {
-    // TODO: Implement cancellation
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = '';
+      this.audio = null;
+    }
   }
 }
 
