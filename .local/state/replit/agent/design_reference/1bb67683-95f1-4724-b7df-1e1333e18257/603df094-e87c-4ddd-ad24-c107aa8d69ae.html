@@ -160,21 +160,21 @@
                 <i class="fas fa-brain mr-2"></i>Adaptive Personality Matrix
               </h3>
               <div class="space-y-2 text-xs text-muted-foreground">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between cursor-pointer hover:text-foreground transition-colors personality-option" data-personality="coach">
                   <span>Coach Mode</span>
-                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div class="w-2 h-2 bg-green-500 rounded-full personality-indicator"></div>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between cursor-pointer hover:text-foreground transition-colors personality-option" data-personality="empathetic">
                   <span>Empathetic Listener</span>
-                  <div class="w-2 h-2 bg-muted rounded-full"></div>
+                  <div class="w-2 h-2 bg-muted rounded-full personality-indicator"></div>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between cursor-pointer hover:text-foreground transition-colors personality-option" data-personality="strategic">
                   <span>Strategic Advisor</span>
-                  <div class="w-2 h-2 bg-muted rounded-full"></div>
+                  <div class="w-2 h-2 bg-muted rounded-full personality-indicator"></div>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between cursor-pointer hover:text-foreground transition-colors personality-option" data-personality="creative">
                   <span>Creative Partner</span>
-                  <div class="w-2 h-2 bg-muted rounded-full"></div>
+                  <div class="w-2 h-2 bg-muted rounded-full personality-indicator"></div>
                 </div>
               </div>
             </div>
@@ -511,6 +511,35 @@
         );
         const wordCountSpan = document.querySelector('[data-bind="wordCount"]');
 
+        // AI Personality switching logic
+        let currentPersonality = 'coach';
+        const personalityOptions = document.querySelectorAll('.personality-option');
+
+        personalityOptions.forEach(option => {
+          option.addEventListener('click', function() {
+            // Update state
+            currentPersonality = this.getAttribute('data-personality');
+
+            // Update UI
+            personalityOptions.forEach(opt => {
+              const indicator = opt.querySelector('.personality-indicator');
+              if (opt === this) {
+                // Active state
+                opt.classList.add('text-foreground');
+                indicator.classList.remove('bg-muted');
+                indicator.classList.add('bg-green-500');
+              } else {
+                // Inactive state
+                opt.classList.remove('text-foreground');
+                indicator.classList.remove('bg-green-500');
+                indicator.classList.add('bg-muted');
+              }
+            });
+
+            console.log('Personality switched to:', currentPersonality);
+          });
+        });
+
         if (textarea) {
           // Auto-resize textarea
           textarea.addEventListener('input', function () {
@@ -542,7 +571,7 @@
               this.value.trim()
             ) {
               // TODO: Implement message sending logic
-              console.log('Send message:', this.value);
+              console.log(`[${currentPersonality.toUpperCase()}] Send message:`, this.value);
               this.value = '';
               this.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
@@ -558,7 +587,7 @@
           sendButton.addEventListener('click', function () {
             if (textarea && textarea.value.trim()) {
               // TODO: Implement message sending logic
-              console.log('Send message:', textarea.value);
+              console.log(`[${currentPersonality.toUpperCase()}] Send message:`, textarea.value);
               textarea.value = '';
               textarea.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
