@@ -319,19 +319,77 @@ class GoogleCloudTTS implements ITTSProvider {
  * Azure TTS implementation (placeholder)
  */
 class AzureTTS implements ITTSProvider {
+  private audio: HTMLAudioElement | null = null;
+
   async speak(request: VoiceSynthesisRequest): Promise<VoiceSynthesisResponse> {
-    // TODO: Implement Azure TTS API integration
-    console.warn(
-      'Azure TTS not yet implemented, falling back to browser-native'
-    );
-    return {
-      success: false,
-      error: 'Azure TTS not configured - requires AZURE_TTS_API_KEY',
-    };
+    const { text, config } = request;
+    const voiceName = config.voiceName || 'en-US-JennyNeural';
+
+    try {
+      const response = await fetch('/api/azure/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text,
+          voiceName,
+          config: {
+            rate: config.rate ?? 1.0,
+            pitch: config.pitch ?? 1.0,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || response.statusText;
+        console.error('Azure TTS API Error:', errorMessage);
+        return {
+          success: false,
+          error: `Azure TTS API Error: ${errorMessage}`,
+        };
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      this.cancel(); // Cancel any previous audio
+      this.audio = new Audio(audioUrl);
+
+      request.onStart?.();
+
+      this.audio.play();
+
+      return new Promise((resolve) => {
+        this.audio!.onended = () => {
+          request.onEnd?.();
+          resolve({ success: true, audioUrl });
+        };
+        this.audio!.onerror = (err) => {
+          const error = new Error('Error playing Azure TTS audio.');
+          request.onError?.(error);
+          console.error('Error playing Azure TTS audio:', err);
+          resolve({ success: false, error: error.message });
+        };
+      });
+    } catch (error) {
+      const err =
+        error instanceof Error
+          ? error
+          : new Error('Unknown error during Azure TTS request.');
+      request.onError?.(err);
+      console.error('Azure TTS request failed:', err);
+      return { success: false, error: err.message };
+    }
   }
 
   cancel(): void {
-    // TODO: Implement cancellation
+    if (this.audio) {
+      this.audio.pause();
+      this.audio.src = '';
+      this.audio = null;
+    }
   }
 }
 
