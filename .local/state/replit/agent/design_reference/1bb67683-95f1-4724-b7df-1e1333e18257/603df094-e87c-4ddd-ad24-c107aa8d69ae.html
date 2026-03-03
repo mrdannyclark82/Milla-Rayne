@@ -543,6 +543,17 @@
             ) {
               // TODO: Implement message sending logic
               console.log('Send message:', this.value);
+              const messagePayload = this.value;
+              fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: messagePayload }),
+              })
+                .then(response => response.json())
+                .then(data => console.log('Message sent successfully:', data))
+                .catch(error => console.error('Error sending message:', error));
               this.value = '';
               this.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
@@ -559,6 +570,17 @@
             if (textarea && textarea.value.trim()) {
               // TODO: Implement message sending logic
               console.log('Send message:', textarea.value);
+              const messagePayload = textarea.value;
+              fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: messagePayload }),
+              })
+                .then(response => response.json())
+                .then(data => console.log('Message sent successfully:', data))
+                .catch(error => console.error('Error sending message:', error));
               textarea.value = '';
               textarea.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
