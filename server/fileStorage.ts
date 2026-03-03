@@ -32,12 +32,16 @@ export interface IStorage {
 export class FileStorage implements IStorage {
   private users: Map<string, User>;
   private messages: Map<string, Message>;
+  // Maps userId to an array of message IDs. Use "null" string key for global messages.
+  private userMessagesIndex: Map<string, string[]>;
   private initPromise: Promise<void>;
   private saveQueue: Promise<void> = Promise.resolve();
 
   constructor() {
     this.users = new Map();
     this.messages = new Map();
+    this.userMessagesIndex = new Map();
+    this.userMessagesIndex.set("null", []);
     this.initPromise = this.loadMessages();
   }
 
@@ -105,6 +109,16 @@ export class FileStorage implements IStorage {
               timestamp: new Date(msg.timestamp || new Date()),
             };
             this.messages.set(msg.id, processedMessage);
+
+            // Add to userMessagesIndex
+            const indexKey = processedMessage.userId === null ? 'null' : processedMessage.userId;
+            let userMsgs = this.userMessagesIndex.get(indexKey);
+            if (!userMsgs) {
+              userMsgs = [];
+              this.userMessagesIndex.set(indexKey, userMsgs);
+            }
+            userMsgs.push(msg.id);
+
             loadedCount++;
           } else {
             console.warn(`Skipping invalid message at index ${index}:`, msg);
@@ -229,6 +243,16 @@ export class FileStorage implements IStorage {
       userId: insertMessage.userId || null,
     };
     this.messages.set(id, message);
+
+    // Add to userMessagesIndex
+    const indexKey = message.userId === null ? 'null' : message.userId;
+    let userMsgs = this.userMessagesIndex.get(indexKey);
+    if (!userMsgs) {
+      userMsgs = [];
+      this.userMessagesIndex.set(indexKey, userMsgs);
+    }
+    userMsgs.push(id);
+
     await this.saveMessages();
     return message;
   }
@@ -236,13 +260,30 @@ export class FileStorage implements IStorage {
   async getMessages(userId?: string): Promise<Message[]> {
     await this.initPromise;
     try {
-      const allMessages = Array.from(this.messages.values());
       if (userId) {
-        return allMessages.filter(
-          (message) => message.userId === userId || message.userId === null
-        );
+        // Look up using O(1) indices instead of filtering all messages
+        const userMsgIds = this.userMessagesIndex.get(userId) || [];
+        const globalMsgIds = this.userMessagesIndex.get('null') || [];
+
+        const result: Message[] = [];
+
+        // Add user specific messages
+        for (const id of userMsgIds) {
+          const msg = this.messages.get(id);
+          if (msg) result.push(msg);
+        }
+
+        // Add global messages
+        for (const id of globalMsgIds) {
+          const msg = this.messages.get(id);
+          if (msg) result.push(msg);
+        }
+
+        return result;
       }
+
       // Ensure timestamps are Date objects before sorting
+      const allMessages = Array.from(this.messages.values());
       return allMessages.sort((a, b) => {
         const timestampA =
           a.timestamp instanceof Date ? a.timestamp : new Date(a.timestamp);
