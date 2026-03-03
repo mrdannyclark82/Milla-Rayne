@@ -31,12 +31,14 @@ export interface IStorage {
 
 export class FileStorage implements IStorage {
   private users: Map<string, User>;
+  private usersByUsername: Map<string, User>;
   private messages: Map<string, Message>;
   private initPromise: Promise<void>;
   private saveQueue: Promise<void> = Promise.resolve();
 
   constructor() {
     this.users = new Map();
+    this.usersByUsername = new Map();
     this.messages = new Map();
     this.initPromise = this.loadMessages();
   }
@@ -76,9 +78,9 @@ export class FileStorage implements IStorage {
       }
 
       // Validate JSON structure more thoroughly
-      let messages: any[];
+      let data: any;
       try {
-        messages = JSON.parse(fileContent);
+        data = JSON.parse(fileContent);
       } catch (parseError) {
         console.error(
           'JSON parsing failed:',
@@ -88,16 +90,27 @@ export class FileStorage implements IStorage {
         return;
       }
 
-      // Validate that we have an array of valid message objects
-      if (!Array.isArray(messages)) {
-        console.log('Memories file does not contain an array. Starting fresh.');
-        await this.backupFile(MEMORY_FILE_PATH, 'not an array');
+      let messagesToLoad: any[] = [];
+      let usersToLoad: any[] = [];
+
+      if (Array.isArray(data)) {
+        // Legacy format: array of messages
+        messagesToLoad = data;
+      } else if (data && typeof data === 'object') {
+        // New format: object with messages and users
+        messagesToLoad = Array.isArray(data.messages) ? data.messages : [];
+        usersToLoad = Array.isArray(data.users) ? data.users : [];
+      } else {
+        console.log(
+          'Memories file has unknown structure. Starting fresh.'
+        );
+        await this.backupFile(MEMORY_FILE_PATH, 'unknown structure');
         return;
       }
 
       // Load and validate each message
-      let loadedCount = 0;
-      messages.forEach((msg, index) => {
+      let loadedMessageCount = 0;
+      messagesToLoad.forEach((msg, index) => {
         try {
           if (msg && typeof msg === 'object' && msg.id && msg.content) {
             const processedMessage: Message = {
@@ -105,7 +118,7 @@ export class FileStorage implements IStorage {
               timestamp: new Date(msg.timestamp || new Date()),
             };
             this.messages.set(msg.id, processedMessage);
-            loadedCount++;
+            loadedMessageCount++;
           } else {
             console.warn(`Skipping invalid message at index ${index}:`, msg);
           }
@@ -117,8 +130,32 @@ export class FileStorage implements IStorage {
         }
       });
 
+      // Load and validate each user
+      let loadedUserCount = 0;
+      usersToLoad.forEach((user, index) => {
+        try {
+          if (user && typeof user === 'object' && user.id && user.username) {
+            const processedUser: User = {
+              ...user,
+              createdAt: new Date(user.createdAt || new Date()),
+              lastLoginAt: user.lastLoginAt ? new Date(user.lastLoginAt) : null,
+            };
+            this.users.set(user.id, processedUser);
+            this.usersByUsername.set(user.username, processedUser);
+            loadedUserCount++;
+          } else {
+            console.warn(`Skipping invalid user at index ${index}:`, user);
+          }
+        } catch (userError) {
+          console.warn(
+            `Error processing user at index ${index}:`,
+            userError instanceof Error ? userError.message : String(userError)
+          );
+        }
+      });
+
       console.log(
-        `Successfully loaded ${loadedCount} valid messages from file (${messages.length} total entries).`
+        `Successfully loaded ${loadedMessageCount} messages and ${loadedUserCount} users from file.`
       );
     } catch (error) {
       console.error('Error loading messages from file:', error);
@@ -141,7 +178,7 @@ export class FileStorage implements IStorage {
     }
   }
 
-  // This function saves all messages to the file with improved error handling
+  // This function saves all data to the file with improved error handling
   // Uses a queue to ensure sequential writes
   private async saveMessages(): Promise<void> {
     const operation = async () => {
@@ -151,7 +188,12 @@ export class FileStorage implements IStorage {
 
       try {
         const messagesArray = Array.from(this.messages.values());
-        const jsonData = JSON.stringify(messagesArray, null, 2);
+        const usersArray = Array.from(this.users.values());
+        const data = {
+          messages: messagesArray,
+          users: usersArray,
+        };
+        const jsonData = JSON.stringify(data, null, 2);
 
         await fs.promises.writeFile(tempPath, jsonData, 'utf8');
 
@@ -161,7 +203,7 @@ export class FileStorage implements IStorage {
           'utf8'
         );
         const verification = JSON.parse(verificationContent);
-        if (Array.isArray(verification)) {
+        if (verification && typeof verification === 'object') {
           // Only replace the original file if the temp file is valid
           // Rename is atomic on POSIX systems
           await fs.promises.rename(tempPath, MEMORY_FILE_PATH);
@@ -197,9 +239,7 @@ export class FileStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     await this.initPromise;
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username
-    );
+    return this.usersByUsername.get(username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -213,6 +253,7 @@ export class FileStorage implements IStorage {
       preferredAiModel: insertUser.preferredAiModel || null,
     };
     this.users.set(id, user);
+    this.usersByUsername.set(user.username, user);
     await this.saveMessages();
     return user;
   }
