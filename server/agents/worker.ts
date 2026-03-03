@@ -17,7 +17,7 @@ export async function runTask(task: AgentTask): Promise<void> {
     // Check if task requires approval
     if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
       const errorMsg = 'Task requires user approval before running';
-      await updateTask(task.taskId, {
+      if (task?.taskId) await updateTask(task.taskId, {
         status: 'failed',
         result: { error: errorMsg },
       });
@@ -98,7 +98,7 @@ export async function runTask(task: AgentTask): Promise<void> {
       );
     }
   } catch (err: any) {
-    console.error('Worker error running task', task.taskId, err);
+    console.error('Worker error running task', task?.taskId, err);
     const errorMsg = err?.message || String(err);
     await updateTask(task.taskId, {
       status: 'failed',
