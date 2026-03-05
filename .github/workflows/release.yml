@@ -73,13 +73,13 @@ jobs:
           lfs: false
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
       - name: Download build info
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           name: build-info
           path: .
@@ -136,7 +136,7 @@ jobs:
 
       - name: Extract metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v4
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -147,7 +147,7 @@ jobs:
             type=sha
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: true
