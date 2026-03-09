@@ -24,6 +24,9 @@ vi.mock('../memoryService', () => ({
   searchMemoryCore: vi.fn().mockResolvedValue([]),
   getSemanticMemoryContext: vi.fn().mockResolvedValue(''),
 }));
+vi.mock('../youtubeKnowledgeBase', () => ({
+  semanticSearchVideos: vi.fn().mockResolvedValue([]),
+}));
 vi.mock('../xaiTracker', () => ({
   startReasoningSession: vi.fn().mockReturnValue('test-session-id'),
   trackCommandIntent: vi.fn(),
@@ -36,6 +39,7 @@ vi.mock('../storage', () => ({
     getUserPreferredAIModel: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
+    getUserById: vi.fn().mockResolvedValue({ preferredAiModel: 'minimax' }),
   },
 }));
 
