@@ -16,7 +16,7 @@
           "files": [],
           "status": "testing",
           "testsPassed": 6,
-          "testsFailed": 6,
+          "testsFailed": 7,
           "addedAt": 1769578714591
         },
         {
@@ -114,6 +114,18 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1770569856787
+        },
+        {
+          "id": "feat_1773762205111_7ih5g0l92",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1773762205111
         }
       ],
       "readyForProduction": false,
@@ -225,6 +237,15 @@
           "passed": false,
           "details": "Some tests failed - review needed",
           "duration": 2234.8043716784587
+        },
+        {
+          "id": "test_1773762205112_npf28im05",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1773762205112,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 1315.5396650712307
         }
       ]
     },
@@ -408,7 +429,18 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1773762205109_egii8h20k": {
+      "id": "sandbox_1773762205109_egii8h20k",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1773762205109",
+      "status": "active",
+      "createdAt": 1773762205109,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1770569856788
+  "lastUpdated": 1773762205112
 }
