@@ -85,9 +85,7 @@ jobs:
 
             ---
             Automated by Milla-Rayne Daily Empire
-          attachments: |
-            report.md
-            updates.zip
+          attachments: report.md,updates.zip
           priority: normal
 
       - name: Cleanup
