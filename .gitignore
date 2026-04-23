@@ -35,3 +35,9 @@ venv/
 memory/*.db
 memory/*.db-shm
 memory/*.db-wal
+
+# Runtime memory files
+memory/*.json
+memory/*.txt*
+memory/audio_messages/*.webm
+memory/evolution_history.json

@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { scheduleTokenRotation, refreshAccessTokenIfExpired } from '../authService';
+import {
+  scheduleTokenRotation,
+  refreshAccessTokenIfExpired,
+} from '../authService';
 import { storage } from '../storage';
 
 // Mock storage
@@ -34,8 +37,20 @@ describe('Auth Scheduler', () => {
 
     it('should check tokens for active users', async () => {
       const mockSessions = [
-        { userId: 'user1', sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' },
-        { userId: 'user2', sessionToken: 'token2', expiresAt: new Date(), createdAt: new Date(), id: 's2' },
+        {
+          userId: 'user1',
+          sessionToken: 'token1',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          id: 's1',
+        },
+        {
+          userId: 'user2',
+          sessionToken: 'token2',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          id: 's2',
+        },
       ];
       vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
       vi.mocked(storage.getOAuthToken).mockResolvedValue(null);
@@ -50,7 +65,13 @@ describe('Auth Scheduler', () => {
     it('should refresh token if expiring soon', async () => {
       const userId = 'user1';
       const mockSessions = [
-        { userId, sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' }
+        {
+          userId,
+          sessionToken: 'token1',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          id: 's1',
+        },
       ];
 
       const expiringSoon = new Date(Date.now() + 5 * 60 * 1000); // 5 mins from now
@@ -63,7 +84,7 @@ describe('Auth Scheduler', () => {
         expiresAt: expiringSoon,
         scope: 'scope',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
@@ -75,18 +96,29 @@ describe('Auth Scheduler', () => {
       // refreshAccessTokenIfExpired calls getValidAccessToken from oauthService.
 
       const oauthService = await import('../oauthService');
-      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue('new_access_token');
+      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue(
+        'new_access_token'
+      );
 
       await scheduleTokenRotation();
 
       expect(storage.getOAuthToken).toHaveBeenCalledWith(userId, 'google');
-      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(
+        userId,
+        'google'
+      );
     });
 
     it('should NOT refresh token if NOT expiring soon', async () => {
       const userId = 'user1';
       const mockSessions = [
-        { userId, sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' }
+        {
+          userId,
+          sessionToken: 'token1',
+          expiresAt: new Date(),
+          createdAt: new Date(),
+          id: 's1',
+        },
       ];
 
       const expiringLater = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
@@ -98,7 +130,7 @@ describe('Auth Scheduler', () => {
         expiresAt: expiringLater,
         scope: 'scope',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
@@ -117,11 +149,20 @@ describe('Auth Scheduler', () => {
     it('should delegate to getValidAccessToken', async () => {
       const userId = 'user1';
       const oauthService = await import('../oauthService');
-      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue('new_token');
+      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue(
+        'new_token'
+      );
 
-      const result = await refreshAccessTokenIfExpired(userId, 'old', 'refresh');
+      const result = await refreshAccessTokenIfExpired(
+        userId,
+        'old',
+        'refresh'
+      );
 
-      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(
+        userId,
+        'google'
+      );
       expect(result).toEqual({ success: true, newAccessToken: 'new_token' });
     });
 
@@ -130,9 +171,16 @@ describe('Auth Scheduler', () => {
       const oauthService = await import('../oauthService');
       vi.mocked(oauthService.getValidAccessToken).mockResolvedValue(null);
 
-      const result = await refreshAccessTokenIfExpired(userId, 'old', 'refresh');
+      const result = await refreshAccessTokenIfExpired(
+        userId,
+        'old',
+        'refresh'
+      );
 
-      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(
+        userId,
+        'google'
+      );
       expect(result.success).toBe(false);
     });
   });
