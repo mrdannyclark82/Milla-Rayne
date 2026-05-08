@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Cyber "M" glyph in neon cyan with magenta accent -->
+    <path
+        android:strokeColor="#00F0FF"
+        android:strokeWidth="6"
+        android:fillColor="#00000000"
+        android:pathData="M30,76 L30,32 L54,60 L78,32 L78,76" />
+    <path
+        android:strokeColor="#FF2BD6"
+        android:strokeWidth="3"
+        android:fillColor="#00000000"
+        android:pathData="M22,82 L86,82" />
+    <path
+        android:strokeColor="#FF2BD6"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M22,26 L86,26" />
+</vector>

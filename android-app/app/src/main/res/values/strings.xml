@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Milla Rayne · CYBER</string>
+    <string name="title_chat">CHANNEL // MILLA</string>
+    <string name="title_settings">SYSTEM // CONFIG</string>
+    <string name="title_permissions">RUNTIME // PERMS</string>
+    <string name="composer_hint">Speak to the grid…</string>
+    <string name="cta_send">TRANSMIT</string>
+    <string name="cta_voice">DICTATE</string>
+    <string name="cta_attach">UPLOAD</string>
+    <string name="cta_camera">SCAN</string>
+    <string name="cta_grant">REQUEST</string>
+    <string name="empty_chat">Awaiting transmission… ⚡</string>
+</resources>

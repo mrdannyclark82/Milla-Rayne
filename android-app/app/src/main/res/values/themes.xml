@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base theme bridges to Compose. Visuals come from CyberTheme.kt -->
+    <style name="Theme.MillaCyber" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#070710</item>
+        <item name="android:navigationBarColor">#070710</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowBackground">@color/cyber_bg</item>
+    </style>
+</resources>

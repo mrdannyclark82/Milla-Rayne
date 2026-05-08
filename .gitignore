@@ -35,3 +35,7 @@ venv/
 memory/*.db
 memory/*.db-shm
 memory/*.db-wal
+
+# Emergent platform & agent artifacts (do not push)
+.emergent/
+memory/PRD.md
