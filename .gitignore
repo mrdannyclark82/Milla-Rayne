@@ -30,12 +30,3 @@ __pycache__/
 .Python
 venv/
 .venv/
-
-# Database
-memory/*.db
-memory/*.db-shm
-memory/*.db-wal
-
-# Emergent platform & agent artifacts (do not push)
-.emergent/
-memory/PRD.md
