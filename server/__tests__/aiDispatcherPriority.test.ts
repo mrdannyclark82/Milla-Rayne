@@ -36,7 +36,12 @@ vi.mock('../storage', () => ({
     getUserPreferredAIModel: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
+    getUserById: vi.fn().mockResolvedValue({ id: 'u1', username: 'User', preferredAiModel: 'minimax' }),
   },
+}));
+
+vi.mock('../youtubeKnowledgeBase', () => ({
+  semanticSearchVideos: vi.fn().mockResolvedValue([]),
 }));
 
 describe('AI Dispatcher Priority Chain', () => {
