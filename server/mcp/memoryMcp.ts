@@ -1,0 +1,1 @@
+**[the full content of memoryMcp.ts from empire-boost that I fetched earlier]**
