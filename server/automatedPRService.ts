@@ -19,6 +19,7 @@ export interface PRRequest {
   branch: string;
   baseBranch: string;
   files: string[];
+  skipCommit?: boolean;
   createdAt: number;
   status: 'pending' | 'creating' | 'created' | 'failed';
   prUrl?: string;
@@ -48,6 +49,7 @@ class AutomatedPRService {
     description: string;
     branch: string;
     files: string[];
+    skipCommit?: boolean;
   }): Promise<PRRequest> {
     const prRequest: PRRequest = {
       id: `pr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -57,6 +59,7 @@ class AutomatedPRService {
       branch: params.branch,
       baseBranch: 'main',
       files: params.files,
+      skipCommit: params.skipCommit,
       createdAt: Date.now(),
       status: 'pending',
     };
@@ -90,19 +93,24 @@ class AutomatedPRService {
       if (!githubToken) {
         throw new Error('GitHub token not configured');
       }
-
       // Create branch if it doesn't exist
       const branchExists = await this.checkBranchExists(prRequest.branch);
-      if (!branchExists) {
+      if (!branchExists && !prRequest.skipCommit) {
         await this.createBranch(prRequest.branch, prRequest.baseBranch);
+      } else if (!branchExists && prRequest.skipCommit) {
+        throw new Error(
+          `Branch ${prRequest.branch} does not exist and commit is skipped`
+        );
       }
 
       // Commit changes to branch
-      await this.commitChangesToBranch(
-        prRequest.branch,
-        prRequest.files,
-        prRequest.title
-      );
+      if (!prRequest.skipCommit) {
+        await this.commitChangesToBranch(
+          prRequest.branch,
+          prRequest.files,
+          prRequest.title
+        );
+      }
 
       // Create PR using GitHub API
       const prData = await this.createGitHubPR({
@@ -332,6 +340,7 @@ export function createPRForSandbox(params: {
   description: string;
   branch: string;
   files: string[];
+  skipCommit?: boolean;
 }): Promise<PRRequest> {
   return prService.createPRForSandbox(params);
 }
