@@ -4,15 +4,16 @@ on:
   schedule:
     # Runs at 1:00 PM UTC (8:00 AM CST)
     - cron: '0 13 * * *'
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write   # Needed to create daily report issues
 
 jobs:
   daily-analysis:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -20,19 +21,18 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.10.0'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install analysis dependencies
         run: |
           npm install --no-save \
-            axios@1.6.5 \
-            cheerio@1.0.0-rc.12 \
-            adm-zip@0.5.10 \
-            nodemailer@6.9.8
+            axios@1.7.2 \
+            cheerio@1.0.0 \
+            adm-zip@0.5.12
         env:
           NODE_ENV: production
 
@@ -40,7 +40,6 @@ jobs:
         run: node daily-analysis.cjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_ENV: production
 
       - name: Verify outputs
         run: |
@@ -55,7 +54,7 @@ jobs:
           echo "✓ All outputs generated successfully"
 
       - name: Upload report as artifact
-        uses: actions/upload-artifact@v4.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: daily-report-${{ github.run_number }}
           path: |
@@ -63,30 +62,33 @@ jobs:
             updates.zip
           retention-days: 30
 
-      - name: Send email with report
-        uses: dawidd6/action-send-mail@v3.12.0
+      - name: Create Daily Empire Report Issue
+        uses: actions/github-script@v7
         with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          starttls: true
-          username: ${{ secrets.EMAIL_FROM }}
-          password: ${{ secrets.EMAIL_PASS }}
-          subject: '🚀 Daily Empire Report - ${{ github.run_number }}'
-          to: ${{ secrets.EMAIL_TO }}
-          from: Milla-Rayne Empire <${{ secrets.EMAIL_FROM }}>
-          body: |
-            Daily Empire Analysis Report
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.md', 'utf8');
+            
+            const date = new Date().toISOString().split('T')[0];
+            const title = `🚀 Daily Empire Report - ${date} (Run #${context.runNumber})`;
+            
+            const body = `**Generated:** ${new Date().toISOString()}\n` +
+                         `**Repository:** ${context.repo.owner}/${context.repo.repo}\n` +
+                         `**Run:** #${context.runNumber}\n\n` +
+                         `---\n\n` +
+                         report + 
+                         `\n\n---\n\n` +
+                         `**Artifacts:** [Download report + updates.zip](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
 
-            Generated: ${{ github.event.repository.updated_at }}
-            Run Number: ${{ github.run_number }}
-            Repository: ${{ github.repository }}
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['daily-report', 'empire']
+            });
 
-            Please see the attached report and code updates.
-
-            ---
-            Automated by Milla-Rayne Daily Empire
-          attachments: report.md,updates.zip
-          priority: normal
+            console.log(`Created issue #${issue.number}: ${issue.html_url}`);
 
       - name: Cleanup
         if: always()
