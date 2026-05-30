@@ -31,11 +31,20 @@ vi.mock('../xaiTracker', () => ({
   trackResponseGeneration: vi.fn(),
   addReasoningStep: vi.fn(),
 }));
+vi.mock('../youtubeKnowledgeBase', () => ({
+  semanticSearchVideos: vi.fn().mockResolvedValue([]),
+}));
 vi.mock('../storage', () => ({
   storage: {
     getUserPreferredAIModel: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
+    getUserById: vi.fn().mockResolvedValue({
+      id: 'u1',
+      username: 'User',
+      email: 'user@example.com',
+      preferredAiModel: null,
+    }),
   },
 }));
 
