@@ -15,7 +15,7 @@
           "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
           "files": [],
           "status": "testing",
-          "testsPassed": 6,
+          "testsPassed": 7,
           "testsFailed": 6,
           "addedAt": 1769578714591
         },
@@ -23,9 +23,7 @@
           "id": "feat_1770000243679_seszmrtr2",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -35,9 +33,7 @@
           "id": "feat_1770006439823_ifsovg6ji",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -47,9 +43,7 @@
           "id": "feat_1770137349157_i5t4rfm96",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -59,9 +53,7 @@
           "id": "feat_1770137475677_fx5itnlth",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -71,9 +63,7 @@
           "id": "feat_1770480408206_lq1c0ctj8",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -83,9 +73,7 @@
           "id": "feat_1770480982865_6n70twmbw",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -95,9 +83,7 @@
           "id": "feat_1770481236468_b2gk53aug",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -107,13 +93,21 @@
           "id": "feat_1770569856787_57ik3z1ce",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
+          "files": ["test.ts"],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1770569856787
+        },
+        {
+          "id": "feat_1770827480645_moglrvzqv",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": ["test.ts"],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770827480645
         }
       ],
       "readyForProduction": false,
@@ -225,6 +219,15 @@
           "passed": false,
           "details": "Some tests failed - review needed",
           "duration": 2234.8043716784587
+        },
+        {
+          "id": "test_1770827480646_x66megzpw",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770827480646,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 690.2826866173646
         }
       ]
     },
@@ -408,7 +411,18 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1770827480643_je93k7tmk": {
+      "id": "sandbox_1770827480643_je93k7tmk",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770827480643",
+      "status": "active",
+      "createdAt": 1770827480643,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1770569856788
+  "lastUpdated": 1770827480646
 }
