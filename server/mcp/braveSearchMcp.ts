@@ -1,0 +1,1 @@
+**[the full content of braveSearchMcp.ts from empire-boost]**
