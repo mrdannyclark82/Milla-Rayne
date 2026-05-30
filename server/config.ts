@@ -48,6 +48,7 @@ export const config = {
     summarizationCron: process.env.MEMORY_SUMMARIZATION_CRON || '0 0 * * *',
   },
   admin: {
+    email: process.env.ADMIN_EMAIL,
     token: process.env.ADMIN_TOKEN,
   },
   openai: {
