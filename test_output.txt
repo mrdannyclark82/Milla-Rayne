@@ -1,0 +1,2688 @@
+
+> rest-express@1.0.0 test:coverage
+> vitest run --coverage --config ./vitest.config.server.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/app[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+[90mstderr[2m | server/__tests__/millAlyzerIntegration.test.ts[2m > [22m[2mmillAlyzer Chat Integration[2m > [22m[2mError Handling[2m > [22m[2mshould continue chat if analysis fails
+[22m[39mAnalysis failed: Error: Analysis failed
+    at [90m/app/[39mserver/__tests__/millAlyzerIntegration.test.ts:216:28
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+[90mstdout[2m | server/__tests__/performance.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/performance.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/performance.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+Sourcemap for "/app/node_modules/node-cron/dist/esm/node-cron.js" points to missing source files
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mMetacognitive Loop Performance[2m > [22m[2mshould handle concurrent metacognitive requests
+[22m[39mMetacognitive Load Test: 10/10 succeeded in 71ms
+Success rate: 100.0%
+Average response time: 7.10ms
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mMetacognitive Loop Performance[2m > [22m[2mshould maintain performance under sequential load
+[22m[39mSequential Load Test Results:
+  Average: 3.35ms
+  Min: 2ms
+  Max: 15ms
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mAgent Dispatch Performance[2m > [22m[2mshould handle parallel agent dispatches efficiently
+[22m[39mAgent Dispatch Load Test: 5/5 succeeded in 18ms
+Average response time: 3.60ms
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mChat API Performance[2m > [22m[2mshould handle burst chat requests
+[22m[39mChat Burst Test: 15/15 succeeded in 64ms
+Throughput: 234.38 req/s
+
+[90mstderr[2m | server/__tests__/homomorphicProduction.test.ts[2m > [22m[2mProduction Homomorphic Encryption[2m > [22m[2mError Handling[2m > [22m[2mshould reject invalid encrypted data
+[22m[39m[HE] Decryption failed: Error: Invalid encrypted data format
+    at decryptHomomorphic [90m(/app/[39mserver/crypto/homomorphicProduction.ts:131:13[90m)[39m
+    at [90m/app/[39mserver/__tests__/homomorphicProduction.test.ts:251:20
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mMemory Service Performance[2m > [22m[2mshould handle concurrent memory searches
+[22m[39mMemory Search Load Test: 20/20 succeeded in 65ms
+Average latency: 3.25ms
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mWebSocket Stress Test[2m > [22m[2mshould document websocket performance characteristics
+[22m[39mWebSocket Performance Expectations:
+{
+  "maxConcurrentConnections": 1000,
+  "messageLatency": "<100ms",
+  "messageRate": ">1000/s",
+  "reconnectTime": "<5s"
+}
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mPerformance Benchmarks[2m > [22m[2mshould track and report key performance indicators
+[22m[39m
+=== Performance Benchmarks ===
+chatResponseTime:
+  Target: 2000ms
+  Threshold: 5000ms
+memorySearchTime:
+  Target: 500ms
+  Threshold: 1000ms
+agentDispatchTime:
+  Target: 3000ms
+  Threshold: 10000ms
+metacognitiveAnalysisTime:
+  Target: 2000ms
+  Threshold: 8000ms
+==============================
+
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould handle concurrent PFC operations without race conditions
+[22m[39mPFC Stress Test: 20/20 succeeded in 63ms
+Average latency: 3.15ms
+Unique message IDs: 0/0
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39mIteration 1/5: 10ms
+
+[90mstderr[2m | server/__tests__/homomorphicProduction.test.ts[2m > [22m[2mProduction Homomorphic Encryption[2m > [22m[2mSecurity Properties[2m > [22m[2mshould reject tampered ciphertext
+[22m[39m[HE] Decryption failed: Error: Unsupported state or unable to authenticate data
+[90m    at Decipheriv.final (node:internal/crypto/cipher:184:29)[39m
+    at decryptHomomorphic [90m(/app/[39mserver/crypto/homomorphicProduction.ts:144:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/homomorphicProduction.test.ts:326:7
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+ [32m✓[39m server/__tests__/homomorphicProduction.test.ts [2m([22m[2m30 tests[22m[2m)[22m[33m 3734[2mms[22m[39m
+       [33m[2m✓[22m[39m should be case-insensitive [33m 412[2mms[22m[39m
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39mIteration 2/5: 10ms
+
+[90mstderr[2m | server/__tests__/homomorphicEncryption.test.ts[2m > [22m[2mHomomorphic Encryption Prototype[2m > [22m[2mdecryptHomomorphic[2m > [22m[2mshould throw error for malformed encrypted data
+[22m[39m[HE] Decryption failed: Error: Invalid encrypted data format
+    at decryptHomomorphic [90m(/app/[39mserver/crypto/homomorphicPrototype.ts:193:13[90m)[39m
+    at [90m/app/[39mserver/__tests__/homomorphicEncryption.test.ts:76:20
+    at Proxy.assertThrows [90m(file:///app/[39mnode_modules/[4mchai[24m/index.js:2798:5[90m)[39m
+    at Proxy.methodWrapper [90m(file:///app/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at Proxy.<anonymous> [90m(file:///app/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1149:12[90m)[39m
+    at Proxy.overwritingMethodWrapper [90m(file:///app/[39mnode_modules/[4mchai[24m/index.js:1750:33[90m)[39m
+    at Proxy.<anonymous> [90m(file:///app/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1485:16[90m)[39m
+    at Proxy.<anonymous> [90m(file:///app/[39mnode_modules/[4m@vitest/expect[24m/dist/index.js:1090:14[90m)[39m
+    at Proxy.methodWrapper [90m(file:///app/[39mnode_modules/[4mchai[24m/index.js:1700:25[90m)[39m
+    at [90m/app/[39mserver/__tests__/homomorphicEncryption.test.ts:76:59
+
+ [32m✓[39m server/__tests__/millAlyzerIntegration.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 5021[2mms[22m[39m
+       [33m[2m✓[22m[39m should not block chat response for analysis [33m 5001[2mms[22m[39m
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39mIteration 3/5: 15ms
+
+[90mstderr[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel
+[22m[39m
+============================
+Hi, looks like you are running TensorFlow.js in Node.js. To speed things up dramatically, install our node backend, visit https://github.com/tensorflow/tfjs-node for more details.
+============================
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould train on synthetic data
+[22m[39m[SceneModel] Starting training with 200 samples...
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould train on synthetic data
+[22m[39m[SceneModel] Epoch 0: loss=2.0991, acc=0.1500
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39mIteration 4/5: 13ms
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould train on synthetic data
+[22m[39m[SceneModel] Epoch 10: loss=0.5333, acc=0.8222
+
+ [32m✓[39m server/__tests__/homomorphicEncryption.test.ts [2m([22m[2m29 tests[22m[2m)[22m[33m 3200[2mms[22m[39m
+       [33m[2m✓[22m[39m should handle multiple sensitive fields [33m 409[2mms[22m[39m
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39mIteration 5/5: 11ms
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould encrypt context containing location information
+[22m[39m[Memory] Encrypted sensitive context for entry test-1
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould encrypt context containing personal information
+[22m[39m[Memory] Encrypted sensitive context for entry test-2
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould train on synthetic data
+[22m[39m[SceneModel] Training complete.
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould predict "sleeping" for night with no motion
+[22m[39mPrediction for sleeping: { state: [32m'sleeping'[39m, confidence: [33m0.988819420337677[39m }
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould predict "cooking" for kitchen with motion
+[22m[39mPrediction for cooking: { state: [32m'cooking'[39m, confidence: [33m0.9305450916290283[39m }
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould save and load the model
+[22m[39m[SceneModel] Model saved to /app/server/__tests__/test_model_data
+
+[90mstdout[2m | server/__tests__/sceneDetectionModel.test.ts[2m > [22m[2mSceneDetectionModel[2m > [22m[2mshould save and load the model
+[22m[39m[SceneModel] Model loaded from /app/server/__tests__/test_model_data
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+ [32m✓[39m server/__tests__/sceneDetectionModel.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 2124[2mms[22m[39m
+     [33m[2m✓[22m[39m should train on synthetic data [33m 2082[2mms[22m[39m
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mencryptSensitiveMemoryFields[2m > [22m[2mshould detect various sensitive keywords
+[22m[39m[Memory] Encrypted sensitive context for entry test
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mZero-Knowledge Proofs[2m > [22m[2mshould generate a ZK proof for a claim
+[22m[39m[Decentralization] Generated ZK proof: zkp_1771778794448_261d443ba8eb0cf4 for claim: age_over_18
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mZero-Knowledge Proofs[2m > [22m[2mshould verify a valid ZK proof
+[22m[39m[Decentralization] Generated ZK proof: zkp_1771778794452_21ffe25eb5986aa6 for claim: verified_email
+[Decentralization] Proof verification succeeded: zkp_1771778794452_21ffe25eb5986aa6
+
+[90mstderr[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mZero-Knowledge Proofs[2m > [22m[2mshould reject an invalid proof ID
+[22m[39m[Decentralization] Proof not found: invalid_proof_id
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mZero-Knowledge Proofs[2m > [22m[2mshould generate different proofs for the same claim
+[22m[39m[Decentralization] Generated ZK proof: zkp_1771778794454_38df86162be53c64 for claim: age_over_18
+[Decentralization] Generated ZK proof: zkp_1771778794454_80b6f8f1bcbe9fe7 for claim: age_over_18
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mdecryptSensitiveMemoryFields[2m > [22m[2mshould decrypt encrypted context
+[22m[39m[Memory] Encrypted sensitive context for entry test-5
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould store data in the vault with encryption
+[22m[39m[Decentralization] Stored data in vault: vault_1771778794456_2e1b4abb226a3ba5, location: Qm29wOVt7CxtWvPy3zaRtCgRl95J9zhQ
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2msearchEncryptedContext[2m > [22m[2mshould search in encrypted context using homomorphic query
+[22m[39m[Memory] Encrypted sensitive context for entry test-8
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould retrieve data from the vault
+[22m[39m[Decentralization] Stored data in vault: vault_1771778794518_fd33700eb0ac6ec4, location: QmJz07vJCydfxG9PhzXprly6nRin9yg
+[Decentralization] Retrieved data from vault: vault_1771778794518_fd33700eb0ac6ec4
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould prevent unauthorized access to vault data
+[22m[39m[Decentralization] Stored data in vault: vault_1771778794637_9cfdf44d605cedd4, location: QmFs1VaoAUmtEnd4U08gh8ZG9OwI7bA
+
+[90mstderr[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould prevent unauthorized access to vault data
+[22m[39m[Decentralization] Unauthorized access attempt to vault: vault_1771778794637_9cfdf44d605cedd4
+
+[90mstderr[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould return null for non-existent vault entry
+[22m[39m[Decentralization] Vault entry not found: invalid_entry_id
+
+[90mstdout[2m | server/__tests__/performance.test.ts[2m > [22m[2mAPI Load Testing[2m > [22m[2mParallel Function Calling (PFC) Stress Tests[2m > [22m[2mshould maintain PFC performance under sustained load
+[22m[39m
+PFC Sustained Load Results:
+  Average: 11.80ms
+  Min: 10ms
+  Max: 15ms
+  Variance: 42.4%
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2msearchEncryptedContext[2m > [22m[2mshould return false for no match
+[22m[39m[Memory] Encrypted sensitive context for entry test-10
+
+ [32m✓[39m server/__tests__/performance.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 5485[2mms[22m[39m
+       [33m[2m✓[22m[39m should maintain PFC performance under sustained load [33m 5064[2mms[22m[39m
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mDecentralized Vault[2m > [22m[2mshould track access metadata
+[22m[39m[Decentralization] Stored data in vault: vault_1771778794700_98daf4cc373ced4a, location: Qm6uCylrVSVxUMcr1DqPoUagF68mA
+[Decentralization] Retrieved data from vault: vault_1771778794700_98daf4cc373ced4a
+[Decentralization] Retrieved data from vault: vault_1771778794700_98daf4cc373ced4a
+[Decentralization] Retrieved data from vault: vault_1771778794700_98daf4cc373ced4a
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mVerifiable Credentials[2m > [22m[2mshould issue a verifiable credential
+[22m[39m[Decentralization] Issued verifiable credential: vc_1771778794934_79214a686dbcdf30, type: EmailVerification
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mVerifiable Credentials[2m > [22m[2mshould verify a valid credential
+[22m[39m[Decentralization] Issued verifiable credential: vc_1771778794936_5f2aed81d945d385, type: AgeVerification
+[Decentralization] Credential verification succeeded: vc_1771778794936_5f2aed81d945d385
+
+[90mstderr[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mVerifiable Credentials[2m > [22m[2mshould reject an invalid credential ID
+[22m[39m[Decentralization] Credential not found: invalid_credential_id
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mVerifiable Credentials[2m > [22m[2mshould allow custom issuer
+[22m[39m[Decentralization] Issued verifiable credential: vc_1771778794937_0a669032c3e0c2d5, type: CustomCredential
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould handle complete encrypt-search-decrypt workflow
+[22m[39m[Memory] Encrypted sensitive context for entry integration-1
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Profile Creation[2m > [22m[2mshould create a complete SSI profile with age verification
+[22m[39m[Decentralization] Creating SSI profile for user: user123
+[Decentralization] Stored data in vault: vault_1771778794938_0e8a6dfe88dc6eb7, location: QmIJAKe3OcVWFkErgBPnvnSPlIKD1A
+[Decentralization] Generated ZK proof: zkp_1771778794997_9b50ea7c233d5be2 for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778794997_5e8f0ba4b002d857, type: AgeVerification
+[Decentralization] Generated ZK proof: zkp_1771778794997_c842ea2bcb49cf7b for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778794997_5af6bc686adb04ac, type: EmailVerification
+[Decentralization] SSI profile created with 2 proofs and 2 credentials
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Profile Creation[2m > [22m[2mshould create a complete SSI profile with email verification
+[22m[39m[Decentralization] Creating SSI profile for user: user456
+[Decentralization] Stored data in vault: vault_1771778794998_fa08cb2c32f691c2, location: QmGV8aIYgnpZZBmr4Gzi1HWgfI2jMQ
+[Decentralization] Generated ZK proof: zkp_1771778795058_ef688c06c32d5a3f for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778795058_8e256620fab3ec57, type: EmailVerification
+[Decentralization] SSI profile created with 1 proofs and 1 credentials
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Profile Creation[2m > [22m[2mshould retrieve user vault entries
+[22m[39m[Decentralization] Creating SSI profile for user: user789
+[Decentralization] Stored data in vault: vault_1771778795059_950278ed9fd6fd15, location: QmA9251L7sa28Fzp7kz01mAZ3DoA6qA
+[Decentralization] Generated ZK proof: zkp_1771778795117_826a36f3770e9d89 for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778795117_88874f30e6f40766, type: AgeVerification
+[Decentralization] Generated ZK proof: zkp_1771778795118_72ee9ea0e2cf1b53 for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778795118_b529a9626f433108, type: EmailVerification
+[Decentralization] SSI profile created with 2 proofs and 2 credentials
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Profile Creation[2m > [22m[2mshould retrieve proofs by claim type
+[22m[39m[Decentralization] Creating SSI profile for user: user999
+[Decentralization] Stored data in vault: vault_1771778795118_30a421e03950fd99, location: Qm41IwU8NnZCWBZlyF1eHxzsSdy38rjg
+[Decentralization] Generated ZK proof: zkp_1771778795176_9fd08bc6f7d27165 for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778795177_0fd536473b0182fc, type: AgeVerification
+[Decentralization] SSI profile created with 1 proofs and 1 credentials
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould preserve non-sensitive data while encrypting sensitive data
+[22m[39m[Memory] Encrypted sensitive context for entry integration-2
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Profile Creation[2m > [22m[2mshould retrieve user credentials
+[22m[39m[Decentralization] Creating SSI profile for user: user888
+[Decentralization] Stored data in vault: vault_1771778795178_1c4bdc44eb3b80f3, location: QmcBvv7V5XVQMbOCZK3HaJsROz7sF4XA
+[Decentralization] Generated ZK proof: zkp_1771778795238_0665534c37395a0c for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778795238_e77a43ece3455305, type: AgeVerification
+[Decentralization] Generated ZK proof: zkp_1771778795238_5788f290d5a178a7 for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778795238_d85bdf56d3822881, type: EmailVerification
+[Decentralization] SSI profile created with 2 proofs and 2 credentials
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/memoryEncryption.test.ts[2m > [22m[2mMemory Service - Homomorphic Encryption Integration[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould handle multiple entries with mixed sensitivity
+[22m[39m[Memory] Encrypted sensitive context for entry multi-2
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795306-u69sij] dispatchAIResponse - Starting
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39mGenerating Active Persona for user: u1
+
+ [32m✓[39m server/__tests__/memoryEncryption.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 1342[2mms[22m[39m
+       [33m[2m✓[22m[39m should detect various sensitive keywords [33m 354[2mms[22m[39m
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39m🔍 Semantic search for: "Try OpenAI"
+
+[90mstdout[2m | server/__tests__/decentralization.test.ts[2m > [22m[2mDecentralization Service - SSI Pilot[2m > [22m[2mSSI Statistics[2m > [22m[2mshould provide system statistics
+[22m[39m[Decentralization] Creating SSI profile for user: user1
+[Decentralization] Stored data in vault: vault_1771778795241_fbf47e9c55ba5731, location: Qm4ESUxXRXppVpYczwUCGQZEiTVVvgg
+[Decentralization] Generated ZK proof: zkp_1771778795302_504a2ca29fa073e6 for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778795302_4642ae2b3d86c507, type: AgeVerification
+[Decentralization] Generated ZK proof: zkp_1771778795302_80fa67df05de656c for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778795302_da01be7d273ed0f1, type: EmailVerification
+[Decentralization] SSI profile created with 2 proofs and 2 credentials
+[Decentralization] Creating SSI profile for user: user2
+[Decentralization] Stored data in vault: vault_1771778795302_baadc665b846c7f6, location: Qmjy7o7PuZZNr6EAkstta0Y3FV6i86Q
+[Decentralization] Generated ZK proof: zkp_1771778795360_6a7f176f03c0ad26 for claim: age_over_18
+[Decentralization] Issued verifiable credential: vc_1771778795360_77666245d2d8cf3d, type: AgeVerification
+[Decentralization] Generated ZK proof: zkp_1771778795360_738673ead5222a3b for claim: verified_email
+[Decentralization] Issued verifiable credential: vc_1771778795360_f3bfe47c90909a58, type: EmailVerification
+[Decentralization] SSI profile created with 2 proofs and 2 credentials
+
+ [32m✓[39m server/__tests__/decentralization.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 917[2mms[22m[39m
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39mError generating embedding: AuthenticationError: 401 Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.
+    at Function.generate [90m(file:///app/[39mnode_modules/[4mopenai[24m/core/error.mjs:44:20[90m)[39m
+    at OpenAI.makeStatusError [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:162:32[90m)[39m
+    at OpenAI.makeRequest [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:330:30[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at generateEmbedding [90m(/app/[39mserver/vectorDBService.ts:360:22[90m)[39m
+    at VectorDBService.semanticSearch [90m(/app/[39mserver/vectorDBService.ts:532:23[90m)[39m
+    at semanticSearchVideos [90m(/app/[39mserver/youtubeKnowledgeBase.ts:525:21[90m)[39m
+    at enrichContextWithSemanticRetrieval [90m(/app/[39mserver/aiDispatcherService.ts:85:28[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:342:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:65:5 {
+  status: [33m401[39m,
+  headers: Headers {
+    date: [32m'Sun, 22 Feb 2026 16:46:35 GMT'[39m,
+    [32m'content-type'[39m: [32m'text/plain'[39m,
+    [32m'content-length'[39m: [32m'253'[39m,
+    connection: [32m'keep-alive'[39m,
+    [32m'x-openai-ide-error-code'[39m: [32m'invalid_api_key'[39m,
+    [32m'x-openai-authorization-error'[39m: [32m'401'[39m,
+    [32m'x-error-json'[39m: [32m'ewogICJlcnJvciI6IHsKICAgICJtZXNzYWdlIjogIkluY29ycmVjdCBBUEkga2V5IHByb3ZpZGVkOiBzay10ZXN0LiBZb3UgY2FuIGZpbmQgeW91ciBBUEkga2V5IGF0IGh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbS9hY2NvdW50L2FwaS1rZXlzLiIsCiAgICAidHlwZSI6ICJpbnZhbGlkX3JlcXVlc3RfZXJyb3IiLAogICAgImNvZGUiOiAiaW52YWxpZF9hcGlfa2V5IiwKICAgICJwYXJhbSI6IG51bGwKICB9LAogICJzdGF0dXMiOiA0MDEKfQ=='[39m,
+    [32m'x-request-id'[39m: [32m'req_bbeded34bf154f888697be62daf7dbd7'[39m,
+    [32m'x-datadog-trace-id'[39m: [32m'5043999430202435954'[39m,
+    [32m'x-datadog-parent-id'[39m: [32m'2946734322445163463'[39m,
+    [32m'x-datadog-sampling-priority'[39m: [32m'0'[39m,
+    [32m'x-openai-internal-caller'[39m: [32m'unknown_through_ide'[39m,
+    [32m'x-openai-proxy-wasm'[39m: [32m'v0.1'[39m,
+    server: [32m'cloudflare'[39m,
+    [32m'cf-cache-status'[39m: [32m'DYNAMIC'[39m,
+    [32m'set-cookie'[39m: [32m'__cf_bm=RHBoknhh8QmVMK2zphey8QTbRdGBczDU1rewd8vNvjc-1771778795.5857053-1.0.1.1-JUYjjXphRfPmMNnn4_w6F4mY84LcSoHCGb8PlMAlM9afFtKJzqZBN9ZcxveONUl0oObwKkijsmou4xj6ii0XwX.6nZnysWgXhoxA23s4PnR43fKz3jy6wuFptTW8v36l; HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Sun, 22 Feb 2026 17:16:35 GMT, _cfuvid=Rz6Kp2BFDRQVpAWoG.WIoI.91cTDZ1IPd8wtKJnwV98-1771778795.5857053-1.0.1.1-gvqPbVgE_ybwj41pfAcSKiqTRH9wDUldgsagXpaLhKI; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com'[39m,
+    [32m'strict-transport-security'[39m: [32m'max-age=31536000; includeSubDomains; preload'[39m,
+    [32m'x-content-type-options'[39m: [32m'nosniff'[39m,
+    [32m'cf-ray'[39m: [32m'9d1ff5e06d8c1910-ORD'[39m,
+    [32m'alt-svc'[39m: [32m'h3=":443"; ma=86400'[39m
+  },
+  requestID: [32m'req_bbeded34bf154f888697be62daf7dbd7'[39m,
+  error: {
+    message: [32m'Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.'[39m,
+    type: [32m'invalid_request_error'[39m,
+    code: [32m'invalid_api_key'[39m,
+    param: [1mnull[22m
+  },
+  code: [32m'invalid_api_key'[39m,
+  param: [1mnull[22m,
+  type: [32m'invalid_request_error'[39m
+}
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39mFailed to generate embedding for query
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39m✅ Found 0 semantically similar videos
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39mGet AI model error: TypeError: __vite_ssr_import_2__.storage.getUserById is not a function
+    at getUserAIModel [90m(/app/[39mserver/authService.ts:197:32[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:373:28[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:65:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39mTrying OpenAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m1. OpenAI succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795306-u69sij] dispatchAIResponse - Completed in 222ms. Model: openai
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795531-yojli7] dispatchAIResponse - Starting
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mGenerating Active Persona for user: u1
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39m🔍 Semantic search for: "Try Anthropic"
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mError generating embedding: AuthenticationError: 401 Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.
+    at Function.generate [90m(file:///app/[39mnode_modules/[4mopenai[24m/core/error.mjs:44:20[90m)[39m
+    at OpenAI.makeStatusError [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:162:32[90m)[39m
+    at OpenAI.makeRequest [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:330:30[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at generateEmbedding [90m(/app/[39mserver/vectorDBService.ts:360:22[90m)[39m
+    at VectorDBService.semanticSearch [90m(/app/[39mserver/vectorDBService.ts:532:23[90m)[39m
+    at semanticSearchVideos [90m(/app/[39mserver/youtubeKnowledgeBase.ts:525:21[90m)[39m
+    at enrichContextWithSemanticRetrieval [90m(/app/[39mserver/aiDispatcherService.ts:85:28[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:342:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:78:5 {
+  status: [33m401[39m,
+  headers: Headers {
+    date: [32m'Sun, 22 Feb 2026 16:46:35 GMT'[39m,
+    [32m'content-type'[39m: [32m'text/plain'[39m,
+    [32m'content-length'[39m: [32m'253'[39m,
+    connection: [32m'keep-alive'[39m,
+    [32m'x-openai-ide-error-code'[39m: [32m'invalid_api_key'[39m,
+    [32m'x-openai-authorization-error'[39m: [32m'401'[39m,
+    [32m'x-error-json'[39m: [32m'ewogICJlcnJvciI6IHsKICAgICJtZXNzYWdlIjogIkluY29ycmVjdCBBUEkga2V5IHByb3ZpZGVkOiBzay10ZXN0LiBZb3UgY2FuIGZpbmQgeW91ciBBUEkga2V5IGF0IGh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbS9hY2NvdW50L2FwaS1rZXlzLiIsCiAgICAidHlwZSI6ICJpbnZhbGlkX3JlcXVlc3RfZXJyb3IiLAogICAgImNvZGUiOiAiaW52YWxpZF9hcGlfa2V5IiwKICAgICJwYXJhbSI6IG51bGwKICB9LAogICJzdGF0dXMiOiA0MDEKfQ=='[39m,
+    [32m'x-request-id'[39m: [32m'req_aaaaba8968924f9fadf87eaa1d61ddef'[39m,
+    [32m'x-datadog-trace-id'[39m: [32m'10453959398728240984'[39m,
+    [32m'x-datadog-parent-id'[39m: [32m'3448442204264130322'[39m,
+    [32m'x-datadog-sampling-priority'[39m: [32m'0'[39m,
+    [32m'x-openai-internal-caller'[39m: [32m'unknown_through_ide'[39m,
+    [32m'x-openai-proxy-wasm'[39m: [32m'v0.1'[39m,
+    server: [32m'cloudflare'[39m,
+    [32m'cf-cache-status'[39m: [32m'DYNAMIC'[39m,
+    [32m'set-cookie'[39m: [32m'__cf_bm=O81HfPDEvoedamx9HYNPGNeEO_8JbYaS7WkA3b9iu68-1771778795.683223-1.0.1.1-IO6ainJzUMBTHK2B8qAjKZVjNa.4GIyDMY6bYPiQIjpdy17h5yJpRt91t5YiKkmn408aOMYax.bKUVzqXD7AHPmLXKZaA4BLo99c6lIFHGGwdU3zqSRPNcAnGVPzBXZd; HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Sun, 22 Feb 2026 17:16:35 GMT, _cfuvid=2jZh7vlbuCeCcN8bLWletS.3gPss2457ubN0i04sjgw-1771778795.683223-1.0.1.1-9tf2nH_XCA9X0twUEkK16ySBcb1Lw2upljzVMKLNcEM; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com'[39m,
+    [32m'strict-transport-security'[39m: [32m'max-age=31536000; includeSubDomains; preload'[39m,
+    [32m'x-content-type-options'[39m: [32m'nosniff'[39m,
+    [32m'cf-ray'[39m: [32m'9d1ff5e10f6b1910-ORD'[39m,
+    [32m'alt-svc'[39m: [32m'h3=":443"; ma=86400'[39m
+  },
+  requestID: [32m'req_aaaaba8968924f9fadf87eaa1d61ddef'[39m,
+  error: {
+    message: [32m'Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.'[39m,
+    type: [32m'invalid_request_error'[39m,
+    code: [32m'invalid_api_key'[39m,
+    param: [1mnull[22m
+  },
+  code: [32m'invalid_api_key'[39m,
+  param: [1mnull[22m,
+  type: [32m'invalid_request_error'[39m
+}
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mFailed to generate embedding for query
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39m✅ Found 0 semantically similar videos
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mGet AI model error: TypeError: __vite_ssr_import_2__.storage.getUserById is not a function
+    at getUserAIModel [90m(/app/[39mserver/authService.ts:197:32[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:373:28[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:78:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mTrying OpenAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39mTrying Anthropic...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m2. OpenAI fails -> Anthropic succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795531-yojli7] dispatchAIResponse - Completed in 92ms. Model: anthropic
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795624-afo0nv] dispatchAIResponse - Starting
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mGenerating Active Persona for user: u1
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39m🔍 Semantic search for: "Try xAI"
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+Loading config.ts
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mError generating embedding: AuthenticationError: 401 Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.
+    at Function.generate [90m(file:///app/[39mnode_modules/[4mopenai[24m/core/error.mjs:44:20[90m)[39m
+    at OpenAI.makeStatusError [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:162:32[90m)[39m
+    at OpenAI.makeRequest [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:330:30[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at generateEmbedding [90m(/app/[39mserver/vectorDBService.ts:360:22[90m)[39m
+    at VectorDBService.semanticSearch [90m(/app/[39mserver/vectorDBService.ts:532:23[90m)[39m
+    at semanticSearchVideos [90m(/app/[39mserver/youtubeKnowledgeBase.ts:525:21[90m)[39m
+    at enrichContextWithSemanticRetrieval [90m(/app/[39mserver/aiDispatcherService.ts:85:28[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:342:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:94:5 {
+  status: [33m401[39m,
+  headers: Headers {
+    date: [32m'Sun, 22 Feb 2026 16:46:35 GMT'[39m,
+    [32m'content-type'[39m: [32m'text/plain'[39m,
+    [32m'content-length'[39m: [32m'253'[39m,
+    connection: [32m'keep-alive'[39m,
+    [32m'x-openai-ide-error-code'[39m: [32m'invalid_api_key'[39m,
+    [32m'x-openai-authorization-error'[39m: [32m'401'[39m,
+    [32m'x-error-json'[39m: [32m'ewogICJlcnJvciI6IHsKICAgICJtZXNzYWdlIjogIkluY29ycmVjdCBBUEkga2V5IHByb3ZpZGVkOiBzay10ZXN0LiBZb3UgY2FuIGZpbmQgeW91ciBBUEkga2V5IGF0IGh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbS9hY2NvdW50L2FwaS1rZXlzLiIsCiAgICAidHlwZSI6ICJpbnZhbGlkX3JlcXVlc3RfZXJyb3IiLAogICAgImNvZGUiOiAiaW52YWxpZF9hcGlfa2V5IiwKICAgICJwYXJhbSI6IG51bGwKICB9LAogICJzdGF0dXMiOiA0MDEKfQ=='[39m,
+    [32m'x-request-id'[39m: [32m'req_4f858112c9c04d1da96a95bb99d70766'[39m,
+    [32m'x-datadog-trace-id'[39m: [32m'8716840102995003750'[39m,
+    [32m'x-datadog-parent-id'[39m: [32m'5941780024167197924'[39m,
+    [32m'x-datadog-sampling-priority'[39m: [32m'0'[39m,
+    [32m'x-openai-internal-caller'[39m: [32m'unknown_through_ide'[39m,
+    [32m'x-openai-proxy-wasm'[39m: [32m'v0.1'[39m,
+    server: [32m'cloudflare'[39m,
+    [32m'cf-cache-status'[39m: [32m'DYNAMIC'[39m,
+    [32m'set-cookie'[39m: [32m'__cf_bm=5Cwm_fd.MDLvn1b9svfR_imUmKnV0q42m3vRbSZ9jsk-1771778795.765853-1.0.1.1-ZDiRwkBSHylWYoLDQiykZZr1QhIyJulPoSXKxOciMwGewKlL1CPXSoB5ummABMqdS_ZP_cy10Ob9Duo7CL79AbwYwiHw9DVslH1hE7WgiMwPeXCV0ij1uFh9cpTfBGQo; HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Sun, 22 Feb 2026 17:16:35 GMT, _cfuvid=._XaNG8vetvhQqGxEr.Lf7oC88OHiMvPBMnyep5D8jY-1771778795.765853-1.0.1.1-ZTICET.Q.TaVdV3dLH5fMLIwdD.Ctk82Q8Ar7jDzQP8; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com'[39m,
+    [32m'strict-transport-security'[39m: [32m'max-age=31536000; includeSubDomains; preload'[39m,
+    [32m'x-content-type-options'[39m: [32m'nosniff'[39m,
+    [32m'cf-ray'[39m: [32m'9d1ff5e188d81910-ORD'[39m,
+    [32m'alt-svc'[39m: [32m'h3=":443"; ma=86400'[39m
+  },
+  requestID: [32m'req_4f858112c9c04d1da96a95bb99d70766'[39m,
+  error: {
+    message: [32m'Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.'[39m,
+    type: [32m'invalid_request_error'[39m,
+    code: [32m'invalid_api_key'[39m,
+    param: [1mnull[22m
+  },
+  code: [32m'invalid_api_key'[39m,
+  param: [1mnull[22m,
+  type: [32m'invalid_request_error'[39m
+}
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mFailed to generate embedding for query
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39m✅ Found 0 semantically similar videos
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mGet AI model error: TypeError: __vite_ssr_import_2__.storage.getUserById is not a function
+    at getUserAIModel [90m(/app/[39mserver/authService.ts:197:32[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:373:28[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:94:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mTrying OpenAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mTrying Anthropic...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39mTrying xAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m3. OpenAI/Anthropic fail -> xAI succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795624-afo0nv] dispatchAIResponse - Completed in 89ms. Model: xai
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795714-c5kez] dispatchAIResponse - Starting
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mGenerating Active Persona for user: u1
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39m🔍 Semantic search for: "Try Mistral"
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m🔬 Auto-analyzing top 5 news stories...
+📊 Analyzing: Video 0
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mError generating embedding: AuthenticationError: 401 Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.
+    at Function.generate [90m(file:///app/[39mnode_modules/[4mopenai[24m/core/error.mjs:44:20[90m)[39m
+    at OpenAI.makeStatusError [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:162:32[90m)[39m
+    at OpenAI.makeRequest [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:330:30[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at generateEmbedding [90m(/app/[39mserver/vectorDBService.ts:360:22[90m)[39m
+    at VectorDBService.semanticSearch [90m(/app/[39mserver/vectorDBService.ts:532:23[90m)[39m
+    at semanticSearchVideos [90m(/app/[39mserver/youtubeKnowledgeBase.ts:525:21[90m)[39m
+    at enrichContextWithSemanticRetrieval [90m(/app/[39mserver/aiDispatcherService.ts:85:28[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:342:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:112:5 {
+  status: [33m401[39m,
+  headers: Headers {
+    date: [32m'Sun, 22 Feb 2026 16:46:35 GMT'[39m,
+    [32m'content-type'[39m: [32m'text/plain'[39m,
+    [32m'content-length'[39m: [32m'253'[39m,
+    connection: [32m'keep-alive'[39m,
+    [32m'x-openai-ide-error-code'[39m: [32m'invalid_api_key'[39m,
+    [32m'x-openai-authorization-error'[39m: [32m'401'[39m,
+    [32m'x-error-json'[39m: [32m'ewogICJlcnJvciI6IHsKICAgICJtZXNzYWdlIjogIkluY29ycmVjdCBBUEkga2V5IHByb3ZpZGVkOiBzay10ZXN0LiBZb3UgY2FuIGZpbmQgeW91ciBBUEkga2V5IGF0IGh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbS9hY2NvdW50L2FwaS1rZXlzLiIsCiAgICAidHlwZSI6ICJpbnZhbGlkX3JlcXVlc3RfZXJyb3IiLAogICAgImNvZGUiOiAiaW52YWxpZF9hcGlfa2V5IiwKICAgICJwYXJhbSI6IG51bGwKICB9LAogICJzdGF0dXMiOiA0MDEKfQ=='[39m,
+    [32m'x-request-id'[39m: [32m'req_c3f80954a0854ece99c3b12d80959f93'[39m,
+    [32m'x-datadog-trace-id'[39m: [32m'16688759312739869794'[39m,
+    [32m'x-datadog-parent-id'[39m: [32m'4145609380573560796'[39m,
+    [32m'x-datadog-sampling-priority'[39m: [32m'0'[39m,
+    [32m'x-openai-internal-caller'[39m: [32m'unknown_through_ide'[39m,
+    [32m'x-openai-proxy-wasm'[39m: [32m'v0.1'[39m,
+    server: [32m'cloudflare'[39m,
+    [32m'cf-cache-status'[39m: [32m'DYNAMIC'[39m,
+    [32m'set-cookie'[39m: [32m'__cf_bm=TwyXgbCAPLPLiCrqPV0UhyGJkBoiX7bqbx4Hio0zzUo-1771778795.856548-1.0.1.1-XsudPsYCsd0taPsv0UJnXaKR2AuXOSBWEoUayallRdQedqbRl3kX0hlCGNcHHNdHIreg8hr7LG718zsc6DSdrTb_sNJPKd4Qzi.bC72fZ_hdoL_3q5zMD1k7_C1av3Sd; HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Sun, 22 Feb 2026 17:16:35 GMT, _cfuvid=OJTgb9A44dsYlOMcaslUybXKZC0X0PgSUQSvBn_9JaA-1771778795.856548-1.0.1.1-mspu2iHDLtvGBCyUzDiRHVejUw0kbCNR2hjuvyq26.Q; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com'[39m,
+    [32m'strict-transport-security'[39m: [32m'max-age=31536000; includeSubDomains; preload'[39m,
+    [32m'x-content-type-options'[39m: [32m'nosniff'[39m,
+    [32m'cf-ray'[39m: [32m'9d1ff5e21ac61910-ORD'[39m,
+    [32m'alt-svc'[39m: [32m'h3=":443"; ma=86400'[39m
+  },
+  requestID: [32m'req_c3f80954a0854ece99c3b12d80959f93'[39m,
+  error: {
+    message: [32m'Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.'[39m,
+    type: [32m'invalid_request_error'[39m,
+    code: [32m'invalid_api_key'[39m,
+    param: [1mnull[22m
+  },
+  code: [32m'invalid_api_key'[39m,
+  param: [1mnull[22m,
+  type: [32m'invalid_request_error'[39m
+}
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mFailed to generate embedding for query
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39m✅ Found 0 semantically similar videos
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mGet AI model error: TypeError: __vite_ssr_import_2__.storage.getUserById is not a function
+    at getUserAIModel [90m(/app/[39mserver/authService.ts:197:32[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:373:28[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:112:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mTrying OpenAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mTrying Anthropic...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mTrying xAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39mTrying Mistral...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m4. OpenAI/Anthropic/xAI fail -> Mistral succeeds -> Stop
+[22m[39m🔍 [TRACE:1771778795714-c5kez] dispatchAIResponse - Completed in 114ms. Model: mistral
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39m🔍 [TRACE:1771778795829-jo7wih] dispatchAIResponse - Starting
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mGenerating Active Persona for user: u1
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39m🔍 Semantic search for: "Try OpenRouter"
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m✅ Analyzed and saved: Video 0
+📊 Analyzing: Video 1
+
+[90mstdout[2m | server/__tests__/audio.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/audio.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Loading config.ts
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mError generating embedding: AuthenticationError: 401 Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.
+    at Function.generate [90m(file:///app/[39mnode_modules/[4mopenai[24m/core/error.mjs:44:20[90m)[39m
+    at OpenAI.makeStatusError [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:162:32[90m)[39m
+    at OpenAI.makeRequest [90m(file:///app/[39mnode_modules/[4mopenai[24m/client.mjs:330:30[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at generateEmbedding [90m(/app/[39mserver/vectorDBService.ts:360:22[90m)[39m
+    at VectorDBService.semanticSearch [90m(/app/[39mserver/vectorDBService.ts:532:23[90m)[39m
+    at semanticSearchVideos [90m(/app/[39mserver/youtubeKnowledgeBase.ts:525:21[90m)[39m
+    at enrichContextWithSemanticRetrieval [90m(/app/[39mserver/aiDispatcherService.ts:85:28[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:342:27[90m)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:132:5 {
+  status: [33m401[39m,
+  headers: Headers {
+    date: [32m'Sun, 22 Feb 2026 16:46:36 GMT'[39m,
+    [32m'content-type'[39m: [32m'text/plain'[39m,
+    [32m'content-length'[39m: [32m'253'[39m,
+    connection: [32m'keep-alive'[39m,
+    [32m'x-openai-ide-error-code'[39m: [32m'invalid_api_key'[39m,
+    [32m'x-openai-authorization-error'[39m: [32m'401'[39m,
+    [32m'x-error-json'[39m: [32m'ewogICJlcnJvciI6IHsKICAgICJtZXNzYWdlIjogIkluY29ycmVjdCBBUEkga2V5IHByb3ZpZGVkOiBzay10ZXN0LiBZb3UgY2FuIGZpbmQgeW91ciBBUEkga2V5IGF0IGh0dHBzOi8vcGxhdGZvcm0ub3BlbmFpLmNvbS9hY2NvdW50L2FwaS1rZXlzLiIsCiAgICAidHlwZSI6ICJpbnZhbGlkX3JlcXVlc3RfZXJyb3IiLAogICAgImNvZGUiOiAiaW52YWxpZF9hcGlfa2V5IiwKICAgICJwYXJhbSI6IG51bGwKICB9LAogICJzdGF0dXMiOiA0MDEKfQ=='[39m,
+    [32m'x-request-id'[39m: [32m'req_2eb1834a7a144b4594d09d623bc4f752'[39m,
+    [32m'x-datadog-trace-id'[39m: [32m'12204440084622066582'[39m,
+    [32m'x-datadog-parent-id'[39m: [32m'1168003847919468719'[39m,
+    [32m'x-datadog-sampling-priority'[39m: [32m'0'[39m,
+    [32m'x-openai-internal-caller'[39m: [32m'unknown_through_ide'[39m,
+    [32m'x-openai-proxy-wasm'[39m: [32m'v0.1'[39m,
+    server: [32m'cloudflare'[39m,
+    [32m'cf-cache-status'[39m: [32m'DYNAMIC'[39m,
+    [32m'set-cookie'[39m: [32m'__cf_bm=GPzK3.rErutpkxmZ2wr8aeye09YPCvoeZW6NPHyDYgc-1771778795.9671252-1.0.1.1-hzb1SFjeaAjPOELIOZT60Z7lgLUk.dyfHga51YcmEuvz88DoLbUsIVrNBLG86Ef85nd.fAPot0Trk_2KNkPTVbVO3iPghztObFjuHc9thTaXaAByF2Tp2M66QJCKyl0M; HttpOnly; Secure; Path=/; Domain=api.openai.com; Expires=Sun, 22 Feb 2026 17:16:36 GMT, _cfuvid=k_fPJiPWZdAP6Ws.wBREACkp63ub1MZpyFAQG7XbFr4-1771778795.9671252-1.0.1.1-XRwAdYJqrhH36SDK8PM28C7rLoRXD3Z0Kqlp8CJB_tY; HttpOnly; SameSite=None; Secure; Path=/; Domain=api.openai.com'[39m,
+    [32m'strict-transport-security'[39m: [32m'max-age=31536000; includeSubDomains; preload'[39m,
+    [32m'x-content-type-options'[39m: [32m'nosniff'[39m,
+    [32m'cf-ray'[39m: [32m'9d1ff5e2ccfa1910-ORD'[39m,
+    [32m'alt-svc'[39m: [32m'h3=":443"; ma=86400'[39m
+  },
+  requestID: [32m'req_2eb1834a7a144b4594d09d623bc4f752'[39m,
+  error: {
+    message: [32m'Incorrect API key provided: sk-test. You can find your API key at https://platform.openai.com/account/api-keys.'[39m,
+    type: [32m'invalid_request_error'[39m,
+    code: [32m'invalid_api_key'[39m,
+    param: [1mnull[22m
+  },
+  code: [32m'invalid_api_key'[39m,
+  param: [1mnull[22m,
+  type: [32m'invalid_request_error'[39m
+}
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mFailed to generate embedding for query
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39m✅ Found 0 semantically similar videos
+
+[90mstderr[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mGet AI model error: TypeError: __vite_ssr_import_2__.storage.getUserById is not a function
+    at getUserAIModel [90m(/app/[39mserver/authService.ts:197:32[90m)[39m
+    at Module.dispatchAIResponse [90m(/app/[39mserver/aiDispatcherService.ts:373:28[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90m/app/[39mserver/__tests__/aiDispatcherPriority.test.ts:132:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mTrying OpenAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mTrying Anthropic...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mTrying xAI...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mTrying Mistral...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39mFalling back to OpenRouter...
+
+[90mstdout[2m | server/__tests__/aiDispatcherPriority.test.ts[2m > [22m[2mAI Dispatcher Priority Chain[2m > [22m[2m5. All primary fail -> OpenRouter succeeds
+[22m[39m🔍 [TRACE:1771778795829-jo7wih] dispatchAIResponse - Completed in 76ms. Model: openrouter
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m✅ Analyzed and saved: Video 1
+📊 Analyzing: Video 2
+
+ [32m✓[39m server/__tests__/aiDispatcherPriority.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 604[2mms[22m[39m
+[90mstdout[2m | server/__tests__/audio.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m✅ Analyzed and saved: Video 2
+📊 Analyzing: Video 3
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m✅ Analyzed and saved: Video 3
+📊 Analyzing: Video 4
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39m✅ Analyzed and saved: Video 4
+🎯 Auto-analysis complete: 5/5 stories analyzed
+
+[90mstdout[2m | server/__tests__/performance_youtubeMonitor.test.ts[2m > [22m[2mPerformance Benchmark: youtubeNewsMonitor[2m > [22m[2mmeasures execution time of analyzeTopNews
+[22m[39mExecution time for 5 videos: 504.66ms
+
+ [32m✓[39m server/__tests__/performance_youtubeMonitor.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 510[2mms[22m[39m
+     [33m[2m✓[22m[39m measures execution time of analyzeTopNews [33m 508[2mms[22m[39m
+[90mstdout[2m | server/__tests__/agentComms.test.ts
+[22m[39m[FinanceAgent] Finance Agent initialized (v1.0.0)
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould successfully dispatch a command and return a response
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'high'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould return mock balance data for GET_BALANCE command
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould return mock appointment data for SCHEDULE_APPOINTMENT command
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'HealthAgent'[39m,
+  command: [32m'SCHEDULE_APPOINTMENT'[39m,
+  args: [ [32m'time'[39m, [32m'doctor'[39m ],
+  priority: [32m'medium'[39m
+}
+
+[90mstdout[2m | server/__tests__/featureDiscovery_performance.test.ts[2m > [22m[2mFeatureDiscoveryService Performance[2m > [22m[2mmeasures the execution time of discoverFromGitHub
+[22m[39mDiscovered 9 new features from GitHub
+
+[90mstdout[2m | server/__tests__/featureDiscovery_performance.test.ts[2m > [22m[2mFeatureDiscoveryService Performance[2m > [22m[2mmeasures the execution time of discoverFromGitHub
+[22m[39mExecution time: 304ms
+
+ [32m✓[39m server/__tests__/featureDiscovery_performance.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 310[2mms[22m[39m
+     [33m[2m✓[22m[39m measures the execution time of discoverFromGitHub [33m 308[2mms[22m[39m
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould return mock appointment data for SCHEDULE_APPOINTMENT command
+[22m[39m[AgentComms] Command executed successfully: {
+  target: [32m'HealthAgent'[39m,
+  command: [32m'SCHEDULE_APPOINTMENT'[39m,
+  executionTime: [32m'51ms'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould include execution metadata in response
+[22m[39m[AgentComms] Dispatching external command: { target: [32m'TestAgent'[39m, command: [32m'PING'[39m, args: [], priority: [32m'medium'[39m }
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould include execution metadata in response
+[22m[39m[AgentComms] Command executed successfully: { target: [32m'TestAgent'[39m, command: [32m'PING'[39m, executionTime: [32m'51ms'[39m }
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould handle generic commands with default response
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'CustomAgent'[39m,
+  command: [32m'CUSTOM_COMMAND'[39m,
+  args: [ [32m'param1'[39m ],
+  priority: [32m'medium'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mdispatchExternalCommand[2m > [22m[2mshould handle generic commands with default response
+[22m[39m[AgentComms] Command executed successfully: {
+  target: [32m'CustomAgent'[39m,
+  command: [32m'CUSTOM_COMMAND'[39m,
+  executionTime: [32m'51ms'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mgetAgentStatus[2m > [22m[2mshould return status for an agent
+[22m[39m[AgentComms] Checking status of agent: FinanceAgent
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mgetAgentStatus[2m > [22m[2mshould return consistent status structure
+[22m[39m[AgentComms] Checking status of agent: HealthAgent
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould handle a complete command-response cycle
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'high'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould respect command metadata
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'TestAgent'[39m,
+  command: [32m'TEST'[39m,
+  args: [],
+  priority: [32m'critical'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mIntegration Scenarios[2m > [22m[2mshould respect command metadata
+[22m[39m[AgentComms] Command executed successfully: { target: [32m'TestAgent'[39m, command: [32m'TEST'[39m, executionTime: [32m'50ms'[39m }
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould successfully delegate task to external agent and parse response
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'high'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould handle multiple external agent types consistently
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+[AgentComms] Dispatching external command: {
+  target: [32m'HealthAgent'[39m,
+  command: [32m'SCHEDULE_APPOINTMENT'[39m,
+  args: [ [32m'time'[39m, [32m'doctor'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Dispatching external command: {
+  target: [32m'TravelAgent'[39m,
+  command: [32m'BOOK_FLIGHT'[39m,
+  args: [ [32m'from'[39m, [32m'to'[39m, [32m'date'[39m ],
+  priority: [32m'medium'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould handle multiple external agent types consistently
+[22m[39m[AgentComms] Command executed successfully: {
+  target: [32m'HealthAgent'[39m,
+  command: [32m'SCHEDULE_APPOINTMENT'[39m,
+  executionTime: [32m'50ms'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould handle multiple external agent types consistently
+[22m[39m[AgentComms] Command executed successfully: {
+  target: [32m'TravelAgent'[39m,
+  command: [32m'BOOK_FLIGHT'[39m,
+  executionTime: [32m'51ms'[39m
+}
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould correctly parse complex external agent responses
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_TRANSACTIONS'[39m,
+  args: [ [32m'account'[39m, [32m'startDate'[39m, [32m'endDate'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_TRANSACTIONS
+
+[90mstderr[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould include proper error handling in A2A protocol
+[22m[39m[AgentComms] ⚠️ Unauthorized agent target: UnknownAgent
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould verify agent status before dispatching commands
+[22m[39m[AgentComms] Checking status of agent: FinanceAgent
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould verify agent status before dispatching commands
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould measure and record agent response times
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/agentComms.test.ts[2m > [22m[2mAgent Communication Service[2m > [22m[2mA2A Protocol - External Agent Communication[2m > [22m[2mshould support concurrent external agent requests
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/performance_benchmark.test.ts[2m > [22m[2mPerformance Benchmark: semanticSearchVideos
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+ [32m✓[39m server/__tests__/agentComms.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 281[2mms[22m[39m
+[90mstdout[2m | server/__tests__/performance_benchmark.test.ts[2m > [22m[2mPerformance Benchmark: semanticSearchVideos[2m > [22m[2mmeasures execution time of semanticSearchVideos
+[22m[39m🔍 Semantic search for: "test query"
+
+[90mstdout[2m | server/__tests__/performance_benchmark.test.ts[2m > [22m[2mPerformance Benchmark: semanticSearchVideos[2m > [22m[2mmeasures execution time of semanticSearchVideos
+[22m[39m✅ Found 1000 semantically similar videos
+
+[90mstdout[2m | server/__tests__/performance_benchmark.test.ts[2m > [22m[2mPerformance Benchmark: semanticSearchVideos[2m > [22m[2mmeasures execution time of semanticSearchVideos
+[22m[39m
+
+⚡ Benchmark Results:
+Querying 1000 videos took 61.65ms
+Found 1000 videos
+
+
+ [32m✓[39m server/__tests__/performance_benchmark.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 284[2mms[22m[39m
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute multiple tool calls in parallel
+[22m[39m[GeminiTools] Executing 3 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute multiple tool calls in parallel
+[22m[39m[GeminiTools] Tool check_calendar completed in 1ms
+[GeminiTools] Tool search_youtube completed in 0ms
+[GeminiTools] Tool get_weather completed in 0ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute multiple tool calls in parallel
+[22m[39m[GeminiTools] All 3 tools completed in 2ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute multiple tool calls in parallel
+[22m[39mParallel execution time: 3ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle tool execution failures gracefully
+[22m[39m[GeminiTools] Executing 3 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle tool execution failures gracefully
+[22m[39m[GeminiTools] Tool check_calendar completed in 0ms
+[GeminiTools] Tool get_weather completed in 8ms
+
+[90mstderr[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle tool execution failures gracefully
+[22m[39m[GeminiTools] Tool search_youtube failed: Error: Tool failed
+    at [90m/app/[39mserver/__tests__/geminiToolService.test.ts:57:34
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle tool execution failures gracefully
+[22m[39m[GeminiTools] All 3 tools completed in 8ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould include execution time for each tool
+[22m[39m[GeminiTools] Executing 1 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould include execution time for each tool
+[22m[39m[GeminiTools] Tool check_calendar completed in 13ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould include execution time for each tool
+[22m[39m[GeminiTools] All 1 tools completed in 13ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute single tool call
+[22m[39m[GeminiTools] Executing 1 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute single tool call
+[22m[39m[GeminiTools] Tool check_calendar completed in 0ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould execute single tool call
+[22m[39m[GeminiTools] All 1 tools completed in 0ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle unknown tool names
+[22m[39m[GeminiTools] Executing 1 tool calls in parallel
+
+[90mstderr[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle unknown tool names
+[22m[39m[GeminiTools] Tool unknown_tool failed: Error: Unknown tool: unknown_tool
+    at executeToolCall [90m(/app/[39mserver/geminiToolService.ts:211:11[90m)[39m
+    at [90m/app/[39mserver/geminiToolService.ts:148:30
+    at Array.map (<anonymous>)
+    at executeToolCallsInParallel [90m(/app/[39mserver/geminiToolService.ts:142:39[90m)[39m
+    at [90m/app/[39mserver/__tests__/geminiToolService.test.ts:123:29
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mexecuteToolCallsInParallel[2m > [22m[2mshould handle unknown tool names
+[22m[39m[GeminiTools] All 1 tools completed in 4ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect and execute tool calls from user message
+[22m[39m[GeminiTools] Detected 1 tool calls
+[GeminiTools] Executing 1 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect and execute tool calls from user message
+[22m[39m[GeminiTools] Tool check_calendar completed in 0ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect and execute tool calls from user message
+[22m[39m[GeminiTools] All 1 tools completed in 0ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect multiple tool needs in one message
+[22m[39m[GeminiTools] Message likely requires multiple tools - optimizing for parallel execution
+[GeminiTools] Detected 2 tool calls
+[GeminiTools] Executing 2 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect multiple tool needs in one message
+[22m[39m[GeminiTools] Tool check_calendar completed in 0ms
+[GeminiTools] Tool search_youtube completed in 0ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mgenerateGeminiChatWithTools[2m > [22m[2mshould detect multiple tool needs in one message
+[22m[39m[GeminiTools] All 2 tools completed in 0ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39m[GeminiTools] Executing 3 tool calls in parallel
+
+[90mstdout[2m | server/__tests__/audio.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m[Security] Helmet middleware enabled
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mInitializing Memory Core system...
+Loading Memory Core for user: danny-ray from memories.txt...
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mSuccessfully loaded Memory Core for danny-ray: 17 entries
+Memory Core loaded for danny-ray latency: 4ms
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mMemory Core initialized successfully
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mNo existing mood background cache, starting fresh
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mUser tasks system initialized
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39m[GeminiTools] Tool check_calendar completed in 50ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39m[GeminiTools] Tool search_youtube completed in 51ms
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mPersonal task system initialized
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39m[GeminiTools] Tool get_weather completed in 51ms
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39m[GeminiTools] All 3 tools completed in 51ms (parallel execution)
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mInitializing Server Self-Evolution Engine...
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mPerformance baseline established: {
+  responseTime: [33m0[39m,
+  memoryUsage: [33m0.7733174628277864[39m,
+  cpuUsage: [33m0.22477040067725346[39m,
+  successRate: [33m0.95[39m,
+  throughput: [33m100[39m,
+  errorRate: [33m0.02[39m
+}
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mServer Self-Evolution Engine initialized successfully
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mEnhancement task system initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mDaily suggestions scheduler: Disabled (ENABLE_PREDICTIVE_UPDATES not set to true)
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mPredictive updates disabled (ENABLE_PREDICTIVE_UPDATES not set to true)
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mUser Interaction Analytics Service initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mSandbox Environment Service initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mFeature Discovery Service initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mToken Incentive Service initialized. Milla's balance: 8500 tokens
+
+[90mstdout[2m | server/__tests__/geminiToolService.test.ts[2m > [22m[2mGemini Tool Service - Parallel Execution[2m > [22m[2mPerformance - Parallel vs Sequential[2m > [22m[2mshould demonstrate parallel execution advantage
+[22m[39mParallel execution: 51ms
+Sequential execution: 151ms
+Speedup: 2.96x
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mProactive Repository Manager initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mNo existing PR data found, starting fresh
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mAutomated PR Service initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mUser Satisfaction Survey Service initialized
+
+ [32m✓[39m server/__tests__/geminiToolService.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 248[2mms[22m[39m
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mNo existing metrics found, starting fresh
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mPerformance Profiling Service initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ Proactive Repository Ownership System initialized (with enhancements)
+✅ Agent registered: coding - An agent that can write and understand code, perform automated bug fixes, and create pull requests.
+✅ Agent registered: image - An agent that can generate images from a text prompt.
+✅ Agent registered: enhancement - An agent that searches for potential enhancements for the Milla Rayne project.
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ Agent registered: milla - Supervisor agent that orchestrates domain agents and task creation.
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ CalendarAgent registered and ready
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ TasksAgent registered and ready
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ EmailAgent registered and ready
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ YouTubeAgent registered and ready
+
+ [32m✓[39m server/__tests__/sanitization.test.ts [2m([22m[2m45 tests[22m[2m)[22m[32m 175[2mms[22m[39m
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m[emailDeliveryWorker] Email sending disabled by config.SEND_EMAILS
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mSetting up dedicated WebSocket server for sensor data...
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39mSensor data WebSocket server setup complete on /ws/sensor
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio
+[22m[39m✅ Mobile sensor data WebSocket initialized
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio[2m > [22m[2mshould upload an audio file and return a response
+[22m[39m🔍 [TRACE:trace_1771778797670_pmfyjbmbh] POST /api/chat/audio - Started
+
+[90mstdout[2m | server/__tests__/audio.test.ts[2m > [22m[2mPOST /api/chat/audio[2m > [22m[2mshould upload an audio file and return a response
+[22m[39m[90m4:46:37 PM [express][0m 🔍 [TRACE:trace_1771778797670_pmfyjbmbh] POST /api/chat/audio 200 in 20ms :: {"…
+
+[90mstdout[2m | server/__tests__/fileStoragePerf.test.ts[2m > [22m[2mFileStorage Performance[2m > [22m[2mdemonstrates non-blocking behavior of constructor (Optimized Implementation)
+[22m[39mConstructor duration (Non-blocking): 0ms
+
+[90mstdout[2m | server/__tests__/fileStoragePerf.test.ts[2m > [22m[2mFileStorage Performance[2m > [22m[2mdemonstrates non-blocking behavior of constructor (Optimized Implementation)
+[22m[39mSuccessfully loaded 1 valid messages from file (1 total entries).
+
+[90mstdout[2m | server/__tests__/fileStoragePerf.test.ts[2m > [22m[2mFileStorage Performance[2m > [22m[2mdemonstrates non-blocking behavior of constructor (Optimized Implementation)
+[22m[39mgetMessages duration (Waiting for load): 99ms
+
+[90mstdout[2m | server/__tests__/fileStoragePerf.test.ts[2m > [22m[2mFileStorage Performance[2m > [22m[2mhandles concurrent saves correctly via queue
+[22m[39mSuccessfully loaded 0 valid messages from file (0 total entries).
+
+ [32m✓[39m server/__tests__/audio.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 476[2mms[22m[39m
+[90mstdout[2m | server/__tests__/agents.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/fileStoragePerf.test.ts[2m > [22m[2mFileStorage Performance[2m > [22m[2mhandles concurrent saves correctly via queue
+[22m[39mConcurrent saves duration: 63ms
+
+[90mstdout[2m | server/__tests__/agents.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+Loading config.ts
+
+ [32m✓[39m server/__tests__/fileStoragePerf.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould create task from JSON instructions
+[22m[39m[2026-02-22T16:46:38.053Z] [milla] [INFO] Starting execution for task: {"agent":"EmailAgent","action":"draft","payload":{"to":"test@example.com","subject":"Test","body":"H...
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould create task from JSON instructions
+[22m[39m[2026-02-22T16:46:38.057Z] [milla] [INFO] Execution completed successfully in 4ms
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould auto-run low-safety tasks
+[22m[39m[2026-02-22T16:46:38.059Z] [milla] [INFO] Starting execution for task: {"agent":"EmailAgent","action":"draft","payload":{"to":"test@example.com","subject":"Test","body":"H...
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould auto-run low-safety tasks
+[22m[39m[2026-02-22T16:46:38.061Z] [milla] [INFO] Execution completed successfully in 2ms
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould auto-run low-safety tasks
+[22m[39m[Metacognitive] Insufficient user profile data for alignment check
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts
+[22m[39mLoading config.ts
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts
+[22m[39m
+✅ Browser Integration Tests Configured
+Note: Run with test framework when available
+
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould create enhancement search task for unclear instructions
+[22m[39m[2026-02-22T16:46:38.173Z] [milla] [INFO] Starting execution for task: Tell me a joke...
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mMillaAgent[2m > [22m[2mshould create enhancement search task for unclear instructions
+[22m[39m[2026-02-22T16:46:38.178Z] [milla] [INFO] Execution completed successfully in 5ms
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts[2m > [22m[2mBrowser Integration Service[2m > [22m[2mGoogle Calendar Integration[2m > [22m[2mshould parse date and time correctly for "tomorrow at 2pm"
+[22m[39m[Google Calendar API] Adding event: Test Event on tomorrow
+
+[90mstderr[2m | server/__tests__/agents.test.ts[2m > [22m[2mTask Approval Workflow[2m > [22m[2mshould block execution of unapproved high-safety tasks
+[22m[39mWorker error running task a16e2364-2231-486e-b19c-a936ca162eba Error: Task requires user approval before running
+    at runTask [90m(/app/[39mserver/agents/worker.ts:31:13[90m)[39m
+    at [90m/app/[39mserver/__tests__/agents.test.ts:252:5
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts[2m > [22m[2mBrowser Integration Service[2m > [22m[2mGoogle Calendar Integration[2m > [22m[2mshould parse date and time correctly for "next Tuesday at 10:30am"
+[22m[39m[Google Calendar API] Adding event: Team Meeting on next Tuesday
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts[2m > [22m[2mBrowser Integration Service[2m > [22m[2mGoogle Calendar Integration[2m > [22m[2mshould handle invalid date formats gracefully
+[22m[39m[Google Calendar API] Adding event: Event on invalid-date-xyz
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts[2m > [22m[2mBrowser Integration Service[2m > [22m[2mGoogle Tasks Integration[2m > [22m[2mshould create task without valid token and return appropriate error
+[22m[39m[Google Tasks API] Adding task: Shopping List
+
+[90mstdout[2m | server/__tests__/browserIntegration.test.ts[2m > [22m[2mBrowser Integration Service[2m > [22m[2mGoogle Tasks Integration[2m > [22m[2mshould handle empty content
+[22m[39m[Google Tasks API] Adding task: Quick Note
+
+[90mstdout[2m | server/__tests__/agents.test.ts[2m > [22m[2mTask Approval Workflow[2m > [22m[2mshould allow execution after approval
+[22m[39m[Metacognitive] Insufficient user profile data for alignment check
+
+ [32m✓[39m server/__tests__/agents.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 190[2mms[22m[39m
+ [32m✓[39m server/__tests__/browserIntegration.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 109[2mms[22m[39m
+[90mstdout[2m | server/routes/merch.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Loading config.ts
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mGET /api/merch/items[2m > [22m[2mshould return a list of items
+[22m[39m[90m4:46:38 PM [express][0m Fetching merch items from https://api.merchempire.com/items
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mGET /api/merch/items[2m > [22m[2mshould return a list of items
+[22m[39m[90m4:46:38 PM [express][0m Found 1 hoodie items
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle analyze_code action
+[22m[39mCodingAgent handling task: analyze_code
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle automated_fix action
+[22m[39mCodingAgent handling task: automated_fix
+Starting automated fix lifecycle...
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle automated_fix action
+[22m[39mIdentified 1 issues for fixing
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mPOST /api/merch/checkout[2m > [22m[2mshould create a checkout session when Stripe key is present
+[22m[39m[90m4:46:38 PM [express][0m Creating checkout session for item hoodie-001
+[90m4:46:38 PM [express][0m Fetching merch items from https://api.merchempire.com/items
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mPOST /api/merch/checkout[2m > [22m[2mshould create a checkout session when Stripe key is present
+[22m[39m[90m4:46:38 PM [express][0m Found 1 hoodie items
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mPOST /api/merch/checkout[2m > [22m[2mshould handle item not found
+[22m[39m[90m4:46:38 PM [express][0m Creating checkout session for item non-existent-id
+[90m4:46:38 PM [express][0m Fetching merch items from https://api.merchempire.com/items
+
+[90mstdout[2m | server/routes/merch.routes.test.ts[2m > [22m[2mMerch Routes[2m > [22m[2mPOST /api/merch/checkout[2m > [22m[2mshould handle item not found
+[22m[39m[90m4:46:38 PM [express][0m Found 1 hoodie items
+
+[90mstderr[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle automated_fix action
+[22m[39mError generating AI fix, using fallback: Error: Missing API key
+    at CodingAgent.generateCodeFix [90m(/app/[39mserver/agents/codingAgent.ts:247:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at CodingAgent.performAutomatedFixLifecycle [90m(/app/[39mserver/agents/codingAgent.ts:83:19[90m)[39m
+    at CodingAgent.handleTask [90m(/app/[39mserver/agents/codingAgent.ts:290:16[90m)[39m
+    at [90m/app/[39mserver/__tests__/codingAgent.test.ts:160:22
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle automated_fix action
+[22m[39mCreated sandbox: sandbox-123
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould handle automated_fix action
+[22m[39mCreated PR request: pr-123
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mhandleTask[2m > [22m[2mshould return error for unknown action
+[22m[39mCodingAgent handling task: unknown_action
+
+[90mstdout[2m | server/__tests__/codingAgent.test.ts[2m > [22m[2mCodingAgent[2m > [22m[2mperformAutomatedFixLifecycle[2m > [22m[2mshould return error if no issues found
+[22m[39mStarting automated fix lifecycle...
+
+ [32m✓[39m server/routes/merch.routes.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 122[2mms[22m[39m
+ [32m✓[39m server/__tests__/codingAgent.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 85[2mms[22m[39m
+[90mstdout[2m | server/routes/auth.routes.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+ [32m✓[39m server/routes/auth.routes.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+[90mstdout[2m | server/routes/agent.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/chat.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Loading config.ts
+
+ [32m✓[39m server/routes/agent.routes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+[90mstdout[2m | server/routes/chat.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/chat.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/chat.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/routes/chat.routes.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/routes/chat.routes.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/routes/media.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Loading config.ts
+
+[90mstdout[2m | server/routes/media.routes.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/routes/media.routes.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+ [32m✓[39m server/routes/chat.routes.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Loading config.ts
+
+ [32m✓[39m server/routes/media.routes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System
+[22m[39mUser Interaction Analytics Service initialized
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System
+[22m[39mSandbox Environment Service initialized
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System
+[22m[39mFeature Discovery Service initialized
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System
+[22m[39mToken Incentive Service initialized. Milla's balance: 8500 tokens
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System
+[22m[39mProactive Repository Manager initialized
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System[2m > [22m[2mSandbox Environment[2m > [22m[2mshould create a sandbox
+[22m[39mCreated sandbox environment: Test Sandbox (sandbox/test-sandbox_1771778800973)
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System[2m > [22m[2mToken Incentive System[2m > [22m[2mshould award tokens for bug fixes
+[22m[39m🪙 Milla earned 50 tokens for: Fixed bug: Fixed test bug
+
+[90mstdout[2m | server/__tests__/proactiveSystem.test.ts[2m > [22m[2mProactive Repository Ownership System[2m > [22m[2mToken Incentive System[2m > [22m[2mshould award tokens for features
+[22m[39m🪙 Milla earned 100 tokens for: Developed feature: Implemented test feature
+
+ [32m✓[39m server/__tests__/proactiveSystem.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 76[2mms[22m[39m
+ [32m✓[39m server/__tests__/chat.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 64[2mms[22m[39m
+[90mstdout[2m | server/routes/memory.routes.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+ [32m✓[39m server/routes/monitoring.routes.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+[90mstdout[2m | server/routes/system.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+Loading config.ts
+
+[90mstdout[2m | server/routes/system.routes.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould add content to vector database
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould add content to vector database
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould add content to vector database
+[22m[39mInitial total: [33m0[39m
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould add content to vector database
+[22m[39mFinal total: [33m1[39m
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould retrieve content by ID
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mVector Storage[2m > [22m[2mshould delete content by ID
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mSemantic Search[2m > [22m[2mshould find similar content based on semantic similarity
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mSemantic Search[2m > [22m[2mshould filter results by type
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mSemantic Search[2m > [22m[2mshould respect minSimilarity threshold
+[22m[39m✅ Saved 0 vectors to disk
+
+[90mstdout[2m | server/__tests__/vectorDB.test.ts[2m > [22m[2mVector Database Service[2m > [22m[2mBatch Operations[2m > [22m[2mshould add multiple items in batch
+[22m[39m✅ Saved 0 vectors to disk
+
+ [32m✓[39m server/__tests__/vectorDB.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+[90mstdout[2m | server/routes/system.routes.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/routes/memory.routes.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Loading config.ts
+
+[90mstdout[2m | server/routes/memory.routes.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould analyze a tutorial video successfully
+[22m[39m🔍 millAlyzer: Starting analysis of video test-video-id
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould analyze a tutorial video successfully
+[22m[39m📝 millAlyzer: Transcript retrieved (108 chars)
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould analyze a tutorial video successfully
+[22m[39m🎬 millAlyzer: Video type detected as "tutorial"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould analyze a tutorial video successfully
+[22m[39m💻 millAlyzer: Extracted 0 code snippets
+⚡ millAlyzer: Extracted 1 CLI commands
+📌 millAlyzer: Extracted 0 key points
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould analyze a tutorial video successfully
+[22m[39m✅ millAlyzer: Analysis complete for "Docker Tutorial for Beginners"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould handle videos without transcripts gracefully
+[22m[39m🔍 millAlyzer: Starting analysis of video no-transcript-id
+
+[90mstderr[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould handle videos without transcripts gracefully
+[22m[39m⚠️ millAlyzer: Transcript not available for no-transcript-id
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould handle videos without transcripts gracefully
+[22m[39m🎬 millAlyzer: Video type detected as "other"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould handle videos without transcripts gracefully
+[22m[39m💻 millAlyzer: Extracted 0 code snippets
+⚡ millAlyzer: Extracted 0 CLI commands
+📌 millAlyzer: Extracted 0 key points
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould handle videos without transcripts gracefully
+[22m[39m✅ millAlyzer: Analysis complete for "Video Without Transcript"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould detect video type correctly
+[22m[39m🔍 millAlyzer: Starting analysis of video tutorial-id
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould detect video type correctly
+[22m[39m📝 millAlyzer: Transcript retrieved (30 chars)
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould detect video type correctly
+[22m[39m🎬 millAlyzer: Video type detected as "tutorial"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould detect video type correctly
+[22m[39m💻 millAlyzer: Extracted 0 code snippets
+⚡ millAlyzer: Extracted 0 CLI commands
+📌 millAlyzer: Extracted 0 key points
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2manalyzeVideoWithMillAlyzer[2m > [22m[2mshould detect video type correctly
+[22m[39m✅ millAlyzer: Analysis complete for "How to Build a React App"
+
+[90mstdout[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2mError Handling[2m > [22m[2mshould handle API failures gracefully
+[22m[39m🔍 millAlyzer: Starting analysis of video invalid-id
+
+[90mstderr[2m | server/__tests__/youtubeMillAlyzer.test.ts[2m > [22m[2mmillAlyzer - Video Analysis[2m > [22m[2mError Handling[2m > [22m[2mshould handle API failures gracefully
+[22m[39m❌ millAlyzer: Analysis failed for invalid-id: Error: API Error
+    at [90m/app/[39mserver/__tests__/youtubeMillAlyzer.test.ts:290:49
+[90m    at processTicksAndRejections (node:internal/process/task_queues:105:5)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+ [32m✓[39m server/__tests__/youtubeMillAlyzer.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+[90mstdout[2m | server/__tests__/externalAgent.test.ts
+[22m[39m[FinanceAgent] Finance Agent initialized (v1.0.0)
+
+ [32m✓[39m server/routes/system.routes.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 56[2mms[22m[39m
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent
+[22m[39m[Registry] Registered external agent: FinanceAgent (local)
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould process GET_BALANCE command
+[22m[39m[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould process GET_TRANSACTIONS command
+[22m[39m[FinanceAgent] Processing command: GET_TRANSACTIONS
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould process GET_BUDGET command
+[22m[39m[FinanceAgent] Processing command: GET_BUDGET
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould process CREATE_TRANSACTION command
+[22m[39m[FinanceAgent] Processing command: CREATE_TRANSACTION
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould process GET_FINANCIAL_SUMMARY command
+[22m[39m[FinanceAgent] Processing command: GET_FINANCIAL_SUMMARY
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould handle errors for unknown commands
+[22m[39m[FinanceAgent] Processing command: UNKNOWN_COMMAND
+
+[90mstderr[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mFinance Agent Direct Communication[2m > [22m[2mshould handle errors for unknown commands
+[22m[39m[FinanceAgent] Error processing command: Error: Unknown command: UNKNOWN_COMMAND
+    at FinanceAgent.processCommand [90m(/app/[39mserver/externalFinanceAgent.ts:151:17[90m)[39m
+    at processFinanceCommand [90m(/app/[39mserver/externalFinanceAgent.ts:396:23[90m)[39m
+    at [90m/app/[39mserver/__tests__/externalAgent.test.ts:120:30
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mA2A Protocol Integration via AgentCommsService[2m > [22m[2mshould dispatch command to Finance Agent through dispatcher
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mA2A Protocol Integration via AgentCommsService[2m > [22m[2mshould handle finance transactions through dispatcher
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_TRANSACTIONS'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_TRANSACTIONS
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mA2A Protocol Integration via AgentCommsService[2m > [22m[2mshould get agent status through dispatcher
+[22m[39m[AgentComms] Checking status of agent: FinanceAgent
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mA2A Protocol Integration via AgentCommsService[2m > [22m[2mshould handle complex financial queries
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_FINANCIAL_SUMMARY'[39m,
+  args: [],
+  priority: [32m'high'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_FINANCIAL_SUMMARY
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould complete a full financial workflow
+[22m[39m[AgentComms] Checking status of agent: FinanceAgent
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould complete a full financial workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould complete a full financial workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'CREATE_TRANSACTION'[39m,
+  args: [ [32m'account'[39m, [32m'amount'[39m, [32m'type'[39m, [32m'description'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: CREATE_TRANSACTION
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould complete a full financial workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BALANCE'[39m,
+  args: [ [32m'account'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BALANCE
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould complete a full financial workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_FINANCIAL_SUMMARY'[39m,
+  args: [],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_FINANCIAL_SUMMARY
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould handle budget management workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'GET_BUDGET'[39m,
+  args: [ [32m'category'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: GET_BUDGET
+
+[90mstdout[2m | server/__tests__/externalAgent.test.ts[2m > [22m[2mExternal Agent Communication - Finance Agent[2m > [22m[2mEnd-to-End Scenarios[2m > [22m[2mshould handle budget management workflow
+[22m[39m[AgentComms] Dispatching external command: {
+  target: [32m'FinanceAgent'[39m,
+  command: [32m'UPDATE_BUDGET'[39m,
+  args: [ [32m'category'[39m, [32m'limit'[39m, [32m'spent'[39m ],
+  priority: [32m'medium'[39m
+}
+[AgentComms] Routing to FinanceAgent
+[FinanceAgent] Processing command: UPDATE_BUDGET
+
+ [32m✓[39m server/__tests__/externalAgent.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality
+[22m[39m[ABTesting] A/B Testing Service initialized
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPersonality Variants[2m > [22m[2mshould create a new personality variant
+[22m[39m[ABTesting] Created variant: Test Variant
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mUser Assignment[2m > [22m[2mshould assign user to a variant
+[22m[39m[ABTesting] Assigned user test_user_1 to variant: variant_1771778802841_blai0e95l
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mUser Assignment[2m > [22m[2mshould return same assignment for same user
+[22m[39m[ABTesting] Assigned user test_user_2 to variant: variant_1762806855138_xq6zxbze0
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mUser Assignment[2m > [22m[2mshould assign user to specific variant
+[22m[39m[ABTesting] Assigned user test_user_3 to variant: variant_1762806855138_xq6zxbze0
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mUser Assignment[2m > [22m[2mshould get user variant
+[22m[39m[ABTesting] Assigned user test_user_4 to variant: variant_1762806855138_b0utjsaf3
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPrompt Modifications[2m > [22m[2mshould get prompt modifications for user
+[22m[39m[ABTesting] Assigned user test_user_5 to variant: variant_1762806855138_w9nk8xh5e
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPrompt Modifications[2m > [22m[2mshould apply personality variant to prompt
+[22m[39m[ABTesting] Assigned user test_user_6 to variant: variant_1762806855138_w9nk8xh5e
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPrompt Modifications[2m > [22m[2mshould return original prompt for control group
+[22m[39m[ABTesting] Assigned user test_user_7 to variant: variant_1762806855138_xq6zxbze0
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPrompt Modifications[2m > [22m[2mshould create variant prompt with tracking
+[22m[39m[ABTesting] Assigned user test_user_8 to variant: variant_1762806855138_w9nk8xh5e
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mPrompt Modifications[2m > [22m[2mshould get variant info
+[22m[39m[ABTesting] Assigned user test_user_9 to variant: variant_1771778802841_blai0e95l
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mInteraction Tracking[2m > [22m[2mshould track user interactions
+[22m[39m[ABTesting] Assigned user test_user_10 to variant: variant_1762806855138_xq6zxbze0
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mInteraction Tracking[2m > [22m[2mshould update variant metrics
+[22m[39m[ABTesting] Assigned user test_user_11 to variant: variant_1762806855138_w9nk8xh5e
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mA/B Tests[2m > [22m[2mshould create an A/B test
+[22m[39m[ABTesting] Created A/B test: Personality Test 1
+
+[90mstdout[2m | server/__tests__/abTesting.test.ts[2m > [22m[2mA/B Testing Service - Adaptive Personality[2m > [22m[2mA/B Tests[2m > [22m[2mshould analyze test results
+[22m[39m[ABTesting] Created A/B test: Analysis Test
+[ABTesting] Assigned user analysis_user_0 to variant: variant_1762806855138_xq6zxbze0
+[ABTesting] Assigned user analysis_user_1 to variant: variant_1762806855138_xq6zxbze0
+[ABTesting] Assigned user analysis_user_2 to variant: variant_1762806855138_xq6zxbze0
+[ABTesting] Assigned user analysis_user_3 to variant: variant_1762806855138_xq6zxbze0
+[ABTesting] Assigned user analysis_user_4 to variant: variant_1762806855138_xq6zxbze0
+[ABTesting] Assigned user analysis_user_5 to variant: variant_1762806855138_w9nk8xh5e
+[ABTesting] Assigned user analysis_user_6 to variant: variant_1762806855138_w9nk8xh5e
+[ABTesting] Assigned user analysis_user_7 to variant: variant_1762806855138_w9nk8xh5e
+[ABTesting] Assigned user analysis_user_8 to variant: variant_1762806855138_w9nk8xh5e
+[ABTesting] Assigned user analysis_user_9 to variant: variant_1762806855138_w9nk8xh5e
+
+ [32m✓[39m server/__tests__/abTesting.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+[90mstdout[2m | server/__tests__/email.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Loading config.ts
+
+ [32m✓[39m server/routes/memory.routes.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+[90mstdout[2m | server/__tests__/email.test.ts[2m > [22m[2mEmail queue and delivery[2m > [22m[2mdelivers via SendGrid when fetch returns ok
+[22m[39m[emailDeliveryWorker] Delivering email t1 attempt [33m1[39m
+
+[90mstdout[2m | server/__tests__/email.test.ts[2m > [22m[2mEmail queue and delivery[2m > [22m[2mdelivers via SendGrid when fetch returns ok
+[22m[39m[emailDeliveryWorker] Sent t1
+
+[90mstdout[2m | server/__tests__/email.test.ts[2m > [22m[2mEmail queue and delivery[2m > [22m[2mdelivers via SMTP when transporter accepted
+[22m[39m[emailDeliveryWorker] Delivering email t2 attempt [33m1[39m
+
+[90mstdout[2m | server/__tests__/email.test.ts[2m > [22m[2mEmail queue and delivery[2m > [22m[2mdelivers via SMTP when transporter accepted
+[22m[39m[emailDeliveryWorker] Sent via SMTP t2
+
+ [32m✓[39m server/__tests__/email.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+[90mstdout[2m | server/__tests__/googleYoutubeService.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/googleYoutubeService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Loading config.ts
+
+ [32m✓[39m server/__tests__/googleYoutubeService.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould do nothing if no active sessions
+[22m[39m[Auth] Starting token rotation scheduler...
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould do nothing if no active sessions
+[22m[39m[Auth] Checking tokens for 0 active users
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould check tokens for active users
+[22m[39m[Auth] Starting token rotation scheduler...
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould check tokens for active users
+[22m[39m[Auth] Checking tokens for 2 active users
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould refresh token if expiring soon
+[22m[39m[Auth] Starting token rotation scheduler...
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould refresh token if expiring soon
+[22m[39m[Auth] Checking tokens for 1 active users
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould refresh token if expiring soon
+[22m[39m[Auth] Refreshing token for user user1 (expires in 300s)
+[Auth] Token refresh check for user user1
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould NOT refresh token if NOT expiring soon
+[22m[39m[Auth] Starting token rotation scheduler...
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mscheduleTokenRotation[2m > [22m[2mshould NOT refresh token if NOT expiring soon
+[22m[39m[Auth] Checking tokens for 1 active users
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mrefreshAccessTokenIfExpired[2m > [22m[2mshould delegate to getValidAccessToken
+[22m[39m[Auth] Token refresh check for user user1
+
+[90mstdout[2m | server/__tests__/authScheduler.test.ts[2m > [22m[2mAuth Scheduler[2m > [22m[2mrefreshAccessTokenIfExpired[2m > [22m[2mshould return failure if getValidAccessToken returns null
+[22m[39m[Auth] Token refresh check for user user1
+
+ [32m✓[39m server/__tests__/authScheduler.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+[90mstderr[2m | server/__tests__/dispatcher.test.ts[2m > [22m[2mFallback Dispatcher[2m > [22m[2mshould fallback to gemini3 when gemma fails
+[22m[39mLocal Gemma failed, falling back to Gemini 3 Error: Gemma failed
+    at [90m/app/[39mserver/__tests__/dispatcher.test.ts:36:51
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | server/__tests__/dispatcher.test.ts[2m > [22m[2mFallback Dispatcher[2m > [22m[2mshould throw error when all providers fail
+[22m[39mLocal Gemma failed, falling back to Gemini 3 Error: Gemma failed
+    at [90m/app/[39mserver/__tests__/dispatcher.test.ts:47:51
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | server/__tests__/dispatcher.test.ts[2m > [22m[2mFallback Dispatcher[2m > [22m[2mshould throw error when all providers fail
+[22m[39mAll LLM providers failed Error: Gemini failed
+    at [90m/app/[39mserver/__tests__/dispatcher.test.ts:48:50
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | server/__tests__/dispatcher.test.ts[2m > [22m[2mFallback Dispatcher[2m > [22m[2mshould try ollama provider and fallback to gemini3
+[22m[39mLocal Gemma failed, falling back to Gemini 3 Error: Ollama failed
+    at [90m/app/[39mserver/__tests__/dispatcher.test.ts:68:51
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m server/__tests__/dispatcher.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mcalculatePriorityScore[2m > [22m[2mshould calculate correct score for critical severity
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mcalculatePriorityScore[2m > [22m[2mshould calculate correct score for high severity and high impact
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mcalculatePriorityScore[2m > [22m[2mshould cap attempt points at 30
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mcalculatePriorityScore[2m > [22m[2mshould handle defaults
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstderr[2m | server/__tests__/avRag.test.ts[2m > [22m[2mA/V-RAG Service[2m > [22m[2mContext Validation[2m > [22m[2mshould reject invalid timeOfDay
+[22m[39mInvalid timeOfDay in scene context
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mQueue Management[2m > [22m[2mshould retrieve failures in order of priority
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstderr[2m | server/__tests__/avRag.test.ts[2m > [22m[2mA/V-RAG Service[2m > [22m[2mContext Validation[2m > [22m[2mshould reject invalid appState
+[22m[39mInvalid appState in scene context
+
+[90mstderr[2m | server/__tests__/avRag.test.ts[2m > [22m[2mA/V-RAG Service[2m > [22m[2mContext Validation[2m > [22m[2mshould reject invalid emotionalTone
+[22m[39mInvalid emotionalTone in voice context
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould infer severity from error message
+[22m[39m🧹 [SCPA] Queue cleared: 0 items removed
+
+[90mstderr[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould infer severity from error message
+[22m[39m🚨 [SCPA] Agent failure reported: test
+🚨 [SCPA] Error: This is a critical system failure
+🚨 [SCPA] Task ID: task_1771778803533
+🚨 [SCPA] CRITICAL failure detected - immediate attention required
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould infer severity from error message
+[22m[39m🔧 [SCPA] Failure queued for self-correction (queue size: 1)
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould infer severity from error message
+[22m[39m✅ [SCPA] Fix task created for coding agent: mock-uuid
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould use provided severity if available
+[22m[39m🧹 [SCPA] Queue cleared: 1 items removed
+
+[90mstderr[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould use provided severity if available
+[22m[39m🚨 [SCPA] Agent failure reported: test
+🚨 [SCPA] Error: Something bad
+🚨 [SCPA] Task ID: task_1771778803538
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould use provided severity if available
+[22m[39m🔧 [SCPA] Failure queued for self-correction (queue size: 1)
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould use provided severity if available
+[22m[39m✅ [SCPA] Fix task created for coding agent: mock-uuid
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould enqueue failure and create fix task
+[22m[39m🧹 [SCPA] Queue cleared: 1 items removed
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould enqueue failure and create fix task
+[22m[39m🔧 [SCPA] Failure queued for self-correction (queue size: 1)
+
+[90mstderr[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould enqueue failure and create fix task
+[22m[39m🚨 [SCPA] Agent failure reported: test
+🚨 [SCPA] Error: Error
+🚨 [SCPA] Task ID: task_1771778803539
+
+[90mstdout[2m | server/__tests__/scpaPriority.test.ts[2m > [22m[2mSCPA Priority Queue[2m > [22m[2mreportAgentFailure[2m > [22m[2mshould enqueue failure and create fix task
+[22m[39m✅ [SCPA] Fix task created for coding agent: mock-uuid
+
+ [32m✓[39m server/__tests__/avRag.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+[90mstdout[2m | server/__tests__/workerMetacognitive.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+Loading config.ts
+
+ [32m✓[39m server/__tests__/scpaPriority.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+[90mstdout[2m | server/__tests__/workerMetacognitive.test.ts[2m > [22m[2mAgent Worker with Metacognitive Integration[2m > [22m[2mshould store metacognitive feedback when misalignment is detected
+[22m[39m[Metacognitive] Feedback recorded for task test-task-2: Task may not align with user goals
+
+[90mstderr[2m | server/__tests__/workerMetacognitive.test.ts[2m > [22m[2mAgent Worker with Metacognitive Integration[2m > [22m[2mshould not fail task if metacognitive monitoring fails
+[22m[39m[Metacognitive] Error monitoring task alignment: Error: Metacognitive service unavailable
+    at [90m/app/[39mserver/__tests__/workerMetacognitive.test.ts:142:7
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///app/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///app/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m server/__tests__/workerMetacognitive.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m server/__tests__/youtubeKnowledgeBase.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstdout[2m | server/__tests__/dispatcher_gemma.test.ts[2m > [22m[2mDispatcher - Gemma Local[2m > [22m[2mshould successfully invoke local gemma model via offlineService
+[22m[39m[Dispatcher] Using local Gemma3 (offline mode)
+
+[90mstdout[2m | server/__tests__/dispatcher_gemma.test.ts[2m > [22m[2mDispatcher - Gemma Local[2m > [22m[2mshould throw error if offlineService is not available
+[22m[39m[Dispatcher] Using local Gemma3 (offline mode)
+
+[90mstdout[2m | server/__tests__/dispatcher_gemma.test.ts[2m > [22m[2mDispatcher - Gemma Local[2m > [22m[2mshould throw error if offlineService fails generation
+[22m[39m[Dispatcher] Using local Gemma3 (offline mode)
+
+[90mstdout[2m | server/__tests__/dispatcher_gemma.test.ts[2m > [22m[2mDispatcher - Gemma Local[2m > [22m[2mshould dispatch to gemma-local when it is the only configured model
+[22m[39m[Dispatcher] Attempting gemma-local...
+[Dispatcher] Using local Gemma3 (offline mode)
+
+ [32m✓[39m server/__tests__/dispatcher_gemma.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstdout[2m | server/__tests__/personaFusion.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts
+[22m[39m✅ Loaded 0 vectors from disk
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould generate a complete Active User Persona
+[22m[39mGenerating Active Persona for user: user123
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould generate a complete Active User Persona
+[22m[39m✅ Active Persona generated for Test User
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould handle missing profile gracefully
+[22m[39mGenerating Active Persona for user: user123
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould handle missing profile gracefully
+[22m[39m✅ Active Persona generated for User
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould extract topics from memory context
+[22m[39mGenerating Active Persona for user: user123
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould extract topics from memory context
+[22m[39m✅ Active Persona generated for Test User
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould extract emotional patterns
+[22m[39mGenerating Active Persona for user: user123
+
+[90mstdout[2m | server/__tests__/personaFusion.test.ts[2m > [22m[2mPersonaFusionService[2m > [22m[2mgenerateActivePersona[2m > [22m[2mshould extract emotional patterns
+[22m[39m✅ Active Persona generated for Test User
+
+ [32m✓[39m server/middleware/auth.middleware.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m server/__tests__/personaFusion.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstdout[2m | server/__tests__/rag-service.test.ts[2m > [22m[2mRAGService[2m > [22m[2mshould ingest documents correctly
+[22m[39m📚 Ingesting 1 documents...
+  └─ Document doc1: 1 chunks
+
+[90mstdout[2m | server/__tests__/rag-service.test.ts[2m > [22m[2mRAGService[2m > [22m[2mshould ingest documents correctly
+[22m[39m✅ Document ingestion complete
+
+[90mstdout[2m | server/__tests__/rag-service.test.ts[2m > [22m[2mRAGService[2m > [22m[2mshould preserve chunk order
+[22m[39m📚 Ingesting 1 documents...
+  └─ Document doc2: 3 chunks
+
+[90mstdout[2m | server/__tests__/rag-service.test.ts[2m > [22m[2mRAGService[2m > [22m[2mshould preserve chunk order
+[22m[39m✅ Document ingestion complete
+
+[90mstdout[2m | server/__tests__/googleMapsService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+Loading config.ts
+
+ [32m✓[39m server/__tests__/rag-service.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m server/__tests__/profile.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m server/__tests__/googleMapsService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[90mstdout[2m | server/__tests__/metacognitiveService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Loading config.ts
+
+ [32m✓[39m server/__tests__/crdt.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+[90mstdout[2m | server/__tests__/googleTasksService.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/googleTasksService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/googleTasksService.test.ts[2m > [22m[2mGoogle Tasks Service[2m > [22m[2maddNoteToGoogleTasks[2m > [22m[2mshould return task on successful creation
+[22m[39m[Google Tasks API] Adding task: Test Task
+
+ [32m✓[39m server/__tests__/googleTasksService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | server/__tests__/metacognitiveService.test.ts[2m > [22m[2mmetacognitiveService[2m > [22m[2mmonitorTaskAlignment[2m > [22m[2mshould return null if no user profile exists
+[22m[39m[Metacognitive] Insufficient user profile data for alignment check
+
+[90mstdout[2m | server/__tests__/metacognitiveService.test.ts[2m > [22m[2mmetacognitiveService[2m > [22m[2mmonitorTaskAlignment[2m > [22m[2mshould return feedback for misaligned tasks
+[22m[39m[Metacognitive] Misalignment detected: This recipe contains meat products, which conflicts with your vegan preferences.
+
+[90mstderr[2m | server/__tests__/metacognitiveService.test.ts[2m > [22m[2mmetacognitiveService[2m > [22m[2mmonitorTaskAlignment[2m > [22m[2mshould handle LLM errors gracefully
+[22m[39m[Metacognitive] Failed to assess alignment: API error
+
+ [32m✓[39m server/__tests__/metacognitiveService.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[90mstdout[2m | server/__tests__/repositoryAnalysisService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/googlePhotosService.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/googlePhotosService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+Loading config.ts
+
+ [32m✓[39m server/__tests__/repositoryAnalysisService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m server/__tests__/googlePhotosService.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+[90mstdout[2m | server/__tests__/googleDriveService.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/googleDriveService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+Loading config.ts
+
+ [32m✓[39m server/__tests__/googleDriveService.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould initialize with default model
+[22m[39mMockMediaPipeLLM: Initialized with model gemma-2b
+GemmaMP: Loaded gemma-2b via MediaPipe (mock implementation)
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould initialize with custom model
+[22m[39mMockMediaPipeLLM: Initialized with model gemma-7b
+GemmaMP: Loaded gemma-7b via MediaPipe (mock implementation)
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould generate response
+[22m[39mMockMediaPipeLLM: Initialized with model gemma-2b
+GemmaMP: Loaded gemma-2b via MediaPipe (mock implementation)
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould generate response
+[22m[39mMockMediaPipeLLM: Inferring with prompt (19 chars), maxTokens: 512
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould generate response with custom max tokens
+[22m[39mMockMediaPipeLLM: Initialized with model gemma-2b
+GemmaMP: Loaded gemma-2b via MediaPipe (mock implementation)
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould generate response with custom max tokens
+[22m[39mMockMediaPipeLLM: Inferring with prompt (15 chars), maxTokens: 256
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould auto-setup if generate called before setup
+[22m[39mMockMediaPipeLLM: Initialized with model gemma-2b
+GemmaMP: Loaded gemma-2b via MediaPipe (mock implementation)
+
+[90mstdout[2m | server/__tests__/gemmaMPWrapper.test.ts[2m > [22m[2mGemmaMPWrapper[2m > [22m[2mshould auto-setup if generate called before setup
+[22m[39mMockMediaPipeLLM: Inferring with prompt (10 chars), maxTokens: 512
+
+ [32m✓[39m server/__tests__/gemmaMPWrapper.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m server/utils/routeHelpers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+[90mstdout[2m | server/__tests__/googleCalendarService.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/googleCalendarService.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/googleCalendarService.test.ts[2m > [22m[2mGoogle Calendar Service[2m > [22m[2maddEventToGoogleCalendar[2m > [22m[2mshould return event on successful creation
+[22m[39m[Google Calendar API] Adding event: Test Event on 2025-10-26
+
+ [32m✓[39m server/__tests__/googleCalendarService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m server/services/repositoryCache.service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+[90mstdout[2m | server/__tests__/youtube.test.ts
+[22m[39msqlite: creating users table
+sqlite: creating user_sessions table
+sqlite: creating messages table
+sqlite: creating sessions table
+sqlite: creating usage_patterns table
+sqlite: creating ai_updates table
+sqlite: creating suggestion_updates table
+sqlite: creating daily_suggestions table
+sqlite: creating voice_consent table
+sqlite: creating oauth_tokens table
+sqlite: creating memory_summaries table
+sqlite: creating sensitive_memories table
+sqlite: creating youtube_knowledge_base table
+sqlite: creating indexes
+SQLite database initialized at: /app/memory/milla.db (encryption: enabled)
+
+[90mstdout[2m | server/__tests__/youtube.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Loading config.ts
+
+[90mstdout[2m | server/__tests__/youtube.test.ts[2m > [22m[2mYouTube Connectivity[2m > [22m[2mshould be able to fetch subscriptions
+[22m[39mYouTube auth test result: {
+  success: [33mtrue[39m,
+  message: [32m'Test subscriptions'[39m,
+  data: [ { id: [32m'sub1'[39m, snippet: [36m[Object][39m } ]
+}
+
+ [32m✓[39m server/__tests__/commandParser.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m server/__tests__/youtube.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m59 passed[39m[22m[90m (59)[39m
+[2m      Tests [22m [1m[32m493 passed[39m[22m[90m (493)[39m
+[2m   Start at [22m 16:46:26
+[2m   Duration [22m 21.29s[2m (transform 3.03s, setup 0ms, import 17.97s, tests 26.48s, environment 11ms)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+-------------------|---------|----------|---------|---------|-------------------
+All files          |    25.2 |    20.37 |   30.88 |   25.52 |
+ server            |   23.05 |    18.24 |   29.16 |   23.37 |
+  ...ingService.ts |   89.04 |       58 |   93.33 |   88.65 | ...99,508-538,554
+  ...ingService.ts |       0 |        0 |       0 |       0 | 30-296
+  ...mmsService.ts |   82.92 |    85.18 |     100 |    82.5 | ...48-156,221-222
+  ...Controller.ts |   30.76 |    16.66 |   33.33 |   31.57 | 24,53-54,66-154
+  ...c-dispatch.ts |       0 |        0 |       0 |       0 | 57-396
+  ...ntegration.ts |    7.14 |    13.33 |       0 |     7.4 | 45-141
+  ...herService.ts |   57.21 |    48.94 |      50 |    58.1 | ...33-441,529-530
+  ...sScheduler.ts |   21.42 |       10 |      25 |   21.42 | 26-72
+  ...tesService.ts |    7.46 |        0 |       0 |    7.81 | ...25-142,152-400
+  ...picService.ts |       0 |        0 |       0 |       0 | 19-130
+  ...s-enhanced.ts |       0 |        0 |       0 |       0 | 17-263
+  apiResilience.ts |      10 |        0 |   13.04 |   10.41 | ...93-251,274-302
+  authService.ts   |      20 |    16.66 |   27.27 |      20 | ...18,458-459,517
+  ...ingService.ts |       0 |        0 |       0 |       0 | 39-493
+  ...dPRService.ts |   11.11 |        0 |   13.79 |   11.49 | ...11-317,336-354
+  avRagService.ts  |   90.54 |    82.14 |      90 |   90.27 | 317-338
+  ...ageService.ts |       0 |        0 |       0 |       0 | 3-106
+  ...ionService.ts |   16.12 |    55.55 |    6.25 |   16.12 | ...12,423,434,450
+  ...sisService.ts |   59.37 |    34.14 |      50 |   61.29 | ...17,463,487-580
+  commandParser.ts |   21.12 |    22.98 |     100 |   21.42 | ...,70-89,104-181
+  ...dParserLLM.ts |       0 |        0 |       0 |       0 | 38-277
+  config.ts        |   47.05 |    83.87 |      25 |   47.05 | 14-20,27,36-37
+  crypto.ts        |   27.08 |    22.22 |   28.57 |   27.08 | ...13,123,127,145
+  ...onsService.ts |    8.23 |     7.69 |    7.69 |    8.53 | ...70,189,197-261
+  ...mendations.ts |       0 |        0 |       0 |       0 | 7-27
+  ...ionService.ts |      70 |    63.46 |   73.33 |      70 | ...42,503,541-617
+  demo-pr188.ts    |       0 |      100 |     100 |       0 | 18-144
+  dispatcher.ts    |   51.21 |    33.33 |   64.28 |   53.84 | ...09-211,223-244
+  ...tMigration.ts |       0 |        0 |       0 |       0 | 19-365
+  ...entService.ts |   17.44 |        0 |      20 |   17.64 | 55,68-85,99-426
+  ...nanceAgent.ts |   95.34 |       66 |     100 |   95.34 | 238,246,263,299
+  fara.service.ts  |       0 |        0 |       0 |       0 | 6-154
+  ...eryService.ts |    45.2 |    24.83 |   57.37 |   47.59 | ...66-778,793-800
+  featureFlags.ts  |   33.33 |       50 |   28.57 |   33.33 | 112,263-281
+  fileStorage.ts   |      48 |    43.18 |   46.66 |      48 | ...41-242,248-262
+  gemini.ts        |    3.84 |     5.55 |       0 |    3.84 | 21-174
+  ...ageService.ts |       0 |        0 |       0 |       0 | 6-178
+  geminiService.ts |    3.44 |        0 |       0 |    3.44 | 40-123
+  ...oolService.ts |   74.07 |    58.33 |   76.92 |   73.75 | ...36-443,464-496
+  ...ApiService.ts |       0 |        0 |       0 |       0 | 14-448
+  ...darService.ts |      40 |    34.52 |   44.44 |   41.81 | ...95-298,314-388
+  ...iveService.ts |   53.33 |    38.29 |      50 |   56.14 | ...90,201,212-233
+  ...ailService.ts |       0 |        0 |       0 |       0 | 24-225
+  ...apsService.ts |   16.66 |     17.5 |      50 |   17.64 | 30-69,85-124
+  ...tosService.ts |      50 |    32.14 |      50 |   53.33 | ...22-124,138-139
+  ...sksService.ts |   43.67 |    36.48 |   44.44 |   45.78 | ...07-309,324-398
+  ...ubeService.ts |      49 |     35.8 |   45.45 |   52.12 | ...61-363,377-381
+  hoodie-api.ts    |       0 |        0 |       0 |       0 | 4-19
+  ...McpService.ts |    2.94 |        0 |       0 |    2.94 | 53-223,237-240
+  imageService.ts  |    1.88 |        0 |       0 |    2.04 | 20-168
+  ...ionService.ts |       0 |        0 |       0 |       0 | 18-50
+  memoryService.ts |   18.78 |    13.12 |   27.77 |   19.24 | ...9-952,964-1289
+  ...nScheduler.ts |    6.81 |        0 |       0 |    6.97 | 17-239
+  ...ionService.ts |       0 |        0 |       0 |       0 | 14-110
+  merchApi.ts      |   70.96 |       80 |     100 |      70 | ...02,131,136-137
+  ...ptMemories.ts |       0 |        0 |       0 |       0 | 21-223
+  ...iveService.ts |    92.3 |    85.05 |     100 |    92.3 | ...86-188,329,414
+  ...teToSqlite.ts |       0 |        0 |       0 |       0 | 11-252
+  ...maxService.ts |   28.57 |    23.07 |   66.66 |   28.57 | 22-28,52-103
+  ...ralService.ts |    1.23 |        0 |       0 |    1.29 | 53-378
+  ...undService.ts |   18.86 |        0 |   23.07 |   19.23 | ...76-185,201-216
+  moodService.ts   |       0 |        0 |       0 |       0 | 18-346
+  oauthService.ts  |   21.05 |    36.66 |   44.44 |   21.05 | 78-184,216-270
+  ...delService.ts |       0 |        0 |       0 |       0 | 6-214
+  ...hatService.ts |       0 |        0 |       0 |       0 | 14-102
+  openaiService.ts |       0 |        0 |       0 |       0 | 28-348
+  ...odeService.ts |       0 |        0 |       0 |       0 | 6-620
+  ...ageService.ts |   20.51 |    12.12 |      25 |   21.05 | 27-123,170-179
+  ...terService.ts |       0 |        0 |       0 |       0 | 34-542
+  ...et-service.ts |       0 |        0 |       0 |       0 | 29-288
+  ...ingService.ts |   12.03 |     3.03 |    7.69 |   12.62 | ...56-364,382-420
+  ...ionService.ts |    95.4 |    90.62 |     100 |   96.47 | 110,227-228
+  ...askService.ts |    3.49 |     0.45 |    3.03 |    3.67 | 58,72-1139
+  ...omptHelper.ts |   86.95 |    71.42 |     100 |   86.95 | 36,46,71
+  ...ageService.ts |       0 |        0 |       0 |       0 | 31-96
+  ...mendations.ts |       0 |        0 |       0 |       0 | 20-249
+  ...gerService.ts |   30.97 |    17.34 |   50.98 |   30.49 | ...84,697-701,715
+  ...tiveRoutes.ts |       0 |        0 |       0 |       0 | 57-668
+  ...tiveServer.ts |       0 |        0 |       0 |       0 | 8-115
+  ...iveService.ts |    1.27 |        0 |       0 |    1.32 | 34-770
+  ...ileService.ts |   92.59 |      100 |     100 |      92 | 36-37
+  rag-service.ts   |   56.97 |    48.14 |      50 |   55.69 | ...89-284,292-295
+  ...nfoService.ts |   15.78 |    11.42 |   18.18 |   15.78 | ...82-303,318-319
+  ...he-service.ts |       0 |        0 |       0 |       0 | 25-357
+  ...sisService.ts |   22.74 |    17.79 |   33.33 |   22.33 | ...16,323,349-694
+  ...ionService.ts |       0 |        0 |       0 |       0 | 47-581
+  ...entService.ts |   52.72 |    29.16 |   60.37 |   52.14 | ...62-470,481-533
+  sanitization.ts  |   88.76 |    67.85 |    92.3 |   88.76 | ...10,264-267,295
+  ...ctionModel.ts |   83.15 |    70.96 |   86.66 |   83.51 | ...69,281,317-318
+  ...ionService.ts |       0 |        0 |       0 |       0 | 50-524
+  ...eMigration.ts |       0 |        0 |       0 |       0 | 5-30
+  searchService.ts |    1.47 |        0 |       0 |    1.49 | 30-328
+  ...ionService.ts |   14.88 |     4.65 |   54.41 |   15.22 | ...3-895,912-1072
+  ...omeService.ts |       0 |        0 |       0 |       0 | 21-82
+  sqliteStorage.ts |   21.27 |    12.17 |   16.17 |   21.49 | ...1460,1488-1622
+  storage.ts       |     100 |      100 |     100 |     100 |
+  test-nlp.ts      |       0 |        0 |       0 |       0 | 7-150
+  ...iveService.ts |   55.35 |       40 |   56.25 |   55.45 | ...52,560,572-576
+  ...icsService.ts |   69.23 |    41.02 |      65 |   69.56 | ...52,371-388,424
+  ...veyService.ts |   13.33 |     2.94 |   13.95 |   14.28 | ...32-346,359-394
+  ...askService.ts |   15.68 |        0 |   13.33 |   16.32 | 32,45-167
+  utils.ts         |      96 |    83.33 |     100 |     100 | 115
+  ...db-service.ts |       0 |        0 |       0 |       0 | 43-225
+  ...rDBService.ts |   70.16 |    62.82 |    73.8 |   72.18 | ...28,456,470-471
+  ...ageService.ts |    6.66 |        0 |       0 |    6.66 | 13-57
+  veniceService.ts |    3.84 |        0 |       0 |       4 | 22-32,42-156
+  ...oryService.ts |    2.27 |        0 |       0 |    2.27 | 22-138
+  ...ionService.ts |   15.38 |     3.84 |   21.42 |   15.06 | 31,39-57,67-218
+  vite.ts          |    12.5 |    33.33 |   16.66 |    12.5 | 21-78
+  ...sisService.ts |       0 |        0 |       0 |       0 | 19-96
+  ...herService.ts |       0 |        0 |       0 |       0 | 14-107
+  ...ketService.ts |    12.5 |        0 |    5.88 |    12.5 | 44-214,234-282
+  ...phaService.ts |       0 |        0 |       0 |       0 | 7-16
+  ...ageService.ts |       0 |        0 |       0 |       0 | 10-87
+  xaiService.ts    |    1.92 |        0 |       0 |       2 | ...,70-80,122-425
+  xaiTracker.ts    |    6.66 |        0 |       0 |    7.69 | 32-193
+  ...sisService.ts |       0 |        0 |       0 |       0 | 37-364
+  ...wledgeBase.ts |    7.69 |     6.06 |    3.12 |    8.22 | 59-501,554-555
+  ...MillAlyzer.ts |   64.61 |     38.2 |   73.68 |   67.22 | ...62,419,547-557
+  ...ewsMonitor.ts |   10.61 |     6.89 |    4.76 |   10.81 | ...04,336,355-503
+  ...rScheduler.ts |       0 |        0 |       0 |       0 | 23-239
+  ...ionService.ts |       0 |        0 |       0 |       0 | 6-366
+  ...ubeService.ts |       0 |        0 |       0 |       0 | 28-291
+ server/agents     |    51.9 |    34.61 |   64.47 |   52.15 |
+  auditLog.ts      |      70 |    42.85 |     100 |   68.42 | 25-28,45-48
+  base.ts          |   51.51 |       50 |      50 |   51.51 | ...,69-84,109-125
+  calendarAgent.ts |   77.77 |    55.55 |     100 |   77.77 | 39,68,89,99-103
+  codingAgent.ts   |   50.52 |    33.92 |      60 |   49.46 | ...01,335-472,483
+  emailAgent.ts    |   62.16 |    30.76 |     100 |   62.16 | ...3-57,76,99-104
+  ...veryWorker.ts |   51.11 |    40.51 |   53.33 |   53.12 | ...95,316,319-337
+  ...earchAgent.ts |   16.66 |        0 |      50 |   16.66 | 14-28
+  ...ationAgent.ts |   18.75 |        0 |      50 |   18.75 | 14-37
+  millaAgent.ts    |   88.88 |       75 |      50 |   88.88 | 53,75
+  registry.ts      |      80 |      100 |   71.42 |      80 | 25-29
+  taskStorage.ts   |   82.75 |    83.33 |   88.88 |   80.76 | 23,33-35,73
+  tasksAgent.ts    |    3.03 |        0 |       0 |    3.03 | 17-115
+  worker.ts        |   78.78 |    71.42 |      50 |   81.25 | 45-56,123-126
+  youtubeAgent.ts  |    3.57 |        0 |       0 |    3.84 | 10-66
+ server/api        |    1.35 |     2.53 |       0 |    1.36 |
+  coquiService.ts  |       5 |     12.5 |       0 |       5 | 15-139
+  ...absService.ts |       0 |        0 |       0 |       0 | 7-112
+  fara.routes.ts   |       0 |        0 |       0 |       0 | 4-37
+  ...TtsService.ts |     2.7 |        0 |       0 |     2.7 | 12-125
+  ...Meditation.ts |       0 |        0 |       0 |       0 | 4-74
+  hoodie-api.ts    |       0 |        0 |       0 |       0 | 9-347
+ server/crypto     |   73.36 |    75.78 |   79.16 |   73.07 |
+  ...Production.ts |   64.91 |    67.79 |   68.75 |   64.28 | ...19-324,354-421
+  ...cPrototype.ts |   87.14 |    88.88 |     100 |   87.14 | ...76-277,332,339
+ server/dispatcher |   47.05 |    55.55 |      25 |   47.05 |
+  ...dispatcher.ts |     100 |      100 |     100 |     100 |
+  ...ni3-reason.ts |       0 |        0 |       0 |       0 | 8-31
+ server/lib        |   57.75 |    65.67 |   64.28 |   56.07 |
+  crdt.ts          |   57.75 |    65.67 |   64.28 |   56.07 | ...88-193,266-357
+ server/middleware |   37.28 |    28.88 |      50 |   37.28 |
+  ...middleware.ts |       0 |        0 |       0 |       0 | 8-31
+  ...middleware.ts |     100 |      100 |     100 |     100 |
+  caching.ts       |       8 |        0 |      20 |       8 | 10,21-75
+  ...middleware.ts |   85.71 |       50 |     100 |   85.71 | 10
+ ...grations/audio |       0 |        0 |       0 |       0 |
+  client.ts        |       0 |        0 |       0 |       0 | 4-423
+  index.ts         |       0 |        0 |       0 |       0 |
+  routes.ts        |       0 |        0 |       0 |       0 | 7-228
+ ...grations/batch |       0 |        0 |       0 |       0 |
+  index.ts         |       0 |        0 |       0 |       0 |
+  utils.ts         |       0 |        0 |       0 |       0 | 49-179
+ ...egrations/chat |       0 |        0 |       0 |       0 |
+  index.ts         |       0 |        0 |       0 |       0 |
+  routes.ts        |       0 |        0 |       0 |       0 | 5-124
+  storage.ts       |       0 |        0 |       0 |       0 | 29-85
+ ...grations/image |       0 |        0 |       0 |       0 |
+  client.ts        |       0 |        0 |       0 |       0 | 5-57
+  index.ts         |       0 |        0 |       0 |       0 |
+  routes.ts        |       0 |        0 |       0 |       0 | 5-27
+ server/routes     |   42.65 |    29.43 |   38.63 |   43.44 |
+  agent.routes.ts  |   36.98 |    29.41 |      25 |    40.9 | ...84-186,193-195
+  auth.routes.ts   |   73.91 |    78.94 |     100 |   73.91 | ...13-114,122-123
+  chat.routes.ts   |   46.37 |    36.17 |      80 |   46.37 | ...71,188-190,208
+  ...tts.routes.ts |   18.75 |        0 |      50 |   18.75 | 13-45
+  google.routes.ts |   17.85 |        0 |      25 |   18.51 | 13-15,21-77,83
+  index.ts         |     100 |      100 |     100 |     100 |
+  media.routes.ts  |   33.92 |       15 |   27.27 |   33.92 | ...50-176,195-198
+  memory.routes.ts |   19.76 |    15.55 |      25 |      20 | ...40-256,269-276
+  merch.routes.ts  |     100 |      100 |     100 |     100 |
+  ...ing.routes.ts |   78.57 |      100 |      60 |   78.57 | 37,51-52
+  ...ask.routes.ts |      40 |        0 |      20 |      40 | ...28,35-36,43-45
+  ...box.routes.ts |   45.45 |        0 |      25 |   45.45 | 18-19,27,34-40
+  system.routes.ts |   52.27 |    46.66 |      25 |   52.27 | ...26-127,138-148
+  tts.routes.ts    |   30.76 |        0 |   33.33 |   30.76 | 22-38,53-54
+ server/services   |   12.19 |      5.4 |   29.03 |   12.37 |
+  ...or.service.ts |    3.29 |     2.77 |    4.76 |    3.48 | 66,70,82-657
+  ...he.service.ts |     100 |      100 |     100 |     100 |
+  scene.service.ts |      60 |      100 |      60 |      60 | 23-25,33
+ server/utils      |   94.64 |    89.28 |     100 |   94.44 |
+  routeHelpers.ts  |     100 |      100 |     100 |     100 |
+  ...aGenerator.ts |   94.33 |    89.28 |     100 |   94.11 | 91-119,154
+-------------------|---------|----------|---------|---------|-------------------

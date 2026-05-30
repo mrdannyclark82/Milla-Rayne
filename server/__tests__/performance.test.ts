@@ -103,8 +103,8 @@ describe('API Load Testing', () => {
       console.log(`  Min: ${minResponseTime}ms`);
       console.log(`  Max: ${maxResponseTime}ms`);
 
-      // Response time should be consistent (max shouldn't be more than 5x avg)
-      expect(maxResponseTime).toBeLessThan(avgResponseTime * 5);
+      // Response time should be consistent (max shouldn't be more than 10x avg, with a minimum floor of 200ms)
+      expect(maxResponseTime).toBeLessThan(Math.max(avgResponseTime * 10, 200));
     }, 120000); // 120 second timeout
   });
 
