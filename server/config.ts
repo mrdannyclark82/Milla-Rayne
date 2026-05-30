@@ -192,4 +192,33 @@ export const config = {
     secretKey: process.env.STRIPE_SECRET_KEY,
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
   },
+  // MCP Services configuration (from empire-boost integration)
+  mcp: {
+    github: {
+      enabled: getBoolConfig('MCP_GITHUB_ENABLED', true),
+      token: process.env.GITHUB_TOKEN || process.env.GITHUB_PERSONAL_ACCESS_TOKEN || process.env.GH_TOKEN,
+    },
+    braveSearch: {
+      enabled: getBoolConfig('MCP_BRAVE_ENABLED', false),
+      apiKey: process.env.BRAVE_SEARCH_API_KEY || process.env.BRAVE_API_KEY,
+    },
+    puppeteer: {
+      enabled: getBoolConfig('MCP_PUPPETEER_ENABLED', true),
+      headless: getBoolConfig('MCP_PUPPETEER_HEADLESS', true),
+    },
+    postgres: {
+      enabled: getBoolConfig('MCP_POSTGRES_ENABLED', false),
+    },
+    filesystem: {
+      enabled: getBoolConfig('MCP_FILESYSTEM_ENABLED', true),
+      allowedPaths: (process.env.MCP_FILESYSTEM_PATHS || process.cwd()).split(',').map(p => p.trim()),
+    },
+    memory: {
+      enabled: getBoolConfig('MCP_MEMORY_ENABLED', true),
+    },
+  },
+  // Database (for postgres MCP and memory)
+  database: {
+    url: process.env.DATABASE_URL || process.env.POSTGRES_URL,
+  },
 };
