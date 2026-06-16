@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Milla-Rayne — Context-Aware AI Companion</title>
+    <meta
+      name="description"
+      content="Local-first AI companion platform. Adaptive scenes, voice, memory — your hardware, your rules."
+    />
+    <style>
+      :root {
+        --bg: #07070f;
+        --card: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.1);
+        --text: #eef2ff;
+        --muted: #9aa4bf;
+        --cyan: #5eead4;
+        --purple: #c084fc;
+        --pink: #f472b6;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.6;
+      }
+
+      .glow {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            60% 50% at 15% 10%,
+            rgba(94, 234, 212, 0.14),
+            transparent 60%
+          ),
+          radial-gradient(
+            50% 40% at 85% 20%,
+            rgba(192, 132, 252, 0.16),
+            transparent 55%
+          ),
+          radial-gradient(
+            40% 35% at 50% 90%,
+            rgba(244, 114, 182, 0.1),
+            transparent 50%
+          );
+      }
+
+      main {
+        position: relative;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--cyan);
+        border: 1px solid rgba(94, 234, 212, 0.35);
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        margin-bottom: 1rem;
+      }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 0.75rem;
+      }
+
+      .lead {
+        font-size: 1.125rem;
+        color: var(--muted);
+        max-width: 38rem;
+        margin-bottom: 2rem;
+      }
+
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        margin-bottom: 2rem;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.25rem 1.35rem;
+        backdrop-filter: blur(12px);
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+      }
+
+      .card:hover {
+        border-color: rgba(192, 132, 252, 0.45);
+        transform: translateY(-2px);
+      }
+
+      .card h2 {
+        font-size: 1rem;
+        margin-bottom: 0.35rem;
+      }
+
+      .card p {
+        font-size: 0.9rem;
+        color: var(--muted);
+        margin-bottom: 0.85rem;
+      }
+
+      .card a {
+        color: var(--cyan);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      .card a:hover {
+        text-decoration: underline;
+      }
+
+      .primary {
+        display: inline-block;
+        margin-top: 0.5rem;
+        padding: 0.85rem 1.4rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--purple), var(--pink));
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 8px 32px rgba(192, 132, 252, 0.25);
+      }
+
+      .primary:hover {
+        filter: brightness(1.08);
+      }
+
+      footer {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      footer a {
+        color: var(--purple);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow" aria-hidden="true"></div>
+    <main>
+      <span class="badge">Milla-Rayne</span>
+      <h1>Your hardware. Your rules.</h1>
+      <p class="lead">
+        Context-aware AI companion — adaptive scenes, voice, memory, and local
+        LLM orchestration. Built in the lab, shipped in slices.
+      </p>
+
+      <a class="primary" href="scene-demo.html">Open scene demo →</a>
+
+      <div class="grid" style="margin-top: 2rem">
+        <article class="card">
+          <h2>Scene demo</h2>
+          <p>Procedural UI peek — time of day, app state, parallax. No login.</p>
+          <a href="scene-demo.html">Try the adaptive scene</a>
+        </article>
+        <article class="card">
+          <h2>API docs</h2>
+          <p>TypeDoc reference — generated on main branch pushes.</p>
+          <a href="https://mrdannyclark82.github.io/Milla-Rayne/api-docs/"
+            >Browse API docs</a
+          >
+        </article>
+        <article class="card">
+          <h2>Public showcase</h2>
+          <p>Sanitized empire slices — mystery_builder campaign + roadmap.</p>
+          <a
+            href="https://mrdannyclark82.github.io/Mrs-Milla-Rayne/merch-social/demo/scene-demo.html"
+            >Mrs-Milla-Rayne</a
+          >
+        </article>
+        <article class="card">
+          <h2>Source</h2>
+          <p>Full platform monorepo — client, server, Android, CLI.</p>
+          <a href="https://github.com/mrdannyclark82/Milla-Rayne">GitHub</a>
+        </article>
+      </div>
+
+      <footer>
+        Custodian workflow monitors this site weekly.
+        <a href="https://github.com/mrdannyclark82/Milla-Rayne/blob/main/CUSTODIAN.md"
+          >Custodian charter</a
+        >
+        · Lab funnel:
+        <a href="https://github.com/mrdannyclark82/Mrs-Milla-Rayne"
+          >Mrs-Milla-Rayne</a
+        >
+        gets promoted winners only.
+      </footer>
+    </main>
+  </body>
+</html>
