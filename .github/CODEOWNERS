@@ -1,0 +1,10 @@
+# Milla-Rayne repository custodian — Danny Clark owns all paths.
+# GitHub will request review from CODEOWNERS on PRs when branch protection is enabled.
+
+* @mrdannyclark82
+
+# Pages + custodian automation
+/docs/site/ @mrdannyclark82
+/.github/workflows/pages.yml @mrdannyclark82
+/.github/workflows/custodian.yml @mrdannyclark82
+/CUSTODIAN.md @mrdannyclark82
