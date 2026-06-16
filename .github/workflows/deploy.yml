@@ -26,7 +26,7 @@ jobs:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
     environment:
       name: staging
-      url: https://staging.milla-rayne.app
+      url: https://staging.milla-rayne.com
 
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
         run: |
           echo "Running smoke tests against staging environment"
           # Add actual smoke tests here
-          # curl -f https://staging.milla-rayne.app/api/health || exit 1
+          # curl -f https://staging.milla-rayne.com/api/health || exit 1
 
   deploy-production:
     name: Deploy to Production
@@ -69,7 +69,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     environment:
       name: production
-      url: https://milla-rayne.app
+      url: https://milla-rayne.com
     needs: []
 
     steps:
