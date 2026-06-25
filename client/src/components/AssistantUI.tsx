@@ -5,12 +5,39 @@
  */
 
 import React from 'react';
-// @ts-expect-error - ai/react types may not be available yet
-import { useChat } from 'ai/react';
+// Note: useChat hook is not available in current ai package version (5.0.124)
+// This component may need to be updated to use a different API or library
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Loader2, Send, User, Bot } from 'lucide-react';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface UseChatReturn {
+  messages: Message[];
+  input: string;
+  handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+// Stub implementation until proper hook is available
+function useChat(_options: any): UseChatReturn {
+  return {
+    messages: [],
+    input: '',
+    handleInputChange: () => {},
+    handleSubmit: () => {},
+    isLoading: false,
+    error: null,
+  };
+}
 
 interface AssistantUIProps {
   apiEndpoint?: string;

@@ -9,6 +9,20 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { searchRepositories } from './githubApiService';
 
+// Interface for YouTube video search result
+interface YouTubeVideo {
+  id?: {
+    videoId?: string;
+  };
+  videoId?: string;
+  snippet?: {
+    title?: string;
+    description?: string;
+  };
+  title?: string;
+  description?: string;
+}
+
 export interface DiscoveredFeature {
   id: string;
   name: string;
@@ -463,7 +477,7 @@ class FeatureDiscoveryService {
         const result = await searchVideos(undefined, term, 5);
 
         if (result.success && result.data) {
-          for (const video of result.data) {
+          for (const video of result.data as YouTubeVideo[]) {
             // Extract features from YouTube video titles and descriptions
             const feature: DiscoveredFeature = {
               id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

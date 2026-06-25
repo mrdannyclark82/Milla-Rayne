@@ -48,7 +48,11 @@ export function registerMonitoringRoutes(app: Express) {
   router.get(
     '/xai/session/:sessionId',
     asyncHandler(async (req, res) => {
-      const data = getReasoningData(req.params.sessionId as string);
+      const { sessionId } = req.params;
+      if (typeof sessionId !== 'string' || !sessionId) {
+        return res.status(400).json({ success: false, error: 'Invalid session ID' });
+      }
+      const data = getReasoningData(sessionId);
       res.json({ success: true, data, timestamp: Date.now() });
     })
   );
