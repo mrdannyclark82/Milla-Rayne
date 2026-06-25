@@ -1,4 +1,4 @@
-name: Delete merged branches
+name: Delete merged or superseded branches
 
 on:
   pull_request:
@@ -7,23 +7,48 @@ on:
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   delete-branch:
     if: >
-      github.event.pull_request.merged == true &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.head.ref != github.event.repository.default_branch
     runs-on: ubuntu-latest
     steps:
-      - name: Delete merged branch
+      - name: Delete merged or superseded branch
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const branch = context.payload.pull_request.head.ref;
+            const pullRequest = context.payload.pull_request;
+            const managedLabels = new Set(["superseded", "stale-draft"]);
+            const labels = (pullRequest.labels || []).map((label) => label.name);
+            const shouldDelete =
+              pullRequest.merged === true ||
+              labels.some((label) => managedLabels.has(label));
+
+            if (!shouldDelete) {
+              core.info("Skipping branch deletion because the PR was closed without a janitor label.");
+              return;
+            }
+
+            const branch = pullRequest.head.ref;
             const ref = `heads/${branch}`;
-            core.info(`Deleting merged branch ${ref}`);
+            const { data: openPullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              head: `${context.repo.owner}:${branch}`,
+              per_page: 5,
+            });
+
+            if (openPullRequests.length > 0) {
+              core.info(`Skipping ${ref} because it is still used by another open PR.`);
+              return;
+            }
+
+            core.info(`Deleting branch ${ref}`);
             try {
               await github.rest.git.deleteRef({
                 owner: context.repo.owner,

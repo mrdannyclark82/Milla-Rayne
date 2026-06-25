@@ -23,6 +23,13 @@ export function registerSandboxRoutes(app: Express) {
   router.post(
     '/sandboxes/:sandboxId/features/:featureId/approve',
     asyncHandler(async (req, res) => {
+      const { sandboxId, featureId } = req.params;
+      if (typeof sandboxId !== 'string' || !sandboxId) {
+        return res.status(400).json({ success: false, error: 'Invalid sandbox ID' });
+      }
+      if (typeof featureId !== 'string' || !featureId) {
+        return res.status(400).json({ success: false, error: 'Invalid feature ID' });
+      }
       // Implementation for approval logic (likely in sandbox service)
       res.json({ success: true, message: 'Feature approved' });
     })
@@ -31,11 +38,24 @@ export function registerSandboxRoutes(app: Express) {
   router.post(
     '/sandboxes/:sandboxId/features/:featureId/test',
     asyncHandler(async (req, res) => {
-      const testType = req.body.testType || 'unit';
+      const { sandboxId, featureId } = req.params;
+      if (typeof sandboxId !== 'string' || !sandboxId) {
+        return res.status(400).json({ success: false, error: 'Invalid sandbox ID' });
+      }
+      if (typeof featureId !== 'string' || !featureId) {
+        return res.status(400).json({ success: false, error: 'Invalid feature ID' });
+      }
+      const inputTestType =
+        req.body && typeof req.body.testType === 'string' ? req.body.testType : 'unit';
+      const validTestTypes = new Set(['unit', 'integration', 'user_acceptance']);
+      if (!validTestTypes.has(inputTestType)) {
+        return res.status(400).json({ success: false, error: 'Invalid test type' });
+      }
+
       const result = await testFeature(
-        req.params.sandboxId as string,
-        req.params.featureId as string,
-        testType
+        sandboxId,
+        featureId,
+        inputTestType as 'unit' | 'integration' | 'user_acceptance'
       );
       res.json(result);
     })

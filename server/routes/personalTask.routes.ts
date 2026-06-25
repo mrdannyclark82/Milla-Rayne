@@ -32,7 +32,11 @@ export function registerPersonalTaskRoutes(app: Express) {
   router.post(
     '/personal-tasks/:taskId/start',
     asyncHandler(async (req, res) => {
-      const task = await startTask(req.params.taskId as string);
+      const { taskId } = req.params;
+      if (typeof taskId !== 'string' || !taskId) {
+        return res.status(400).json({ success: false, error: 'Invalid task ID' });
+      }
+      const task = await startTask(taskId);
       res.json({ success: !!task, task });
     })
   );
@@ -40,9 +44,17 @@ export function registerPersonalTaskRoutes(app: Express) {
   router.post(
     '/personal-tasks/:taskId/complete',
     asyncHandler(async (req, res) => {
-      const insights = req.body.insights || "Task completed manually.";
-      const task = await completeTask(req.params.taskId as string, insights);
-      res.json({ success: !!task, task });
+      const { taskId } = req.params;
+      if (typeof taskId !== 'string' || !taskId) {
+        return res.status(400).json({ success: false, error: 'Invalid task ID' });
+      }
+      const insights =
+        req.body && typeof req.body.insights === 'string'
+          ? req.body.insights
+          : 'Task completed manually.';
+      const success = await completeTask(taskId, insights);
+      const task = success ? getPersonalTasks().find((t) => t.id === taskId) : null;
+      res.json({ success, task });
     })
   );
 

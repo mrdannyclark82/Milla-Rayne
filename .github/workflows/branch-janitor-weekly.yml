@@ -1,0 +1,62 @@
+name: Branch Janitor Weekly
+
+on:
+  schedule:
+    - cron: '30 4 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  janitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune merged and duplicate no-PR branches
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const openHeads = new Set(prs.map(p => p.head.ref));
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner, repo, per_page: 100
+            });
+
+            const noPrBranches = branches.filter(b => b.name !== 'main' && b.name !== 'master' && !openHeads.has(b.name));
+
+            // 1) Delete no-PR branches already merged (main ahead or identical)
+            for (const b of noPrBranches) {
+              const cmp = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `main...${b.name}`
+              });
+              const status = cmp.data.status;
+              if (status === 'behind' || status === 'identical') {
+                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${b.name}` });
+              }
+            }
+
+            // 2) Delete duplicate-SHA no-PR branches (keep one lexicographically)
+            const refreshed = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
+            const grouped = new Map();
+            for (const b of refreshed) {
+              if (b.name === 'main' || b.name === 'master' || openHeads.has(b.name)) continue;
+              const sha = b.commit.sha;
+              if (!grouped.has(sha)) grouped.set(sha, []);
+              grouped.get(sha).push(b.name);
+            }
+
+            for (const names of grouped.values()) {
+              if (names.length < 2) continue;
+              names.sort();
+              for (const doomed of names.slice(1)) {
+                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${doomed}` });
+              }
+            }

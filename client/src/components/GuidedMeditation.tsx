@@ -61,7 +61,7 @@ export function GuidedMeditation({
       );
       setIsMeditating(false);
     }
-  }, []);
+  }, [duration]);
 
   return (
     <div className="guided-meditation-container p-4 border rounded-lg shadow-md bg-white/10 backdrop-blur-sm text-white">
@@ -80,7 +80,7 @@ export function GuidedMeditation({
       >
         {isMeditating
           ? 'Meditation in Progress...'
-          : 'Start 5-Minute Meditation on Stress Relief'}
+          : `Start ${duration}-Minute Meditation on Stress Relief`}
       </button>
 
       {error && (

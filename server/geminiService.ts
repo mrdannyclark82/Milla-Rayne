@@ -2,7 +2,7 @@
  * Gemini AI Service
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { config } from './config';
 import { performWebSearch, SearchResult } from './searchService'; // Import the search service
 
@@ -13,17 +13,23 @@ export interface GeminiResponse {
   toolExecuted?: boolean; // Indicate if a tool was executed
 }
 
-// Define the tool for Gemini
+// Define interface for function call arguments
+interface FunctionCallArgs {
+  query?: string;
+  [key: string]: any;
+}
+
+// Define the tool for Gemini with proper SchemaType enum
 const searchTool = {
   functionDeclarations: [
     {
       name: 'performWebSearch',
       description: 'Performs a web search to find information online.',
       parameters: {
-        type: 'OBJECT',
+        type: SchemaType.OBJECT,
         properties: {
           query: {
-            type: 'STRING',
+            type: SchemaType.STRING,
             description: 'The search query string.',
           },
         },

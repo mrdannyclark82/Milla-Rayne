@@ -1,0 +1,43 @@
+name: Branch Janitor
+
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run without deleting branches'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+
+concurrency:
+  group: branch-janitor
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Clean merged and duplicate branches
+        uses: actions/github-script@v7
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = require('path');
+            const scriptPath = path.join(process.env.GITHUB_WORKSPACE, 'scripts', 'github-maintenance.js');
+            const { runBranchJanitor } = await import(`file://${scriptPath}`);
+            await runBranchJanitor({
+              github,
+              context,
+              core,
+              dryRun: process.env.DRY_RUN === 'true',
+            });
