@@ -355,7 +355,25 @@ strategy:
 1. Go to **Settings** → **Actions** → **General**
 2. Under "Workflow permissions", select "Read and write permissions"
 3. Enable "Allow GitHub Actions to create and approve pull requests"
-4. Add auto-merge workflow (template available in docs)
+4. Keep `.github/workflows/pr-janitor.yml` enabled so patch-only Dependabot PRs can be auto-labeled and auto-merged after green checks
+
+### PR and Branch Janitors
+
+This repository now includes two maintenance workflows for PR and branch backlog control:
+
+- **`PR Janitor`** (`.github/workflows/pr-janitor.yml`)
+  - Runs nightly plus on PR updates
+  - Scores open PRs using age, draft state, ahead/behind, file count, check status, and duplicate workflow overlap
+  - Ensures these labels exist and keeps them in sync: `ready-to-merge`, `needs-rebase`, `superseded`, `stale-draft`, `security-review`, `large-feature`
+  - Auto-closes stale drafts, PRs whose head is already merged, and superseded workflow-fix PRs
+  - Enables auto-merge for patch-only Dependabot PRs after green checks
+
+- **`Branch Janitor`** (`.github/workflows/branch-janitor.yml`)
+  - Runs weekly and can be triggered manually in dry-run mode
+  - Deletes merged branches with no open PR plus duplicate no-PR `sandbox/*` and `copilot/*` branches that share the same SHA
+  - Updates the `🌿 Branch Dashboard` issue with linked PRs, merged status, ahead/behind, duplicate SHA peers, and last commit dates
+
+The branch cleanup workflow `.github/workflows/delete-merged-branches.yml` also deletes same-repo head branches when PRs are merged or closed by janitor labels (`superseded`, `stale-draft`).
 
 ### Set Up Deployment Environments
 
