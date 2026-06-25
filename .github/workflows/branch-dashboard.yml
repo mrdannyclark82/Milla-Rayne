@@ -1,0 +1,64 @@
+name: Branch Dashboard Snapshot
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build branch dashboard JSON
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            const prByHead = new Map(prs.map(pr => [pr.head.ref, pr.number]));
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner, repo, per_page: 100
+            });
+
+            const rows = [];
+            const bySha = new Map();
+            for (const b of branches) {
+              if (!bySha.has(b.commit.sha)) bySha.set(b.commit.sha, []);
+              bySha.get(b.commit.sha).push(b.name);
+            }
+
+            for (const b of branches) {
+              const cmp = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo, basehead: `main...${b.name}`
+              });
+
+              rows.push({
+                branch: b.name,
+                linked_pr: prByHead.get(b.name) || null,
+                merged: cmp.data.status === 'behind' || cmp.data.status === 'identical',
+                ahead_by: cmp.data.ahead_by,
+                behind_by: cmp.data.behind_by,
+                duplicate_sha: bySha.get(b.commit.sha).length > 1,
+                commit_sha: b.commit.sha,
+                last_commit_date: b.commit.commit.author.date
+              });
+            }
+
+            fs.writeFileSync('branch-dashboard.json', JSON.stringify(rows, null, 2));
+
+      - name: Upload branch dashboard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: branch-dashboard
+          path: branch-dashboard.json
