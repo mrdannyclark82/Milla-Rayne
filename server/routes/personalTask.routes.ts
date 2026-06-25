@@ -48,9 +48,11 @@ export function registerPersonalTaskRoutes(app: Express) {
       if (typeof taskId !== 'string' || !taskId) {
         return res.status(400).json({ success: false, error: 'Invalid task ID' });
       }
-      const task = await completeTask(taskId);
-      const insights = req.body.insights || "Task completed manually.";
-      const task = await completeTask(req.params.taskId as string, insights);
+      const insights =
+        req.body && typeof req.body.insights === 'string'
+          ? req.body.insights
+          : 'Task completed manually.';
+      const task = await completeTask(taskId, insights);
       res.json({ success: !!task, task });
     })
   );
