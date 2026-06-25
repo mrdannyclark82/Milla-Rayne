@@ -45,12 +45,17 @@ export function registerSandboxRoutes(app: Express) {
       if (typeof featureId !== 'string' || !featureId) {
         return res.status(400).json({ success: false, error: 'Invalid feature ID' });
       }
-      const result = await testFeature(sandboxId, featureId);
-      const testType = req.body.testType || 'unit';
+      const inputTestType =
+        req.body && typeof req.body.testType === 'string' ? req.body.testType : 'unit';
+      const validTestTypes = new Set(['unit', 'integration', 'user_acceptance']);
+      if (!validTestTypes.has(inputTestType)) {
+        return res.status(400).json({ success: false, error: 'Invalid test type' });
+      }
+
       const result = await testFeature(
-        req.params.sandboxId as string,
-        req.params.featureId as string,
-        testType
+        sandboxId,
+        featureId,
+        inputTestType as 'unit' | 'integration' | 'user_acceptance'
       );
       res.json(result);
     })
