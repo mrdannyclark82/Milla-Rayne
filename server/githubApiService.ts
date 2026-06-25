@@ -8,6 +8,9 @@
 import { RepositoryInfo, RepositoryData } from './repositoryAnalysisService';
 import { RepositoryImprovement } from './repositoryModificationService';
 
+const GITHUB_REPO_FULL_NAME_REGEX = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const GITHUB_REF_REGEX = /^[A-Za-z0-9._/-]{1,255}$/;
+
 // SSRF mitigation: Only allow safe relative file paths removing traversal, null bytes, etc.
 function isSafeGitHubFilePath(filePath: string): boolean {
   // Disallow absolute paths, backslash, path traversal, and suspicious chars
@@ -24,6 +27,28 @@ function isSafeGitHubFilePath(filePath: string): boolean {
   // Optionally: restrict path to only certain extensions
   if (!/^[\w\-./]+$/.test(filePath)) return false;
   return true;
+}
+
+function isSafeGitHubRepoFullName(fullName: string): boolean {
+  return (
+    typeof fullName === 'string' &&
+    GITHUB_REPO_FULL_NAME_REGEX.test(fullName) &&
+    !fullName.includes('..') &&
+    !fullName.startsWith('/') &&
+    !fullName.endsWith('/')
+  );
+}
+
+function isSafeGitHubRefName(ref: string): boolean {
+  return (
+    typeof ref === 'string' &&
+    GITHUB_REF_REGEX.test(ref) &&
+    !ref.includes('..') &&
+    !ref.includes('//') &&
+    !ref.startsWith('/') &&
+    !ref.endsWith('/') &&
+    !ref.endsWith('.lock')
+  );
 }
 export interface GitHubPullRequestOptions {
   title: string;
@@ -62,9 +87,16 @@ export async function createGitHubBranch(
   githubToken: string
 ): Promise<GitHubBranchResult> {
   try {
+    if (!isSafeGitHubRepoFullName(repoInfo.fullName)) {
+      throw new Error(`Unsafe repository full name: ${repoInfo.fullName}`);
+    }
+    if (!isSafeGitHubRefName(branchName) || !isSafeGitHubRefName(fromBranch)) {
+      throw new Error(`Unsafe branch name(s): ${branchName}, ${fromBranch}`);
+    }
+
     // Get the SHA of the base branch
     const refResponse = await fetch(
-      `https://api.github.com/repos/${repoInfo.fullName}/git/refs/heads/${fromBranch}`,
+      `https://api.github.com/repos/${repoInfo.fullName}/git/refs/heads/${encodeURIComponent(fromBranch)}`,
       {
         headers: {
           Authorization: `Bearer ${githubToken}`,
@@ -134,6 +166,12 @@ export async function updateGitHubFile(
   githubToken: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    if (!isSafeGitHubRepoFullName(repoInfo.fullName)) {
+      throw new Error(`Unsafe repository full name: ${repoInfo.fullName}`);
+    }
+    if (!isSafeGitHubRefName(branchName)) {
+      throw new Error(`Unsafe branch name: ${branchName}`);
+    }
     // SSRF/path traversal mitigation
     if (!isSafeGitHubFilePath(filePath)) {
       throw new Error(`Unsafe or invalid file path: ${filePath}`);
@@ -142,7 +180,7 @@ export async function updateGitHubFile(
     let fileSha: string | undefined;
     try {
       const fileResponse = await fetch(
-        `https://api.github.com/repos/${repoInfo.fullName}/contents/${filePath}?ref=${branchName}`,
+        `https://api.github.com/repos/${repoInfo.fullName}/contents/${filePath}?ref=${encodeURIComponent(branchName)}`,
         {
           headers: {
             Authorization: `Bearer ${githubToken}`,
