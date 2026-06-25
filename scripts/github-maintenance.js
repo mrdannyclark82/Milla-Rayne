@@ -290,7 +290,7 @@ export function pickSafeDuplicateBranchesForDeletion(branches) {
 
     const keeper = [...candidates].sort((left, right) => {
       if (left.lastCommitDate !== right.lastCommitDate) {
-        return left.lastCommitDate.localeCompare(right.lastCommitDate);
+        return right.lastCommitDate.localeCompare(left.lastCommitDate);
       }
       return left.name.localeCompare(right.name);
     })[0];
@@ -302,12 +302,7 @@ export function pickSafeDuplicateBranchesForDeletion(branches) {
     }
   }
 
-  return unique(
-    deletions.map((name) => {
-      const branch = branches.find((entry) => entry.name === name);
-      return branch ? branch.name : null;
-    })
-  )
+  return unique(deletions)
     .filter(Boolean)
     .sort((left, right) => left.localeCompare(right));
 }
@@ -935,7 +930,11 @@ export async function runBranchJanitor({ github, context, core, dryRun = false }
   const duplicateByBranch = new Map();
   for (const group of duplicateGroups) {
     for (const branch of group.branches) {
-      duplicateByBranch.set(branch.name, group.branches.map((entry) => entry.name).filter((name) => name !== branch.name));
+      const peerNames = group.branches.map((entry) => entry.name);
+      duplicateByBranch.set(
+        branch.name,
+        peerNames.filter((name) => name !== branch.name)
+      );
     }
   }
 

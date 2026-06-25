@@ -116,6 +116,6 @@ describe('github maintenance helpers', () => {
     const deletions = pickSafeDuplicateBranchesForDeletion(branches);
 
     expect(duplicateGroups).toHaveLength(1);
-    expect(deletions).toEqual(['sandbox/fix-security-b']);
+    expect(deletions).toEqual(['sandbox/fix-security-a']);
   });
 });
