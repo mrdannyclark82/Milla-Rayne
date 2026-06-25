@@ -583,7 +583,7 @@ async function enableDependabotAutomerge({ github, context, pullRequestId, dryRu
   );
 }
 
-export async function runPrJanitor({ github, context, core, dryRun = false }) {
+export async function runPrJanitor({ github, context, core, dryRun = false, now = new Date() }) {
   await ensureManagedLabels({ github, context, core });
 
   const openPullRequests = await listOpenPullRequests({ github, context });
@@ -635,8 +635,8 @@ export async function runPrJanitor({ github, context, core, dryRun = false }) {
       filePaths
     );
 
-    const ageDays = daysBetween(new Date(), pullRequestData.created_at);
-    const inactiveDays = daysBetween(new Date(), pullRequestData.updated_at);
+    const ageDays = daysBetween(now, pullRequestData.created_at);
+    const inactiveDays = daysBetween(now, pullRequestData.updated_at);
     const needsSecurityReview =
       hasKeyword(`${pullRequestData.title}\n${pullRequestData.body || ''}`, SECURITY_KEYWORDS) ||
       pullRequestData.labels.some((label) => normalizeText(label.name).includes('security'));
@@ -869,7 +869,7 @@ async function deleteBranch({ github, context, name, dryRun }) {
   }
 }
 
-export async function runBranchJanitor({ github, context, core, dryRun = false }) {
+export async function runBranchJanitor({ github, context, core, dryRun = false, now = new Date() }) {
   const openPullRequests = await listOpenPullRequests({ github, context });
   const linkedPrs = new Map();
   for (const pullRequest of openPullRequests) {
@@ -1005,7 +1005,7 @@ export async function runBranchJanitor({ github, context, core, dryRun = false }
   const branchIssueBody = [
     `# ${BRANCH_DASHBOARD_ISSUE_TITLE}`,
     '',
-    `- Generated: ${new Date().toISOString()}`,
+    `- Generated: ${now.toISOString()}`,
     `- Dry run: **${dryRun ? 'yes' : 'no'}**`,
     `- Total branches (excluding ${defaultBranch}): **${branchRows.length - 1}**`,
     `- Open-PR branches: **${branchRows.filter((branch) => branch.hasOpenPr).length}**`,
