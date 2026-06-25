@@ -226,12 +226,81 @@ export interface AgentFailureContext {
     timestamp: number;
     error: string;
   }>;
+  severity?: 'critical' | 'high' | 'medium' | 'low';
+  impact?: 'high' | 'medium' | 'low';
 }
 
 /**
  * SCPA task queue for self-correction
  */
 const scpaQueue: AgentFailureContext[] = [];
+
+/**
+ * Calculate priority score for a failure context
+ * Higher score = higher priority
+ */
+export function calculatePriorityScore(context: AgentFailureContext): number {
+  let score = 0;
+
+  // Severity score
+  switch (context.severity) {
+    case 'critical':
+      score += 40;
+      break;
+    case 'high':
+      score += 30;
+      break;
+    case 'low':
+      score += 10;
+      break;
+    default:
+      score += 20; // Medium/Default
+  }
+
+  // Impact score
+  switch (context.impact) {
+    case 'high':
+      score += 30;
+      break;
+    case 'low':
+      score += 10;
+      break;
+    default:
+      score += 20; // Medium/Default
+  }
+
+  // Attempt score (cap at 30)
+  score += Math.min(context.attemptCount * 10, 30);
+
+  return score;
+}
+
+/**
+ * Add a failure to the SCPA queue and sort by priority
+ */
+export function enqueueFailure(context: AgentFailureContext): void {
+  // Add to queue
+  scpaQueue.push(context);
+
+  // Sort by priority score (descending)
+  scpaQueue.sort(
+    (a, b) => calculatePriorityScore(b) - calculatePriorityScore(a)
+  );
+}
+
+/**
+ * Peek at the next failure in the queue without removing it
+ */
+export function peekNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue[0];
+}
+
+/**
+ * Get and remove the next failure from the queue
+ */
+export function getNextSCPAFailure(): AgentFailureContext | undefined {
+  return scpaQueue.shift();
+}
 
 /**
  * P2.4: Report agent failure to metacognitive service for SCPA processing
@@ -248,6 +317,19 @@ export async function reportAgentFailure(
   const errorMessage = error instanceof Error ? error.message : error;
   const stackTrace = error instanceof Error ? error.stack : undefined;
 
+  // Infer severity if not provided
+  let severity = context.severity;
+  if (!severity) {
+    if (
+      errorMessage.toLowerCase().includes('critical') ||
+      errorMessage.toLowerCase().includes('fatal')
+    ) {
+      severity = 'critical';
+    } else if (errorMessage.toLowerCase().includes('high')) {
+      severity = 'high';
+    }
+  }
+
   const failureContext: AgentFailureContext = {
     agentName: context.agentName || 'unknown',
     taskId: context.taskId || `task_${Date.now()}`,
@@ -257,6 +339,8 @@ export async function reportAgentFailure(
     taskContext: context.taskContext,
     stackTrace,
     previousAttempts: context.previousAttempts || [],
+    severity,
+    impact: context.impact,
   };
 
   console.error(
@@ -266,13 +350,7 @@ export async function reportAgentFailure(
   console.error(`🚨 [SCPA] Task ID: ${failureContext.taskId}`);
 
   // Add to SCPA queue for processing
-  scpaQueue.push(failureContext);
-
-  // TODO: In production, implement priority queue based on:
-  // - Severity of error
-  // - Number of attempts
-  // - Impact on user experience
-  // - Time since last failure
+  enqueueFailure(failureContext);
 
   // Log for monitoring
   console.log(
@@ -309,7 +387,8 @@ export async function reportAgentFailure(
       agent: 'codingAgent',
       action: 'self_correct', // Assuming action is required
       supervisor: 'SCPA',
-      payload: { // Moved metadata to payload or appropriate field
+      payload: {
+        // Moved metadata to payload or appropriate field
         description: `Self-correct failure in ${failureContext.agentName}: ${errorMessage}`,
         priority: isCritical ? 'high' : 'medium',
         scpaFailure: true,
@@ -318,7 +397,8 @@ export async function reportAgentFailure(
       },
       status: 'pending',
       createdAt: new Date().toISOString(),
-      metadata: { // Keep metadata if allowed, but AgentTask structure might be strict
+      metadata: {
+        // Keep metadata if allowed, but AgentTask structure might be strict
         scpaFailure: true,
         originalError: failureContext,
         attemptCount: failureContext.attemptCount,

@@ -40,7 +40,7 @@ const searchTool = {
 };
 
 export async function generateGeminiResponse(
-  userMessage: string,
+  userMessage: string
   // conversationHistory: Array<{ role: 'user' | 'model'; content: string }> // Not used in this basic implementation but useful for full chat context
 ): Promise<GeminiResponse> {
   try {
@@ -53,18 +53,25 @@ export async function generateGeminiResponse(
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash', tools: [searchTool] });
+    // Cast tools to any to bypass strict type checking if SchemaType mismatch persists with string literals
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      tools: [searchTool] as any,
+    });
 
     // Start a chat session with the model
     const chat = model.startChat({});
-    
+
     // Send the user message
     const result = await chat.sendMessage(userMessage);
     let response = result.response;
 
     // Check for tool calls
     // In newer SDK versions, functionCall is a method returning FunctionCall | undefined
-    const functionCall = typeof response.functionCall === 'function' ? response.functionCall() : (response as any).functionCall;
+    const functionCall =
+      typeof response.functionCall === 'function'
+        ? response.functionCall()
+        : (response as any).functionCall;
 
     if (functionCall) {
       let toolResult: SearchResult[] | null = null;
@@ -72,10 +79,12 @@ export async function generateGeminiResponse(
 
       if (functionCall.name === 'performWebSearch') {
         toolExecuted = true;
-        // Use proper type for args
-        const args = functionCall.args as FunctionCallArgs;
-        console.log('Gemini called performWebSearch with query:', args.query);
-        const searchResponse = await performWebSearch(args.query || '');
+        // args might be an object or map, depending on SDK. Usually object.
+        console.log(
+          'Gemini called performWebSearch with query:',
+          functionCall.args.query
+        );
+        const searchResponse = await performWebSearch(functionCall.args.query);
         toolResult = searchResponse ? searchResponse.results : null; // Pass the results array
       }
 

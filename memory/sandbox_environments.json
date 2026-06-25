@@ -15,8 +15,8 @@
           "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
           "files": [],
           "status": "testing",
-          "testsPassed": 4,
-          "testsFailed": 4,
+          "testsPassed": 6,
+          "testsFailed": 6,
           "addedAt": 1769578714591
         },
         {
@@ -66,6 +66,54 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1770137475677
+        },
+        {
+          "id": "feat_1770480408206_lq1c0ctj8",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770480408206
+        },
+        {
+          "id": "feat_1770480982865_6n70twmbw",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770480982865
+        },
+        {
+          "id": "feat_1770481236468_b2gk53aug",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770481236468
+        },
+        {
+          "id": "feat_1770569856787_57ik3z1ce",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1770569856787
         }
       ],
       "readyForProduction": false,
@@ -141,6 +189,42 @@
           "passed": true,
           "details": "All tests passed successfully",
           "duration": 1403.6738153965807
+        },
+        {
+          "id": "test_1770480408207_co6x2pvwc",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770480408207,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 719.273801031962
+        },
+        {
+          "id": "test_1770480982866_c0vqgw53g",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770480982866,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 2359.223823347186
+        },
+        {
+          "id": "test_1770481236469_lzctd8yq1",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770481236469,
+          "testType": "unit",
+          "passed": true,
+          "details": "All tests passed successfully",
+          "duration": 583.1641637259808
+        },
+        {
+          "id": "test_1770569856788_p4tip6g0f",
+          "featureId": "feat_1769578714591_bfew6az5e",
+          "timestamp": 1770569856788,
+          "testType": "unit",
+          "passed": false,
+          "details": "Some tests failed - review needed",
+          "duration": 2234.8043716784587
         }
       ]
     },
@@ -280,7 +364,51 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1770480408202_nyx5asa05": {
+      "id": "sandbox_1770480408202_nyx5asa05",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770480408202",
+      "status": "active",
+      "createdAt": 1770480408202,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770480982863_xrgrtncmd": {
+      "id": "sandbox_1770480982863_xrgrtncmd",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770480982863",
+      "status": "active",
+      "createdAt": 1770480982863,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770481236466_g4itj4cso": {
+      "id": "sandbox_1770481236466_g4itj4cso",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770481236466",
+      "status": "active",
+      "createdAt": 1770481236466,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1770569856784_l0c6x4z8x": {
+      "id": "sandbox_1770569856784_l0c6x4z8x",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1770569856784",
+      "status": "active",
+      "createdAt": 1770569856784,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1770137475678
+  "lastUpdated": 1770569856788
 }

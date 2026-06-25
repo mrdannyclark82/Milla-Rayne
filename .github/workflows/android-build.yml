@@ -1,63 +1,28 @@
 name: Android Build
-
 on:
   push:
-    branches: [main, develop]
-    paths:
-      - 'android/**'
-      - '.github/workflows/android-build.yml'
+    branches: [ main ]
   pull_request:
-    branches: [main, develop]
-    paths:
-      - 'android/**'
-  workflow_dispatch:
+    paths: ['android/**']
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6.0.1
-        with:
-          clean: true
-          lfs: false
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v5
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-monorepo
+      - uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Grant execute permission for gradlew
+      - uses: android-actions/setup-android@v3
+      - name: Grant execute permission
         run: chmod +x android/gradlew
-
-      - name: Build Debug APK
-        run: |
-          cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 30
-
-      - name: Build Release APK (unsigned)
-        run: |
-          cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Build Debug
+        run: cd android && ./gradlew assembleDebug --no-daemon
+        working-directory: .
+      - name: Build Release
+        run: cd android && ./gradlew assembleRelease --no-daemon
         continue-on-error: true
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: app-release-unsigned
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          retention-days: 30
+        working-directory: .

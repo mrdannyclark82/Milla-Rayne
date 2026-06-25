@@ -9,6 +9,7 @@ import { registerMonitoringRoutes } from './monitoring.routes';
 import { registerSandboxRoutes } from './sandbox.routes';
 import { registerGoogleRoutes } from './google.routes';
 import { registerGoogleTtsRoutes } from './google-tts.routes';
+import { registerTTSRoutes } from './tts.routes';
 import { registerPersonalTaskRoutes } from './personalTask.routes';
 import { registerMerchRoutes } from './merch.routes';
 
@@ -39,6 +40,7 @@ export function registerModularRoutes(app: Express) {
   registerSandboxRoutes(app);
   registerGoogleRoutes(app);
   registerGoogleTtsRoutes(app);
+  registerTTSRoutes(app);
   registerPersonalTaskRoutes(app);
 
   // Merch routes

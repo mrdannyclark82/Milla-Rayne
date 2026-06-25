@@ -56,10 +56,7 @@ describe.sequential('Vector Database Service', () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
 
       // Mock generateEmbedding
-      vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      ).mockResolvedValue(mockEmbedding);
+      vi.spyOn(vectorDB, 'generateEmbedding').mockResolvedValue(mockEmbedding);
 
       const initialStats = await vectorDB.getStats();
       const initialTotal = initialStats.totalEntries;
@@ -87,10 +84,7 @@ describe.sequential('Vector Database Service', () => {
     it('should retrieve content by ID', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
 
-      vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      ).mockResolvedValue(mockEmbedding);
+      vi.spyOn(vectorDB, 'generateEmbedding').mockResolvedValue(mockEmbedding);
 
       await vectorDB.addContent('test-1', 'This is test content', {
         type: 'memory',
@@ -107,10 +101,7 @@ describe.sequential('Vector Database Service', () => {
     it('should delete content by ID', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
 
-      vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      ).mockResolvedValue(mockEmbedding);
+      vi.spyOn(vectorDB, 'generateEmbedding').mockResolvedValue(mockEmbedding);
 
       await vectorDB.addContent('test-1', 'This is test content', {
         type: 'memory',
@@ -144,10 +135,7 @@ describe.sequential('Vector Database Service', () => {
         (v) => v + Math.random() * 0.1
       );
 
-      const generateEmbeddingSpy = vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      );
+      const generateEmbeddingSpy = vi.spyOn(vectorDB, 'generateEmbedding');
 
       // First call for adding content
       generateEmbeddingSpy.mockResolvedValueOnce(baseEmbedding);
@@ -173,10 +161,7 @@ describe.sequential('Vector Database Service', () => {
     it('should filter results by type', async () => {
       const mockEmbedding = new Array(1536).fill(0).map(() => Math.random());
 
-      vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      ).mockResolvedValue(mockEmbedding);
+      vi.spyOn(vectorDB, 'generateEmbedding').mockResolvedValue(mockEmbedding);
 
       await vectorDB.addContent('mem-1', 'Memory content', {
         type: 'memory',
@@ -203,10 +188,7 @@ describe.sequential('Vector Database Service', () => {
       const embedding1 = new Array(1536).fill(0).map(() => Math.random());
       const embedding2 = new Array(1536).fill(0).map(() => Math.random());
 
-      const generateEmbeddingSpy = vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbedding'
-      );
+      const generateEmbeddingSpy = vi.spyOn(vectorDB, 'generateEmbedding');
 
       generateEmbeddingSpy.mockResolvedValueOnce(embedding1);
 
@@ -243,10 +225,9 @@ describe.sequential('Vector Database Service', () => {
         .fill(null)
         .map(() => new Array(1536).fill(0).map(() => Math.random()));
 
-      vi.spyOn(
-        await import('../vectorDBService'),
-        'generateEmbeddings'
-      ).mockResolvedValue(mockEmbeddings);
+      vi.spyOn(vectorDB, 'generateEmbeddings').mockResolvedValue(
+        mockEmbeddings
+      );
 
       const items = [
         {

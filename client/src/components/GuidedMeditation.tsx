@@ -5,7 +5,10 @@ interface GuidedMeditationProps {
   onClose?: () => void;
 }
 
-export function GuidedMeditation({ duration = 5, onClose }: GuidedMeditationProps) {
+export function GuidedMeditation({
+  duration = 5,
+  onClose,
+}: GuidedMeditationProps) {
   const [meditation, setMeditation] = useState('');
   const [isMeditating, setIsMeditating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +26,7 @@ export function GuidedMeditation({ duration = 5, onClose }: GuidedMeditationProp
         },
         body: JSON.stringify({
           topic: 'letting go of stress',
-          duration: duration, // Use the duration prop
+          duration: duration,
         }),
       });
 
@@ -65,12 +68,8 @@ export function GuidedMeditation({ duration = 5, onClose }: GuidedMeditationProp
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Guided Meditation</h2>
         {onClose && (
-          <button
-            onClick={onClose}
-            className="text-gray-300 hover:text-white text-2xl leading-none"
-            aria-label="Close"
-          >
-            ×
+          <button onClick={onClose} className="text-white hover:text-gray-300">
+            ✕
           </button>
         )}
       </div>

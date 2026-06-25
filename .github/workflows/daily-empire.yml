@@ -16,12 +16,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
       - name: Setup Node.js 20
-        uses: actions/setup-node@v4.0.1
+        uses: actions/setup-node@v4
         with:
           node-version: '20.10.0'
           cache: 'npm'
@@ -55,7 +55,7 @@ jobs:
           echo "✓ All outputs generated successfully"
 
       - name: Upload report as artifact
-        uses: actions/upload-artifact@v4.0.0
+        uses: actions/upload-artifact@v4
         with:
           name: daily-report-${{ github.run_number }}
           path: |
@@ -64,11 +64,10 @@ jobs:
           retention-days: 30
 
       - name: Send email with report
-        uses: dawidd6/action-send-mail@v3.12.0
+        uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          starttls: true
           username: ${{ secrets.EMAIL_FROM }}
           password: ${{ secrets.EMAIL_PASS }}
           subject: '🚀 Daily Empire Report - ${{ github.run_number }}'
@@ -85,9 +84,7 @@ jobs:
 
             ---
             Automated by Milla-Rayne Daily Empire
-          attachments: |
-            report.md
-            updates.zip
+          attachments: report.md,updates.zip
           priority: normal
 
       - name: Cleanup

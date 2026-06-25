@@ -104,6 +104,14 @@ export async function generateVeniceResponse(
 
     console.log('Sending messages to Venice API');
 
+    if (!veniceClient) {
+      return {
+        content: "I'm sorry, the Venice AI service is not initialized properly.",
+        success: false,
+        error: "Venice client not initialized"
+      };
+    }
+
     const response = await veniceClient.chat.completions.create({
       model: config.venice.model || 'llama-3.1-405b', // Default to a strong model if not specified
       messages: messages as any,

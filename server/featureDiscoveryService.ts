@@ -434,7 +434,9 @@ class FeatureDiscoveryService {
               estimatedValue: 6,
               discoveredAt: Date.now(),
               status: 'discovered',
-              tags: this.extractTagsFromText(result.title + ' ' + (result.description || '')),
+              tags: this.extractTagsFromText(
+                result.title + ' ' + (result.description || '')
+              ),
             };
 
             const existing = this.discoveredFeatures.find(
@@ -479,7 +481,9 @@ class FeatureDiscoveryService {
             // Extract features from YouTube video titles and descriptions
             const feature: DiscoveredFeature = {
               id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-              name: this.extractFeatureNameFromText(video.snippet?.title || video.title || 'Unknown Video'),
+              name: this.extractFeatureNameFromText(
+                video.snippet?.title || video.title || 'Unknown Video'
+              ),
               description: `Feature inspired by YouTube video: ${video.snippet?.title || video.title}`,
               source: 'youtube',
               sourceUrl: `https://youtube.com/watch?v=${video.id?.videoId || video.videoId}`,
@@ -493,7 +497,9 @@ class FeatureDiscoveryService {
               discoveredAt: Date.now(),
               status: 'discovered',
               tags: this.extractTagsFromText(
-                (video.snippet?.title || '') + ' ' + (video.snippet?.description || '')
+                (video.snippet?.title || '') +
+                  ' ' +
+                  (video.snippet?.description || '')
               ),
             };
 
@@ -645,7 +651,9 @@ class FeatureDiscoveryService {
         features = features.filter((f) => f.source === filters.source);
       }
       if (filters.minRelevance) {
-        features = features.filter((f) => f.relevance >= (filters.minRelevance || 0));
+        features = features.filter(
+          (f) => f.relevance >= (filters.minRelevance || 0)
+        );
       }
       if (filters.tags && filters.tags.length > 0) {
         features = features.filter((f) =>

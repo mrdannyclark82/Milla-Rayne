@@ -67,12 +67,10 @@ export function registerChatRoutes(app: Express) {
         'gemini-2-flash',
       ];
       if (!validModels.includes(model)) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            error: `Invalid model. Must be one of: ${validModels.join(', ')}`,
-          });
+        return res.status(400).json({
+          success: false,
+          error: `Invalid model. Must be one of: ${validModels.join(', ')}`,
+        });
       }
 
       if (!sessionToken) {

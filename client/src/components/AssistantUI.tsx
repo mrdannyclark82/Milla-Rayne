@@ -85,7 +85,7 @@ export function AssistantUI({
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
-          {messages.map((message: Message) => (
+          {messages.map((message: any) => (
             <MessageBubble
               key={message.id}
               role={message.role}

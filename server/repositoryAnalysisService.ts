@@ -31,6 +31,7 @@ export interface RepositoryData {
   issues?: IssueInfo[];
   pullRequests?: PullRequestInfo[];
   stats?: RepoStats;
+  files?: { path: string; content: string; language?: string }[];
 }
 
 export interface FileStructure {
@@ -270,6 +271,58 @@ export async function fetchRepositoryData(
           }))
         : [];
 
+    // Fetch repository files (for analysis)
+    let files: { path: string; content: string; language?: string }[] = [];
+    try {
+      const treeResponse = await fetch(
+        `${baseUrl}/${owner}/${name}/git/trees/${repoData.default_branch}?recursive=1`,
+        { headers }
+      );
+
+      if (treeResponse.ok) {
+        const treeData = await treeResponse.json();
+        // Filter for relevant files (e.g. source code) and limit to avoid hitting rate limits
+        const blobs = treeData.tree.filter(
+          (node: any) => node.type === 'blob' && !node.path.includes('image')
+        );
+
+        // Fetch content for a few files (limit to 5 for performance)
+        const filesToFetch = blobs.slice(0, 5);
+
+        const filePromises = filesToFetch.map(async (file: any) => {
+          try {
+            const contentResp = await fetch(file.url, { headers });
+            if (contentResp.ok) {
+              const data = await contentResp.json();
+              const content = Buffer.from(data.content, 'base64').toString(
+                'utf-8'
+              );
+
+              const ext = file.path.split('.').pop()?.toLowerCase();
+              let language = ext || 'unknown';
+              if (ext === 'ts' || ext === 'tsx') language = 'typescript';
+              if (ext === 'js' || ext === 'jsx') language = 'javascript';
+              if (ext === 'py') language = 'python';
+
+              return {
+                path: file.path,
+                content,
+                language,
+              };
+            }
+          } catch (e) {
+            console.warn(`Failed to fetch content for ${file.path}:`, e);
+          }
+          return null;
+        });
+
+        const results = await Promise.all(filePromises);
+        files = results.filter((f) => f !== null) as any;
+      }
+    } catch (e) {
+      console.warn('Error fetching repository files:', e);
+    }
+
     return {
       info: repoInfo,
       description: repoData.description,
@@ -290,6 +343,7 @@ export async function fetchRepositoryData(
         createdAt: repoData.created_at,
         updatedAt: repoData.updated_at,
       },
+      files,
     };
   } catch (error) {
     console.error('Error fetching repository data:', error);

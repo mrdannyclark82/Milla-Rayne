@@ -36,6 +36,21 @@ vi.mock('axios', () => ({
   },
 }));
 
+// Mock config to ensure Stripe key is present
+vi.mock('../config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../config')>();
+  return {
+    ...actual,
+    config: {
+      ...actual.config,
+      stripe: {
+        ...actual.config.stripe,
+        secretKey: 'sk_test_mock',
+      },
+    },
+  };
+});
+
 // Import modules AFTER mocking
 import { registerMerchRoutes } from './merch.routes';
 import { config } from '../config';

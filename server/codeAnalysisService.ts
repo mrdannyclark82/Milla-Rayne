@@ -437,18 +437,25 @@ export async function analyzeRepositoryCode(
   // In a full implementation, this would fetch and analyze actual source files
   const sampleCode = repoData.readme || '';
 
-  // TODO: Fetch all source files from the repository and iterate through them for analysis.
-  // Example:
-  // for (const file of repoData.files) {
-  //   const fileContent = await fetchFileContent(file.path);
-  //   securityIssues.push(...analyzeSecurityIssues(fileContent, language, file.path));
-  //   performanceIssues.push(...analyzePerformanceIssues(fileContent, language, file.path));
-  //   codeQualityIssues.push(...analyzeCodeQuality(fileContent, language, file.path));
-  // }
-
   const securityIssues = analyzeSecurityIssues(sampleCode, language);
   const performanceIssues = analyzePerformanceIssues(sampleCode, language);
   const codeQualityIssues = analyzeCodeQuality(sampleCode, language);
+
+  // Analyze fetched files if available
+  if (repoData.files && repoData.files.length > 0) {
+    for (const file of repoData.files) {
+      const fileLang = file.language || file.path.split('.').pop() || language;
+      securityIssues.push(
+        ...analyzeSecurityIssues(file.content, fileLang, file.path)
+      );
+      performanceIssues.push(
+        ...analyzePerformanceIssues(file.content, fileLang, file.path)
+      );
+      codeQualityIssues.push(
+        ...analyzeCodeQuality(file.content, fileLang, file.path)
+      );
+    }
+  }
   const languageSpecificSuggestions = getLanguageSpecificSuggestions(language);
 
   // Add general security recommendations
@@ -546,19 +553,27 @@ export async function analyzeCodeForIssues(params: {
 
   // For now, we'll create a mock RepositoryData object
   // In a production system, this would analyze actual files in the repository
+  const name = repositoryPath.split('/').pop() || 'unknown';
   const mockRepoData: RepositoryData = {
-    name: repositoryPath.split('/').pop() || 'unknown',
+    info: {
+      owner: 'mock',
+      name: name,
+      url: `https://github.com/mock/${name}`,
+      fullName: `mock/${name}`,
+    },
     description: 'Repository for code analysis',
     language: 'typescript',
-    stars: 0,
-    forks: 0,
-    openIssues: 0,
     readme: '// Sample code for analysis',
-    hasLicense: false,
-    hasReadme: false,
-    hasDocs: false,
-    hasTests: false,
-    hasCI: false,
+    stats: {
+      stars: 0,
+      forks: 0,
+      openIssues: 0,
+      watchers: 0,
+      size: 0,
+      defaultBranch: 'main',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
     files: [],
   };
 

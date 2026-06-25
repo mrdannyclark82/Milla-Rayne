@@ -32,7 +32,7 @@ class SimpleCache {
     // Clear old entries if cache is full
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      this.cache.delete(oldestKey as string);
     }
 
     this.cache.set(key, {

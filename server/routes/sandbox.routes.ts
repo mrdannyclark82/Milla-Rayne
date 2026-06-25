@@ -46,6 +46,12 @@ export function registerSandboxRoutes(app: Express) {
         return res.status(400).json({ success: false, error: 'Invalid feature ID' });
       }
       const result = await testFeature(sandboxId, featureId);
+      const testType = req.body.testType || 'unit';
+      const result = await testFeature(
+        req.params.sandboxId as string,
+        req.params.featureId as string,
+        testType
+      );
       res.json(result);
     })
   );
