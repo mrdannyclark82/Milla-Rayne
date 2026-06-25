@@ -52,8 +52,9 @@ export function registerPersonalTaskRoutes(app: Express) {
         req.body && typeof req.body.insights === 'string'
           ? req.body.insights
           : 'Task completed manually.';
-      const task = await completeTask(taskId, insights);
-      res.json({ success: !!task, task });
+      const success = await completeTask(taskId, insights);
+      const task = success ? getPersonalTasks().find((t) => t.id === taskId) : null;
+      res.json({ success, task });
     })
   );
 
