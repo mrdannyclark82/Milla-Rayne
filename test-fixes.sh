@@ -25,7 +25,7 @@ echo ""
 # Check TypeScript compilation
 echo "2. Checking TypeScript compilation..."
 npm run check > /tmp/ts-check.log 2>&1
-TS_ERRORS=$(grep -c "error TS" /tmp/ts-check.log || echo 0)
+TS_ERRORS=$(grep -c "error TS" /tmp/ts-check.log || true)
 if [ "$TS_ERRORS" -gt 0 ]; then
     echo "   ⚠️  Found $TS_ERRORS TypeScript errors (pre-existing)"
 else
