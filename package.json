@@ -92,7 +92,7 @@
     "ai": "^5.0.113",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3": "^12.11.1",
     "bootstrap": "^5.3.8",
     "chromadb": "^3.1.8",
     "class-variance-authority": "^0.7.1",
