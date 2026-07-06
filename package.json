@@ -31,7 +31,7 @@
     "@ai-sdk/anthropic": "^2.0.56",
     "@ai-sdk/openai": "^2.0.86",
     "@ai-sdk/xai": "^3.0.46",
-    "@anthropic-ai/sdk": "^0.68.0",
+    "@anthropic-ai/sdk": "^0.110.0",
     "@assistant-ui/react": "^0.11.51",
     "@google/genai": "^1.16.0",
     "@google/generative-ai": "^0.24.1",
