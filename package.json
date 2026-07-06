@@ -36,7 +36,7 @@
     "@google/genai": "^1.16.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.2",
-    "@huggingface/inference": "^4.13.20",
+    "@huggingface/inference": "^4.13.22",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@mistralai/mistralai": "^1.10.0",
     "@modelcontextprotocol/sdk": "^1.20.1",
