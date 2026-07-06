@@ -183,7 +183,7 @@
     "@vitest/coverage-v8": "^4.0.6",
     "autoprefixer": "^10.4.17",
     "canvas": "^3.2.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.6",
     "esbuild": "^0.26.0",
     "eslint": "^9.37.0",
