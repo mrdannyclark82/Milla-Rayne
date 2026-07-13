@@ -180,7 +180,7 @@
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^8.46.0",
     "@typescript-eslint/parser": "^8.46.0",
-    "@vitest/coverage-v8": "^4.0.6",
+    "@vitest/coverage-v8": "^4.1.10",
     "autoprefixer": "^10.4.17",
     "canvas": "^3.2.3",
     "concurrently": "^9.2.1",
