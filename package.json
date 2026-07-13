@@ -166,7 +166,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/express": "^5.0.5",
-    "@types/express-session": "^1.18.0",
+    "@types/express-session": "^1.19.0",
     "@types/mustache": "^4.2.6",
     "@types/node": "^24.8.1",
     "@types/nodemailer": "^7.0.3",
