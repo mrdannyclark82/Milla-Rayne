@@ -119,7 +119,7 @@
     "input-otp": "^1.4.2",
     "ioredis": "^5.8.2",
     "lru-cache": "^11.2.2",
-    "lucide-react": "^0.552.0",
+    "lucide-react": "^1.25.0",
     "memorystore": "^1.6.8",
     "multer": "^2.0.2",
     "mustache": "^4.2.0",
