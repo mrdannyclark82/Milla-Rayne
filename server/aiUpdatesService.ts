@@ -210,9 +210,11 @@ export async function fetchAIUpdates(): Promise<{
 
   console.log(`Fetching AI updates from ${sources.length} sources...`);
 
-  for (const sourceUrl of sources) {
+  // Process all feeds in parallel to improve performance
+  const fetchPromises = sources.map(async (sourceUrl) => {
     try {
       const items = await fetchRSSFeed(sourceUrl);
+      let localItemsAdded = 0;
 
       for (const item of items) {
         if (!item.title || !item.link) {
@@ -233,16 +235,26 @@ export async function fetchAIUpdates(): Promise<{
         };
 
         if (storeUpdate(update)) {
-          itemsAdded++;
+          localItemsAdded++;
         }
       }
 
       // Cleanup old updates for this source
       cleanupOldUpdates(sourceUrl);
+      return { success: true, localItemsAdded };
     } catch (error) {
       const errorMsg = `Failed to fetch from ${sourceUrl}: ${error}`;
       console.error(errorMsg);
-      errors.push(errorMsg);
+      return { success: false, errorMsg };
+    }
+  });
+
+  const results = await Promise.all(fetchPromises);
+  for (const result of results) {
+    if (result.success) {
+      itemsAdded += result.localItemsAdded as number;
+    } else {
+      errors.push(result.errorMsg as string);
     }
   }
 
