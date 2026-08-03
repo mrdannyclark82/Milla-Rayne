@@ -109,7 +109,7 @@
     "duck-duck-scrape": "^2.2.7",
     "embla-carousel-react": "^8.6.0",
     "express": "^5.1.0",
-    "express-rate-limit": "^8.2.1",
+    "express-rate-limit": "^8.6.1",
     "express-session": "^1.18.1",
     "fast-json-stable-stringify": "^2.1.0",
     "form-data": "^4.0.4",
