@@ -6,54 +6,86 @@ import {
   processFinanceCommand,
   getFinanceAgentStatus,
 } from './externalFinanceAgent';
+import { agentController } from './agentController';
+import {
+  getAgent as getRegistryAgent,
+  listAgents as listRegistryAgents,
+} from './agents/registry';
+import type { AgentTask } from './agents/taskStorage';
 
 /**
  * Agent Communication Service
  *
- * This service provides the foundational architecture for inter-system AI communication.
- * It defines the protocol for requesting services from external AI agents and handling
- * their responses.
- *
- * Phase IV Implementation Notes:
- * - This is a stub implementation for architectural planning
- * - In production, this would integrate with actual network protocols (HTTP, gRPC, WebSocket)
- * - Authentication and authorization mechanisms would be added
- * - Message queuing and retry logic would be implemented
- * - Circuit breakers and fallback strategies would be included
+ * Routes commands to real registered agents when possible.
+ * Bridges agentController (BaseAgent) + agents/registry (handleTask).
+ * No mock success theater for unwired targets.
  */
 
+/** External-facing names → agentController short names */
+const CONTROLLER_NAME_MAP: Record<string, string> = {
+  CodingAgent: 'coding',
+  coding: 'coding',
+  EnhancementAgent: 'enhancement',
+  enhancement: 'enhancement',
+  MillaAgent: 'milla',
+  milla: 'milla',
+  ImageAgent: 'image',
+  image: 'image',
+  imageGeneration: 'image',
+};
+
+/** External-facing / short names → agents/registry PascalCase names */
+const REGISTRY_NAME_MAP: Record<string, string> = {
+  CalendarAgent: 'CalendarAgent',
+  calendar: 'CalendarAgent',
+  TasksAgent: 'TasksAgent',
+  tasks: 'TasksAgent',
+  EmailAgent: 'EmailAgent',
+  email: 'EmailAgent',
+  YouTubeAgent: 'YouTubeAgent',
+  youtube: 'YouTubeAgent',
+  CodingAgent: 'CodingAgent',
+  coding: 'CodingAgent',
+};
+
+const allowedAgents = [
+  'FinanceAgent',
+  'HealthAgent',
+  'TravelAgent',
+  'SmartHomeAgent',
+  'CalendarAgent',
+  'TasksAgent',
+  'EmailAgent',
+  'YouTubeAgent',
+  'CodingAgent',
+  'EnhancementAgent',
+  'MillaAgent',
+  'ImageAgent',
+  'TestAgent',
+  'CustomAgent',
+  'calendar',
+  'tasks',
+  'email',
+  'youtube',
+  'coding',
+  'enhancement',
+  'milla',
+  'image',
+];
+
+function listWiredAgents(): string[] {
+  const controller = agentController.getRegisteredAgents();
+  const registry = listRegistryAgents().map((a) => a.name);
+  return Array.from(new Set([...controller, ...registry]));
+}
+
 /**
- * Dispatch a command to an external AI agent system
- *
- * @param command - The command to dispatch to the external agent
- * @returns Promise resolving to the agent's response
- *
- * @example
- * ```typescript
- * const command: ExternalAgentCommand = {
- *   target: "FinanceAgent",
- *   command: "GET_BALANCE",
- *   args: { account: "checking" },
- *   metadata: { priority: "high", timeout: 5000 }
- * };
- * const response = await dispatchExternalCommand(command);
- * ```
+ * Dispatch a command to an external or local AI agent system
  */
 export async function dispatchExternalCommand(
   command: ExternalAgentCommand
 ): Promise<ExternalAgentResponse> {
   const startTime = Date.now();
-
-  // Security check: Validate target agent against whitelist
-  const allowedAgents = [
-    'FinanceAgent',
-    'HealthAgent',
-    'TravelAgent',
-    'SmartHomeAgent',
-    'CalendarAgent',
-    'TestAgent',
-    'CustomAgent',
-  ];
 
   if (!allowedAgents.includes(command.target)) {
     console.warn(
@@ -75,75 +107,107 @@ export async function dispatchExternalCommand(
     };
   }
 
-  // Log the command for debugging and audit purposes
-  console.log('[AgentComms] Dispatching external command:', {
+  console.log('[AgentComms] Dispatching command:', {
     target: command.target,
     command: command.command,
-    args: Object.keys(command.args),
+    args: Object.keys(command.args || {}),
     priority: command.metadata?.priority || 'medium',
   });
 
   try {
-    // Route to specific external agents if available
-    // In production, this would use service discovery and network protocols
-
     if (command.target === 'FinanceAgent') {
-      // Delegate to the Finance Agent
-      console.log('[AgentComms] Routing to FinanceAgent');
       return await processFinanceCommand(command);
     }
 
-    // STUB IMPLEMENTATION: For other agents, use mock responses
-    // In production, this would make actual network calls to external agent systems
+    // Path 1: BaseAgent via agentController
+    const controllerName =
+      CONTROLLER_NAME_MAP[command.target] ||
+      (agentController.getAgent(command.target) ? command.target : undefined);
+    if (controllerName && agentController.getAgent(controllerName)) {
+      const taskText = [
+        command.command,
+        command.args && Object.keys(command.args).length
+          ? JSON.stringify(command.args)
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 50));
+      const result = await agentController.dispatch(controllerName, taskText, {
+        metadata: {
+          externalCommand: command.command,
+          args: command.args,
+          source: 'agentComms',
+        },
+      });
 
-    // Build mock response data based on command type
-    let mockData: any = null;
+      return {
+        success: true,
+        statusCode: 'OK',
+        data: { result, agent: controllerName, via: 'agentController' },
+        metadata: {
+          executionTime: Date.now() - startTime,
+          timestamp: new Date().toISOString(),
+          agentVersion: '1.0.0-local',
+        },
+      };
+    }
 
-    switch (command.command) {
-      case 'GET_BALANCE':
-        mockData = {
-          account: command.args.account,
-          balance: 1500.5,
-          currency: 'USD',
-        };
-        break;
-      case 'SCHEDULE_APPOINTMENT':
-        mockData = {
-          appointmentId: 'mock-appt-123',
-          scheduled: true,
-          time: command.args.time,
-        };
-        break;
-      default:
-        mockData = {
-          acknowledged: true,
-          command: command.command,
-        };
+    // Path 2: handleTask agents (Calendar, Tasks, Email, YouTube, Coding registry)
+    const registryName =
+      REGISTRY_NAME_MAP[command.target] || command.target;
+    const registryAgent = getRegistryAgent(registryName);
+    if (registryAgent) {
+      const task: AgentTask = {
+        taskId: `comms_${Date.now()}`,
+        supervisor: 'agentComms',
+        agent: registryName,
+        action: command.command,
+        payload: command.args || {},
+        metadata: {
+          ...(command.metadata || {}),
+          source: 'agentComms',
+        },
+        status: 'in_progress',
+        createdAt: new Date().toISOString(),
+      };
+
+      const result = await registryAgent.handleTask(task);
+
+      return {
+        success: true,
+        statusCode: 'OK',
+        data: { result, agent: registryName, via: 'registry' },
+        metadata: {
+          executionTime: Date.now() - startTime,
+          timestamp: new Date().toISOString(),
+          agentVersion: '1.0.0-registry',
+        },
+      };
     }
 
     const executionTime = Date.now() - startTime;
+    const wired = listWiredAgents();
+    console.warn('[AgentComms] No real backend for agent:', {
+      target: command.target,
+      command: command.command,
+      wired,
+    });
 
-    const response: ExternalAgentResponse = {
-      success: true,
-      statusCode: 'OK',
-      data: mockData,
+    return {
+      success: false,
+      statusCode: 'NOT_IMPLEMENTED',
+      error: {
+        code: 'AGENT_NOT_WIRED',
+        message: `Agent "${command.target}" has no real backend. Wired agents: ${wired.join(', ') || 'none'}`,
+        details: { command: command.command, args: command.args },
+      },
       metadata: {
         executionTime,
         timestamp: new Date().toISOString(),
-        agentVersion: '1.0.0-stub',
+        agentVersion: '1.0.0-honest',
       },
     };
-
-    console.log('[AgentComms] Command executed successfully:', {
-      target: command.target,
-      command: command.command,
-      executionTime: `${executionTime}ms`,
-    });
-
-    return response;
   } catch (error) {
     const executionTime = Date.now() - startTime;
 
@@ -165,18 +229,12 @@ export async function dispatchExternalCommand(
       metadata: {
         executionTime,
         timestamp: new Date().toISOString(),
-        agentVersion: '1.0.0-stub',
+        agentVersion: '1.0.0',
       },
     };
   }
 }
 
-/**
- * Validate an external agent command before dispatching
- *
- * @param command - The command to validate
- * @returns True if valid, throws error if invalid
- */
 export function validateExternalCommand(
   command: ExternalAgentCommand
 ): boolean {
@@ -195,12 +253,6 @@ export function validateExternalCommand(
   return true;
 }
 
-/**
- * Get the status of an external agent system
- *
- * @param targetAgent - Name of the external agent to check
- * @returns Promise resolving to status information
- */
 export async function getAgentStatus(targetAgent: string): Promise<{
   available: boolean;
   version: string;
@@ -208,14 +260,13 @@ export async function getAgentStatus(targetAgent: string): Promise<{
 }> {
   console.log(`[AgentComms] Checking status of agent: ${targetAgent}`);
 
-  // Check if it's the Finance Agent
   if (targetAgent === 'FinanceAgent') {
     try {
       const status = getFinanceAgentStatus();
       return {
         available: status.available,
         version: status.version,
-        latency: 10, // Mock latency since it's local
+        latency: 10,
       };
     } catch (error) {
       console.error(`[AgentComms] Error getting FinanceAgent status:`, error);
@@ -227,11 +278,28 @@ export async function getAgentStatus(targetAgent: string): Promise<{
     }
   }
 
-  // STUB IMPLEMENTATION: For other agents, return mock status
-  // In production, this would ping the actual agent
+  const controllerName =
+    CONTROLLER_NAME_MAP[targetAgent] || targetAgent;
+  if (agentController.getAgent(controllerName)) {
+    return {
+      available: true,
+      version: '1.0.0-local',
+      latency: 5,
+    };
+  }
+
+  const registryName = REGISTRY_NAME_MAP[targetAgent] || targetAgent;
+  if (getRegistryAgent(registryName)) {
+    return {
+      available: true,
+      version: '1.0.0-registry',
+      latency: 5,
+    };
+  }
+
   return {
-    available: true,
-    version: '1.0.0-stub',
-    latency: 50,
+    available: false,
+    version: 'unwired',
+    latency: undefined,
   };
 }

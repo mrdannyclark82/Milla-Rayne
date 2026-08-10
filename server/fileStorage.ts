@@ -230,6 +230,32 @@ export class FileStorage implements IStorage {
     };
     this.messages.set(id, message);
     await this.saveMessages();
+
+    // Continuity Spine → shared_chat (Memory Agent tails allowlisted milla-rayne)
+    try {
+      const spinePath = path.join(
+        process.env.HOME || '/home/milla',
+        'memory',
+        'shared_chat.jsonl'
+      );
+      const line =
+        JSON.stringify({
+          role:
+            message.role === 'assistant' || message.role === 'user'
+              ? message.role
+              : 'user',
+          content: message.content,
+          source: 'milla-rayne',
+          timestamp: (message.timestamp instanceof Date
+            ? message.timestamp
+            : new Date()
+          ).toISOString(),
+        }) + '\n';
+      fs.appendFileSync(spinePath, line, { encoding: 'utf8' });
+    } catch {
+      /* spine optional */
+    }
+
     return message;
   }
 

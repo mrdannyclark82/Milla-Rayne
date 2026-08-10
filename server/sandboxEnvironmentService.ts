@@ -34,6 +34,10 @@ export interface SandboxFeature {
   testsPassed: number;
   testsFailed: number;
   addedAt: number;
+  /** Proposed code, unified diff, or markdown plan for the enhancement */
+  content?: string;
+  /** Optional path → full file content for IDE load */
+  fileContents?: Record<string, string>;
 }
 
 export interface TestResult {
@@ -44,6 +48,14 @@ export interface TestResult {
   passed: boolean;
   details: string;
   duration: number;
+  /**
+   * Honesty: how the result was produced
+   * - structural: real checks on feature payload/files (default)
+   * - real: ran project test command
+   * - skipped: nothing to verify
+   */
+  mode?: 'structural' | 'real' | 'skipped';
+  checks?: Array<{ name: string; ok: boolean; detail?: string }>;
 }
 
 class SandboxEnvironmentService {
@@ -140,6 +152,8 @@ class SandboxEnvironmentService {
       name: string;
       description: string;
       files: string[];
+      content?: string;
+      fileContents?: Record<string, string>;
     }
   ): Promise<SandboxFeature | null> {
     const sandbox = this.sandboxes.get(sandboxId);
@@ -151,11 +165,13 @@ class SandboxEnvironmentService {
       id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: feature.name,
       description: feature.description,
-      files: feature.files,
+      files: feature.files || [],
       status: 'draft',
       testsPassed: 0,
       testsFailed: 0,
       addedAt: Date.now(),
+      content: feature.content,
+      fileContents: feature.fileContents,
     };
 
     sandbox.features.push(newFeature);
@@ -165,13 +181,170 @@ class SandboxEnvironmentService {
   }
 
   /**
-   * Run tests on a feature in sandbox
+   * Approve a feature (persisted)
+   */
+  async approveFeature(
+    sandboxId: string,
+    featureId: string
+  ): Promise<SandboxFeature | null> {
+    // Reload so multi-process restarts don't clobber each other's status
+    await this.loadSandboxes();
+    const sandbox = this.sandboxes.get(sandboxId);
+    if (!sandbox) return null;
+    const feature = sandbox.features.find((f) => f.id === featureId);
+    if (!feature) return null;
+
+    feature.status = 'approved';
+    this.evaluateSandboxReadiness(sandboxId);
+    await this.saveSandboxes();
+    return feature;
+  }
+
+  /**
+   * Reject a feature (persisted)
+   */
+  async rejectFeature(
+    sandboxId: string,
+    featureId: string
+  ): Promise<SandboxFeature | null> {
+    await this.loadSandboxes();
+    const sandbox = this.sandboxes.get(sandboxId);
+    if (!sandbox) return null;
+    const feature = sandbox.features.find((f) => f.id === featureId);
+    if (!feature) return null;
+
+    feature.status = 'rejected';
+    sandbox.readyForProduction = false;
+    this.evaluateSandboxReadiness(sandboxId);
+    await this.saveSandboxes();
+    return feature;
+  }
+
+  /**
+   * Full feature detail for View + IDE (includes resolved file contents)
+   */
+  async getFeatureDetail(
+    sandboxId: string,
+    featureId: string
+  ): Promise<{
+    sandbox: Pick<
+      SandboxEnvironment,
+      'id' | 'name' | 'description' | 'branchName' | 'status'
+    >;
+    feature: SandboxFeature;
+    testResults: TestResult[];
+    resolvedFiles: Array<{ path: string; content: string; source: string }>;
+  } | null> {
+    await this.loadSandboxes();
+    const sandbox = this.sandboxes.get(sandboxId);
+    if (!sandbox) return null;
+    const feature = sandbox.features.find((f) => f.id === featureId);
+    if (!feature) return null;
+
+    const testResults = (sandbox.testResults || []).filter(
+      (t) => t.featureId === featureId
+    );
+
+    const resolvedFiles: Array<{
+      path: string;
+      content: string;
+      source: string;
+    }> = [];
+
+    // Prefer explicit fileContents map
+    if (feature.fileContents) {
+      for (const [p, content] of Object.entries(feature.fileContents)) {
+        resolvedFiles.push({ path: p, content, source: 'stored' });
+      }
+    }
+
+    // Then try reading listed paths from disk
+    for (const filePath of feature.files || []) {
+      if (resolvedFiles.some((r) => r.path === filePath)) continue;
+      try {
+        const abs = path.isAbsolute(filePath)
+          ? filePath
+          : path.join(process.cwd(), filePath);
+        const content = await fs.readFile(abs, 'utf-8');
+        resolvedFiles.push({ path: filePath, content, source: 'disk' });
+      } catch {
+        // skip missing
+      }
+    }
+
+    // If still empty, synthesize an enhancement brief from metadata
+    if (resolvedFiles.length === 0) {
+      const body =
+        feature.content ||
+        [
+          `# ${feature.name}`,
+          '',
+          `## Description`,
+          feature.description || sandbox.description || '(no description)',
+          '',
+          `## Sandbox`,
+          `- **Sandbox:** ${sandbox.name}`,
+          `- **Branch:** ${sandbox.branchName}`,
+          `- **Status:** ${feature.status}`,
+          `- **Tests:** ${feature.testsPassed} passed / ${feature.testsFailed} failed`,
+          '',
+          `## Proposed files`,
+          ...(feature.files?.length
+            ? feature.files.map((f) => `- \`${f}\``)
+            : ['- (none listed yet)']),
+          '',
+          `## Notes`,
+          'Open this enhancement in the IDE to edit, test, and iterate.',
+          'When code is generated for this feature it will appear here as real files.',
+        ].join('\n');
+
+      resolvedFiles.push({
+        path: feature.content ? 'PROPOSED_CHANGES.md' : 'ENHANCEMENT.md',
+        content: body,
+        source: feature.content ? 'content' : 'synthetic',
+      });
+
+      // If content looks like code/diff, also expose a second editable file
+      if (feature.content && /^(diff |@@ |function |const |import )/m.test(feature.content)) {
+        resolvedFiles.push({
+          path: 'proposed.patch',
+          content: feature.content,
+          source: 'content',
+        });
+      }
+    } else if (feature.content && !resolvedFiles.some((r) => r.path.includes('PROPOSED') || r.path.endsWith('.patch'))) {
+      resolvedFiles.unshift({
+        path: 'PROPOSED_CHANGES.md',
+        content: feature.content,
+        source: 'content',
+      });
+    }
+
+    return {
+      sandbox: {
+        id: sandbox.id,
+        name: sandbox.name,
+        description: sandbox.description,
+        branchName: sandbox.branchName,
+        status: sandbox.status,
+      },
+      feature,
+      testResults,
+      resolvedFiles,
+    };
+  }
+
+  /**
+   * Verify a feature — honest structural checks by default.
+   * Optional real `npm test` when MILLA_SANDBOX_RUN_TESTS=1.
+   * NEVER uses Math.random pass/fail theater. NEVER auto-approves from dice.
    */
   async testFeature(
     sandboxId: string,
     featureId: string,
     testType: TestResult['testType']
   ): Promise<TestResult> {
+    await this.loadSandboxes();
     const sandbox = this.sandboxes.get(sandboxId);
     if (!sandbox) {
       throw new Error('Sandbox not found');
@@ -182,10 +355,123 @@ class SandboxEnvironmentService {
       throw new Error('Feature not found');
     }
 
-    // Simulate running tests
     const startTime = Date.now();
-    const passed = Math.random() > 0.3; // 70% success rate for simulation
-    const duration = Math.random() * 2000 + 500; // 500-2500ms
+    const checks: Array<{ name: string; ok: boolean; detail?: string }> = [];
+
+    // --- Structural checks (always real) ---
+    checks.push({
+      name: 'has_name',
+      ok: !!(feature.name && feature.name.trim().length > 0),
+      detail: feature.name || '(empty)',
+    });
+    checks.push({
+      name: 'has_description',
+      ok: !!(feature.description && feature.description.trim().length >= 10),
+      detail: `len=${(feature.description || '').length}`,
+    });
+
+    const hasContent = !!(
+      feature.content && feature.content.trim().length >= 40
+    );
+    const hasFileMap =
+      !!feature.fileContents && Object.keys(feature.fileContents).length > 0;
+    const listedFiles = feature.files || [];
+    let filesOnDisk = 0;
+    for (const f of listedFiles) {
+      try {
+        const abs = path.isAbsolute(f) ? f : path.join(process.cwd(), f);
+        await fs.access(abs);
+        filesOnDisk++;
+      } catch {
+        /* missing */
+      }
+    }
+    checks.push({
+      name: 'has_implementable_payload',
+      ok: hasContent || hasFileMap || filesOnDisk > 0,
+      detail: hasContent
+        ? 'content present'
+        : hasFileMap
+          ? `fileContents keys=${Object.keys(feature.fileContents || {}).length}`
+          : filesOnDisk > 0
+            ? `${filesOnDisk}/${listedFiles.length} files on disk`
+            : 'no content, no fileContents, no files on disk',
+    });
+    checks.push({
+      name: 'not_pure_theater_name',
+      ok: !/^(Real-time Chat|Message History|Chat Analytics|Test Feature)$/i.test(
+        feature.name || ''
+      ),
+      detail: feature.name,
+    });
+
+    let mode: TestResult['mode'] = 'structural';
+    let details = '';
+
+    // --- Optional real test runner ---
+    const runReal =
+      process.env.MILLA_SANDBOX_RUN_TESTS === '1' ||
+      process.env.MILLA_SANDBOX_RUN_TESTS === 'true';
+    if (runReal) {
+      try {
+        const pkgPath = path.join(process.cwd(), 'package.json');
+        await fs.access(pkgPath);
+        const pkg = JSON.parse(await fs.readFile(pkgPath, 'utf-8'));
+        if (pkg.scripts?.test) {
+          // Throws on non-zero exit — that is the real signal
+          await execAsync('npm test -- --run', {
+            cwd: process.cwd(),
+            timeout: 120_000,
+            maxBuffer: 2 * 1024 * 1024,
+          });
+          checks.push({
+            name: 'npm_test',
+            ok: true,
+            detail: 'npm test completed (exit 0)',
+          });
+          mode = 'real';
+          details = `Real npm test exit 0. Structural: ${checks.filter((c) => c.ok).length}/${checks.length} ok.`;
+        } else {
+          checks.push({
+            name: 'npm_test',
+            ok: false,
+            detail: 'no package.json test script',
+          });
+        }
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        checks.push({
+          name: 'npm_test',
+          ok: false,
+          detail: msg.slice(0, 300),
+        });
+        mode = 'real';
+        details = `Real npm test failed: ${msg.slice(0, 200)}`;
+      }
+    }
+
+    const structuralPass = checks
+      .filter((c) => c.name !== 'npm_test')
+      .every((c) => c.ok);
+    const realCheck = checks.find((c) => c.name === 'npm_test');
+    const passed =
+      mode === 'real' && realCheck
+        ? realCheck.ok && structuralPass
+        : structuralPass;
+
+    if (!details) {
+      const failed = checks.filter((c) => !c.ok).map((c) => c.name);
+      details = passed
+        ? `Structural checks passed (${checks.length} checks). Not a random simulation. Approve still requires your call.`
+        : `Structural checks failed: ${failed.join(', ')}. ${checks
+            .filter((c) => !c.ok)
+            .map((c) => c.detail)
+            .join('; ')}`;
+      if (!runReal) {
+        details +=
+          ' Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.';
+      }
+    }
 
     const testResult: TestResult = {
       id: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -193,10 +479,10 @@ class SandboxEnvironmentService {
       timestamp: Date.now(),
       testType,
       passed,
-      details: passed
-        ? 'All tests passed successfully'
-        : 'Some tests failed - review needed',
-      duration,
+      details,
+      duration: Date.now() - startTime,
+      mode,
+      checks,
     };
 
     if (!sandbox.testResults) {
@@ -206,11 +492,8 @@ class SandboxEnvironmentService {
 
     if (passed) {
       feature.testsPassed++;
-      if (feature.testsPassed > 2 && feature.testsFailed === 0) {
-        feature.status = 'approved';
-      } else {
-        feature.status = 'testing';
-      }
+      // Do NOT auto-approve — random theater used to do that; human Approve button remains
+      feature.status = 'testing';
     } else {
       feature.testsFailed++;
       feature.status = 'testing';
@@ -330,6 +613,12 @@ class SandboxEnvironmentService {
     return Array.from(this.sandboxes.values());
   }
 
+  /** Async list that reloads from disk first (used by API) */
+  async getAllSandboxesFresh(): Promise<SandboxEnvironment[]> {
+    await this.loadSandboxes();
+    return this.getAllSandboxes();
+  }
+
   /**
    * Get active sandboxes
    */
@@ -429,6 +718,8 @@ export function addFeatureToSandbox(
     name: string;
     description: string;
     files: string[];
+    content?: string;
+    fileContents?: Record<string, string>;
   }
 ): Promise<SandboxFeature | null> {
   return sandboxService.addFeatureToSandbox(sandboxId, feature);
@@ -440,6 +731,24 @@ export function testFeature(
   testType: TestResult['testType']
 ): Promise<TestResult> {
   return sandboxService.testFeature(sandboxId, featureId, testType);
+}
+
+export function approveFeature(
+  sandboxId: string,
+  featureId: string
+): Promise<SandboxFeature | null> {
+  return sandboxService.approveFeature(sandboxId, featureId);
+}
+
+export function rejectFeature(
+  sandboxId: string,
+  featureId: string
+): Promise<SandboxFeature | null> {
+  return sandboxService.rejectFeature(sandboxId, featureId);
+}
+
+export function getFeatureDetail(sandboxId: string, featureId: string) {
+  return sandboxService.getFeatureDetail(sandboxId, featureId);
 }
 
 export function evaluateSandboxReadiness(sandboxId: string) {

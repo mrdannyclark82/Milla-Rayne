@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   dispatchExternalCommand,
   validateExternalCommand,
@@ -8,7 +8,7 @@ import type { ExternalAgentCommand } from '../../shared/schema';
 
 describe('Agent Communication Service', () => {
   describe('dispatchExternalCommand', () => {
-    it('should successfully dispatch a command and return a response', async () => {
+    it('should successfully dispatch FinanceAgent and return a response', async () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
@@ -26,7 +26,7 @@ describe('Agent Communication Service', () => {
       expect(response.metadata?.executionTime).toBeGreaterThanOrEqual(0);
     });
 
-    it('should return mock balance data for GET_BALANCE command', async () => {
+    it('should return balance data for GET_BALANCE command', async () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
@@ -41,7 +41,7 @@ describe('Agent Communication Service', () => {
       expect(response.data.account).toBe('savings');
     });
 
-    it('should return mock appointment data for SCHEDULE_APPOINTMENT command', async () => {
+    it('should honestly refuse unwired HealthAgent (no mock success theater)', async () => {
       const command: ExternalAgentCommand = {
         target: 'HealthAgent',
         command: 'SCHEDULE_APPOINTMENT',
@@ -50,13 +50,12 @@ describe('Agent Communication Service', () => {
 
       const response = await dispatchExternalCommand(command);
 
-      expect(response.success).toBe(true);
-      expect(response.data).toHaveProperty('appointmentId');
-      expect(response.data).toHaveProperty('scheduled');
-      expect(response.data.scheduled).toBe(true);
+      expect(response.success).toBe(false);
+      expect(response.statusCode).toBe('NOT_IMPLEMENTED');
+      expect(response.error?.code).toBe('AGENT_NOT_WIRED');
     });
 
-    it('should include execution metadata in response', async () => {
+    it('should include execution metadata when refusing unwired agents', async () => {
       const command: ExternalAgentCommand = {
         target: 'TestAgent',
         command: 'PING',
@@ -68,10 +67,11 @@ describe('Agent Communication Service', () => {
       expect(response.metadata).toBeDefined();
       expect(response.metadata?.executionTime).toBeGreaterThanOrEqual(0);
       expect(response.metadata?.timestamp).toBeDefined();
-      expect(response.metadata?.agentVersion).toBe('1.0.0-stub');
+      expect(response.success).toBe(false);
+      expect(response.error?.code).toBe('AGENT_NOT_WIRED');
     });
 
-    it('should handle generic commands with default response', async () => {
+    it('should refuse CustomAgent without mock acknowledge theater', async () => {
       const command: ExternalAgentCommand = {
         target: 'CustomAgent',
         command: 'CUSTOM_COMMAND',
@@ -80,9 +80,22 @@ describe('Agent Communication Service', () => {
 
       const response = await dispatchExternalCommand(command);
 
-      expect(response.success).toBe(true);
-      expect(response.data).toHaveProperty('acknowledged');
-      expect(response.data.acknowledged).toBe(true);
+      expect(response.success).toBe(false);
+      expect(response.error?.code).toBe('AGENT_NOT_WIRED');
+    });
+
+    it('should reject unauthorized agent targets', async () => {
+      const command: ExternalAgentCommand = {
+        target: 'UnknownAgent',
+        command: 'INVALID_COMMAND',
+        args: {},
+      };
+
+      const response = await dispatchExternalCommand(command);
+
+      expect(response.success).toBe(false);
+      expect(response.statusCode).toBe('UNAUTHORIZED');
+      expect(response.error?.code).toBe('UNAUTHORIZED_AGENT');
     });
   });
 
@@ -136,7 +149,7 @@ describe('Agent Communication Service', () => {
   });
 
   describe('getAgentStatus', () => {
-    it('should return status for an agent', async () => {
+    it('should return available status for FinanceAgent', async () => {
       const status = await getAgentStatus('FinanceAgent');
 
       expect(status).toBeDefined();
@@ -145,19 +158,18 @@ describe('Agent Communication Service', () => {
       expect(status.latency).toBeDefined();
     });
 
-    it('should return consistent status structure', async () => {
+    it('should report unwired agents as unavailable', async () => {
       const status = await getAgentStatus('HealthAgent');
 
       expect(status).toHaveProperty('available');
       expect(status).toHaveProperty('version');
-      expect(status).toHaveProperty('latency');
-      expect(typeof status.available).toBe('boolean');
-      expect(typeof status.version).toBe('string');
+      expect(status.available).toBe(false);
+      expect(status.version).toBe('unwired');
     });
   });
 
   describe('Integration Scenarios', () => {
-    it('should handle a complete command-response cycle', async () => {
+    it('should handle a complete FinanceAgent command-response cycle', async () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
@@ -165,19 +177,16 @@ describe('Agent Communication Service', () => {
         metadata: { priority: 'high', timeout: 5000 },
       };
 
-      // Validate command
       expect(validateExternalCommand(command)).toBe(true);
 
-      // Dispatch command
       const response = await dispatchExternalCommand(command);
 
-      // Verify response
       expect(response.success).toBe(true);
       expect(response.statusCode).toBe('OK');
       expect(response.data).toBeDefined();
     });
 
-    it('should respect command metadata', async () => {
+    it('should not fake success for TestAgent metadata', async () => {
       const command: ExternalAgentCommand = {
         target: 'TestAgent',
         command: 'TEST',
@@ -192,13 +201,13 @@ describe('Agent Communication Service', () => {
       const response = await dispatchExternalCommand(command);
 
       expect(response).toBeDefined();
-      expect(response.success).toBe(true);
+      expect(response.success).toBe(false);
+      expect(response.error?.code).toBe('AGENT_NOT_WIRED');
     });
   });
 
   describe('A2A Protocol - External Agent Communication', () => {
-    it('should successfully delegate task to external agent and parse response', async () => {
-      // This test verifies the A2A (Agent-to-Agent) protocol implementation
+    it('should successfully delegate task to FinanceAgent and parse response', async () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
@@ -212,26 +221,23 @@ describe('Agent Communication Service', () => {
 
       const response = await dispatchExternalCommand(command);
 
-      // Verify standardized ExternalAgentResponse structure
       expect(response).toBeDefined();
       expect(response).toHaveProperty('success');
       expect(response).toHaveProperty('statusCode');
       expect(response).toHaveProperty('data');
       expect(response).toHaveProperty('metadata');
 
-      // Verify response follows A2A protocol standards
       expect(response.success).toBe(true);
       expect(response.statusCode).toBe('OK');
       expect(response.metadata?.executionTime).toBeGreaterThanOrEqual(0);
       expect(response.metadata?.timestamp).toBeDefined();
 
-      // Verify data payload is correctly structured
       expect(response.data).toHaveProperty('balance');
       expect(response.data).toHaveProperty('currency');
       expect(typeof response.data.balance).toBe('number');
     });
 
-    it('should handle multiple external agent types consistently', async () => {
+    it('should handle wired vs unwired agent types honestly', async () => {
       const commands: ExternalAgentCommand[] = [
         {
           target: 'FinanceAgent',
@@ -254,17 +260,18 @@ describe('Agent Communication Service', () => {
         commands.map((cmd) => dispatchExternalCommand(cmd))
       );
 
-      // All responses should follow the same structure
-      responses.forEach((response) => {
-        expect(response).toHaveProperty('success');
-        expect(response).toHaveProperty('statusCode');
-        expect(response).toHaveProperty('data');
-        expect(response).toHaveProperty('metadata');
-        expect(response.success).toBe(true);
-      });
+      // Finance wired
+      expect(responses[0].success).toBe(true);
+      expect(responses[0].statusCode).toBe('OK');
+
+      // Health / Travel not wired — no mock OK
+      expect(responses[1].success).toBe(false);
+      expect(responses[1].error?.code).toBe('AGENT_NOT_WIRED');
+      expect(responses[2].success).toBe(false);
+      expect(responses[2].error?.code).toBe('AGENT_NOT_WIRED');
     });
 
-    it('should correctly parse complex external agent responses', async () => {
+    it('should correctly parse complex FinanceAgent responses', async () => {
       const command: ExternalAgentCommand = {
         target: 'FinanceAgent',
         command: 'GET_TRANSACTIONS',
@@ -280,14 +287,12 @@ describe('Agent Communication Service', () => {
       expect(response.success).toBe(true);
       expect(response.data).toBeDefined();
 
-      // Verify complex data structures are preserved
       if (Array.isArray(response.data.transactions)) {
         expect(response.data.transactions).toBeInstanceOf(Array);
       }
     });
 
     it('should include proper error handling in A2A protocol', async () => {
-      // Test that errors are properly structured in the response
       const command: ExternalAgentCommand = {
         target: 'UnknownAgent',
         command: 'INVALID_COMMAND',
@@ -296,21 +301,19 @@ describe('Agent Communication Service', () => {
 
       const response = await dispatchExternalCommand(command);
 
-      // Even mock responses should maintain protocol structure
       expect(response).toBeDefined();
       expect(response).toHaveProperty('success');
       expect(response).toHaveProperty('statusCode');
       expect(response).toHaveProperty('metadata');
+      expect(response.success).toBe(false);
     });
 
     it('should verify agent status before dispatching commands', async () => {
       const agentName = 'FinanceAgent';
 
-      // Check agent status
       const status = await getAgentStatus(agentName);
       expect(status.available).toBe(true);
 
-      // If available, dispatch command
       if (status.available) {
         const command: ExternalAgentCommand = {
           target: agentName,
@@ -338,10 +341,10 @@ describe('Agent Communication Service', () => {
       expect(response.metadata?.executionTime).toBeDefined();
       expect(response.metadata?.executionTime).toBeLessThanOrEqual(
         measuredTime + 10
-      ); // Allow 10ms tolerance
+      );
     });
 
-    it('should support concurrent external agent requests', async () => {
+    it('should support concurrent FinanceAgent requests', async () => {
       const commands = Array.from({ length: 5 }, (_, i) => ({
         target: 'FinanceAgent',
         command: 'GET_BALANCE',
@@ -355,7 +358,6 @@ describe('Agent Communication Service', () => {
         )
       );
 
-      // All requests should complete successfully
       expect(responses.length).toBe(5);
       responses.forEach((response, index) => {
         expect(response.success).toBe(true);
@@ -370,10 +372,8 @@ describe('Agent Communication Service', () => {
         args: { account: 'checking' },
       };
 
-      // Valid command should pass
       expect(validateExternalCommand(validCommand)).toBe(true);
 
-      // Invalid commands should throw
       const invalidCommand1: any = { target: '', command: 'TEST', args: {} };
       expect(() => validateExternalCommand(invalidCommand1)).toThrow();
 

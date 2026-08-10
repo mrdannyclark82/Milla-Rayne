@@ -33,6 +33,9 @@ interface SandboxProps {
   onDiscuss?: (code: string) => void;
   width?: number;
   embedded?: boolean;
+  /** Load this sandbox feature into the VFS when IDE opens */
+  sandboxId?: string;
+  featureId?: string;
 }
 
 interface LogEntry {
@@ -45,6 +48,44 @@ interface VirtualFile {
   name: string;
   content: string;
   language: string;
+}
+
+function languageFromName(name: string): string {
+  const extension = name.split('.').pop()?.toLowerCase() || 'txt';
+  const languageMap: Record<string, string> = {
+    js: 'javascript',
+    ts: 'typescript',
+    jsx: 'javascript',
+    tsx: 'typescript',
+    html: 'html',
+    css: 'css',
+    json: 'json',
+    py: 'python',
+    md: 'markdown',
+    sh: 'bash',
+    bash: 'bash',
+    patch: 'diff',
+    diff: 'diff',
+    yaml: 'yaml',
+    yml: 'yaml',
+  };
+  return languageMap[extension] || 'javascript';
+}
+
+function defaultVirtualFiles(initialCode = ''): VirtualFile[] {
+  return [
+    { name: 'index.html', content: getDefaultHtml(), language: 'html' },
+    { name: 'style.css', content: getDefaultCss(), language: 'css' },
+    {
+      name: 'script.js',
+      content: initialCode || getDefaultJs(),
+      language: 'javascript',
+    },
+    { name: 'main.py', content: getDefaultPython(), language: 'python' },
+    { name: 'app.ts', content: getDefaultTypeScript(), language: 'typescript' },
+    { name: 'README.md', content: getDefaultMarkdown(), language: 'markdown' },
+    { name: 'setup.sh', content: getDefaultShell(), language: 'bash' },
+  ];
 }
 
 interface GitHubNode {
@@ -92,22 +133,19 @@ export const Sandbox: React.FC<SandboxProps> = ({
   onDiscuss,
   width,
   embedded = false,
+  sandboxId,
+  featureId,
 }) => {
   // Virtual file system
-  const [files, setFiles] = useState<VirtualFile[]>([
-    { name: 'index.html', content: getDefaultHtml(), language: 'html' },
-    { name: 'style.css', content: getDefaultCss(), language: 'css' },
-    {
-      name: 'script.js',
-      content: initialCode || getDefaultJs(),
-      language: 'javascript',
-    },
-    { name: 'main.py', content: getDefaultPython(), language: 'python' },
-    { name: 'app.ts', content: getDefaultTypeScript(), language: 'typescript' },
-    { name: 'README.md', content: getDefaultMarkdown(), language: 'markdown' },
-    { name: 'setup.sh', content: getDefaultShell(), language: 'bash' },
-  ]);
+  const [files, setFiles] = useState<VirtualFile[]>(() =>
+    defaultVirtualFiles(initialCode)
+  );
   const [activeFileIndex, setActiveFileIndex] = useState(2); // Start on script.js
+  const [featureLoadError, setFeatureLoadError] = useState<string | null>(null);
+  const [featureLoading, setFeatureLoading] = useState(false);
+  const [loadedFeatureLabel, setLoadedFeatureLabel] = useState<string | null>(
+    null
+  );
 
   // UI state
   const [viewMode, setViewMode] = useState<ViewMode>('split');
@@ -137,6 +175,71 @@ export const Sandbox: React.FC<SandboxProps> = ({
   useEffect(() => {
     loadPrettier();
   }, []);
+
+  // Load suggested enhancement into IDE when opened from Sandbox Manager
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+
+    const loadFeature = async () => {
+      if (!sandboxId || !featureId) {
+        // Generic open — keep current files (or defaults)
+        setFeatureLoadError(null);
+        setLoadedFeatureLabel(null);
+        return;
+      }
+
+      setFeatureLoading(true);
+      setFeatureLoadError(null);
+      try {
+        const res = await fetch(
+          `/api/sandboxes/${sandboxId}/features/${featureId}`
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || 'Failed to load feature for IDE');
+        }
+
+        const resolved: Array<{ path: string; content: string }> =
+          data.resolvedFiles || [];
+        if (cancelled) return;
+
+        if (resolved.length === 0) {
+          setFeatureLoadError('Feature has no loadable content');
+          return;
+        }
+
+        const vfs: VirtualFile[] = resolved.map((f) => ({
+          name: f.path.split('/').pop() || f.path,
+          content: f.content,
+          language: languageFromName(f.path),
+        }));
+
+        setFiles(vfs);
+        setActiveFileIndex(0);
+        setLoadedFeatureLabel(
+          data.feature?.name ||
+            data.sandbox?.name ||
+            `${sandboxId}/${featureId}`
+        );
+        setViewMode('code');
+      } catch (e) {
+        if (!cancelled) {
+          setFeatureLoadError(
+            e instanceof Error ? e.message : 'Could not load enhancement'
+          );
+        }
+      } finally {
+        if (!cancelled) setFeatureLoading(false);
+      }
+    };
+
+    loadFeature();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, sandboxId, featureId]);
 
   // Get current active file
   const activeFile = files[activeFileIndex];
@@ -485,9 +588,27 @@ export const Sandbox: React.FC<SandboxProps> = ({
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-[#0a0a12]/60">
-        <div className="flex items-center gap-3">
-          <Code className="w-5 h-5 text-purple-400" />
-          <h2 className="text-lg font-semibold text-white">Code Sandbox</h2>
+        <div className="flex items-center gap-3 min-w-0">
+          <Code className="w-5 h-5 text-purple-400 shrink-0" />
+          <div className="min-w-0">
+            <h2 className="text-lg font-semibold text-white">Code Sandbox</h2>
+            <p className="text-xs text-amber-400/90 truncate">
+              Virtual playground — not the real empire disk (CLI has full FS)
+            </p>
+            {featureLoading && (
+              <p className="text-xs text-cyan-400 truncate">
+                Loading enhancement…
+              </p>
+            )}
+            {!featureLoading && loadedFeatureLabel && (
+              <p className="text-xs text-cyan-400/90 truncate">
+                Enhancement: {loadedFeatureLabel}
+              </p>
+            )}
+            {featureLoadError && (
+              <p className="text-xs text-red-400 truncate">{featureLoadError}</p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">

@@ -115,11 +115,12 @@ Format your response as JSON with this structure:
       console.warn('Gemini improvement generation failed:', error);
     }
 
-    // Fallback to simple improvements if Gemini fails
-    return generateFallbackImprovements(repoData, focusArea);
+    // Fallback: real analysis-driven improvements (not CI-only theater)
+    return await generateFallbackImprovements(repoData, focusArea, codeAnalysis);
   } catch (error) {
     console.error('Error generating improvements:', error);
-    return generateFallbackImprovements(repoData, focusArea);
+    const analysis = await analyzeRepositoryCode(repoData);
+    return await generateFallbackImprovements(repoData, focusArea, analysis);
   }
 }
 
@@ -144,101 +145,175 @@ function parseImprovementResponse(response: string): RepositoryImprovement[] {
 }
 
 /**
- * Generate fallback improvements when AI is unavailable
+ * Analysis-driven fallback improvements when AI is unavailable.
+ * Diversified: quality, performance, docs, tests, security — not CI-only.
  */
-function generateFallbackImprovements(
+async function generateFallbackImprovements(
   repoData: RepositoryData,
-  focusArea?: string
-): RepositoryImprovement[] {
+  focusArea?: string,
+  analysis?: Awaited<ReturnType<typeof analyzeRepositoryCode>>
+): Promise<RepositoryImprovement[]> {
   const improvements: RepositoryImprovement[] = [];
+  const codeAnalysis =
+    analysis || (await analyzeRepositoryCode(repoData));
 
-  // Perform code analysis for security and performance insights
-  analyzeRepositoryCode(repoData)
-    .then((analysis) => {
-      console.log('Code analysis completed:', {
-        security: analysis.securityIssues.length,
-        performance: analysis.performanceIssues.length,
-        quality: analysis.codeQualityIssues.length,
-      });
-    })
-    .catch((err) => console.error('Code analysis failed:', err));
+  const focus = (focusArea || 'general').toLowerCase();
 
-  // README improvement
+  // Real security issues from scan
+  for (const issue of codeAnalysis.securityIssues.slice(0, 2)) {
+    if (focus !== 'general' && focus !== 'security') break;
+    improvements.push({
+      title: `Security: ${issue.type || 'issue'}`,
+      description: `${issue.description}${issue.file ? ` (${issue.file})` : ''}`,
+      files: issue.file
+        ? [
+            {
+              path: issue.file,
+              action: 'update',
+              content: `// TODO: address security — ${issue.recommendation || issue.description}\n`,
+              reason: issue.recommendation || issue.description,
+            },
+          ]
+        : [],
+      commitMessage: `fix: security — ${issue.type || 'hardening'}`,
+    });
+  }
+
+  // Performance
+  for (const issue of codeAnalysis.performanceIssues.slice(0, 2)) {
+    if (focus !== 'general' && focus !== 'performance') continue;
+    improvements.push({
+      title: `Performance: ${issue.type || 'optimization'}`,
+      description: `${issue.description}${issue.file ? ` in ${issue.file}` : ''}`,
+      files: issue.file
+        ? [
+            {
+              path: issue.file,
+              action: 'update',
+              content: `// TODO: performance — ${issue.recommendation || issue.description}\n`,
+              reason: issue.recommendation || issue.description,
+            },
+          ]
+        : [],
+      commitMessage: `perf: ${issue.type || 'optimize hot path'}`,
+    });
+  }
+
+  // Code quality / maintainability
+  for (const issue of codeAnalysis.codeQualityIssues.slice(0, 2)) {
+    if (
+      focus !== 'general' &&
+      focus !== 'quality' &&
+      focus !== 'refactor'
+    ) {
+      continue;
+    }
+    improvements.push({
+      title: `Quality: ${issue.type || 'cleanup'}`,
+      description: `${issue.description}${issue.file ? ` (${issue.file})` : ''}`,
+      files: issue.file
+        ? [
+            {
+              path: issue.file,
+              action: 'update',
+              content: `// TODO: quality — ${issue.recommendation || issue.description}\n`,
+              reason: issue.recommendation || issue.description,
+            },
+          ]
+        : [],
+      commitMessage: `refactor: ${issue.type || 'code quality'}`,
+    });
+  }
+
+  // Language-specific suggestions as enhancement items
+  for (const tip of (codeAnalysis.languageSpecificSuggestions || []).slice(
+    0,
+    2
+  )) {
+    improvements.push({
+      title: `Language practice (${repoData.language || 'project'})`,
+      description: tip,
+      files: [],
+      commitMessage: 'chore: apply language best practice',
+    });
+  }
+
+  // Docs only if thin README
   if (!repoData.readme || repoData.readme.length < 100) {
     improvements.push({
-      title: 'Add comprehensive README',
+      title: 'Improve project README',
       description:
-        'Create a detailed README with setup instructions, features, and usage examples',
+        'Expand setup, features, and usage so contributors can run the project',
       files: [
         {
           path: 'README.md',
           action: repoData.readme ? 'update' : 'create',
           content: generateReadmeTemplate(repoData),
-          reason:
-            'Good documentation helps users and contributors understand the project',
+          reason: 'Thin or missing README blocks onboarding',
         },
       ],
-      commitMessage: 'docs: add comprehensive README documentation',
+      commitMessage: 'docs: expand README for setup and usage',
     });
   }
 
-  // Add .gitignore if missing
-  improvements.push({
-    title: 'Add .gitignore file',
-    description: 'Prevent committing sensitive files and dependencies',
-    files: [
-      {
-        path: '.gitignore',
-        action: 'create',
-        content: generateGitignoreTemplate(repoData.language || ''),
-        reason:
-          'Prevents accidentally committing node_modules, .env files, and other sensitive data',
-      },
-    ],
-    commitMessage:
-      'chore: add .gitignore to prevent committing sensitive files',
-  });
+  // Tests suggestion if no test files spotted in analysis files list
+  const hasTests = (repoData.files || []).some(
+    (f) =>
+      /\.(test|spec)\./i.test(f.path) ||
+      f.path.includes('__tests__') ||
+      f.path.includes('/test/')
+  );
+  if (!hasTests && (focus === 'general' || focus === 'quality' || focus === 'test')) {
+    improvements.push({
+      title: 'Add a minimal test harness',
+      description:
+        'No obvious test files found — add unit tests for core modules to catch regressions',
+      files: [
+        {
+          path: 'tests/smoke.test.ts',
+          action: 'create',
+          content: `// Minimal smoke test placeholder — replace with real assertions\ndescribe('smoke', () => {\n  it('project loads', () => {\n    expect(true).toBe(true);\n  });\n});\n`,
+          reason: 'Establish a testing baseline before larger refactors',
+        },
+      ],
+      commitMessage: 'test: add minimal smoke test harness',
+    });
+  }
 
-  // Add GitHub Actions workflow
+  // CI only when explicitly security/ci focused OR zero other ideas
+  const wantsCi =
+    focus === 'security' || focus === 'ci' || focus === 'devops';
   if (
-    repoData.language?.toLowerCase().includes('typescript') ||
-    repoData.language?.toLowerCase().includes('javascript')
+    wantsCi ||
+    (improvements.length === 0 &&
+      (repoData.language?.toLowerCase().includes('typescript') ||
+        repoData.language?.toLowerCase().includes('javascript')))
   ) {
     improvements.push({
-      title: 'Add CI/CD workflow with security scanning',
+      title: 'Add CI workflow',
       description:
-        'Automate testing, building, and security scanning with GitHub Actions',
+        'Automate install/test (and optional security scanning) with GitHub Actions',
       files: [
         {
           path: '.github/workflows/ci.yml',
           action: 'create',
           content: generateCIWorkflowTemplate(repoData),
-          reason:
-            'Automated testing and security scanning ensures code quality and prevents vulnerabilities',
+          reason: 'Catch breakages early on every push',
         },
       ],
-      commitMessage:
-        'ci: add GitHub Actions workflow for automated testing and security scanning',
+      commitMessage: 'ci: add GitHub Actions workflow',
     });
   }
 
-  // Add SECURITY.md file
-  improvements.push({
-    title: 'Add security policy',
-    description: 'Document security vulnerability reporting process',
-    files: [
-      {
-        path: 'SECURITY.md',
-        action: 'create',
-        content: generateSecurityPolicyTemplate(repoData),
-        reason:
-          'Provides a clear process for security researchers to report vulnerabilities',
-      },
-    ],
-    commitMessage: 'docs: add security policy for vulnerability reporting',
+  // Dedupe by title, cap
+  const seen = new Set<string>();
+  const unique = improvements.filter((i) => {
+    if (seen.has(i.title)) return false;
+    seen.add(i.title);
+    return true;
   });
 
-  return improvements.slice(0, 5); // Return top 5 improvements
+  return unique.slice(0, 5);
 }
 
 /**

@@ -111,21 +111,13 @@ const SECURITY_PATTERNS: Record<
       cwe: 'CWE-95',
       recommendation: 'Avoid using eval(). Use safer alternatives.',
     },
+    // NOTE: do NOT use /any\s+\w+/ — that matched English "any person" in READMEs
     {
-      pattern: /any\s+\w+/gi,
-      issue: 'Use of "any" type reduces type safety',
-      severity: 'low',
-      cwe: 'CWE-1321',
-      recommendation:
-        'Use specific types instead of "any" to maintain type safety.',
-    },
-    {
-      pattern: /@ts-ignore/gi,
-      issue: 'TypeScript error suppression with @ts-ignore',
-      severity: 'low',
-      cwe: 'CWE-1321',
-      recommendation:
-        'Fix the underlying type issues instead of suppressing them.',
+      pattern: /password\s*=\s*['"][^'"]+['"]/gi,
+      issue: 'Hardcoded password detected',
+      severity: 'critical',
+      cwe: 'CWE-798',
+      recommendation: 'Never hardcode passwords. Use environment variables.',
     },
     {
       pattern: /password\s*:\s*string\s*=\s*['"][^'"]+['"]/gi,
@@ -133,6 +125,14 @@ const SECURITY_PATTERNS: Record<
       severity: 'critical',
       cwe: 'CWE-798',
       recommendation: 'Never hardcode passwords. Use environment variables.',
+    },
+    {
+      pattern: /api[_-]?key\s*=\s*['"][^'"]+['"]/gi,
+      issue: 'Hardcoded API key detected',
+      severity: 'critical',
+      cwe: 'CWE-798',
+      recommendation:
+        'Store API keys in environment variables, not in source code.',
     },
   ],
   python: [
@@ -298,7 +298,19 @@ export function analyzeSecurityIssues(
   filename?: string
 ): SecurityIssue[] {
   const issues: SecurityIssue[] = [];
-  const patterns = SECURITY_PATTERNS[language.toLowerCase()] || [];
+  const lang = normalizeLang(language);
+
+  // Never run code-security regexes on docs/config prose
+  if (
+    lang === 'markdown' ||
+    lang === 'json' ||
+    lang === 'yaml' ||
+    (filename && /\.(md|txt|rst)$/i.test(filename))
+  ) {
+    return issues;
+  }
+
+  const patterns = SECURITY_PATTERNS[lang] || [];
 
   for (const pattern of patterns) {
     const matches = code.matchAll(pattern.pattern);
@@ -326,7 +338,16 @@ export function analyzePerformanceIssues(
   filename?: string
 ): PerformanceIssue[] {
   const issues: PerformanceIssue[] = [];
-  const patterns = PERFORMANCE_PATTERNS[language.toLowerCase()] || [];
+  const lang = normalizeLang(language);
+  if (
+    lang === 'markdown' ||
+    lang === 'json' ||
+    lang === 'yaml' ||
+    (filename && /\.(md|txt|rst)$/i.test(filename))
+  ) {
+    return issues;
+  }
+  const patterns = PERFORMANCE_PATTERNS[lang] || [];
 
   for (const pattern of patterns) {
     const matches = code.matchAll(pattern.pattern);
@@ -363,63 +384,110 @@ export function getLanguageSpecificSuggestions(language: string): string[] {
 /**
  * Analyze code quality issues
  */
+/** Normalize ext / labels so "ts" hits typescript patterns, not empty set */
+function normalizeLang(language: string): string {
+  const l = (language || '').toLowerCase().replace(/^\./, '');
+  const map: Record<string, string> = {
+    ts: 'typescript',
+    tsx: 'typescript',
+    typescript: 'typescript',
+    js: 'javascript',
+    jsx: 'javascript',
+    mjs: 'javascript',
+    cjs: 'javascript',
+    javascript: 'javascript',
+    py: 'python',
+    python: 'python',
+    go: 'go',
+    rs: 'rust',
+    rust: 'rust',
+    java: 'java',
+    md: 'markdown',
+    markdown: 'markdown',
+    yml: 'yaml',
+    yaml: 'yaml',
+    json: 'json',
+  };
+  return map[l] || l;
+}
+
 export function analyzeCodeQuality(
   code: string,
   language: string,
   filename?: string
 ): CodeQualityIssue[] {
   const issues: CodeQualityIssue[] = [];
+  const lang = normalizeLang(language);
+  const isTsJs = lang === 'typescript' || lang === 'javascript';
+  const isCodeFile =
+    !filename ||
+    !/\.(md|txt|rst|json|ya?ml|lock)$/i.test(filename);
 
-  // Check for long functions (> 100 lines)
-  /*
-  // This check is flawed as it checks the whole file length, not function length.
-  // A proper implementation would require a code parser.
-  // For now, it's better to remove this check to avoid false positives.
-  const functionMatches = code.match(/function\s+\w+[^{]*\{/g);
-  if (functionMatches) {
-    const lines = code.split('\n');
-    if (lines.length > 100) {
+  // Real TypeScript `any` usage — NOT English "any person"
+  if (lang === 'typescript' && isCodeFile) {
+    const anyType = code.matchAll(
+      /(?:\bas\s+any\b|:\s*any\b|<any\b|Array<\s*any\s*>|Promise<\s*any\s*>|Record<[^>]*\bany\b)/g
+    );
+    for (const match of anyType) {
       issues.push({
-        type: 'Long function',
-        description: 'Function exceeds 100 lines',
+        type: 'Weak TypeScript typing',
+        description: `Found TypeScript \`${match[0].trim()}\` — weakens type safety`,
         file: filename,
         recommendation:
-          'Break down into smaller, focused functions for better maintainability',
+          'Prefer specific types, generics, or unknown + narrowing instead of any.',
+      });
+      // Cap noise
+      if (issues.filter((i) => i.type === 'Weak TypeScript typing').length >= 5)
+        break;
+    }
+
+    if (/@ts-ignore/i.test(code)) {
+      issues.push({
+        type: 'TypeScript error suppression',
+        description: 'Found @ts-ignore which hides type errors',
+        file: filename,
+        recommendation:
+          'Fix the underlying type issues instead of suppressing them.',
       });
     }
   }
-  */
 
-  // Check for TODO/FIXME comments
-  const todoMatches = code.matchAll(/\/\/\s*(TODO|FIXME)[:|\s]/gi);
-  for (const match of todoMatches) {
-    issues.push({
-      type: 'Unresolved TODO/FIXME',
-      description: `Found ${match[1]} comment`,
-      file: filename,
-      recommendation: 'Address TODO/FIXME items or create issues to track them',
-    });
+  // Check for TODO/FIXME comments (code only)
+  if (isCodeFile && isTsJs) {
+    const todoMatches = code.matchAll(/\/\/\s*(TODO|FIXME)[:|\s]/gi);
+    for (const match of todoMatches) {
+      issues.push({
+        type: 'Unresolved TODO/FIXME',
+        description: `Found ${match[1]} comment`,
+        file: filename,
+        recommendation:
+          'Address TODO/FIXME items or create issues to track them',
+      });
+    }
   }
 
   // Check for commented-out code
-  const commentedCodeLines = code
-    .split('\n')
-    .filter(
-      (line) =>
-        line.trim().startsWith('//') &&
-        line.length > 50 &&
-        !line.includes('TODO') &&
-        !line.includes('FIXME') &&
-        !line.includes('Note:')
-    );
+  if (isCodeFile && isTsJs) {
+    const commentedCodeLines = code
+      .split('\n')
+      .filter(
+        (line) =>
+          line.trim().startsWith('//') &&
+          line.length > 50 &&
+          !line.includes('TODO') &&
+          !line.includes('FIXME') &&
+          !line.includes('Note:')
+      );
 
-  if (commentedCodeLines.length > 5) {
-    issues.push({
-      type: 'Commented-out code',
-      description: `Found ${commentedCodeLines.length} lines of commented code`,
-      file: filename,
-      recommendation: 'Remove commented-out code. Use version control instead.',
-    });
+    if (commentedCodeLines.length > 5) {
+      issues.push({
+        type: 'Commented-out code',
+        description: `Found ${commentedCodeLines.length} lines of commented code`,
+        file: filename,
+        recommendation:
+          'Remove commented-out code. Use version control instead.',
+      });
+    }
   }
 
   return issues;
@@ -431,20 +499,22 @@ export function analyzeCodeQuality(
 export async function analyzeRepositoryCode(
   repoData: RepositoryData
 ): Promise<CodeAnalysisResult> {
-  const language = repoData.language || 'javascript';
+  const language = normalizeLang(repoData.language || 'javascript');
 
-  // For now, analyze the README as a sample
-  // In a full implementation, this would fetch and analyze actual source files
-  const sampleCode = repoData.readme || '';
+  const securityIssues: SecurityIssue[] = [];
+  const performanceIssues: PerformanceIssue[] = [];
+  const codeQualityIssues: CodeQualityIssue[] = [];
 
-  const securityIssues = analyzeSecurityIssues(sampleCode, language);
-  const performanceIssues = analyzePerformanceIssues(sampleCode, language);
-  const codeQualityIssues = analyzeCodeQuality(sampleCode, language);
-
-  // Analyze fetched files if available
+  // Analyze real source files only — README prose is not TypeScript security input
   if (repoData.files && repoData.files.length > 0) {
     for (const file of repoData.files) {
-      const fileLang = file.language || file.path.split('.').pop() || language;
+      const fileLang = normalizeLang(
+        file.language || file.path.split('.').pop() || language
+      );
+      // Skip non-code docs from security/perf scans
+      if (fileLang === 'markdown' || fileLang === 'json' || fileLang === 'yaml') {
+        continue;
+      }
       securityIssues.push(
         ...analyzeSecurityIssues(file.content, fileLang, file.path)
       );
@@ -458,22 +528,26 @@ export async function analyzeRepositoryCode(
   }
   const languageSpecificSuggestions = getLanguageSpecificSuggestions(language);
 
-  // Add general security recommendations
-  if (securityIssues.length === 0) {
-    securityIssues.push({
-      severity: 'medium',
-      type: 'Security Best Practices',
-      description: 'Consider adding security scanning to your CI/CD pipeline',
-      recommendation:
-        'Integrate tools like Snyk, Dependabot, or CodeQL for automated security scanning',
-      cwe: 'CWE-1395',
+  // Do NOT invent a fake CI/CD security issue when analysis found nothing.
+  // Real issues come from scanned code/files above; empty is a valid result.
+
+  // Deduplicate noisy identical findings
+  const dedupe = <T extends { description: string; file?: string }>(
+    arr: T[]
+  ): T[] => {
+    const seen = new Set<string>();
+    return arr.filter((i) => {
+      const k = `${i.file || ''}|${i.description}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
     });
-  }
+  };
 
   return {
-    securityIssues,
-    performanceIssues,
-    codeQualityIssues,
+    securityIssues: dedupe(securityIssues).slice(0, 40),
+    performanceIssues: dedupe(performanceIssues).slice(0, 40),
+    codeQualityIssues: dedupe(codeQualityIssues).slice(0, 40),
     languageSpecificSuggestions,
   };
 }
@@ -503,12 +577,14 @@ export function generateSecurityImprovements(
     );
   }
 
-  // Always recommend security tools
-  improvements.push(
-    '🔒 Add security scanning tools to your CI/CD pipeline',
-    '📝 Consider implementing a security.md file with vulnerability reporting guidelines',
-    '🔐 Enable Dependabot for automated dependency updates'
-  );
+  // Only recommend tooling when we actually found issues or need a single soft nudge
+  if (securityIssues.length > 0) {
+    improvements.push(
+      '🔒 Add security scanning tools to your CI/CD pipeline',
+      '📝 Consider implementing a security.md file with vulnerability reporting guidelines',
+      '🔐 Enable Dependabot for automated dependency updates'
+    );
+  }
 
   return improvements;
 }
@@ -551,31 +627,134 @@ export async function analyzeCodeForIssues(params: {
     focusAreas = ['security', 'performance', 'quality'],
   } = params;
 
-  // For now, we'll create a mock RepositoryData object
-  // In a production system, this would analyze actual files in the repository
+  // Load real files from disk (not mock empty repo) so suggestions reflect the project
+  const fs = await import('fs');
+  const path = await import('path');
   const name = repositoryPath.split('/').pop() || 'unknown';
-  const mockRepoData: RepositoryData = {
+  const files: Array<{ path: string; content: string; language?: string }> = [];
+  const maxFiles = 40;
+  const maxBytes = 120_000;
+  const skipDirs = new Set([
+    'node_modules',
+    '.git',
+    'dist',
+    'build',
+    '.next',
+    'coverage',
+    'venv',
+    '.venv',
+    '__pycache__',
+  ]);
+  const codeExt = new Set([
+    '.ts',
+    '.tsx',
+    '.js',
+    '.jsx',
+    '.py',
+    '.go',
+    '.rs',
+    '.java',
+    '.yml',
+    '.yaml',
+    '.json',
+    '.md',
+  ]);
+
+  function walk(dir: string, depth = 0) {
+    if (files.length >= maxFiles || depth > 5) return;
+    let entries: string[] = [];
+    try {
+      entries = fs.readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const ent of entries) {
+      if (files.length >= maxFiles) break;
+      if (ent.startsWith('.') && ent !== '.github') continue;
+      const full = path.join(dir, ent);
+      let st: fs.Stats;
+      try {
+        st = fs.statSync(full);
+      } catch {
+        continue;
+      }
+      if (st.isDirectory()) {
+        if (skipDirs.has(ent)) continue;
+        walk(full, depth + 1);
+      } else if (st.isFile() && st.size < maxBytes) {
+        const ext = path.extname(ent).toLowerCase();
+        if (!codeExt.has(ext)) continue;
+        try {
+          const content = fs.readFileSync(full, 'utf8');
+          files.push({
+            path: path.relative(repositoryPath, full),
+            content,
+            language: ext.replace('.', ''),
+          });
+        } catch {
+          /* skip unreadable */
+        }
+      }
+    }
+  }
+
+  if (fs.existsSync(repositoryPath)) {
+    walk(repositoryPath);
+  }
+
+  let readme = '';
+  for (const cand of ['README.md', 'readme.md', 'README']) {
+    const rp = path.join(repositoryPath, cand);
+    if (fs.existsSync(rp)) {
+      try {
+        readme = fs.readFileSync(rp, 'utf8').slice(0, maxBytes);
+      } catch {
+        /* ignore */
+      }
+      break;
+    }
+  }
+
+  // language heuristic
+  const extCount: Record<string, number> = {};
+  for (const f of files) {
+    const ext = path.extname(f.path).toLowerCase();
+    extCount[ext] = (extCount[ext] || 0) + 1;
+  }
+  const topExt =
+    Object.entries(extCount).sort((a, b) => b[1] - a[1])[0]?.[0] || '.ts';
+  const langMap: Record<string, string> = {
+    '.ts': 'typescript',
+    '.tsx': 'typescript',
+    '.js': 'javascript',
+    '.jsx': 'javascript',
+    '.py': 'python',
+    '.go': 'go',
+    '.rs': 'rust',
+  };
+
+  const repoData: RepositoryData = {
     info: {
-      owner: 'mock',
+      owner: 'local',
       name: name,
-      url: `https://github.com/mock/${name}`,
-      fullName: `mock/${name}`,
+      url: `file://${repositoryPath}`,
+      fullName: `local/${name}`,
     },
-    description: 'Repository for code analysis',
-    language: 'typescript',
-    readme: '// Sample code for analysis',
+    description: `Local repository analysis: ${repositoryPath}`,
+    language: langMap[topExt] || 'typescript',
+    readme: readme || '// no README',
     stats: {
       stars: 0,
       forks: 0,
       openIssues: 0,
       watchers: 0,
-      size: 0,
+      size: files.reduce((n, f) => n + f.content.length, 0),
       defaultBranch: 'main',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     },
-    files: [],
+    files,
   };
 
-  return await analyzeRepositoryCode(mockRepoData);
+  return await analyzeRepositoryCode(repoData);
 }

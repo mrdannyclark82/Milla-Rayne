@@ -17,6 +17,7 @@ import {
   type CodeQualityIssue,
 } from '../codeAnalysisService';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 import { applyPatch } from 'diff';
 
 export interface IssueIdentification {
@@ -42,8 +43,57 @@ class CodingAgent extends BaseAgent {
 
   protected async executeInternal(task: string): Promise<string> {
     this.log(`CodingAgent received task: ${task}`);
-    // In the future, this could be a call to a code generation model
-    return `I have received the coding task: '${task}'. I will work on it.`;
+    const lower = task.toLowerCase();
+    const repoPath = process.cwd();
+
+    // Real work paths — no acknowledgment theater
+    if (
+      lower.includes('analyze') ||
+      lower.includes('scan') ||
+      lower.includes('issues')
+    ) {
+      const issues = await this.identifyIssues(repoPath);
+      return JSON.stringify(
+        {
+          action: 'analyze_code',
+          issueCount: issues.length,
+          issues: issues.slice(0, 10),
+        },
+        null,
+        2
+      );
+    }
+
+    if (
+      lower.includes('fix') ||
+      lower.includes('patch') ||
+      lower.includes('generate_fix')
+    ) {
+      const result = await generateFix({
+        agentName: 'coding',
+        error: task,
+        repositoryPath: repoPath,
+      });
+      return JSON.stringify(result, null, 2);
+    }
+
+    // Default: run analysis so dispatch always returns substance
+    const issues = await this.identifyIssues(repoPath);
+    return JSON.stringify(
+      {
+        action: 'default_analyze',
+        task,
+        issueCount: issues.length,
+        topIssues: issues.slice(0, 5).map((i) => ({
+          type: i.issueType,
+          severity: i.severity,
+          description: i.description.slice(0, 200),
+          files: i.affectedFiles,
+        })),
+      },
+      null,
+      2
+    );
   }
 
   /**
@@ -91,11 +141,12 @@ class CodingAgent extends BaseAgent {
 
       console.log(`Created sandbox: ${sandbox.id}`);
 
-      // Add feature to sandbox
+      // Add feature to sandbox (include real proposed changes for IDE/View)
       const feature = await addFeatureToSandbox(sandbox.id, {
         name: `Fix: ${issueToFix.description}`,
         description: fix.description,
         files: fix.files,
+        content: fix.changes,
       });
 
       if (!feature) {
@@ -160,6 +211,18 @@ class CodingAgent extends BaseAgent {
     }
   }
 
+  /** Public wrapper for SCPA / external callers */
+  async identifyIssuesPublic(
+    repositoryPath: string
+  ): Promise<IssueIdentification[]> {
+    return this.identifyIssues(repositoryPath);
+  }
+
+  /** Public wrapper for SCPA / external callers */
+  async generateCodeFixPublic(issue: IssueIdentification): Promise<CodeFix> {
+    return this.generateCodeFix(issue);
+  }
+
   /**
    * Identify issues from error logs or code analysis
    */
@@ -213,15 +276,44 @@ class CodingAgent extends BaseAgent {
   }
 
   /**
-   * Generate a code fix for an identified issue using AI
+   * Load snippets from affected files so the LLM sees real code, not theater.
+   */
+  private async loadFileContext(
+    files: string[],
+    maxChars = 12_000
+  ): Promise<string> {
+    if (!files.length) return '(no affected files provided)';
+    const chunks: string[] = [];
+    let used = 0;
+    for (const file of files.slice(0, 6)) {
+      try {
+        const content = await fs.readFile(file, 'utf-8');
+        const slice = content.slice(0, 4000);
+        const block = `--- ${file} ---\n${slice}${content.length > 4000 ? '\n…(truncated)' : ''}`;
+        if (used + block.length > maxChars) break;
+        chunks.push(block);
+        used += block.length;
+      } catch {
+        chunks.push(`--- ${file} ---\n(unreadable or missing)`);
+      }
+    }
+    return chunks.join('\n\n') || '(could not load any files)';
+  }
+
+  /**
+   * Generate a code fix for an identified issue using AI + real file context
    */
   private async generateCodeFix(issue: IssueIdentification): Promise<CodeFix> {
     try {
-      // Use AI to generate a code fix based on the issue
+      const fileContext = await this.loadFileContext(issue.affectedFiles);
+
       const prompt = `As an expert software engineer, analyze and fix the following ${issue.severity} severity ${issue.issueType} issue:
 
 **Description:** ${issue.description}
-**Affected Files:** ${issue.affectedFiles.join(', ')}
+**Affected Files:** ${issue.affectedFiles.join(', ') || '(none listed)'}
+
+**Current file contents (real disk reads):**
+${fileContext}
 
 Please provide:
 1. A clear description of the fix
@@ -229,33 +321,58 @@ Please provide:
 3. Why this fix resolves the issue
 
 Format your response as JSON with keys: description, changes, reasoning.
-IMPORTANT: 'changes' must be a valid unified diff string string that can be applied using patch.`;
+IMPORTANT: 'changes' must be a valid unified diff that can be applied using patch. Base the diff on the file contents above — do not invent files that are not listed.`;
 
-      // Use Minimax service for coding tasks
-      const { generateMinimaxResponse } = await import('../minimaxService');
+      // LLM cascade: Minimax (if key) → Gemini/OpenRouter (empire keys)
+      let result: { success: boolean; content: string; error?: string } = {
+        success: false,
+        content: '',
+        error: 'no provider tried',
+      };
 
-      const result = await generateMinimaxResponse(
-        prompt,
-        {
-          conversationHistory: [],
-          userName: 'CodingAgent',
-        },
-        4096 // Higher token limit for code generation
-      );
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to generate fix');
+      if (process.env.MINIMAX_API_KEY) {
+        const { generateMinimaxResponse } = await import('../minimaxService');
+        result = await generateMinimaxResponse(
+          prompt,
+          { conversationHistory: [], userName: 'CodingAgent' },
+          4096
+        );
       }
 
-      let aiResponse;
+      if (!result.success) {
+        try {
+          const { generateGeminiResponse } = await import(
+            '../openrouterService'
+          );
+          result = await generateGeminiResponse(prompt, {
+            userName: 'CodingAgent',
+          });
+        } catch (e) {
+          result = {
+            success: false,
+            content: '',
+            error: e instanceof Error ? e.message : 'Gemini path failed',
+          };
+        }
+      }
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to generate fix from any LLM');
+      }
+
+      let aiResponse: {
+        description?: string;
+        changes?: string;
+        reasoning?: string;
+      };
       try {
-        aiResponse = JSON.parse(result.content);
+        const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+        aiResponse = JSON.parse(jsonMatch ? jsonMatch[0] : result.content);
       } catch {
-        // Fallback if AI doesn't return valid JSON
         aiResponse = {
           description: result.content.slice(0, 200),
           changes: result.content,
-          reasoning: 'AI-generated fix',
+          reasoning: 'AI-generated fix (non-JSON response)',
         };
       }
 
@@ -266,15 +383,26 @@ IMPORTANT: 'changes' must be a valid unified diff string string that can be appl
         files: issue.affectedFiles,
         changes:
           aiResponse.changes ||
-          `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue`,
+          `// Review needed: ${issue.severity} ${issue.issueType} — ${issue.description}`,
       };
     } catch (error) {
-      console.error('Error generating AI fix, using fallback:', error);
-      // Fallback to simple fix description
+      console.error('Error generating AI fix, using file-aware fallback:', error);
+      // Honest fallback: point at real files + issue, no fake "applied" language
+      const fileList =
+        issue.affectedFiles.length > 0
+          ? issue.affectedFiles.join(', ')
+          : 'unknown files';
       return {
-        description: `Fix for ${issue.issueType}: ${issue.description}`,
+        description: `Manual fix required for ${issue.issueType}: ${issue.description}`,
         files: issue.affectedFiles,
-        changes: `Automated fix applied to address ${issue.severity} severity ${issue.issueType} issue. Severity: ${issue.severity}. Requires manual review.`,
+        changes: [
+          `# LLM fix generation unavailable`,
+          `# Severity: ${issue.severity}`,
+          `# Type: ${issue.issueType}`,
+          `# Files: ${fileList}`,
+          `# Issue: ${issue.description}`,
+          `# Action: open the files above and address the issue; re-run generateFix when the model is up.`,
+        ].join('\n'),
       };
     }
   }
@@ -316,11 +444,7 @@ export const codingAgent = new CodingAgent();
 // ============================================================================
 
 /**
- * P2.5: Generate fix for agent failure (STUB)
- * This would analyze the error and generate code to fix it
- *
- * @param failureContext - Context about the agent failure
- * @returns Mock code patch object
+ * P2.5: Generate fix for agent failure using real code analysis + LLM (no template theater)
  */
 export async function generateFix(failureContext: any): Promise<{
   success: boolean;
@@ -332,145 +456,184 @@ export async function generateFix(failureContext: any): Promise<{
   };
   error?: string;
 }> {
-  console.log(`🔧 [SCPA] Generating fix for ${failureContext.agentName}`);
-  console.log(`🔧 [SCPA] Error: ${failureContext.error}`);
+  console.log(`🔧 [SCPA] Generating real fix for ${failureContext?.agentName}`);
+  console.log(`🔧 [SCPA] Error context: ${failureContext?.error}`);
 
-  // STUB: In production, this would:
-  // 1. Analyze the error stack trace
-  // 2. Locate the failing code
-  // 3. Use LLM to understand the bug
-  // 4. Generate a code fix
-  // 5. Create test cases to verify the fix
+  try {
+    const repoPath =
+      failureContext?.repositoryPath ||
+      failureContext?.repoPath ||
+      process.cwd();
 
-  // Mock fix generation based on error pattern
-  const errorStr = String(failureContext.error);
-  let mockFix: any;
+    // Prefer live analysis of the repo when we have a path
+    const analysisIssues = await codingAgent.identifyIssuesPublic(repoPath);
+    const fromError = String(failureContext?.error || 'unknown failure');
+    const issue =
+      analysisIssues.find((i) =>
+        fromError.toLowerCase().includes(i.issueType)
+      ) ||
+      analysisIssues[0] || {
+        issueType: 'bug' as const,
+        description: fromError.slice(0, 500),
+        affectedFiles: failureContext?.files ||
+          (failureContext?.agentName
+            ? [`server/agents/${failureContext.agentName}.ts`]
+            : []),
+        severity: 'high' as const,
+      };
 
-  if (errorStr.includes('undefined') || errorStr.includes('null')) {
-    mockFix = {
-      files: [`server/agents/${failureContext.agentName}.ts`],
-      changes: `
-// Add null check before accessing property
-if (!variable) {
-  console.warn('Variable is null/undefined, using default');
-  variable = defaultValue;
-}
-`,
-      description: 'Added null/undefined safety check',
-      testPlan: 'Test with null input, verify no crash and proper fallback',
+    const fix = await codingAgent.generateCodeFixPublic(issue);
+
+    return {
+      success: true,
+      patch: {
+        files: fix.files,
+        changes: fix.changes,
+        description: fix.description,
+        testPlan: `Verify fix for: ${issue.description}. Run unit/integration tests on: ${fix.files.join(', ') || 'affected modules'}`,
+      },
     };
-  } else if (errorStr.includes('timeout') || errorStr.includes('ETIMEDOUT')) {
-    mockFix = {
-      files: [`server/agents/${failureContext.agentName}.ts`],
-      changes: `
-// Increase timeout and add retry logic
-const result = await retry(
-  () => apiCall(),
-  { retries: 3, timeout: 60000 }
-);
-`,
-      description: 'Added retry logic and increased timeout',
-      testPlan: 'Test with slow network, verify retries work',
-    };
-  } else if (errorStr.includes('parse') || errorStr.includes('JSON')) {
-    mockFix = {
-      files: [`server/agents/${failureContext.agentName}.ts`],
-      changes: `
-// Add JSON parsing error handling
-try {
-  const data = JSON.parse(response);
-} catch (parseError) {
-  console.error('JSON parse failed:', parseError);
-  return fallbackValue;
-}
-`,
-      description: 'Added JSON parsing error handling',
-      testPlan: 'Test with invalid JSON, verify graceful fallback',
-    };
-  } else {
-    // Generic error handling fix
-    mockFix = {
-      files: [`server/agents/${failureContext.agentName}.ts`],
-      changes: `
-// Add generic error handling
-try {
-  // Original code here
-} catch (error) {
-  console.error('Operation failed:', error);
-  // Log to monitoring service
-  await reportError(error);
-  // Return safe fallback
-  return defaultResponse;
-}
-`,
-      description: 'Added comprehensive error handling',
-      testPlan: 'Test error scenarios, verify proper logging and fallback',
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'generateFix failed without mock fallback',
     };
   }
-
-  console.log(`✅ [SCPA] Mock fix generated for ${failureContext.agentName}`);
-  console.log(`📝 [SCPA] Fix description: ${mockFix.description}`);
-
-  // TODO: In production:
-  // 1. Actually modify the file with the fix
-  // 2. Run tests in sandbox environment
-  // 3. If tests pass, create PR
-  // 4. If tests fail, iterate on the fix
-  // const sandbox = await createSandbox(`scpa-fix-${Date.now()}`);
-  // await applyPatch(sandbox, mockFix);
-  // const testResults = await runTests(sandbox);
-  // if (testResults.passed) {
-  //   await createPRForSandbox(sandbox);
-  // }
-
-  return {
-    success: true,
-    patch: mockFix,
-  };
 }
 
 /**
- * P2.5: Apply generated fix to codebase (STUB)
- * In production, this would actually modify files
+ * Apply a unified-diff patch to allowlisted paths.
+ * Default is dry-run (preview only) so we never silently rewrite the empire.
+ * Set dryRun: false explicitly to write.
  */
-export async function applyFixToCodebase(patch: {
-  files: string[];
-  changes: string;
-}): Promise<boolean> {
-  console.log(`🔧 [SCPA] Applying fix to codebase`);
-  console.log(`📁 [SCPA] Files to modify: ${patch.files.join(', ')}`);
+export async function applyFixToCodebase(
+  patch: {
+    files: string[];
+    changes: string;
+  },
+  options?: { dryRun?: boolean; allowRoots?: string[] }
+): Promise<{
+  success: boolean;
+  dryRun: boolean;
+  applied: string[];
+  skipped: string[];
+  errors: string[];
+  preview?: string;
+}> {
+  const dryRun = options?.dryRun !== false; // default true — honest preview
+  const allowRoots = (
+    options?.allowRoots || [
+      process.cwd(),
+      path.join(process.env.HOME || '/home/milla', 'Milla-Rayne'),
+      path.join(process.env.HOME || '/home/milla', 'core_os'),
+    ]
+  ).map((r) => path.resolve(r));
 
-  try {
-    for (const file of patch.files) {
-      try {
-        const content = await fs.readFile(file, 'utf-8');
-        const updated = applyPatch(content, patch.changes);
+  console.log(
+    `🔧 [SCPA] Apply fix dryRun=${dryRun} files=${(patch.files || []).join(', ')}`
+  );
 
-        if (updated === false) {
-          console.error(`❌ [SCPA] Failed to apply patch to ${file}`);
-          return false;
-        }
+  const applied: string[] = [];
+  const skipped: string[] = [];
+  const errors: string[] = [];
+  const previews: string[] = [];
 
-        await fs.writeFile(file, updated);
-        console.log(`✅ [SCPA] Successfully patched ${file}`);
-      } catch (err) {
-        console.error(
-          `❌ [SCPA] Error accessing file ${file}:`,
-          err instanceof Error ? err.message : err
-        );
-        return false;
-      }
-    }
-
-    console.log(`✅ [SCPA] Fix applied successfully`);
-    return true;
-  } catch (error) {
-    console.error(
-      `❌ [SCPA] Error applying fix:`,
-      error instanceof Error ? error.message : error
-    );
-    return false;
+  if (!patch.files?.length) {
+    return {
+      success: false,
+      dryRun,
+      applied,
+      skipped,
+      errors: ['No files listed in patch'],
+    };
   }
+  if (!patch.changes || !patch.changes.trim()) {
+    return {
+      success: false,
+      dryRun,
+      applied,
+      skipped,
+      errors: ['Empty patch changes'],
+    };
+  }
+
+  // If changes aren't a unified diff, refuse to invent writes
+  const looksLikeDiff =
+    /^diff |^--- |^\+\+\+ |^@@ /m.test(patch.changes) ||
+    patch.changes.includes('\n+') ||
+    patch.changes.includes('\n-');
+
+  for (const file of patch.files) {
+    try {
+      const abs = path.isAbsolute(file)
+        ? path.resolve(file)
+        : path.resolve(process.cwd(), file);
+      const allowed = allowRoots.some(
+        (root) => abs === root || abs.startsWith(root + path.sep)
+      );
+      if (!allowed) {
+        skipped.push(file);
+        errors.push(`Outside allowlist: ${file}`);
+        continue;
+      }
+
+      let content: string;
+      try {
+        content = await fs.readFile(abs, 'utf-8');
+      } catch {
+        skipped.push(file);
+        errors.push(`Unreadable/missing: ${file}`);
+        continue;
+      }
+
+      if (!looksLikeDiff) {
+        skipped.push(file);
+        errors.push(
+          `Patch is not a unified diff — refusing blind write for ${file}. Open IDE/CLI to apply manually.`
+        );
+        previews.push(
+          `--- ${file} (manual review)\n${patch.changes.slice(0, 500)}`
+        );
+        continue;
+      }
+
+      const updated = applyPatch(content, patch.changes);
+      if (updated === false) {
+        skipped.push(file);
+        errors.push(`diff apply failed for ${file}`);
+        continue;
+      }
+
+      if (dryRun) {
+        applied.push(file);
+        previews.push(
+          `--- dry-run would write ${file} (${updated.length} chars, was ${content.length})`
+        );
+      } else {
+        await fs.writeFile(abs, updated, 'utf-8');
+        applied.push(file);
+        console.log(`✅ [SCPA] Wrote ${abs}`);
+      }
+    } catch (err) {
+      skipped.push(file);
+      errors.push(
+        `${file}: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
+  const success = applied.length > 0 && errors.length === 0;
+  return {
+    success,
+    dryRun,
+    applied,
+    skipped,
+    errors,
+    preview: previews.join('\n') || undefined,
+  };
 }
 
 // Register the coding agent with the registry for task-based operations
