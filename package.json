@@ -205,7 +205,7 @@
     "vitest": "^4.1.10"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.62.3",
+    "@rollup/rollup-linux-x64-gnu": "^4.62.4",
     "@rollup/rollup-linux-x64-musl": "^4.55.1",
     "bufferutil": "^4.0.8"
   }
