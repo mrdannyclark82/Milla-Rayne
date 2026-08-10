@@ -6,6 +6,8 @@
  */
 
 import { RepositoryData } from './repositoryAnalysisService';
+import fs from 'node:fs';
+import path from 'node:path';
 
 export interface SecurityIssue {
   severity: 'critical' | 'high' | 'medium' | 'low';
