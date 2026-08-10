@@ -9,13 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-monorepo
-      - run: pnpm lint
-      - run: pnpm test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-monorepo
-      - run: pnpm build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: npm
+      - run: npm ci
+      - run: npm run build

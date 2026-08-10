@@ -64,15 +64,20 @@ jobs:
           retention-days: 30
 
       - name: Send email with report
+        if: ${{ env.EMAIL_FROM != '' && env.EMAIL_PASS != '' && env.EMAIL_TO != '' }}
         uses: dawidd6/action-send-mail@v3
+        env:
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
         with:
           server_address: smtp.gmail.com
           server_port: 587
-          username: ${{ secrets.EMAIL_FROM }}
-          password: ${{ secrets.EMAIL_PASS }}
+          username: ${{ env.EMAIL_FROM }}
+          password: ${{ env.EMAIL_PASS }}
           subject: '🚀 Daily Empire Report - ${{ github.run_number }}'
-          to: ${{ secrets.EMAIL_TO }}
-          from: Milla-Rayne Empire <${{ secrets.EMAIL_FROM }}>
+          to: ${{ env.EMAIL_TO }}
+          from: Milla-Rayne Empire <${{ env.EMAIL_FROM }}>
           body: |
             Daily Empire Analysis Report
 
