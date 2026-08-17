@@ -39,19 +39,34 @@ jobs:
             }
 
             for (const b of branches) {
-              const cmp = await github.rest.repos.compareCommitsWithBasehead({
-                owner, repo, basehead: `main...${b.name}`
+              let merged = false;
+              let ahead_by = 0;
+              let behind_by = 0;
+
+              try {
+                const cmp = await github.rest.repos.compareCommitsWithBasehead({
+                  owner, repo, basehead: `main...${b.name}`
+                });
+                merged = cmp.data.status === 'behind' || cmp.data.status === 'identical';
+                ahead_by = cmp.data.ahead_by;
+                behind_by = cmp.data.behind_by;
+              } catch (err) {
+                console.log(`Could not compare ${b.name} with main: ${err.message}`);
+              }
+
+              const fullCommit = await github.rest.repos.getCommit({
+                owner, repo, ref: b.commit.sha
               });
 
               rows.push({
                 branch: b.name,
                 linked_pr: prByHead.get(b.name) || null,
-                merged: cmp.data.status === 'behind' || cmp.data.status === 'identical',
-                ahead_by: cmp.data.ahead_by,
-                behind_by: cmp.data.behind_by,
+                merged: merged,
+                ahead_by: ahead_by,
+                behind_by: behind_by,
                 duplicate_sha: bySha.get(b.commit.sha).length > 1,
                 commit_sha: b.commit.sha,
-                last_commit_date: b.commit.commit.author.date
+                last_commit_date: fullCommit.data.commit.author.date
               });
             }
 
