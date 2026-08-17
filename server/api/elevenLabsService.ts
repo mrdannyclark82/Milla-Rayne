@@ -5,7 +5,11 @@ import crypto from 'crypto';
 import { LRUCache } from 'lru-cache';
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Default voice, can be changed
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '21m00Tcm4TlvDq8ikWAM';
+
+function isSafeElevenLabsVoiceId(voiceId: string): boolean {
+  return typeof voiceId === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(voiceId);
+}
 
 // Cache for generated speech files (500 files, ~50MB max, 7-day TTL)
 const speechCache = new LRUCache<string, string>({
@@ -25,6 +29,10 @@ export async function generateElevenLabsSpeech(
 ): Promise<string | null> {
   if (!ELEVENLABS_API_KEY) {
     console.error('ElevenLabs API key is not configured.');
+    return null;
+  }
+  if (!isSafeElevenLabsVoiceId(VOICE_ID)) {
+    console.error('ElevenLabs voice ID is invalid.');
     return null;
   }
 
@@ -58,7 +66,7 @@ export async function generateElevenLabsSpeech(
   console.log(`Voice cache miss for text: "${text.substring(0, 50)}..."`);
 
   const response = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(VOICE_ID)}`,
     {
       method: 'POST',
       headers: {
