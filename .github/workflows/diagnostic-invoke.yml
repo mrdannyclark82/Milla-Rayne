@@ -17,16 +17,6 @@ jobs:
       - name: 'Checkout repository'
         uses: 'actions/checkout@v4'
 
-      - name: 'SETUP: Authenticate to Google Cloud'
-        id: auth
-        uses: 'google-github-actions/auth@v2'
-        with:
-          workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}'
-          service_account: '${{ vars.SERVICE_ACCOUNT_EMAIL }}'
-
-      - name: '✅ SUCCESS: Authenticated to Google Cloud'
-        run: echo "Authentication successful."
-
       - name: 'SETUP: Run Gemini CLI with Full Diagnostics'
         id: 'run_gemini'
         uses: 'google-github-actions/run-gemini-cli@v0'
@@ -35,7 +25,7 @@ jobs:
           DESCRIPTION: 'Testing the gemini-dispatch workflow'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
+          google_api_key: '${{ secrets.GOOGLE_API_KEY }}'
           gemini_cli_version: 'latest'
           gemini_debug: 'true'
           prompt: 'Hello, world!'
