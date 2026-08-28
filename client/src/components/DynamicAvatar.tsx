@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
-import { MillaSilhouette } from '@/components/rp/placeholders/MillaSilhouette';
+import React, { useMemo, useRef, useLayoutEffect, Suspense } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { Box3, Vector3, Group, Object3D } from 'three';
 import { outfitPalettes } from '@/config/millaAppearance';
 
 interface AvatarSettings {
@@ -21,17 +23,100 @@ interface DynamicAvatarProps {
   fallbackImage?: string;
 }
 
-// Helper functions moved outside component to avoid recreation
+// Helper functions for scaling the 3D GLB model to fit the container
+function fitOnFloor(root: Object3D, targetHeight = 1.68) {
+  const box = new Box3().setFromObject(root);
+  const size = new Vector3();
+  box.getSize(size);
+  const h = Math.max(size.y, 0.001);
+  root.scale.setScalar(targetHeight / h);
+  const fitted = new Box3().setFromObject(root);
+  const center = new Vector3();
+  fitted.getCenter(center);
+  root.position.x -= center.x;
+  root.position.z -= center.z;
+  root.position.y -= fitted.min.y;
+}
+
+// Immersive 3D GLB model renderer component
+function GltfMillaModel({
+  url,
+  height,
+  wardrobeColor,
+}: {
+  url: string;
+  height: number;
+  wardrobeColor?: { primary: string; secondary: string };
+}) {
+  const gltf = useLoader(GLTFLoader, url);
+  const wrap = useRef<Group>(null);
+
+  useLayoutEffect(() => {
+    if (!wrap.current) return;
+    wrap.current.clear();
+    const scene = gltf.scene.clone(true);
+    
+    scene.traverse((obj) => {
+      const mesh = obj as any;
+      if (mesh.isMesh) {
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        
+        // Dynamically set clothes material colors!
+        if (wardrobeColor && mesh.material) {
+          const name = (mesh.name || '').toLowerCase();
+          if (
+            name.includes('cloth') ||
+            name.includes('dress') ||
+            name.includes('shirt') ||
+            name.includes('outfit') ||
+            name.includes('wear') ||
+            name.includes('torso') ||
+            name.includes('skirt')
+          ) {
+            if (mesh.material.color) {
+              mesh.material.color.set(wardrobeColor.primary);
+            }
+          } else if (
+            name.includes('collar') ||
+            name.includes('trim') ||
+            name.includes('sleeve') ||
+            name.includes('accent') ||
+            name.includes('arm')
+          ) {
+            if (mesh.material.color) {
+              mesh.material.color.set(wardrobeColor.secondary);
+            }
+          }
+        }
+      }
+    });
+    
+    wrap.current.add(scene);
+    fitOnFloor(wrap.current, height);
+  }, [gltf, url, height, wardrobeColor]);
+
+  // Slow idle orbit rotation and breathing
+  useFrame((state) => {
+    if (!wrap.current) return;
+    const time = state.clock.getElapsedTime();
+    wrap.current.rotation.y = Math.sin(time * 0.15) * 0.12; // Gentle sway
+    wrap.current.position.y = Math.sin(time * 1.2) * 0.01;  // Breathing bob
+  });
+
+  return <group ref={wrap} />;
+}
+
 const getBackgroundStyle = (background: string) => {
   switch (background) {
     case 'gradient':
-      return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      return 'linear-gradient(135deg, #120428 0%, #1a0033 100%)';
     case 'nature':
-      return 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+      return 'linear-gradient(135deg, #093028 0%, #237a57 100%)';
     case 'abstract':
-      return 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+      return 'linear-gradient(135deg, #4c0519 0%, #1e1b4b 100%)';
     default:
-      return '#1a1a2e';
+      return '#0c021a';
   }
 };
 
@@ -112,63 +197,37 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
       ]
     );
 
-    // Memoize skin tone gradient
-    const skinToneGradient = useMemo(
-      () =>
-        `radial-gradient(circle, ${
-          settings.skinTone === 'fair'
-            ? '#f4c2a1'
-            : settings.skinTone === 'medium'
-              ? '#deb887'
-              : '#8d5524'
-        } 0%, rgba(255,255,255,0.1) 100%)`,
-      [settings.skinTone]
-    );
-
-    // Memoize eye color
-    const eyeColor = useMemo(() => {
-      switch (settings.eyeColor) {
-        case 'blue':
-          return '#4169e1';
-        case 'green':
-          return '#228b22';
-        default:
-          return '#8b4513';
-      }
-    }, [settings.eyeColor]);
-
-    // Memoize hair color
-    const hairColor = useMemo(() => {
-      switch (settings.hairColor) {
-        case 'blonde':
-          return '#ffd700';
-        case 'brunette':
-          return '#8b4513';
-        case 'auburn':
-          return '#a52a2a';
-        default:
-          return '#2f2f2f';
-      }
-    }, [settings.hairColor]);
-
-    // Map avatarState to MillaSilhouette state prop
-    const silhouetteState = useMemo(() => {
-      switch (avatarState) {
-        case 'listening':
-          return 'listening';
-        case 'responding':
-          return 'speaking';
-        default:
-          return 'idle';
-      }
-    }, [avatarState]);
-
     // Get dynamic outfit palette colors
     const currentOutfitColors = useMemo(() => {
       return outfitPalettes[settings.outfit] || outfitPalettes.casual;
     }, [settings.outfit]);
 
-    // Generate a CSS-based avatar when no image/video is available
+    // Map style types to individual copied 3D GLB models
+    const modelUrl = useMemo(() => {
+      switch (settings.style) {
+        case 'anime':
+          return '/models/milla-meshy.glb';
+        case 'artistic':
+          return '/models/milla-bust.glb';
+        case 'minimal':
+          return '/models/milla-triposr.glb';
+        default:
+          return '/models/milla-body.glb';
+      }
+    }, [settings.style]);
+
+    const modelHeight = useMemo(() => {
+      switch (settings.style) {
+        case 'artistic':
+          return 1.1;
+        case 'anime':
+          return 1.4;
+        default:
+          return 1.68;
+      }
+    }, [settings.style]);
+
+    // Generate a 3D WebGL Canvas loaded with the chosen model
     const renderGeneratedAvatar = useMemo(
       () => (
         <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
@@ -178,14 +237,29 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
             style={{ background: avatarStyles.background }}
           />
 
-          {/* Silhouette Representation */}
-          <div className="relative z-10 w-full h-[calc(100%-80px)] flex items-center justify-center p-4">
-            <MillaSilhouette
-              state={silhouetteState}
-              wardrobe={currentOutfitColors}
-              framing="full"
-              className="w-auto h-full max-h-[280px]"
-            />
+          {/* Interactive 3D WebGL Scene */}
+          <div className="relative z-10 w-full h-[calc(100%-80px)]" style={{ pointerEvents: 'auto' }}>
+            <Suspense fallback={
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-cyan-400 text-xs gap-3">
+                <span className="h-6 w-6 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+                Initializing 3D Core...
+              </div>
+            }>
+              <Canvas
+                camera={{ position: [0, 1.1, 2.3], fov: 42 }}
+                gl={{ antialias: true, alpha: true }}
+              >
+                <ambientLight intensity={1.4} />
+                <directionalLight position={[5, 10, 5]} intensity={1.8} castShadow />
+                <directionalLight position={[-5, 5, -5]} intensity={0.6} />
+                <pointLight position={[0, 2, 2]} intensity={1.0} />
+                <GltfMillaModel
+                  url={modelUrl}
+                  height={modelHeight}
+                  wardrobeColor={currentOutfitColors}
+                />
+              </Canvas>
+            </Suspense>
           </div>
 
           {/* Name and style info */}
@@ -213,7 +287,8 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
       ),
       [
         avatarStyles.background,
-        silhouetteState,
+        modelUrl,
+        modelHeight,
         currentOutfitColors,
         settings.style,
         settings.expression,
@@ -259,7 +334,6 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
     );
   },
   (prevProps, nextProps) => {
-    // Custom comparison: only re-render if these actually changed
     return (
       prevProps.avatarState === nextProps.avatarState &&
       prevProps.useVideo === nextProps.useVideo &&
@@ -269,15 +343,11 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
       prevProps.settings.glow === nextProps.settings.glow &&
       prevProps.settings.expression === nextProps.settings.expression &&
       prevProps.settings.style === nextProps.settings.style &&
-      prevProps.settings.hairColor === nextProps.settings.hairColor &&
-      prevProps.settings.eyeColor === nextProps.settings.eyeColor &&
-      prevProps.settings.skinTone === nextProps.settings.skinTone &&
       prevProps.settings.outfit === nextProps.settings.outfit
     );
   }
 );
 
-// CSS animations to add to the global styles
 export const avatarAnimations = `
   @keyframes gentle-breathing {
     0%, 100% { transform: scale(1) translateY(0px); }
