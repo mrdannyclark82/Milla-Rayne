@@ -23,9 +23,7 @@ import { STATIONS, type StationId, type OrbitPose } from './stations';
 type Orbit = OrbitPose;
 
 const AVATARS = [
-  { id: 'body', url: '/models/milla-body.glb', label: 'Latest', height: 1.7 },
-  { id: 'meshy', url: '/models/milla-meshy.glb', label: 'Meshy', height: 1.4 },
-  { id: 'bust', url: '/models/milla-bust.glb', label: 'Bust', height: 1.1 },
+  { id: 'body', url: '/models/milla-body.glb', label: 'Milla', height: 1.68 },
 ] as const;
 
 function CameraOrbit({
@@ -165,7 +163,7 @@ export default function PresenceStage({
   const orbit = useRef<Orbit>({ ...def.orbit });
   const [avatar, setAvatar] = useState<(typeof AVATARS)[number]>(AVATARS[0]);
   const [clothed, setClothed] = useState(true);
-  const lookY = avatar.id === 'bust' ? 0.72 : def.lookY;
+  const lookY = def.lookY;
 
   useEffect(() => {
     orbit.current = { ...STATIONS[station].orbit };
@@ -246,7 +244,6 @@ export default function PresenceStage({
           <group position={def.avatar}>
             <Idle>
               <GltfMilla url={avatar.url} height={avatar.height} speaking={speaking} />
-              {clothed ? <PublicOutfit bust={avatar.id === 'bust'} /> : null}
             </Idle>
           </group>
         </Suspense>
@@ -257,26 +254,6 @@ export default function PresenceStage({
           orbit={orbit}
         />
       </Canvas>
-      <div className="rs-avatar-switch" role="group" aria-label="Avatar">
-        {AVATARS.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            className={a.id === avatar.id ? 'active' : ''}
-            onClick={() => setAvatar(a)}
-          >
-            {a.label}
-          </button>
-        ))}
-        <button
-          type="button"
-          className={clothed ? 'active' : ''}
-          title={clothed ? 'Public clothes on' : 'Just us'}
-          onClick={() => setClothed((v) => !v)}
-        >
-          {clothed ? 'Public' : 'Just us'}
-        </button>
-      </div>
     </div>
   );
 }
