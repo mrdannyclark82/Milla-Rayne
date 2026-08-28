@@ -109,7 +109,19 @@ export async function initApp() {
       max: 2000, // Increase budget to allow multiple concurrent asset downloads
       skip: (req) => {
         const ip = req.ip || req.socket.remoteAddress || '';
-        return ip === '127.0.0.1' || ip === '::1' || ip.includes('127.0.0.1') || ip === '::ffff:127.0.0.1';
+        // Bypass rate limiting for loopback, local LAN, and Tailscale VPN connections
+        return (
+          ip === '127.0.0.1' ||
+          ip === '::1' ||
+          ip.includes('127.0.0.1') ||
+          ip.startsWith('192.168.') ||
+          ip.startsWith('10.') ||
+          ip.startsWith('100.') ||
+          ip.includes('::ffff:127.0.0.1') ||
+          ip.includes('::ffff:192.168.') ||
+          ip.includes('::ffff:10.') ||
+          ip.includes('::ffff:100.')
+        );
       },
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
