@@ -1,0 +1,41 @@
+name: '▶️ Gemini Invoke (Diagnostic)'
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: 'bash'
+
+jobs:
+  invoke:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: 'Checkout repository'
+        uses: 'actions/checkout@v4'
+
+      - name: 'SETUP: Authenticate to Google Cloud'
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ vars.GCP_WIF_PROVIDER }}'
+          service_account: '${{ vars.SERVICE_ACCOUNT_EMAIL }}'
+
+      - name: '✅ SUCCESS: Authenticated to Google Cloud'
+        run: echo "Authentication successful."
+
+      - name: 'SETUP: Run Gemini CLI with Full Diagnostics'
+        id: 'run_gemini'
+        uses: 'google-github-actions/run-gemini-cli@v0'
+        env:
+          TITLE: 'Diagnostic Run'
+          DESCRIPTION: 'Testing the gemini-dispatch workflow'
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        with:
+          gcp_project_id: '${{ vars.GOOGLE_CLOUD_PROJECT }}'
+          gemini_cli_version: 'latest'
+          gemini_debug: 'true'
+          prompt: 'Hello, world!'
