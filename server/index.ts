@@ -106,7 +106,11 @@ export async function initApp() {
     const rateLimit = rateLimitModule.default;
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
+      max: 2000, // Increase budget to allow multiple concurrent asset downloads
+      skip: (req) => {
+        const ip = req.ip || req.socket.remoteAddress || '';
+        return ip === '127.0.0.1' || ip === '::1' || ip.includes('127.0.0.1') || ip === '::ffff:127.0.0.1';
+      },
       standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
       legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     });
@@ -369,7 +373,7 @@ if (process.env.NODE_ENV !== 'test') {
     httpServer.listen(
       {
         port,
-        host: '0.0.0.0',
+        host: process.env.HOST || '127.0.0.1',
         reusePort: true,
       },
       () => {
