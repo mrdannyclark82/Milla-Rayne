@@ -25,7 +25,7 @@ jobs:
           DESCRIPTION: 'Testing the gemini-dispatch workflow'
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         with:
-          google_api_key: '${{ secrets.GOOGLE_API_KEY }}'
+          gemini_api_key: '${{ secrets.GOOGLE_API_KEY }}'
           gemini_cli_version: 'latest'
           gemini_debug: 'true'
           prompt: 'Hello, world!'
