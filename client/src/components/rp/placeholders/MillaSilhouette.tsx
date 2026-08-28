@@ -11,6 +11,10 @@ interface MillaSilhouetteProps {
   framing?: FramingMode;
   reducedMotion?: boolean;
   className?: string;
+  wardrobe?: {
+    primary: string;
+    secondary: string;
+  };
 }
 
 /**
@@ -29,7 +33,11 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
   framing = 'full',
   reducedMotion = false,
   className = '',
+  wardrobe,
 }) => {
+  // Get dynamic wardrobe colors or default to canonical ones
+  const wardrobeColors = wardrobe || millaAppearance.wardrobe;
+
   // Get time-of-day tint
   const tint = timeOfDayTints[timeOfDay];
 
@@ -210,7 +218,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
             cy="140"
             rx="45"
             ry="35"
-            fill={millaAppearance.wardrobe.primary}
+            fill={wardrobeColors.primary}
             stroke="rgba(255, 255, 255, 0.15)"
             strokeWidth="1"
           />
@@ -219,7 +227,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
             y="120"
             width="90"
             height="60"
-            fill={millaAppearance.wardrobe.primary}
+            fill={wardrobeColors.primary}
             rx="8"
             stroke="rgba(255, 255, 255, 0.15)"
             strokeWidth="1"
@@ -228,7 +236,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
           {/* Collar/neckline detail */}
           <path
             d="M 85 110 Q 100 115, 115 110"
-            stroke={millaAppearance.wardrobe.secondary}
+            stroke={wardrobeColors.secondary}
             strokeWidth="2"
             fill="none"
           />
@@ -239,7 +247,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
             cy="145"
             rx="12"
             ry="45"
-            fill={millaAppearance.wardrobe.secondary}
+            fill={wardrobeColors.secondary}
             stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth="0.5"
           />
@@ -248,7 +256,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
             cy="145"
             rx="12"
             ry="45"
-            fill={millaAppearance.wardrobe.secondary}
+            fill={wardrobeColors.secondary}
             stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth="0.5"
           />
@@ -262,7 +270,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
                 cy="210"
                 rx="42"
                 ry="30"
-                fill={millaAppearance.wardrobe.secondary}
+                fill={wardrobeColors.secondary}
                 stroke="rgba(255, 255, 255, 0.1)"
                 strokeWidth="0.5"
               />
@@ -271,7 +279,7 @@ export const MillaSilhouette: React.FC<MillaSilhouetteProps> = ({
                 y="190"
                 width="84"
                 height="50"
-                fill={millaAppearance.wardrobe.secondary}
+                fill={wardrobeColors.secondary}
                 rx="6"
                 stroke="rgba(255, 255, 255, 0.1)"
                 strokeWidth="0.5"

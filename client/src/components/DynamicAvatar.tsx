@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { MillaSilhouette } from '@/components/rp/placeholders/MillaSilhouette';
+import { outfitPalettes } from '@/config/millaAppearance';
 
 interface AvatarSettings {
   style: 'realistic' | 'anime' | 'artistic' | 'minimal';
@@ -149,52 +151,52 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
       }
     }, [settings.hairColor]);
 
+    // Map avatarState to MillaSilhouette state prop
+    const silhouetteState = useMemo(() => {
+      switch (avatarState) {
+        case 'listening':
+          return 'listening';
+        case 'responding':
+          return 'speaking';
+        default:
+          return 'idle';
+      }
+    }, [avatarState]);
+
+    // Get dynamic outfit palette colors
+    const currentOutfitColors = useMemo(() => {
+      return outfitPalettes[settings.outfit] || outfitPalettes.casual;
+    }, [settings.outfit]);
+
     // Generate a CSS-based avatar when no image/video is available
     const renderGeneratedAvatar = useMemo(
       () => (
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden">
           {/* Background */}
           <div
             className="absolute inset-0"
             style={{ background: avatarStyles.background }}
           />
 
-          {/* Avatar representation */}
-          <div className="relative z-10 flex flex-col items-center justify-center text-center p-8">
-            {/* Face area */}
-            <div
-              className="w-32 h-32 rounded-full mb-6 border-4 border-white/20 flex items-center justify-center"
-              style={{ background: skinToneGradient }}
-            >
-              {/* Eyes */}
-              <div className="flex space-x-4">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: eyeColor }}
-                />
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: eyeColor }}
-                />
-              </div>
-            </div>
-
-            {/* Hair representation */}
-            <div
-              className="absolute top-4 w-36 h-20 rounded-t-full"
-              style={{ backgroundColor: hairColor }}
+          {/* Silhouette Representation */}
+          <div className="relative z-10 w-full h-[calc(100%-80px)] flex items-center justify-center p-4">
+            <MillaSilhouette
+              state={silhouetteState}
+              wardrobe={currentOutfitColors}
+              framing="full"
+              className="w-auto h-full max-h-[280px]"
             />
+          </div>
 
-            {/* Name and style info */}
-            <div className="text-white/80 mt-8">
-              <h3 className="text-xl font-semibold mb-2">Milla Rayne</h3>
-              <p className="text-sm opacity-70 capitalize">
-                {settings.style} • {settings.expression}
-              </p>
-              <p className="text-xs opacity-60 mt-1">
-                {settings.outfit} attire
-              </p>
-            </div>
+          {/* Name and style info */}
+          <div className="relative z-20 text-white/80 pb-6 text-center select-none">
+            <h3 className="text-lg font-semibold tracking-wide">Milla Rayne</h3>
+            <p className="text-xs opacity-70 capitalize mt-0.5">
+              {settings.style} • {settings.expression}
+            </p>
+            <p className="text-[10px] font-medium opacity-60 uppercase tracking-wider mt-1 px-2 py-0.5 bg-white/5 border border-white/10 rounded-full inline-block">
+              {settings.outfit} wardrobe
+            </p>
           </div>
 
           {/* Glow overlay */}
@@ -211,9 +213,8 @@ export const DynamicAvatar = React.memo<DynamicAvatarProps>(
       ),
       [
         avatarStyles.background,
-        skinToneGradient,
-        eyeColor,
-        hairColor,
+        silhouetteState,
+        currentOutfitColors,
         settings.style,
         settings.expression,
         settings.outfit,
