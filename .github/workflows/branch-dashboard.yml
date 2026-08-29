@@ -43,6 +43,10 @@ jobs:
                 owner, repo, basehead: `main...${b.name}`
               });
 
+              const commitData = await github.rest.repos.getCommit({
+                owner, repo, ref: b.commit.sha
+              });
+
               rows.push({
                 branch: b.name,
                 linked_pr: prByHead.get(b.name) || null,
@@ -51,7 +55,7 @@ jobs:
                 behind_by: cmp.data.behind_by,
                 duplicate_sha: bySha.get(b.commit.sha).length > 1,
                 commit_sha: b.commit.sha,
-                last_commit_date: b.commit.commit.author.date
+                last_commit_date: commitData.data.commit.author.date
               });
             }
 
