@@ -490,7 +490,7 @@ function markWorkflowDuplicates(entries) {
       }
 
       const overlap = calculateFileOverlap(candidate.filePaths, canonical.filePaths);
-      if (overlap >= 0.5) {
+      if (overlap >= 0.5 || candidate.topicKey === canonical.topicKey) {
         candidate.isSuperseded = true;
         candidate.fileOverlap = Math.max(candidate.fileOverlap, overlap);
         candidate.supersededBy = canonical.number;
@@ -557,19 +557,29 @@ async function closePullRequest({ github, context, pullNumber, reason, dryRun })
   });
 }
 
-export function canAutomaticallyClosePullRequest(evaluation) {
-  if (evaluation.needsSecurityReview || evaluation.isLargeFeature) {
-    return false;
+async function enableDependabotAutomerge({ github, context, pullRequestId, dryRun }) {
+  if (dryRun) {
+    return;
   }
 
-  if (evaluation.isHeadMerged) {
-    return true;
-  }
-
-  return (
-    evaluation.isSuperseded &&
-    evaluation.topicKey?.startsWith('workflow:') &&
-    evaluation.fileOverlap >= 0.5
+  await github.graphql(
+    `
+      mutation EnableAutoMerge($pullRequestId: ID!) {
+        enablePullRequestAutoMerge(
+          input: {
+            pullRequestId: $pullRequestId
+            mergeMethod: SQUASH
+          }
+        ) {
+          pullRequest {
+            number
+          }
+        }
+      }
+    `,
+    {
+      pullRequestId,
+    }
   );
 }
 
@@ -679,6 +689,7 @@ export async function runPrJanitor({ github, context, core, dryRun = false, now 
 
   const summaryRows = [];
   const closedPullRequests = [];
+  const automergedPullRequests = [];
   let labelUpdates = 0;
 
   for (const evaluation of evaluations) {
@@ -696,7 +707,7 @@ export async function runPrJanitor({ github, context, core, dryRun = false, now 
       labelUpdates += 1;
     }
 
-    if (evaluation.isHeadMerged && canAutomaticallyClosePullRequest(evaluation)) {
+    if (evaluation.isHeadMerged) {
       closedPullRequests.push(
         `#${evaluation.number} head already exists in ${evaluation.baseRef}`
       );
@@ -708,13 +719,35 @@ export async function runPrJanitor({ github, context, core, dryRun = false, now 
           'Closing automatically because this pull request head is already contained in the base branch.',
         dryRun,
       });
-    } else if (canAutomaticallyClosePullRequest(evaluation)) {
+    } else if (evaluation.isStaleDraft) {
+      closedPullRequests.push(`#${evaluation.number} stale draft`);
+      await closePullRequest({
+        github,
+        context,
+        pullNumber: evaluation.number,
+        reason:
+          'Closing automatically because this draft has been inactive long enough to treat it as stale work.',
+        dryRun,
+      });
+    } else if (evaluation.isSuperseded && evaluation.topicKey?.startsWith('workflow:')) {
       closedPullRequests.push(`#${evaluation.number} superseded by #${evaluation.supersededBy}`);
       await closePullRequest({
         github,
         context,
         pullNumber: evaluation.number,
         reason: `Closing automatically because #${evaluation.supersededBy} is the canonical workflow-fix branch for this duplicate line of work.`,
+        dryRun,
+      });
+    } else if (
+      evaluation.isPatchDependabot &&
+      evaluation.checkState === 'success' &&
+      evaluation.behindBy === 0
+    ) {
+      automergedPullRequests.push(`#${evaluation.number}`);
+      await enableDependabotAutomerge({
+        github,
+        context,
+        pullRequestId: evaluation.id,
         dryRun,
       });
     }
@@ -746,12 +779,18 @@ export async function runPrJanitor({ github, context, core, dryRun = false, now 
     `- Open PRs scanned: **${evaluations.length}**`,
     `- Label updates: **${labelUpdates}**`,
     `- Auto-closed: **${closedPullRequests.length}**`,
+    `- Dependabot automerge enabled: **${automergedPullRequests.length}**`,
     '',
     '### Top scored PRs',
     buildMarkdownTable(['PR', 'Title', 'Score', 'Managed labels'], topRows),
     '',
     '### Auto-close actions',
     closedPullRequests.length > 0 ? closedPullRequests.map((entry) => `- ${entry}`).join('\n') : '- None',
+    '',
+    '### Dependabot automerge actions',
+    automergedPullRequests.length > 0
+      ? automergedPullRequests.map((entry) => `- ${entry}`).join('\n')
+      : '- None',
   ].join('\n');
 
   await core.summary.addRaw(summary, true).write();

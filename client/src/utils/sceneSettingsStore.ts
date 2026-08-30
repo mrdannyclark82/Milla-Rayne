@@ -100,12 +100,9 @@ export function loadSceneSettings(): SceneSettings {
         typeof settings.sceneRoomOverlaysEnabled === 'boolean'
           ? settings.sceneRoomOverlaysEnabled
           : true,
-      backgroundMode: [
-        'css-animated',
-        'static-image',
-        'auto',
-        'webgl-3d',
-      ].includes(settings.backgroundMode as string)
+      backgroundMode: ['css-animated', 'static-image', 'auto'].includes(
+        settings.backgroundMode as string
+      )
         ? (settings.backgroundMode as BackgroundMode)
         : 'auto',
     };

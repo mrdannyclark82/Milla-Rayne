@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
   classifyPrTopic,
-  canAutomaticallyClosePullRequest,
   determinePrLabels,
   groupDuplicateBranches,
   isPatchDependabotPr,
@@ -83,38 +82,6 @@ describe('github maintenance helpers', () => {
 
     expect(labels).toEqual(expect.arrayContaining(['needs-rebase', 'superseded']));
     expect(labels).not.toContain('ready-to-merge');
-  });
-
-  it('only auto-closes verified, low-risk merged or superseded pull requests', () => {
-    const baseEvaluation = {
-      needsSecurityReview: false,
-      isLargeFeature: false,
-      isHeadMerged: false,
-      isSuperseded: true,
-      topicKey: 'workflow:workflows-daily-empire-yml',
-      fileOverlap: 0.75,
-    };
-
-    expect(canAutomaticallyClosePullRequest(baseEvaluation)).toBe(true);
-    expect(
-      canAutomaticallyClosePullRequest({
-        ...baseEvaluation,
-        fileOverlap: 0,
-      })
-    ).toBe(false);
-    expect(
-      canAutomaticallyClosePullRequest({
-        ...baseEvaluation,
-        needsSecurityReview: true,
-      })
-    ).toBe(false);
-    expect(
-      canAutomaticallyClosePullRequest({
-        ...baseEvaluation,
-        isHeadMerged: true,
-        isLargeFeature: true,
-      })
-    ).toBe(false);
   });
 
   it('groups duplicate branches by SHA and chooses safe sandbox deletions', () => {

@@ -61,13 +61,6 @@ class MoodBackgroundService {
   }
 
   /**
-   * Packaged static previews under client/public (always available offline).
-   */
-  private staticAssetForMood(mood: SceneMood): string {
-    return `/assets/scenes/mood-${mood}.jpg`;
-  }
-
-  /**
    * Generate or retrieve cached background for a mood
    */
   async getBackgroundForMood(
@@ -95,32 +88,6 @@ class MoodBackgroundService {
       }
     }
 
-    // Prefer packaged static mood wallpapers when present (fast, no API key)
-    if (!forceRegenerate) {
-      try {
-        const staticPath = path.join(
-          process.cwd(),
-          'client',
-          'public',
-          'assets',
-          'scenes',
-          `mood-${mood}.jpg`
-        );
-        await fs.access(staticPath);
-        const imageUrl = this.staticAssetForMood(mood);
-        this.cache[mood] = {
-          imageUrl,
-          generatedAt: Date.now(),
-          prompt: MOOD_PROMPTS[mood],
-        };
-        await this.saveCache();
-        console.log(`Using static mood wallpaper for: ${mood}`);
-        return { success: true, imageUrl, cached: true };
-      } catch {
-        // fall through to generation
-      }
-    }
-
     // Generate new image
     console.log(`Generating new background for mood: ${mood}`);
     const prompt = MOOD_PROMPTS[mood];
@@ -145,47 +112,16 @@ class MoodBackgroundService {
         };
       }
 
-      // Generation failed — still serve static package if available
-      const fallback = this.staticAssetForMood(mood);
-      try {
-        await fs.access(
-          path.join(
-            process.cwd(),
-            'client',
-            'public',
-            'assets',
-            'scenes',
-            `mood-${mood}.jpg`
-          )
-        );
-        return { success: true, imageUrl: fallback, cached: true };
-      } catch {
-        return {
-          success: false,
-          error: result.error || 'Image generation failed',
-        };
-      }
+      return {
+        success: false,
+        error: result.error || 'Image generation failed',
+      };
     } catch (error: any) {
       console.error('Error generating mood background:', error);
-      const fallback = this.staticAssetForMood(mood);
-      try {
-        await fs.access(
-          path.join(
-            process.cwd(),
-            'client',
-            'public',
-            'assets',
-            'scenes',
-            `mood-${mood}.jpg`
-          )
-        );
-        return { success: true, imageUrl: fallback, cached: true };
-      } catch {
-        return {
-          success: false,
-          error: error.message || 'Unknown error',
-        };
-      }
+      return {
+        success: false,
+        error: error.message || 'Unknown error',
+      };
     }
   }
 

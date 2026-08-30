@@ -1,7 +1,7 @@
 /**
  * Proactive Features Server
- * Optional separate port (5001) for split-process setups.
- * Main app also mounts the same routes on :5000 for same-origin clients.
+ * Runs on a separate port (5001) to avoid rate limiting issues
+ * with the main application server
  */
 
 import dotenv from 'dotenv';
@@ -9,8 +9,6 @@ dotenv.config();
 import express, { type Request, Response } from 'express';
 import { registerProactiveRoutes } from './proactiveRoutes';
 import { createServer } from 'http';
-import { fileURLToPath } from 'url';
-import path from 'path';
 
 const PROACTIVE_PORT = parseInt(process.env.PROACTIVE_PORT || '5001', 10);
 
@@ -23,20 +21,16 @@ export async function initProactiveServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
-  // Lighter rate limiting for proactive features. Skipped in development for
-  // the same reason as the main server (server/index.ts): Vite's dev server
-  // traffic can exhaust a fixed request budget unrelated to actual abuse.
-  if (process.env.NODE_ENV !== 'development') {
-    const rateLimitModule = await import('express-rate-limit');
-    const rateLimit = rateLimitModule.default;
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 500, // Higher limit for proactive polling
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
-    app.use(limiter);
-  }
+  // Lighter rate limiting for proactive features
+  const rateLimitModule = await import('express-rate-limit');
+  const rateLimit = rateLimitModule.default;
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // Higher limit for proactive polling
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
 
   // CORS configuration for proactive server
   const trustedOrigins = process.env.TRUSTED_ORIGINS
@@ -87,10 +81,6 @@ export async function initProactiveServer() {
     next();
   });
 
-  // Load token/goal state so /api/milla/tokens/rewards reflects disk unlocks.
-  const { initializeTokenIncentive } = await import('./tokenIncentiveService');
-  await initializeTokenIncentive();
-
   // Health check endpoint
   app.get('/health', (req: Request, res: Response) => {
     res.json({
@@ -108,34 +98,24 @@ export async function initProactiveServer() {
   return httpServer;
 }
 
-// Only start server if not in test mode and this file is the entrypoint.
-// Compare resolved paths so tsx/node relative argv still counts as main.
+// Only start server if not in test mode and not imported as a module
+// ES module compatible check
+import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
-const entry = process.argv[1] ? path.resolve(process.argv[1]) : '';
-const isMainModule =
-  !!entry &&
-  (entry === __filename ||
-    entry === __filename.replace(/\.ts$/, '.js') ||
-    path.basename(entry) === 'proactiveServer.ts' ||
-    path.basename(entry) === 'proactiveServer.js');
+const isMainModule = process.argv[1] === __filename;
 
 if (process.env.NODE_ENV !== 'test' && isMainModule) {
-  initProactiveServer()
-    .then((httpServer) => {
-      httpServer.listen(
-        {
-          port: PROACTIVE_PORT,
-          host: '0.0.0.0',
-        },
-        () => {
-          console.log(
-            `✅ Proactive Features Server running on port ${PROACTIVE_PORT}`
-          );
-        }
-      );
-    })
-    .catch((err) => {
-      console.error('Failed to start proactive features server:', err);
-      process.exit(1);
-    });
+  initProactiveServer().then((httpServer) => {
+    httpServer.listen(
+      {
+        port: PROACTIVE_PORT,
+        host: '0.0.0.0',
+      },
+      () => {
+        console.log(
+          `✅ Proactive Features Server running on port ${PROACTIVE_PORT}`
+        );
+      }
+    );
+  });
 }
