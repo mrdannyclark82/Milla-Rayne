@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Wifi, Shield, Sparkles, Radio, MessageCircle } from 'lucide-react';
-import { Link } from 'wouter';
+import { Menu, X, Wifi, Shield, Sparkles, Radio } from 'lucide-react';
 import { DashboardSidebar } from './DashboardSidebar';
 import { HologramAvatar } from './HologramAvatar';
 import { CommandBar } from './CommandBar';
@@ -197,14 +196,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 border bg-[#ff00aa]/15 border-[#ff00aa]/40 text-[#ff9ad5] hover:bg-[#ff00aa]/25 shadow-[0_0_20px_rgba(255,0,170,0.2)]"
-                title="Back to Chat"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Chat
-              </Link>
               <ModelSelector
                 value={selectedModel ?? undefined}
                 onChange={handleModelChange}

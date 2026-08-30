@@ -354,27 +354,6 @@ class ProactiveRepositoryManagerService {
       return null;
     }
 
-    // Honesty gate: do not auto-sandbox name-farm / inspiration-only theater
-    const { isFeatureActionable } = await import('./featureDiscoveryService');
-    const actionable = isFeatureActionable(feature as any);
-    if (!actionable) {
-      console.log(
-        `⏭️ Skip auto-sandbox for non-actionable discovery: ${feature.name}`
-      );
-      // Optional: keep a lightweight planned proposal without sandbox noise
-      const reviewOnly: ProactiveAction = {
-        id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        timestamp: Date.now(),
-        type: ProactiveActionType.FeatureProposal,
-        description: `Review only (no sandbox): ${feature.name}`,
-        status: 'planned',
-        priority: 'low',
-        estimatedImpact: feature.estimatedValue,
-        relatedIds: [feature.id],
-      };
-      return reviewOnly;
-    }
-
     const action: ProactiveAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
@@ -386,7 +365,7 @@ class ProactiveRepositoryManagerService {
       relatedIds: [feature.id],
     };
 
-    // Create sandbox only for actionable features (with real evidence)
+    // Create sandbox for this feature
     const sandbox = await createSandbox({
       name: feature.name,
       description: feature.description,
@@ -397,26 +376,12 @@ class ProactiveRepositoryManagerService {
       name: feature.name,
       description: feature.description,
       files: [],
-      content: [
-        `# ${feature.name}`,
-        '',
-        feature.description,
-        '',
-        (feature as any).evidence
-          ? `## Evidence\n${(feature as any).evidence}`
-          : '',
-        '',
-        '## Status',
-        'Auto-created from actionable discovery (user patterns / explicit signal).',
-      ]
-        .filter(Boolean)
-        .join('\n'),
     });
 
     action.relatedIds!.push(sandbox.id);
     await updateFeatureStatus(feature.id, 'in_sandbox');
 
-    console.log(`💡 Created feature action + sandbox: ${feature.name}`);
+    console.log(`💡 Created feature action: ${feature.name}`);
     return action;
   }
 

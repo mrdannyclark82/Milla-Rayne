@@ -34,6 +34,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         messageDao = database.messageDao()
         offlineGenerator = OfflineResponseGenerator(application)
         loadMessages()
+        syncPendingMessages() // Try to sync any offline messages on startup
     }
 
     override fun onCleared() {
@@ -53,6 +54,28 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Basic sync function to retry sending unsynced messages
+    fun syncPendingMessages() {
+        viewModelScope.launch {
+            val unsynced = messageDao.getUnsyncedMessages()
+            if (unsynced.isEmpty()) return@launch
+
+            unsynced.forEach { msg ->
+                try {
+                    val response = MillaApiClient.apiService.sendMessage(ChatRequest(message = msg.content))
+                    if (response.isSuccessful) {
+                        messageDao.markAsSynced(msg.id)
+                        // Note: We might get a duplicate response if we don't handle it carefully,
+                        // but for now, we just ensure the user message reaches the server.
+                        // Ideally, the server would handle deduping or we'd handle the delayed response.
+                    }
+                } catch (e: Exception) {
+                    // Still offline, skip
+                }
+            }
+        }
+    }
+
     fun sendMessage(content: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -62,11 +85,13 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
             val userMessage = Message(
                 content = content.trim(),
                 role = "user",
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                isSynced = false
             )
 
+            var messageId: Long = 0
             try {
-                messageDao.insertMessage(userMessage)
+                messageId = messageDao.insertMessage(userMessage)
             } catch (e: Exception) {
                 _error.value = "Failed to save message: ${e.message}"
                 _isLoading.value = false
@@ -84,6 +109,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                     assistantResponseText = response.body()?.response
                     _isOfflineMode.value = false // Successful connection
 
+                    // Mark as synced since it reached the server
+                    messageDao.markAsSynced(messageId)
                 } else {
                     throw Exception("Server returned ${response.code()}")
                 }
@@ -93,7 +120,7 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 _isOfflineMode.value = true
 
                 try {
-                    assistantResponseText = offlineGenerator.generateResponse(content).first
+                    assistantResponseText = offlineGenerator.generateResponse(content)
                 } catch (offlineErr: Exception) {
                     _error.value = "Both online and offline assistants failed."
                 }
@@ -104,7 +131,8 @@ class ChatViewModel(application: Application) : AndroidViewModel(application) {
                 val assistantMessage = Message(
                     content = assistantResponseText,
                     role = "assistant",
-                    timestamp = System.currentTimeMillis()
+                    timestamp = System.currentTimeMillis(),
+                    isSynced = true // Local responses considered synced/local-only
                 )
                 try {
                     messageDao.insertMessage(assistantMessage)

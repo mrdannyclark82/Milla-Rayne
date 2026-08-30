@@ -70,7 +70,9 @@ jobs:
       issue_number: '${{ github.event.pull_request.number || github.event.issue.number }}'
     steps:
       - name: 'Checkout repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v4
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: 'Mint identity token'
         id: 'mint_identity_token'
@@ -175,7 +177,9 @@ jobs:
       pull-requests: 'write'
     steps:
       - name: 'Checkout repository'
-        uses: 'actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8' # ratchet:actions/checkout@v4
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: 'Mint identity token'
         id: 'mint_identity_token'

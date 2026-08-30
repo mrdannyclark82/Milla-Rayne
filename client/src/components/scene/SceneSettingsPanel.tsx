@@ -217,7 +217,6 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
               <SelectItem value="auto">Auto (Smart)</SelectItem>
               <SelectItem value="css-animated">CSS Animated</SelectItem>
               <SelectItem value="static-image">Static Image</SelectItem>
-              <SelectItem value="webgl-3d">3D Immersive (WebGL)</SelectItem>
             </SelectContent>
           </Select>
           <p className="text-xs text-muted-foreground">
@@ -225,8 +224,6 @@ export const SceneSettingsPanel: React.FC<SceneSettingsPanelProps> = ({
               'Uses static images from /assets/scenes/'}
             {settings.backgroundMode === 'css-animated' &&
               'Uses animated gradient backgrounds'}
-            {settings.backgroundMode === 'webgl-3d' &&
-              'GPU-accelerated 3D scene with particles (falls back to CSS on unsupported devices)'}
             {(!settings.backgroundMode || settings.backgroundMode === 'auto') &&
               'Auto-selects based on location'}
           </p>

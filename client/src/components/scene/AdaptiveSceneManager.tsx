@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { detectDeviceCapabilities } from '@/utils/capabilityDetector';
 import {
   getSceneForContext,
@@ -11,14 +11,6 @@ import {
 import { CSSSceneRenderer } from './CSSSceneRenderer';
 import { RealisticSceneBackground } from './RealisticSceneBackground';
 import { SceneDebugOverlay } from './SceneDebugOverlay';
-
-// Lazy-loaded so the ~150KB Three.js/WebGL bundle is only fetched when a
-// user actually opts into the immersive 3D background (Option 2 renderer).
-const WebGLSceneRenderer = lazy(() =>
-  import('./WebGLSceneRenderer').then((mod) => ({
-    default: mod.WebGLSceneRenderer,
-  }))
-);
 import {
   SceneSettings,
   AvatarState,
@@ -65,17 +57,6 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
 
   // User-friendly info overlay (non-intrusive, bottom-left corner)
   const [showInfo, setShowInfo] = useState(false);
-
-  // If the WebGL 3D renderer fails at runtime (e.g. lost context on an
-  // unsupported device), fall back to the CSS renderer for the rest of
-  // the session instead of retrying and risking a crash loop.
-  const [webglFailed, setWebglFailed] = useState(false);
-
-  // Mood-generated / static mood wallpaper (from SceneSettingsPanel events
-  // or /api/scene/mood-background/:mood). Chat mounts this manager, not
-  // BackgroundLayer — so we listen here or the image never paints.
-  const [moodImageUrl, setMoodImageUrl] = useState<string | null>(null);
-  const [moodImageLoaded, setMoodImageLoaded] = useState(false);
 
   // Use prop timeOfDay if provided, otherwise use auto-detected
   const timeOfDay = propTimeOfDay || autoTimeOfDay;
@@ -124,30 +105,6 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
     });
   }, [propSettings]);
 
-  // Listen for mood wallpaper updates fired by SceneSettingsPanel
-  useEffect(() => {
-    const handleMoodBackgroundUpdate = (event: Event) => {
-      const detail = (event as CustomEvent).detail as
-        | { mood?: string; imageUrl?: string }
-        | undefined;
-      if (detail?.imageUrl) {
-        setMoodImageLoaded(false);
-        setMoodImageUrl(detail.imageUrl);
-      }
-    };
-
-    window.addEventListener(
-      'moodBackgroundUpdated',
-      handleMoodBackgroundUpdate as EventListener
-    );
-    return () => {
-      window.removeEventListener(
-        'moodBackgroundUpdated',
-        handleMoodBackgroundUpdate as EventListener
-      );
-    };
-  }, []);
-
   // Determine active mood from settings, location, or prop
   // Priority: propMood > location-based mood > settings mood
   let activeMood = settings.mood;
@@ -158,84 +115,12 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
     activeMood = propMood;
   }
 
-  // Fetch mood wallpaper when mood changes (covers first load + selector)
-  useEffect(() => {
-    if (!settings.enabled || !activeMood) return;
-    // RP-driven backgrounds own the image path
-    if (settings.sceneBackgroundFromRP) return;
-
-    let cancelled = false;
-    const fetchMood = async () => {
-      try {
-        const response = await fetch(
-          `/api/scene/mood-background/${activeMood}`
-        );
-        if (!response.ok) return;
-        const data = await response.json();
-        if (!cancelled && data.success && data.imageUrl) {
-          setMoodImageLoaded(false);
-          setMoodImageUrl(data.imageUrl);
-        }
-      } catch {
-        // Keep CSS/WebGL fallback if mood images are unavailable
-      }
-    };
-    void fetchMood();
-    return () => {
-      cancelled = true;
-    };
-  }, [activeMood, settings.enabled, settings.sceneBackgroundFromRP]);
-
   // Notify parent of scene changes
   useEffect(() => {
     if (onSceneChange) {
       onSceneChange(timeOfDay, activeMood);
     }
   }, [timeOfDay, activeMood, onSceneChange]);
-
-  // Shared mood wallpaper layer — sits behind CSS/WebGL when we have a URL
-  const moodWallpaper =
-    moodImageUrl && settings.enabled ? (
-      <div
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={
-          region === 'left-2-3'
-            ? {
-                width: '66.6667vw',
-                height: '100vh',
-                left: 0,
-                top: 0,
-                position: 'fixed',
-              }
-            : undefined
-        }
-        aria-hidden="true"
-      >
-        <img
-          src={moodImageUrl}
-          alt=""
-          onLoad={() => setMoodImageLoaded(true)}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-            opacity: moodImageLoaded ? 1 : 0,
-            transition: 'opacity 0.6s ease-in-out',
-          }}
-        />
-      </div>
-    ) : null;
-
-  // When a mood wallpaper is active, prefer it over pure CSS/WebGL so the
-  // generated (or cached) scene actually paints on Chat.
-  const preferMoodWallpaper =
-    !!moodImageUrl &&
-    settings.enabled &&
-    !settings.sceneBackgroundFromRP &&
-    (settings.backgroundMode === 'static-image' ||
-      settings.backgroundMode === 'auto' ||
-      !settings.backgroundMode);
 
   // Disable scene if not enabled in settings
   // Show diagnostic overlay if explicitly requested via devDebug
@@ -258,34 +143,6 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
       );
     }
     return null;
-  }
-
-  if (preferMoodWallpaper) {
-    return (
-      <>
-        {moodWallpaper}
-        {/* Soft CSS wash underneath while image loads */}
-        {!moodImageLoaded && (
-          <div
-            className="fixed inset-0 -z-20 pointer-events-none"
-            style={{
-              background: `linear-gradient(135deg, ${getSceneForContext(timeOfDay, activeMood).colors.join(', ')})`,
-            }}
-            aria-hidden="true"
-          />
-        )}
-        {settings.devDebug && (
-          <SceneDebugOverlay
-            capabilities={capabilities}
-            timeOfDay={timeOfDay}
-            mood={activeMood}
-            particlesEnabled={false}
-            parallaxEnabled={false}
-            animationSpeed={0}
-          />
-        )}
-      </>
-    );
   }
 
   // Respect reduced motion preference - always show static gradient
@@ -337,57 +194,6 @@ export const AdaptiveSceneManager: React.FC<AdaptiveSceneManagerProps> = ({
   const useStaticImage =
     backgroundMode === 'static-image' ||
     (backgroundMode === 'auto' && location && location !== 'unknown');
-
-  // Option 2: Immersive WebGL 3D scene (Three.js/@react-three/fiber).
-  // Only offered when the device actually supports WebGL at a decent GPU
-  // tier and hasn't already failed at runtime this session; otherwise we
-  // silently fall through to the CSS renderer below.
-  const useWebGL3D =
-    backgroundMode === 'webgl-3d' &&
-    capabilities.webGL &&
-    capabilities.gpuTier !== 'low' &&
-    !webglFailed;
-
-  if (useWebGL3D) {
-    // Honor seasonal/winter-theme overrides the same way the CSS renderer
-    // does, so switching background modes doesn't change scene selection.
-    const currentSeason = getCurrentSeason();
-    const seasonalScene = settings.winterTheme
-      ? SEASONAL_SCENES.snowy_night
-      : getSeasonalScene(currentSeason, timeOfDay);
-    const webglSceneConfig =
-      seasonalScene || getSceneForContext(timeOfDay, activeMood);
-    const showParticles =
-      settings.enableParticles && settings.particleDensity !== 'off';
-
-    return (
-      <>
-        <Suspense fallback={<CSSSceneRenderer config={webglSceneConfig} />}>
-          <WebGLSceneRenderer
-            config={webglSceneConfig}
-            timeOfDay={timeOfDay}
-            mood={activeMood}
-            particleDensity={showParticles ? settings.particleDensity : 'off'}
-            animationSpeed={settings.animationSpeed}
-            interactive={capabilities.gpuTier !== 'low'}
-            region={region}
-            onError={() => setWebglFailed(true)}
-          />
-        </Suspense>
-
-        {settings.devDebug && (
-          <SceneDebugOverlay
-            capabilities={capabilities}
-            timeOfDay={timeOfDay}
-            mood={activeMood}
-            particlesEnabled={showParticles}
-            parallaxEnabled={true}
-            animationSpeed={settings.animationSpeed}
-          />
-        )}
-      </>
-    );
-  }
 
   // If static image mode is requested, try to use it with CSS fallback
   if (useStaticImage && location) {

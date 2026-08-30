@@ -325,7 +325,6 @@ export const externalAgentResponseSchema = z.object({
       'UNAUTHORIZED',
       'NOT_FOUND',
       'SERVICE_UNAVAILABLE',
-      'NOT_IMPLEMENTED',
     ])
     .describe('Status code of the operation'),
   data: z.any().optional().describe('Response payload data'),

@@ -13,7 +13,6 @@ import { getRAGService } from './rag-service';
 import { getRedisCache } from './redis-cache-service';
 import { getVectorDB, initializeVectorDB } from './vector-db-service';
 import { getConnectionStats } from './optimized-websocket-service';
-import { spineFromChatMessages } from './continuitySpine';
 
 export const enhancedRouter = Router();
 
@@ -69,9 +68,6 @@ enhancedRouter.post('/api/chat', async (req: Request, res: Response) => {
     // Cache the complete response
     await redisCache.cacheLLMResponse(messages, fullResponse);
 
-    // Continuity Spine — so Memory Agent sees app chat (not only /messages path)
-    spineFromChatMessages(messages, fullResponse);
-
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error: any) {
@@ -116,8 +112,6 @@ enhancedRouter.post(
 
       // Cache response
       await redisCache.cacheLLMResponse(messages, response);
-
-      spineFromChatMessages(messages, response);
 
       res.json({ content: response, cached: false });
     } catch (error: any) {

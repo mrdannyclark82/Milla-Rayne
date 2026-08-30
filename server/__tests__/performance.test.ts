@@ -103,9 +103,8 @@ describe('API Load Testing', () => {
       console.log(`  Min: ${minResponseTime}ms`);
       console.log(`  Max: ${maxResponseTime}ms`);
 
-      // Date.now() is millisecond-granular, so a short scheduling pause can
-      // look disproportionately large when the average is only a few ms.
-      expect(maxResponseTime).toBeLessThan(Math.max(avgResponseTime * 5, 100));
+      // Response time should be consistent (max shouldn't be more than 5x avg)
+      expect(maxResponseTime).toBeLessThan(avgResponseTime * 5);
     }, 120000); // 120 second timeout
   });
 

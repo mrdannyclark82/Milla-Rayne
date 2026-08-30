@@ -54,11 +54,7 @@ export interface ParticleConfig {
   speed: number;
 }
 
-export type BackgroundMode =
-  | 'css-animated'
-  | 'static-image'
-  | 'auto'
-  | 'webgl-3d';
+export type BackgroundMode = 'css-animated' | 'static-image' | 'auto';
 
 export interface SceneSettings {
   enabled: boolean;

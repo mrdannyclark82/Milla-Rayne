@@ -43,10 +43,6 @@ export interface DiscoveredFeature {
     | 'implemented'
     | 'rejected';
   tags: string[];
-  /** Honest grounding — empty/missing means do not auto-sandbox */
-  evidence?: string;
-  /** If false, list for review only — never auto-create sandboxes */
-  actionable?: boolean;
 }
 
 export interface RepositoryInsight {
@@ -54,12 +50,9 @@ export interface RepositoryInsight {
   repositoryName: string;
   stars: number;
   language: string;
-  description?: string;
-  topics?: string[];
   features: string[];
   interestingPatterns: string[];
   scannedAt: number;
-  evidence?: string[];
 }
 
 class FeatureDiscoveryService {
@@ -99,19 +92,16 @@ class FeatureDiscoveryService {
       for (const keyword of this.SCAN_KEYWORDS.slice(0, 3)) {
         const results = await searchRepositories(keyword, 5);
 
-        for (const repo of results.slice(0, Math.max(1, Math.ceil(limit / 3)))) {
-          const insight = await this.analyzeRepository({
-            url: repo.url,
-            name: repo.name,
-            stars: repo.stars || 0,
-            language: repo.language,
-            description: repo.description,
-            topics: repo.topics,
-          });
+        for (const repo of results) {
+          const insight = await this.analyzeRepository(
+            repo.url,
+            repo.name,
+            repo.stars || 0
+          );
           if (insight) {
             this.scannedRepositories.push(insight);
 
-            // Grounded suggestions only — no name-keyword feature farms
+            // Generate feature suggestions from repository
             const features = this.extractFeaturesFromInsight(insight);
             newFeatures.push(...features);
           }
@@ -141,9 +131,7 @@ class FeatureDiscoveryService {
       }
 
       await this.saveDiscoveryData();
-      console.log(
-        `Discovered ${newFeatures.length} grounded feature ideas from GitHub (no name-only theater)`
-      );
+      console.log(`Discovered ${newFeatures.length} new features from GitHub`);
     } catch (error) {
       console.error('Error discovering features from GitHub:', error);
     }
@@ -152,21 +140,17 @@ class FeatureDiscoveryService {
   }
 
   /**
-   * Analyze a repository using real metadata (description/topics/language).
-   * Does NOT invent features from the repo name alone.
+   * Analyze a repository for interesting features
    */
-  private async analyzeRepository(repo: {
-    url: string;
-    name: string;
-    stars: number;
-    language?: string | null;
-    description?: string | null;
-    topics?: string[];
-  }): Promise<RepositoryInsight | null> {
+  private async analyzeRepository(
+    url: string,
+    name: string,
+    stars: number
+  ): Promise<RepositoryInsight | null> {
     try {
       // Check if already scanned recently (within 7 days)
       const existing = this.scannedRepositories.find(
-        (r) => r.repositoryUrl === repo.url
+        (r) => r.repositoryUrl === url
       );
       if (
         existing &&
@@ -175,119 +159,89 @@ class FeatureDiscoveryService {
         return existing;
       }
 
-      const description = (repo.description || '').trim();
-      const topics = repo.topics || [];
-      const evidence: string[] = [];
-      if (description) evidence.push(`desc: ${description.slice(0, 200)}`);
-      if (topics.length) evidence.push(`topics: ${topics.join(', ')}`);
-      if (repo.language) evidence.push(`lang: ${repo.language}`);
-      if (repo.stars > 0) evidence.push(`stars: ${repo.stars}`);
-
-      // Without description/topics we refuse to invent features from the name
-      if (!description && topics.length === 0) {
-        console.log(
-          `[FeatureDiscovery] Skip ${repo.name}: no description/topics (would be name-only theater)`
-        );
-        return null;
-      }
-
+      // Simulate repository analysis (in real implementation, would use GitHub API)
       const insight: RepositoryInsight = {
-        repositoryUrl: repo.url,
-        repositoryName: repo.name,
-        stars: repo.stars,
-        language: repo.language || 'Unknown',
-        description,
-        topics,
-        features: this.detectThemesFromEvidence(repo.name, description, topics),
+        repositoryUrl: url,
+        repositoryName: name,
+        stars,
+        language: 'TypeScript', // Would be detected from repo
+        features: this.detectFeaturesFromRepoName(name),
         interestingPatterns: [],
         scannedAt: Date.now(),
-        evidence,
       };
 
       return insight;
     } catch (error) {
-      console.error(`Error analyzing repository ${repo.url}:`, error);
+      console.error(`Error analyzing repository ${url}:`, error);
       return null;
     }
   }
 
   /**
-   * Themes grounded in description/topics — at most a few, never a canned feature pack.
+   * Detect potential features from repository name and description
    */
-  private detectThemesFromEvidence(
-    name: string,
-    description: string,
-    topics: string[]
-  ): string[] {
-    const blob = `${name} ${description} ${topics.join(' ')}`.toLowerCase();
-    const themes: string[] = [];
+  private detectFeaturesFromRepoName(name: string): string[] {
+    const features: string[] = [];
+    const nameLower = name.toLowerCase();
 
-    const checks: Array<[RegExp, string]> = [
-      [/\bvoice\b|\bspeech\b|\btts\b|\bstt\b/, 'voice interaction'],
-      [/\bmemory\b|\brag\b|\bembed/, 'long-term memory / RAG'],
-      [/\bcalendar\b|\bschedule\b/, 'calendar / scheduling'],
-      [/\boauth\b|\bauth\b|\bsso\b/, 'authentication'],
-      [/\breal-?time\b|\bwebsocket\b/, 'realtime updates'],
-      [/\bagent\b|\bmulti-?agent\b/, 'agent orchestration'],
-      [/\blocal\b|\boffline\b|\bollama\b/, 'local / offline models'],
-    ];
+    const featureKeywords = {
+      voice: ['Voice Commands', 'Speech Recognition', 'Audio Processing'],
+      chat: ['Real-time Chat', 'Message History', 'Chat Analytics'],
+      ai: ['AI Integration', 'Machine Learning', 'Natural Language Processing'],
+      mobile: ['Mobile App', 'Responsive Design', 'Touch Interface'],
+      analytics: ['Usage Analytics', 'Performance Metrics', 'User Insights'],
+      notification: [
+        'Push Notifications',
+        'Real-time Alerts',
+        'Notification System',
+      ],
+      calendar: ['Calendar Integration', 'Event Scheduling', 'Reminders'],
+      oauth: ['OAuth Authentication', 'Social Login', 'User Authentication'],
+      websocket: ['Real-time Updates', 'Live Data', 'WebSocket Connection'],
+      dashboard: ['Admin Dashboard', 'Analytics Dashboard', 'Control Panel'],
+    };
 
-    for (const [re, theme] of checks) {
-      if (re.test(blob)) themes.push(theme);
+    for (const [keyword, possibleFeatures] of Object.entries(featureKeywords)) {
+      if (nameLower.includes(keyword)) {
+        features.push(...possibleFeatures);
+      }
     }
 
-    // Cap — discovery is inspiration, not a shopping list
-    return themes.slice(0, 2);
+    return features.slice(0, 5);
   }
 
   /**
-   * Extract feature suggestions from repository insight (honest, non-actionable by default)
+   * Extract feature suggestions from repository insight
    */
   private extractFeaturesFromInsight(
     insight: RepositoryInsight
   ): DiscoveredFeature[] {
     const features: DiscoveredFeature[] = [];
-    const evidence = (insight.evidence || []).join(' · ') || insight.description || '';
 
-    // One grounded inspiration card per repo (not 5 fake product features)
-    if (!insight.description && !(insight.topics && insight.topics.length)) {
-      return [];
+    for (const featureName of insight.features) {
+      // Calculate relevance based on repository popularity and our current features
+      const relevance = this.calculateRelevance(featureName, insight);
+      const popularity = Math.min(
+        10,
+        Math.floor(Math.log10(insight.stars + 1) * 2)
+      );
+
+      features.push({
+        id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: featureName,
+        description: `Feature inspired by ${insight.repositoryName}: ${featureName}`,
+        source: 'github',
+        sourceUrl: insight.repositoryUrl,
+        repositoryExample: insight.repositoryName,
+        popularity,
+        relevance,
+        implementationComplexity: this.estimateComplexity(featureName),
+        estimatedValue: Math.floor((relevance + popularity) / 2),
+        discoveredAt: Date.now(),
+        status: 'discovered',
+        tags: this.extractTags(featureName),
+      });
     }
-
-    const themeBit =
-      insight.features.length > 0
-        ? ` Themes noted: ${insight.features.join(', ')}.`
-        : '';
-    const name = `Study ${insight.repositoryName}`;
-    const popularity = Math.min(
-      10,
-      Math.floor(Math.log10(insight.stars + 1) * 2)
-    );
-    const relevance = this.calculateRelevance(
-      insight.features[0] || insight.repositoryName,
-      insight
-    );
-
-    features.push({
-      id: `feat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name,
-      description: `${insight.repositoryName} (${insight.stars}★, ${insight.language}): ${
-        insight.description || 'no description'
-      }.${themeBit} Review only — not an auto-implement ticket.`,
-      source: 'github',
-      sourceUrl: insight.repositoryUrl,
-      repositoryExample: insight.repositoryName,
-      popularity,
-      relevance,
-      implementationComplexity: 'high',
-      estimatedValue: Math.min(6, Math.floor((relevance + popularity) / 3)),
-      discoveredAt: Date.now(),
-      status: 'discovered',
-      tags: ['inspiration', 'github', ...this.extractTags(insight.repositoryName)],
-      evidence: evidence.slice(0, 400),
-      // GitHub inspiration is NOT auto-sandboxable
-      actionable: false,
-    });
 
     return features;
   }
@@ -412,9 +366,7 @@ class FeatureDiscoveryService {
           estimatedValue: 9,
           discoveredAt: Date.now(),
           status: 'discovered',
-          tags: ['improvement', 'user-driven', 'actionable'],
-          evidence: `usageCount=${pattern.usageCount} successRate=${pattern.successRate}`,
-          actionable: true,
+          tags: ['improvement', 'user-driven'],
         });
       }
 
@@ -431,9 +383,7 @@ class FeatureDiscoveryService {
           estimatedValue: 8,
           discoveredAt: Date.now(),
           status: 'discovered',
-          tags: ['performance', 'user-driven', 'actionable'],
-          evidence: `usageCount=${pattern.usageCount} avgMs=${pattern.averageDuration}`,
-          actionable: true,
+          tags: ['performance', 'user-driven'],
         });
       }
     }
@@ -721,54 +671,9 @@ class FeatureDiscoveryService {
 
   /**
    * Get top feature recommendations
-   * By default only **actionable** items (user-pattern / explicit).
-   * GitHub inspiration stays discoverable via getDiscoveredFeatures but won't auto-promote.
    */
-  getTopRecommendations(
-    limit: number = 10,
-    opts?: { actionableOnly?: boolean }
-  ): DiscoveredFeature[] {
-    const actionableOnly = opts?.actionableOnly !== false;
-    let list = this.getDiscoveredFeatures({ status: 'discovered' });
-    if (actionableOnly) {
-      list = list.filter(
-        (f) =>
-          f.actionable === true ||
-          f.source === 'user_pattern' ||
-          (f.tags || []).includes('actionable')
-      );
-    }
-    // Reject classic name-farm theater leftovers
-    list = list.filter(
-      (f) =>
-        !/^Feature inspired by /i.test(f.description || '') &&
-        !/^Real-time Chat$|^Message History$|^Chat Analytics$/i.test(f.name)
-    );
-    return list.slice(0, limit);
-  }
-
-  /**
-   * Reject / purge non-actionable theater from the store
-   */
-  async purgeTheaterFeatures(): Promise<{ removed: number; kept: number }> {
-    const before = this.discoveredFeatures.length;
-    this.discoveredFeatures = this.discoveredFeatures.filter((f) => {
-      if (/^Feature inspired by /i.test(f.description || '')) return false;
-      if (
-        /^(Real-time Chat|Message History|Chat Analytics|Voice Commands|Speech Recognition)$/i.test(
-          f.name
-        ) &&
-        f.source === 'github'
-      ) {
-        return false;
-      }
-      return true;
-    });
-    await this.saveDiscoveryData();
-    return {
-      removed: before - this.discoveredFeatures.length,
-      kept: this.discoveredFeatures.length,
-    };
+  getTopRecommendations(limit: number = 10): DiscoveredFeature[] {
+    return this.getDiscoveredFeatures({ status: 'discovered' }).slice(0, limit);
   }
 
   /**
@@ -897,10 +802,9 @@ export function getDiscoveredFeatures(filters?: {
 }
 
 export function getTopFeatureRecommendations(
-  limit?: number,
-  opts?: { actionableOnly?: boolean }
+  limit?: number
 ): DiscoveredFeature[] {
-  return discoveryService.getTopRecommendations(limit, opts);
+  return discoveryService.getTopRecommendations(limit);
 }
 
 export function updateFeatureStatus(
@@ -912,22 +816,4 @@ export function updateFeatureStatus(
 
 export function getDiscoveryStatistics() {
   return discoveryService.getDiscoveryStatistics();
-}
-
-export function purgeTheaterFeatures(): Promise<{
-  removed: number;
-  kept: number;
-}> {
-  return discoveryService.purgeTheaterFeatures();
-}
-
-/** True only if feature is safe to auto-sandbox / auto-implement */
-export function isFeatureActionable(feature: DiscoveredFeature): boolean {
-  if (feature.actionable === false) return false;
-  if (feature.actionable === true) return true;
-  if (feature.source === 'user_pattern') return true;
-  if ((feature.tags || []).includes('actionable')) return true;
-  if (/^Feature inspired by /i.test(feature.description || '')) return false;
-  if ((feature.tags || []).includes('inspiration')) return false;
-  return false;
 }
