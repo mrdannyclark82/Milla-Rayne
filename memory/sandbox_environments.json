@@ -1,26 +1,37 @@
 {
   "sandboxes": {
-    "sandbox_1769578713839_ut6w1lg6p": {
-      "id": "sandbox_1769578713839_ut6w1lg6p",
-      "name": "fix-security-1769578713839",
-      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
-      "branchName": "sandbox/fix-security-1769578713839_1769578713839",
+    "sandbox_1784578766192_8jsd23csz": {
+      "id": "sandbox_1784578766192_8jsd23csz",
+      "name": "Honesty Check Sandbox",
+      "description": "Temporary for testFeature honesty smoke",
+      "branchName": "sandbox/honesty-check-sandbox_1784578766192",
       "status": "active",
-      "createdAt": 1769578713839,
+      "createdAt": 1784578766192,
       "createdBy": "milla",
       "features": [
         {
-          "id": "feat_1769578714591_bfew6az5e",
-          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
-          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
+          "id": "feat_1784578767390_dwgdbizz2",
+          "name": "Real payload feature",
+          "description": "Has real content for structural checks to pass",
           "files": [],
           "status": "testing",
-          "testsPassed": 6,
-          "testsFailed": 6,
-          "addedAt": 1769578714591
+          "testsPassed": 8,
+          "testsFailed": 0,
+          "addedAt": 1784578767390,
+          "content": "# Real enhancement\n\nThis is enough content to pass structural verification checks in the sandbox service.\n"
         },
         {
-          "id": "feat_1770000243679_seszmrtr2",
+          "id": "feat_1784578767390_w5zv0s4kd",
+          "name": "Test Feature",
+          "description": "short",
+          "files": [],
+          "status": "rejected",
+          "testsPassed": 0,
+          "testsFailed": 7,
+          "addedAt": 1784578767390
+        },
+        {
+          "id": "feat_1786383017412_5aby2kp09",
           "name": "Test Feature",
           "description": "Testing feature addition",
           "files": [
@@ -29,386 +40,504 @@
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
-          "addedAt": 1770000243679
-        },
-        {
-          "id": "feat_1770006439823_ifsovg6ji",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770006439823
-        },
-        {
-          "id": "feat_1770137349157_i5t4rfm96",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770137349157
-        },
-        {
-          "id": "feat_1770137475677_fx5itnlth",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770137475677
-        },
-        {
-          "id": "feat_1770480408206_lq1c0ctj8",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770480408206
-        },
-        {
-          "id": "feat_1770480982865_6n70twmbw",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770480982865
-        },
-        {
-          "id": "feat_1770481236468_b2gk53aug",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770481236468
-        },
-        {
-          "id": "feat_1770569856787_57ik3z1ce",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": [
-            "test.ts"
-          ],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770569856787
+          "addedAt": 1786383017412
         }
       ],
       "readyForProduction": false,
       "testResults": [
         {
-          "id": "test_1769578714593_vqo5p8t35",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1769578714593,
-          "testType": "unit",
-          "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 2258.3786408384367
-        },
-        {
-          "id": "test_1769578714593_t3zfuhidd",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1769578714593,
-          "testType": "integration",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 1190.7884577903797
-        },
-        {
-          "id": "test_1769579198889_en5xc2yt4",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1769579198889,
+          "id": "test_1784578767391_oxojer7gp",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784578767391,
           "testType": "unit",
           "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 2177.6146550044023
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         },
         {
-          "id": "test_1769582785293_qghy0m7ex",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1769582785293,
+          "id": "test_1784578767391_emvwta0w4",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784578767391,
           "testType": "unit",
           "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 609.9937330985595
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
         },
         {
-          "id": "test_1770000243680_ec76uj2bb",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770000243680,
+          "id": "test_1784578827436_zo9w67y51",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784578827436,
           "testType": "unit",
           "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 2027.982866832685
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         },
         {
-          "id": "test_1770006439824_mhszn06yj",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770006439824,
+          "id": "test_1784578827440_46gvftkjw",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784578827440,
           "testType": "unit",
           "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 908.6832047427827
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 1,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
         },
         {
-          "id": "test_1770137349158_c0xlxw5ek",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770137349158,
-          "testType": "unit",
-          "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 2480.975710183223
-        },
-        {
-          "id": "test_1770137475678_d5ch87gpr",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770137475678,
+          "id": "test_1784579056878_oqgeindia",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784579056878,
           "testType": "unit",
           "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 1403.6738153965807
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         },
         {
-          "id": "test_1770480408207_co6x2pvwc",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770480408207,
-          "testType": "unit",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 719.273801031962
-        },
-        {
-          "id": "test_1770480982866_c0vqgw53g",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770480982866,
-          "testType": "unit",
-          "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 2359.223823347186
-        },
-        {
-          "id": "test_1770481236469_lzctd8yq1",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770481236469,
-          "testType": "unit",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 583.1641637259808
-        },
-        {
-          "id": "test_1770569856788_p4tip6g0f",
-          "featureId": "feat_1769578714591_bfew6az5e",
-          "timestamp": 1770569856788,
+          "id": "test_1784579073626_5zoarpoxb",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784579073626,
           "testType": "unit",
           "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 2234.8043716784587
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784579076923_baxjxktys",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784579076923,
+          "testType": "unit",
+          "passed": false,
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784579078201_oqdtmk114",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784579078201,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784579377859_97i8dqwh7",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784579377859,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784579377862_vtw0x49kl",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784579377862,
+          "testType": "unit",
+          "passed": false,
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784590117863_73ddtld7u",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784590117863,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784590117869_i4kei6i04",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784590117869,
+          "testType": "unit",
+          "passed": false,
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784600917860_i8sn6mt6z",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1784600917860,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1784600917863_4ap2ixyvq",
+          "featureId": "feat_1784578767390_w5zv0s4kd",
+          "timestamp": 1784600917863,
+          "testType": "unit",
+          "passed": false,
+          "details": "Structural checks failed: has_description, has_implementable_payload, not_pure_theater_name. len=5; no content, no fileContents, no files on disk; Test Feature Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Test Feature"
+            },
+            {
+              "name": "has_description",
+              "ok": false,
+              "detail": "len=5"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": false,
+              "detail": "no content, no fileContents, no files on disk"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": false,
+              "detail": "Test Feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1786383017414_945oi7cgb",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1786383017414,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         }
       ]
     },
-    "sandbox_1769579199262_lpzlpiwbp": {
-      "id": "sandbox_1769579199262_lpzlpiwbp",
-      "name": "fix-security-1769579199261",
-      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
-      "branchName": "sandbox/fix-security-1769579199261_1769579199262",
-      "status": "active",
-      "createdAt": 1769579199262,
-      "createdBy": "milla",
-      "features": [
-        {
-          "id": "feat_1769579200231_fw5lqj4br",
-          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
-          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
-          "files": [],
-          "status": "testing",
-          "testsPassed": 2,
-          "testsFailed": 1,
-          "addedAt": 1769579200231
-        }
-      ],
-      "readyForProduction": false,
-      "testResults": [
-        {
-          "id": "test_1769579200231_ui48oc28q",
-          "featureId": "feat_1769579200231_fw5lqj4br",
-          "timestamp": 1769579200231,
-          "testType": "unit",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 1507.158287494408
-        },
-        {
-          "id": "test_1769579200232_1p2m7j49c",
-          "featureId": "feat_1769579200231_fw5lqj4br",
-          "timestamp": 1769579200232,
-          "testType": "integration",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 945.7655893463498
-        },
-        {
-          "id": "test_1769582785307_a55g6ssy9",
-          "featureId": "feat_1769579200231_fw5lqj4br",
-          "timestamp": 1769582785307,
-          "testType": "unit",
-          "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 1017.7943189346963
-        }
-      ]
-    },
-    "sandbox_1769582785905_77btqnx7p": {
-      "id": "sandbox_1769582785905_77btqnx7p",
-      "name": "fix-security-1769582785905",
-      "description": "Automated fix for: Consider adding security scanning to your CI/CD pipeline",
-      "branchName": "sandbox/fix-security-1769582785905_1769582785905",
-      "status": "active",
-      "createdAt": 1769582785905,
-      "createdBy": "milla",
-      "features": [
-        {
-          "id": "feat_1769582787292_kkose31qm",
-          "name": "Fix: Consider adding security scanning to your CI/CD pipeline",
-          "description": "Fix for security: Consider adding security scanning to your CI/CD pipeline",
-          "files": [],
-          "status": "testing",
-          "testsPassed": 1,
-          "testsFailed": 1,
-          "addedAt": 1769582787292
-        }
-      ],
-      "readyForProduction": false,
-      "testResults": [
-        {
-          "id": "test_1769582787296_ff05iknba",
-          "featureId": "feat_1769582787292_kkose31qm",
-          "timestamp": 1769582787296,
-          "testType": "unit",
-          "passed": false,
-          "details": "Some tests failed - review needed",
-          "duration": 524.8312349354376
-        },
-        {
-          "id": "test_1769582787296_49r4c9prp",
-          "featureId": "feat_1769582787292_kkose31qm",
-          "timestamp": 1769582787296,
-          "testType": "integration",
-          "passed": true,
-          "details": "All tests passed successfully",
-          "duration": 1402.6247357521493
-        }
-      ]
-    },
-    "sandbox_1770000243678_3mcp3xrxd": {
-      "id": "sandbox_1770000243678_3mcp3xrxd",
+    "sandbox_1786383017409_ngls78k2s": {
+      "id": "sandbox_1786383017409_ngls78k2s",
       "name": "Test Sandbox",
       "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770000243678",
+      "branchName": "sandbox/test-sandbox_1786383017409",
       "status": "active",
-      "createdAt": 1770000243678,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770006439821_rwhlmp9j9": {
-      "id": "sandbox_1770006439821_rwhlmp9j9",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770006439821",
-      "status": "active",
-      "createdAt": 1770006439821,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770137349154_f8n9ouc4h": {
-      "id": "sandbox_1770137349154_f8n9ouc4h",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770137349154",
-      "status": "active",
-      "createdAt": 1770137349154,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770137475673_u1huz9zcd": {
-      "id": "sandbox_1770137475673_u1huz9zcd",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770137475673",
-      "status": "active",
-      "createdAt": 1770137475673,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770480408202_nyx5asa05": {
-      "id": "sandbox_1770480408202_nyx5asa05",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770480408202",
-      "status": "active",
-      "createdAt": 1770480408202,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770480982863_xrgrtncmd": {
-      "id": "sandbox_1770480982863_xrgrtncmd",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770480982863",
-      "status": "active",
-      "createdAt": 1770480982863,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770481236466_g4itj4cso": {
-      "id": "sandbox_1770481236466_g4itj4cso",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770481236466",
-      "status": "active",
-      "createdAt": 1770481236466,
-      "createdBy": "milla",
-      "features": [],
-      "readyForProduction": false
-    },
-    "sandbox_1770569856784_l0c6x4z8x": {
-      "id": "sandbox_1770569856784_l0c6x4z8x",
-      "name": "Test Sandbox",
-      "description": "Testing sandbox creation",
-      "branchName": "sandbox/test-sandbox_1770569856784",
-      "status": "active",
-      "createdAt": 1770569856784,
+      "createdAt": 1786383017409,
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
     }
   },
-  "lastUpdated": 1770569856788
+  "lastUpdated": 1786383017414
 }

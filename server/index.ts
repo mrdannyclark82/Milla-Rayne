@@ -32,33 +32,56 @@ export async function initApp() {
   app.set('trust proxy', 1);
 
   // Add Helmet security middleware
+  // Dev/LAN is plain HTTP — do NOT send upgrade-insecure-requests or HSTS,
+  // or the browser upgrades script/module loads to HTTPS and the SPA white-screens.
   try {
     const helmet = (await import('helmet')).default;
+    const isDev = process.env.NODE_ENV !== 'production';
     app.use(
       helmet({
         contentSecurityPolicy: {
           directives: {
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", 'data:', 'https:'],
-            connectSrc: ["'self'", 'https:', 'wss:'],
-            fontSrc: ["'self'", 'data:'],
+            styleSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              'https://cdnjs.cloudflare.com',
+            ],
+            imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+            // ws:/http: needed for Vite HMR + LAN API over plain HTTP
+            connectSrc: isDev
+              ? ["'self'", 'https:', 'http:', 'ws:', 'wss:', 'blob:']
+              : ["'self'", 'https:', 'wss:'],
+            fontSrc: [
+              "'self'",
+              'data:',
+              'https://cdnjs.cloudflare.com',
+            ],
             objectSrc: ["'none'"],
-            mediaSrc: ["'self'"],
+            mediaSrc: ["'self'", 'blob:', 'data:'],
             frameSrc: [
               "'self'",
               'https://www.youtube.com',
               'https://youtube.com',
               'https://www.youtube-nocookie.com',
             ],
+            // Critical for HTTP LAN: disable forced HTTPS upgrade (Helmet default)
+            upgradeInsecureRequests: isDev ? null : [],
           },
         },
+        // HSTS on HTTP LAN locks browsers into HTTPS that does not exist here
+        hsts: isDev ? false : { maxAge: 31536000, includeSubDomains: true },
         crossOriginEmbedderPolicy: false, // Disable for development
+        crossOriginResourcePolicy: isDev
+          ? { policy: 'cross-origin' }
+          : { policy: 'same-origin' },
         referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
       })
     );
-    console.log('[Security] Helmet middleware enabled');
+    console.log(
+      `[Security] Helmet middleware enabled (dev=${isDev}, upgrade-insecure-requests=${!isDev})`
+    );
   } catch (error) {
     console.warn('[Security] Helmet not available, continuing without it');
   }
@@ -73,16 +96,38 @@ export async function initApp() {
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 
-  // Add rate limiting to prevent abuse
-  const rateLimitModule = await import('express-rate-limit');
-  const rateLimit = rateLimitModule.default;
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  });
-  app.use(limiter);
+  // Add rate limiting to prevent abuse. Skipped in development: Vite's dev
+  // server issues hundreds of individual unbundled module requests per page
+  // load, which exhausts a low request budget almost immediately and blocks
+  // legitimate use (e.g. OAuth flows) alongside static assets. Production
+  // serves a handful of bundled files, so the limit is meaningful there.
+  if (process.env.NODE_ENV !== 'development') {
+    const rateLimitModule = await import('express-rate-limit');
+    const rateLimit = rateLimitModule.default;
+    const limiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 2000, // Increase budget to allow multiple concurrent asset downloads
+      skip: (req) => {
+        const ip = req.ip || req.socket.remoteAddress || '';
+        // Bypass rate limiting for loopback, local LAN, and Tailscale VPN connections
+        return (
+          ip === '127.0.0.1' ||
+          ip === '::1' ||
+          ip.includes('127.0.0.1') ||
+          ip.startsWith('192.168.') ||
+          ip.startsWith('10.') ||
+          ip.startsWith('100.') ||
+          ip.includes('::ffff:127.0.0.1') ||
+          ip.includes('::ffff:192.168.') ||
+          ip.includes('::ffff:10.') ||
+          ip.includes('::ffff:100.')
+        );
+      },
+      standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+      legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    });
+    app.use(limiter);
+  }
 
   // CORS Policy - Allow all origins in development for Replit preview
   app.use((req, res, next) => {
@@ -340,7 +385,7 @@ if (process.env.NODE_ENV !== 'test') {
     httpServer.listen(
       {
         port,
-        host: '0.0.0.0',
+        host: process.env.HOST || '127.0.0.1',
         reusePort: true,
       },
       () => {

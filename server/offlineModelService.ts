@@ -155,10 +155,10 @@ export class OfflineModelService {
           : prompt,
         stream: false,
         options: {
-          temperature: 0.8,
-          top_k: 40,
+          temperature: 1.0,
+          top_k: 50,
           top_p: 0.9,
-          num_predict: 512, // Max tokens to generate
+          num_predict: 1024, // Max tokens to generate
         },
       });
 

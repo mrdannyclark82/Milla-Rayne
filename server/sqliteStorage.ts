@@ -663,6 +663,29 @@ export class SqliteStorage implements IStorage {
       message.userId || null
     );
 
+    // Continuity Spine: plain conversation lines → shared_chat (Memory Agent tails this)
+    // Only plaintext content; fail-open so chat never breaks on spine errors.
+    try {
+      const spinePath = path.join(
+        process.env.HOME || process.env.USERPROFILE || '/home/milla',
+        'memory',
+        'shared_chat.jsonl'
+      );
+      const line =
+        JSON.stringify({
+          role:
+            message.role === 'assistant' || message.role === 'user'
+              ? message.role
+              : 'user',
+          content: message.content,
+          source: 'milla-rayne',
+          timestamp: timestamp.toISOString(),
+        }) + '\n';
+      fs.appendFileSync(spinePath, line, { encoding: 'utf8' });
+    } catch {
+      /* spine optional */
+    }
+
     // Update session message count
     if (message.userId) {
       const updateStmt = this.db.prepare(`
