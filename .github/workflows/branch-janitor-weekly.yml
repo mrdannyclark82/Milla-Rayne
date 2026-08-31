@@ -34,12 +34,17 @@ jobs:
 
             // 1) Delete no-PR branches already merged (main ahead or identical)
             for (const b of noPrBranches) {
-              const cmp = await github.rest.repos.compareCommitsWithBasehead({
-                owner, repo, basehead: `main...${b.name}`
-              });
-              const status = cmp.data.status;
-              if (status === 'behind' || status === 'identical') {
-                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${b.name}` });
+              try {
+                const cmp = await github.rest.repos.compareCommitsWithBasehead({
+                  owner, repo, basehead: `main...${b.name}`
+                });
+                const status = cmp.data.status;
+                if (status === 'behind' || status === 'identical') {
+                  await github.rest.git.deleteRef({ owner, repo, ref: `heads/${b.name}` });
+                }
+              } catch (err) {
+                console.log(`Skipping branch ${b.name}: ${err.message}`);
+                continue;
               }
             }
 
