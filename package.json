@@ -210,6 +210,10 @@
     "vite": "^7.2.6",
     "vitest": "^4.1.10"
   },
+  "overrides": {
+    "esbuild": "^0.26.0",
+    "undici": "^7.16.0"
+  },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.62.3",
     "@rollup/rollup-linux-x64-musl": "^4.62.4",
