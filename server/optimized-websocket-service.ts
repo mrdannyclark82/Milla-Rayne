@@ -7,7 +7,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 import { streamAIResponse, streamToWebSocket } from './ai-sdk-integration';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 
 interface OptimizedConnection {
   ws: WebSocket;
@@ -19,7 +19,7 @@ interface OptimizedConnection {
 
 interface StreamingMessage {
   type: 'chat' | 'voice' | 'system';
-  messages: CoreMessage[];
+  messages: ModelMessage[];
   provider?: 'openai' | 'anthropic';
   model?: string;
   requestId: string;
