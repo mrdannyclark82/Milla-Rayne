@@ -6,7 +6,7 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { streamText, generateText, StreamTextResult } from 'ai';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 
 // Initialize AI providers
 const openai = createOpenAI({
@@ -20,7 +20,7 @@ const anthropic = createAnthropic({
 export interface AIStreamOptions {
   provider?: 'openai' | 'anthropic' | 'xai';
   model?: string;
-  messages: CoreMessage[];
+  messages: ModelMessage[];
   temperature?: number;
   maxTokens?: number;
   systemPrompt?: string;
@@ -45,7 +45,7 @@ export async function streamAIResponse(options: AIStreamOptions) {
   } = options;
 
   // Prepare messages with system prompt
-  const preparedMessages: CoreMessage[] = systemPrompt
+  const preparedMessages: ModelMessage[] = systemPrompt
     ? [{ role: 'system', content: systemPrompt }, ...messages]
     : messages;
 
@@ -87,7 +87,7 @@ export async function generateAIResponse(
     systemPrompt,
   } = options;
 
-  const preparedMessages: CoreMessage[] = systemPrompt
+  const preparedMessages: ModelMessage[] = systemPrompt
     ? [{ role: 'system', content: systemPrompt }, ...messages]
     : messages;
 
@@ -112,9 +112,9 @@ export async function generateAIResponse(
 }
 
 /**
- * Convert legacy message format to AI SDK CoreMessage format
+ * Convert legacy message format to AI SDK ModelMessage format
  */
-export function convertToAISDKMessages(legacyMessages: any[]): CoreMessage[] {
+export function convertToAISDKMessages(legacyMessages: any[]): ModelMessage[] {
   return legacyMessages.map((msg) => ({
     role: msg.role as 'system' | 'user' | 'assistant',
     content: msg.content,
