@@ -58,6 +58,10 @@ jobs:
                 owner, repo, ref: b.commit.sha
               });
 
+              const fullCommit = await github.rest.repos.getCommit({
+                owner, repo, ref: b.commit.sha
+              });
+
               rows.push({
                 branch: b.name,
                 linked_pr: prByHead.get(b.name) || null,
