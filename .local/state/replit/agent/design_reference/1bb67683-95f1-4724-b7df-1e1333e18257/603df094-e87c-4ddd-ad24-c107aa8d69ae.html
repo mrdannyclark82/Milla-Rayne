@@ -499,7 +499,6 @@
 
     <script>
       // TODO: Implement React components and state management
-      // TODO: Connect to Node.js/Express backend
       // TODO: Integrate AI personality switching logic
       // TODO: Implement real-time messaging
 
@@ -510,6 +509,110 @@
           'button[data-event="click:handleSendMessage"]'
         );
         const wordCountSpan = document.querySelector('[data-bind="wordCount"]');
+        const chatContainer = document.querySelector('[data-implementation="ChatMessages component - maps over conversation array"]');
+        const typingIndicator = document.querySelector('.typing-animation');
+
+        function createMessageElement(text, isUser) {
+          const div = document.createElement('div');
+          div.className = 'message-fade-in';
+          div.setAttribute('data-mock', 'false');
+
+          if (isUser) {
+            div.innerHTML = `
+            <div class="flex items-start space-x-4 justify-end">
+              <div
+                class="flex-1 bg-primary rounded-2xl rounded-tr-sm px-4 py-3 max-w-2xl"
+              >
+                <p class="text-primary-foreground leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</p>
+                <div class="mt-3 text-xs text-primary-foreground/70 text-right">
+                  <i class="fas fa-clock mr-1"></i>
+                  Just now
+                </div>
+              </div>
+              <div
+                class="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+              >
+                <i class="fas fa-user text-muted-foreground text-xs"></i>
+              </div>
+            </div>`;
+          } else {
+            div.innerHTML = `
+            <div class="flex items-start space-x-4">
+              <div
+                class="w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1"
+              >
+                <i class="fas fa-robot text-white text-xs"></i>
+              </div>
+              <div
+                class="flex-1 bg-card rounded-2xl rounded-tl-sm px-4 py-3 border border-border max-w-3xl"
+              >
+                <p class="text-foreground leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</p>
+                <div class="mt-3 text-xs text-muted-foreground">
+                  <i class="fas fa-clock mr-1"></i>
+                  Just now
+                </div>
+              </div>
+            </div>`;
+          }
+          return div;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        async function sendMessage(text) {
+          if (!text.trim()) return;
+
+          // Add user message to UI
+          const userMsgElem = createMessageElement(text, true);
+          chatContainer.insertBefore(userMsgElem, typingIndicator);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          // Show typing indicator
+          typingIndicator.style.display = 'block';
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          try {
+            const response = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: text })
+            });
+
+            const data = await response.json();
+
+            // Hide typing indicator
+            typingIndicator.style.display = 'none';
+
+            if (data.response) {
+              const aiMsgElem = createMessageElement(data.response, false);
+              chatContainer.insertBefore(aiMsgElem, typingIndicator);
+            } else {
+              const errorMsgElem = createMessageElement("Sorry, I couldn't process that request.", false);
+              chatContainer.insertBefore(errorMsgElem, typingIndicator);
+            }
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          } catch (error) {
+            console.error('Error sending message:', error);
+            typingIndicator.style.display = 'none';
+            const errorMsgElem = createMessageElement("An error occurred connecting to the server.", false);
+            chatContainer.insertBefore(errorMsgElem, typingIndicator);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+          }
+        }
 
         if (textarea) {
           // Auto-resize textarea
@@ -541,8 +644,8 @@
               e.key === 'Enter' &&
               this.value.trim()
             ) {
-              // TODO: Implement message sending logic
-              console.log('Send message:', this.value);
+              const text = this.value;
+
               this.value = '';
               this.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
@@ -550,6 +653,8 @@
                 sendButton.disabled = true;
                 sendButton.style.opacity = '0.5';
               }
+
+              sendMessage(text);
             }
           });
         }
@@ -557,13 +662,15 @@
         if (sendButton) {
           sendButton.addEventListener('click', function () {
             if (textarea && textarea.value.trim()) {
-              // TODO: Implement message sending logic
-              console.log('Send message:', textarea.value);
+              const text = textarea.value;
+
               textarea.value = '';
               textarea.style.height = 'auto';
               if (wordCountSpan) wordCountSpan.textContent = '0/2000 words';
               this.disabled = true;
               this.style.opacity = '0.5';
+
+              sendMessage(text);
             }
           });
         }
