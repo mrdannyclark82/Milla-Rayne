@@ -27,6 +27,13 @@ export async function initApp() {
   const app = express();
   // Do not create the http server here; let registerRoutes create and return the server.
   let httpServer = null;
+  const trustedOrigins = (process.env.TRUSTED_ORIGINS?.split(',') ?? [
+    'http://localhost:5000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5000',
+  ])
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
   // Enable trust proxy for proper IP detection behind proxies (fixes X-Forwarded-For warning)
   app.set('trust proxy', 1);
@@ -95,6 +102,22 @@ export async function initApp() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
+  app.use((req, res, next) => {
+    if (
+      ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ||
+      !req.cookies.session_token
+    ) {
+      return next();
+    }
+
+    const origin = req.get('origin');
+    const requestOrigin = `${req.protocol}://${req.get('host')}`;
+    if (origin && (origin === requestOrigin || trustedOrigins.includes(origin))) {
+      return next();
+    }
+
+    return res.status(403).json({ error: 'Invalid request origin' });
+  });
 
   // Add rate limiting to prevent abuse. Skipped in development: Vite's dev
   // server issues hundreds of individual unbundled module requests per page
@@ -129,16 +152,13 @@ export async function initApp() {
     app.use(limiter);
   }
 
-  // CORS Policy - Allow all origins in development for Replit preview
+  // Only explicitly trusted origins may make credentialed cross-origin requests.
   app.use((req, res, next) => {
     const origin = req.headers.origin;
 
-    // In development, allow all origins for Replit preview compatibility
-    if (origin) {
+    if (origin && trustedOrigins.includes(origin)) {
       res.header('Access-Control-Allow-Origin', origin);
       res.header('Access-Control-Allow-Credentials', 'true');
-    } else {
-      res.header('Access-Control-Allow-Origin', '*');
     }
 
     res.header(
