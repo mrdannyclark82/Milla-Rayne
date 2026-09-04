@@ -180,7 +180,7 @@ jobs:
           TARGET: '/var/www/milla-rayne/'
 
       - name: Restart application on VPS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
