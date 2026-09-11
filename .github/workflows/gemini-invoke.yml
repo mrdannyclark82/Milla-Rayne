@@ -31,6 +31,9 @@ jobs:
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         uses: ./.github/actions/mint-token
+        with:
+          app_id: '${{ vars.APP_ID }}'
+          private_key: '${{ secrets.APP_PRIVATE_KEY }}'
 
       - name: 'Run Gemini CLI'
         id: 'run_gemini'
