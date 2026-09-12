@@ -6,6 +6,7 @@ import {
   determinePrLabels,
   groupDuplicateBranches,
   isPatchDependabotPr,
+  pickMergeCandidateBranches,
   pickSafeDuplicateBranchesForDeletion,
   scorePullRequest,
 } from '../../scripts/github-maintenance.js';
@@ -150,5 +151,40 @@ describe('github maintenance helpers', () => {
 
     expect(duplicateGroups).toHaveLength(1);
     expect(deletions).toEqual(['sandbox/fix-security-a']);
+  });
+
+  it('identifies merge candidates as open-pr branches that are up to date', () => {
+    const candidates = pickMergeCandidateBranches([
+      {
+        name: 'feature/ready',
+        hasOpenPr: true,
+        isDefaultBranch: false,
+        isMerged: false,
+        behindBy: 0,
+      },
+      {
+        name: 'feature/needs-rebase',
+        hasOpenPr: true,
+        isDefaultBranch: false,
+        isMerged: false,
+        behindBy: 2,
+      },
+      {
+        name: 'feature/already-merged',
+        hasOpenPr: true,
+        isDefaultBranch: false,
+        isMerged: true,
+        behindBy: 0,
+      },
+      {
+        name: 'feature/no-pr',
+        hasOpenPr: false,
+        isDefaultBranch: false,
+        isMerged: false,
+        behindBy: 0,
+      },
+    ]);
+
+    expect(candidates.map((branch) => branch.name)).toEqual(['feature/ready']);
   });
 });

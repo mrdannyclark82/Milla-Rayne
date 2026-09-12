@@ -307,6 +307,18 @@ export function pickSafeDuplicateBranchesForDeletion(branches) {
     .sort((left, right) => left.localeCompare(right));
 }
 
+export function pickMergeCandidateBranches(branches) {
+  return [...branches]
+    .filter(
+      (branch) =>
+        branch.hasOpenPr &&
+        !branch.isDefaultBranch &&
+        !branch.isMerged &&
+        branch.behindBy === 0
+    )
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
 function formatCheckState(state) {
   if (state === 'success') {
     return 'green';
@@ -962,6 +974,14 @@ export async function runBranchJanitor({ github, context, core, dryRun = false, 
       !branch.isMerged &&
       !safeDuplicateDeleteNames.has(branch.name)
   );
+  const mergeCandidates = pickMergeCandidateBranches(branchRows);
+
+  const mergeCandidateRows = mergeCandidates.map((branch) => [
+    `\`${branch.name}\``,
+    branch.linkedPrs.map((number) => `#${number}`).join(', '),
+    formatAheadBehind(branch.aheadBy, branch.behindBy),
+    branch.lastCommitDate.slice(0, 10),
+  ]);
 
   const branchIssueBody = [
     `# ${BRANCH_DASHBOARD_ISSUE_TITLE}`,
@@ -970,6 +990,7 @@ export async function runBranchJanitor({ github, context, core, dryRun = false, 
     `- Dry run: **${dryRun ? 'yes' : 'no'}**`,
     `- Total branches (excluding ${defaultBranch}): **${branchRows.length - 1}**`,
     `- Open-PR branches: **${branchRows.filter((branch) => branch.hasOpenPr).length}**`,
+    `- Merge-candidate branches (open PR + up-to-date): **${mergeCandidates.length}**`,
     `- Deleted or ready-to-delete merged branches: **${mergedDeletionCandidates.length}**`,
     `- Deleted or ready-to-delete duplicate no-PR sandbox/copilot branches: **${duplicateDeletionCandidates.length}**`,
     `- Remaining no-PR branches needing manual review: **${reviewCandidates.length}**`,
@@ -990,6 +1011,14 @@ export async function runBranchJanitor({ github, context, core, dryRun = false, 
                 .join(', ')}`
           )
           .join('\n')
+      : '- None',
+    '',
+    '## Merge candidates',
+    mergeCandidateRows.length > 0
+      ? buildMarkdownTable(
+          ['Branch', 'Linked PR', 'Ahead/Behind', 'Last commit'],
+          mergeCandidateRows
+        )
       : '- None',
     '',
     '## Branch dashboard',
