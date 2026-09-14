@@ -70,19 +70,22 @@ export function sanitizeHtml(html: string): string {
     return '';
   }
 
-  // For maximum security, strip ALL HTML tags
-  // This is the safest approach when HTML rendering is not required
-  // lgtm[js/incomplete-multi-character-sanitization] - intentionally removing all tags
-  let sanitized = html.replace(/<[^>]*>/g, '');
+  // Strip tag delimiters individually so malformed or nested tags cannot be
+  // reassembled into executable markup after sanitization.
+  let sanitized = html.replace(/[<>]/g, '');
 
   // Remove any remaining javascript: and vbscript: protocols
   sanitized = sanitized.replace(/javascript:/gi, '');
   sanitized = sanitized.replace(/vbscript:/gi, '');
   sanitized = sanitized.replace(/data:/gi, '');
 
-  // Remove event handler patterns that might remain after tag stripping
-  // lgtm[js/incomplete-multi-character-sanitization] - all tags already removed
-  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  // Repeat replacement because removing one handler can expose another one
+  // hidden in an overlapping sequence (for example, "ononerror=").
+  let previous: string;
+  do {
+    previous = sanitized;
+    sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+  } while (sanitized !== previous);
 
   return sanitized;
 }
