@@ -439,7 +439,8 @@ async function compareBranchToBase({ github, context, basehead }) {
       behindBy: comparison.data.behind_by,
     };
   } catch (error) {
-    if (error.status === 404 || error.status === 409) {
+    const isFetchFailed = error.message && (error.message.includes('fetch failed') || error.message.includes('No common ancestor'));
+    if (error.status === 404 || error.status === 409 || isFetchFailed) {
       return {
         status: 'unknown',
         aheadBy: 0,
