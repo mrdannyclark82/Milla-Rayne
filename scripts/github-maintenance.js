@@ -53,6 +53,7 @@ const PATCH_BUMP_PATTERN =
   /\bfrom\s+v?(\d+\.\d+\.\d+)\s+to\s+v?(\d+\.\d+\.\d+)\b/gi;
 const SAFE_DUPLICATE_BRANCH_PREFIXES = ['sandbox/', 'copilot/'];
 const BRANCH_DASHBOARD_ISSUE_TITLE = '🌿 Branch Dashboard';
+const EPOCH_ISO_DATE = new Date(0).toISOString();
 
 function normalizeText(value) {
   return String(value || '')
@@ -766,18 +767,37 @@ async function listAllBranches({ github, context }) {
   });
 }
 
-async function getCommitDate({ github, context, ref }) {
-  const commit = await github.rest.repos.getCommit({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    ref,
-  });
-
+function shouldIgnoreCommitDateError(error) {
+  const message = String(error?.message || '').toLowerCase();
   return (
-    commit.data.commit.committer?.date ||
-    commit.data.commit.author?.date ||
-    new Date(0).toISOString()
+    error?.status === 404 ||
+    error?.status === 409 ||
+    error?.status === 500 ||
+    message.includes('fetch failed') ||
+    message.includes('no common ancestor')
   );
+}
+
+export async function getCommitDate({ github, context, ref }) {
+  try {
+    const commit = await github.rest.repos.getCommit({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      ref,
+    });
+
+    return (
+      commit.data.commit.committer?.date ||
+      commit.data.commit.author?.date ||
+      EPOCH_ISO_DATE
+    );
+  } catch (error) {
+    if (shouldIgnoreCommitDateError(error)) {
+      return EPOCH_ISO_DATE;
+    }
+
+    throw error;
+  }
 }
 
 async function upsertBranchDashboardIssue({ github, context, body }) {
