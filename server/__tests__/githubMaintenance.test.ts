@@ -1,12 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   classifyPrTopic,
   canAutomaticallyClosePullRequest,
   determinePrLabels,
+  getCommitDate,
   groupDuplicateBranches,
   isPatchDependabotPr,
   pickSafeDuplicateBranchesForDeletion,
+  runBranchJanitor,
   scorePullRequest,
 } from '../../scripts/github-maintenance.js';
 
@@ -150,5 +152,164 @@ describe('github maintenance helpers', () => {
 
     expect(duplicateGroups).toHaveLength(1);
     expect(deletions).toEqual(['sandbox/fix-security-a']);
+  });
+
+  it.each([
+    ['404 response', { status: 404 }],
+    ['409 response', { status: 409 }],
+    ['500 response', { status: 500 }],
+    ['fetch failed message', new Error('fetch failed')],
+    ['No common ancestor message', new Error('No common ancestor between refs')],
+  ])('falls back to the epoch for recoverable getCommitDate errors: %s', async (_, error) => {
+    const github = {
+      rest: {
+        repos: {
+          getCommit: vi.fn().mockRejectedValue(error),
+        },
+      },
+    };
+    const context = {
+      repo: {
+        owner: 'mrdannyclark82',
+        repo: 'Milla-Rayne',
+      },
+    };
+
+    await expect(
+      getCommitDate({
+        github,
+        context,
+        ref: 'abc123',
+      })
+    ).resolves.toBe(new Date(0).toISOString());
+  });
+
+  it('rethrows unexpected getCommitDate errors', async () => {
+    const error = Object.assign(new Error('forbidden'), { status: 403 });
+    const github = {
+      rest: {
+        repos: {
+          getCommit: vi.fn().mockRejectedValue(error),
+        },
+      },
+    };
+    const context = {
+      repo: {
+        owner: 'mrdannyclark82',
+        repo: 'Milla-Rayne',
+      },
+    };
+
+    await expect(
+      getCommitDate({
+        github,
+        context,
+        ref: 'abc123',
+      })
+    ).rejects.toBe(error);
+  });
+
+  it('keeps branch janitor running when getCommitDate falls back', async () => {
+    const summaryWrite = vi.fn().mockResolvedValue(undefined);
+    const addRaw = vi.fn().mockReturnValue({
+      write: summaryWrite,
+    });
+    const createIssue = vi.fn().mockResolvedValue({
+      data: {
+        number: 42,
+      },
+    });
+    const github = {
+      paginate: vi.fn(async (method) => {
+        if (method === github.rest.pulls.list) {
+          return [];
+        }
+        if (method === github.rest.repos.listBranches) {
+          return [
+            {
+              name: 'main',
+              protected: true,
+              commit: { sha: 'main-sha' },
+            },
+            {
+              name: 'feature/still-reviewed',
+              protected: false,
+              commit: { sha: 'feature-sha' },
+            },
+          ];
+        }
+        if (method === github.rest.issues.listForRepo) {
+          return [];
+        }
+        return [];
+      }),
+      rest: {
+        pulls: {
+          list: vi.fn(),
+        },
+        repos: {
+          listBranches: vi.fn(),
+          get: vi.fn().mockResolvedValue({
+            data: {
+              default_branch: 'main',
+            },
+          }),
+          getCommit: vi
+            .fn()
+            .mockResolvedValueOnce({
+              data: {
+                commit: {
+                  committer: { date: '2026-09-10T00:00:00.000Z' },
+                },
+              },
+            })
+            .mockRejectedValueOnce(
+              Object.assign(new Error('fetch failed'), { status: 500 })
+            ),
+          compareCommitsWithBasehead: vi.fn().mockResolvedValue({
+            data: {
+              status: 'ahead',
+              ahead_by: 1,
+              behind_by: 0,
+            },
+          }),
+        },
+        issues: {
+          listForRepo: vi.fn(),
+          create: createIssue,
+          update: vi.fn(),
+        },
+        git: {
+          deleteRef: vi.fn(),
+        },
+      },
+    };
+    const context = {
+      repo: {
+        owner: 'mrdannyclark82',
+        repo: 'Milla-Rayne',
+      },
+    };
+    const core = {
+      summary: {
+        addRaw,
+      },
+    };
+
+    const result = await runBranchJanitor({
+      github,
+      context,
+      core,
+      dryRun: true,
+      now: new Date('2026-09-14T00:00:00.000Z'),
+    });
+
+    expect(result.issueNumber).toBe(42);
+    expect(createIssue).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.stringContaining('1970-01-01'),
+      })
+    );
+    expect(summaryWrite).toHaveBeenCalled();
   });
 });
