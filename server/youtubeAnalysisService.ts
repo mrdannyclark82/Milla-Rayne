@@ -108,7 +108,14 @@ export async function getVideoTranscript(
   try {
     const transcript = await YoutubeTranscript.fetchTranscript(videoId);
     if (transcript && transcript.length > 0) {
-      return transcript.map((item) => item.text).join(' ');
+      let fullTranscript = '';
+      for (const item of transcript) {
+        if (fullTranscript.length > 0) {
+          fullTranscript += ' ';
+        }
+        fullTranscript += item.text;
+      }
+      return fullTranscript;
     }
     return null;
   } catch (error: any) {
