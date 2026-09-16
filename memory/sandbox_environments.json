@@ -15,7 +15,7 @@
           "description": "Has real content for structural checks to pass",
           "files": [],
           "status": "testing",
-          "testsPassed": 8,
+          "testsPassed": 9,
           "testsFailed": 0,
           "addedAt": 1784578767390,
           "content": "# Real enhancement\n\nThis is enough content to pass structural verification checks in the sandbox service.\n"
@@ -41,6 +41,18 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1786383017412
+        },
+        {
+          "id": "feat_1789572633941_rb89lnfx4",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1789572633941
         }
       ],
       "readyForProduction": false,
@@ -524,6 +536,38 @@
               "detail": "Real payload feature"
             }
           ]
+        },
+        {
+          "id": "test_1789572633944_i715l4ksh",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1789572633944,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         }
       ]
     },
@@ -537,7 +581,18 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1789572633938_jared2mvo": {
+      "id": "sandbox_1789572633938_jared2mvo",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1789572633938",
+      "status": "active",
+      "createdAt": 1789572633939,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1786383017414
+  "lastUpdated": 1789572633944
 }
