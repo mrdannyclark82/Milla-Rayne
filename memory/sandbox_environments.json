@@ -15,7 +15,7 @@
           "description": "Has real content for structural checks to pass",
           "files": [],
           "status": "testing",
-          "testsPassed": 8,
+          "testsPassed": 10,
           "testsFailed": 0,
           "addedAt": 1784578767390,
           "content": "# Real enhancement\n\nThis is enough content to pass structural verification checks in the sandbox service.\n"
@@ -41,6 +41,30 @@
           "testsPassed": 0,
           "testsFailed": 0,
           "addedAt": 1786383017412
+        },
+        {
+          "id": "feat_1789657660107_5hej4zq0j",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1789657660107
+        },
+        {
+          "id": "feat_1789658376480_d7fh66hz3",
+          "name": "Test Feature",
+          "description": "Testing feature addition",
+          "files": [
+            "test.ts"
+          ],
+          "status": "draft",
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "addedAt": 1789658376480
         }
       ],
       "readyForProduction": false,
@@ -524,6 +548,70 @@
               "detail": "Real payload feature"
             }
           ]
+        },
+        {
+          "id": "test_1789657660109_hvrapp5ot",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1789657660109,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 0,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
+        },
+        {
+          "id": "test_1789658376483_q75osomix",
+          "featureId": "feat_1784578767390_dwgdbizz2",
+          "timestamp": 1789658376483,
+          "testType": "unit",
+          "passed": true,
+          "details": "Structural checks passed (4 checks). Not a random simulation. Approve still requires your call. Set MILLA_SANDBOX_RUN_TESTS=1 to also run real npm test.",
+          "duration": 1,
+          "mode": "structural",
+          "checks": [
+            {
+              "name": "has_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            },
+            {
+              "name": "has_description",
+              "ok": true,
+              "detail": "len=46"
+            },
+            {
+              "name": "has_implementable_payload",
+              "ok": true,
+              "detail": "content present"
+            },
+            {
+              "name": "not_pure_theater_name",
+              "ok": true,
+              "detail": "Real payload feature"
+            }
+          ]
         }
       ]
     },
@@ -537,7 +625,29 @@
       "createdBy": "milla",
       "features": [],
       "readyForProduction": false
+    },
+    "sandbox_1789657660104_w08ynphcy": {
+      "id": "sandbox_1789657660104_w08ynphcy",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1789657660104",
+      "status": "active",
+      "createdAt": 1789657660104,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
+    },
+    "sandbox_1789658376478_2vj6uegzb": {
+      "id": "sandbox_1789658376478_2vj6uegzb",
+      "name": "Test Sandbox",
+      "description": "Testing sandbox creation",
+      "branchName": "sandbox/test-sandbox_1789658376478",
+      "status": "active",
+      "createdAt": 1789658376478,
+      "createdBy": "milla",
+      "features": [],
+      "readyForProduction": false
     }
   },
-  "lastUpdated": 1786383017414
+  "lastUpdated": 1789658376483
 }
