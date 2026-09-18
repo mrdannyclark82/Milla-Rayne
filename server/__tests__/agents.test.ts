@@ -134,10 +134,10 @@ describe('CalendarAgent', () => {
 });
 
 describe('MillaAgent', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     // Clear tasks before each test
-    writeTasks([]);
+    await writeTasks([]);
   });
 
   afterEach(() => {
@@ -215,9 +215,9 @@ describe('MillaAgent', () => {
 });
 
 describe('Task Approval Workflow', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    writeTasks([]);
+    await writeTasks([]);
   });
 
   afterEach(() => {
