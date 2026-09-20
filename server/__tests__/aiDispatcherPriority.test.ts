@@ -33,7 +33,7 @@ vi.mock('../xaiTracker', () => ({
 }));
 vi.mock('../storage', () => ({
   storage: {
-    getUserPreferredAIModel: vi
+    getUserById: vi
       .fn()
       .mockRejectedValue(new Error('No preference')),
   },
