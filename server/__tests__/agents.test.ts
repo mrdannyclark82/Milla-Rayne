@@ -4,6 +4,7 @@ import { millaAgent } from '../agents/millaAgent.js';
 import {
   readTasks,
   writeTasks,
+  addTask,
   AgentTask,
   updateTask,
   getTask,
@@ -273,9 +274,7 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
+    await addTask(task);
 
     // Try to run without approval - should fail
     await expect(runTask(task)).rejects.toThrow('requires user approval');
@@ -304,9 +303,7 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
+    await addTask(task);
 
     // Approve the task first
     const approvedTask = await updateTask(task.taskId, {
