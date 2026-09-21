@@ -180,7 +180,7 @@ ${suggestion.suggestionText}`,
   router.get(
     '/memory',
     asyncHandler(async (req, res) => {
-      const userId = (req.session as any)?.userId || 'default-user';
+      const userId = (req as any).session?.userId || 'default-user';
       const messages = await storage.getMessages(userId);
       const content = messages
         .map(

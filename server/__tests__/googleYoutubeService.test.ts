@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getMySubscriptions,
   getVideoDetails,
@@ -11,6 +11,13 @@ import * as oauthService from '../oauthService';
 describe('Google YouTube Service', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.stubEnv('YOUTUBE_DATA_API_KEY', '');
+    vi.stubEnv('GOOGLE_API_KEY', '');
+    vi.stubEnv('GOOGLE_CLOUD_TTS_API_KEY', '');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   describe('getMySubscriptions', () => {

@@ -2,6 +2,8 @@
 
 **The Context-Aware AI Assistant**
 
+**Live:** [mrdannyclark82.github.io/Milla-Rayne](https://mrdannyclark82.github.io/Milla-Rayne/) · [Scene demo](https://mrdannyclark82.github.io/Milla-Rayne/scene-demo.html) · [Custodian](CUSTODIAN.md)
+
 Milla-Rayne is a pioneering digital intelligence platform designed as a devoted AI companion. It blends cutting-edge AI research with production-grade systems, offering a hybrid, decentralized, and edge-ready architecture for real-time, multimodal interaction.
 
 ---

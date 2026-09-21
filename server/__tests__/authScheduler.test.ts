@@ -1,95 +1,139 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SqliteStorage } from '../sqliteStorage';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { scheduleTokenRotation, refreshAccessTokenIfExpired } from '../authService';
+import { storage } from '../storage';
 
-// Mock better-sqlite3
-const mockPrepare = vi.fn();
-const mockExec = vi.fn();
-const mockPragma = vi.fn();
-const mockClose = vi.fn();
-
-const mockDb = {
-  prepare: mockPrepare,
-  exec: mockExec,
-  pragma: mockPragma,
-  close: mockClose,
-};
-
-vi.mock('better-sqlite3', () => {
-  return {
-    default: vi.fn(function () {
-      return mockDb;
-    }),
-  };
-});
-
-// Mock fs to avoid directory creation issues
-vi.mock('fs', () => ({
-  default: {
-    existsSync: vi.fn().mockReturnValue(true),
-    mkdirSync: vi.fn(),
+// Mock storage
+vi.mock('../storage', () => ({
+  storage: {
+    getActiveUserSessions: vi.fn(),
+    getOAuthToken: vi.fn(),
   },
-  existsSync: vi.fn().mockReturnValue(true),
-  mkdirSync: vi.fn(),
 }));
 
-// Mock crypto
-vi.mock('../crypto', () => ({
-  isEncryptionEnabled: vi.fn().mockReturnValue(false),
-  getMemoryKey: vi.fn(),
-  encrypt: vi.fn((t) => t),
-  decrypt: vi.fn((t) => t),
+// Mock oauthService
+// Since it is imported dynamically in authService, we need to ensure the mock is picked up.
+// Using vi.mock at the top level should work for dynamic imports as well in Vitest.
+vi.mock('../oauthService', () => ({
+  getValidAccessToken: vi.fn(),
 }));
 
-describe('SqliteStorage - Token Rotation Support', () => {
-  let storage: SqliteStorage;
-
+describe('Auth Scheduler', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPrepare.mockReset();
-    mockExec.mockReset();
-
-    // Default mock implementation for prepare/exec to allow initialization
-    mockPrepare.mockReturnValue({
-      get: vi.fn(),
-      all: vi.fn(),
-      run: vi.fn(),
-    });
-
-    // Initialize storage (this calls initializeDatabase which calls exec/prepare)
-    storage = new SqliteStorage();
   });
 
-  describe('getActiveUserSessions', () => {
-    it('should query sessions with future expiration date', async () => {
+  describe('scheduleTokenRotation', () => {
+    it('should do nothing if no active sessions', async () => {
+      vi.mocked(storage.getActiveUserSessions).mockResolvedValue([]);
+
+      await scheduleTokenRotation();
+
+      expect(storage.getActiveUserSessions).toHaveBeenCalled();
+      expect(storage.getOAuthToken).not.toHaveBeenCalled();
+    });
+
+    it('should check tokens for active users', async () => {
       const mockSessions = [
-        {
-          id: 'session-1',
-          user_id: 'user-1',
-          session_token: 'token-1',
-          expires_at: '2099-01-01T00:00:00.000Z',
-          created_at: '2023-01-01T00:00:00.000Z',
-        },
+        { userId: 'user1', sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' },
+        { userId: 'user2', sessionToken: 'token2', expiresAt: new Date(), createdAt: new Date(), id: 's2' },
+      ];
+      vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
+      vi.mocked(storage.getOAuthToken).mockResolvedValue(null);
+
+      await scheduleTokenRotation();
+
+      expect(storage.getActiveUserSessions).toHaveBeenCalled();
+      expect(storage.getOAuthToken).toHaveBeenCalledWith('user1', 'google');
+      expect(storage.getOAuthToken).toHaveBeenCalledWith('user2', 'google');
+    });
+
+    it('should refresh token if expiring soon', async () => {
+      const userId = 'user1';
+      const mockSessions = [
+        { userId, sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' }
       ];
 
-      const mockAll = vi.fn().mockReturnValue(mockSessions);
-      mockPrepare.mockReturnValue({
-        all: mockAll,
-      });
+      const expiringSoon = new Date(Date.now() + 5 * 60 * 1000); // 5 mins from now
+      const mockToken = {
+        id: 't1',
+        userId,
+        provider: 'google',
+        accessToken: 'old_access',
+        refreshToken: 'refresh_token',
+        expiresAt: expiringSoon,
+        scope: 'scope',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      const sessions = await storage.getActiveUserSessions();
+      vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
+      vi.mocked(storage.getOAuthToken).mockResolvedValue(mockToken as any);
 
-      expect(mockPrepare).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'SELECT * FROM user_sessions WHERE expires_at > CURRENT_TIMESTAMP'
-        )
-      );
+      // We need to spy on refreshAccessTokenIfExpired to verify it's called?
+      // It's exported from the same module, so spying on it directly might not work if it's called internally.
+      // But we can verify side effects.
+      // refreshAccessTokenIfExpired calls getValidAccessToken from oauthService.
 
-      expect(mockAll).toHaveBeenCalled();
+      const oauthService = await import('../oauthService');
+      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue('new_access_token');
 
-      expect(sessions).toHaveLength(1);
-      expect(sessions[0].id).toBe('session-1');
-      expect(sessions[0].userId).toBe('user-1');
-      expect(sessions[0].expiresAt).toBeInstanceOf(Date);
+      await scheduleTokenRotation();
+
+      expect(storage.getOAuthToken).toHaveBeenCalledWith(userId, 'google');
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+    });
+
+    it('should NOT refresh token if NOT expiring soon', async () => {
+      const userId = 'user1';
+      const mockSessions = [
+        { userId, sessionToken: 'token1', expiresAt: new Date(), createdAt: new Date(), id: 's1' }
+      ];
+
+      const expiringLater = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+      const mockToken = {
+        id: 't1',
+        userId,
+        provider: 'google',
+        accessToken: 'valid_access',
+        expiresAt: expiringLater,
+        scope: 'scope',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      vi.mocked(storage.getActiveUserSessions).mockResolvedValue(mockSessions);
+      vi.mocked(storage.getOAuthToken).mockResolvedValue(mockToken as any);
+
+      const oauthService = await import('../oauthService');
+
+      await scheduleTokenRotation();
+
+      expect(storage.getOAuthToken).toHaveBeenCalledWith(userId, 'google');
+      expect(oauthService.getValidAccessToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('refreshAccessTokenIfExpired', () => {
+    it('should delegate to getValidAccessToken', async () => {
+      const userId = 'user1';
+      const oauthService = await import('../oauthService');
+      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue('new_token');
+
+      const result = await refreshAccessTokenIfExpired(userId, 'old', 'refresh');
+
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+      expect(result).toEqual({ success: true, newAccessToken: 'new_token' });
+    });
+
+    it('should return failure if getValidAccessToken returns null', async () => {
+      const userId = 'user1';
+      const oauthService = await import('../oauthService');
+      vi.mocked(oauthService.getValidAccessToken).mockResolvedValue(null);
+
+      const result = await refreshAccessTokenIfExpired(userId, 'old', 'refresh');
+
+      expect(oauthService.getValidAccessToken).toHaveBeenCalledWith(userId, 'google');
+      expect(result.success).toBe(false);
     });
   });
 });

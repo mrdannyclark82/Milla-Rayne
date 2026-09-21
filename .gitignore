@@ -11,6 +11,7 @@ node_modules/
 # Build outputs
 dist/
 build/
+docs/api/
 *.log
 
 # IDE files
@@ -30,8 +31,3 @@ __pycache__/
 .Python
 venv/
 .venv/
-
-# Database
-memory/*.db
-memory/*.db-shm
-memory/*.db-wal

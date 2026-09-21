@@ -53,6 +53,10 @@ export const config = {
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
   },
+  mistral: {
+    apiKey: process.env.MISTRAL_API_KEY,
+    model: process.env.MISTRAL_MODEL,
+  },
   anthropic: {
     apiKey: process.env.ANTHROPIC_API_KEY,
   },

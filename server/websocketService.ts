@@ -1,4 +1,3 @@
-// @ts-expect-error - ws types installed but not recognized
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
 

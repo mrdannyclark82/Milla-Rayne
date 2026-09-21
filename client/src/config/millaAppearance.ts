@@ -26,6 +26,33 @@ export interface MillaAppearanceTokens {
 }
 
 /**
+ * Wardrobe Outfit Palettes
+ * Defines specific color themes for different attire styles
+ */
+export const outfitPalettes = {
+  casual: {
+    primary: '#f0e0c8', // Warm sand
+    secondary: '#a8ba98', // Sage green
+    description: 'cozy knit style',
+  },
+  elegant: {
+    primary: '#e2d1f9', // Pastel lavender
+    secondary: '#1d3557', // Rich deep royal navy
+    description: 'elegant evening dress style',
+  },
+  professional: {
+    primary: '#2b2d42', // Charcoal/navy structured blazer
+    secondary: '#edf2f4', // Crisp satin white collar
+    description: 'tailored corporate professional attire',
+  },
+  intimate: {
+    primary: '#d63031', // Crimson rose red silk
+    secondary: '#2d3436', // Delicate midnight charcoal lace trim
+    description: 'alluring rose-red silk loungewear',
+  },
+};
+
+/**
  * Milla's canonical appearance
  * Eyes: green
  * Hair: deep copper red, long, naturally curly with volume
@@ -47,11 +74,7 @@ export const millaAppearance: MillaAppearanceTokens = {
     freckles: '#daa77a',
     description: 'fair with light freckles',
   },
-  wardrobe: {
-    primary: '#f0e0c8', // Very light warm sand
-    secondary: '#a8ba98', // Light sage green
-    description: 'cozy knit style',
-  },
+  wardrobe: outfitPalettes.casual,
 };
 
 /**

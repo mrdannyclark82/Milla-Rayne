@@ -43,6 +43,26 @@ interface SandboxManagerProps {
   onOpenIDE?: (sandboxId: string, featureId?: string) => void;
 }
 
+interface FeatureDetail {
+  sandbox: {
+    id: string;
+    name: string;
+    description: string;
+    branchName: string;
+    status: string;
+  };
+  feature: SandboxFeature & { content?: string };
+  testResults: Array<{
+    id: string;
+    testType: string;
+    passed: boolean;
+    details: string;
+    timestamp: number;
+    duration: number;
+  }>;
+  resolvedFiles: Array<{ path: string; content: string; source: string }>;
+}
+
 export function SandboxManager({
   isOpen,
   onClose,
@@ -52,6 +72,10 @@ export function SandboxManager({
   const [loading, setLoading] = useState(true);
   const [expandedSandbox, setExpandedSandbox] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [lastTestSummary, setLastTestSummary] = useState<string | null>(null);
+  const [viewDetail, setViewDetail] = useState<FeatureDetail | null>(null);
+  const [viewLoading, setViewLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,139 +85,64 @@ export function SandboxManager({
 
   const fetchSandboxes = async () => {
     setLoading(true);
+    setActionError(null);
     try {
       const response = await fetch('/api/sandboxes');
       if (response.ok) {
         const data = await response.json();
         setSandboxes(data.sandboxes || []);
       } else {
-        setSandboxes(getMockSandboxes());
+        setSandboxes([]);
+        setActionError('Failed to load sandboxes from server');
       }
     } catch (error) {
-      setSandboxes(getMockSandboxes());
+      setSandboxes([]);
+      setActionError('Could not reach sandbox API');
     }
     setLoading(false);
   };
 
-  const getMockSandboxes = (): SandboxEnvironment[] => [
-    {
-      id: 'sandbox_1',
-      name: 'Real-time Chat',
-      description: 'WebSocket-based real-time messaging with typing indicators',
-      branchName: 'sandbox/real-time-chat',
-      status: 'testing',
-      createdAt: Date.now() - 86400000,
-      createdBy: 'milla',
-      readyForProduction: false,
-      features: [
-        {
-          id: 'f1',
-          name: 'WebSocket Connection',
-          description: 'Persistent connection handling',
-          files: ['ws.ts'],
-          status: 'approved',
-          testsPassed: 5,
-          testsFailed: 0,
-          addedAt: Date.now() - 80000000,
-        },
-        {
-          id: 'f2',
-          name: 'Typing Indicators',
-          description: 'Show when user is typing',
-          files: ['typing.ts'],
-          status: 'testing',
-          testsPassed: 2,
-          testsFailed: 1,
-          addedAt: Date.now() - 40000000,
-        },
-      ],
-    },
-    {
-      id: 'sandbox_2',
-      name: 'Voice Integration',
-      description: 'Speech-to-text and text-to-speech capabilities',
-      branchName: 'sandbox/voice-integration',
-      status: 'active',
-      createdAt: Date.now() - 172800000,
-      createdBy: 'milla',
-      readyForProduction: false,
-      features: [
-        {
-          id: 'f3',
-          name: 'Speech Recognition',
-          description: 'Browser-based voice input',
-          files: ['speech.ts'],
-          status: 'draft',
-          testsPassed: 0,
-          testsFailed: 0,
-          addedAt: Date.now() - 100000000,
-        },
-      ],
-    },
-    {
-      id: 'sandbox_3',
-      name: 'Memory System',
-      description: 'Long-term memory and context awareness',
-      branchName: 'sandbox/memory-system',
-      status: 'active',
-      createdAt: Date.now() - 259200000,
-      createdBy: 'milla',
-      readyForProduction: true,
-      features: [
-        {
-          id: 'f4',
-          name: 'Vector Storage',
-          description: 'Semantic memory search',
-          files: ['vector.ts'],
-          status: 'approved',
-          testsPassed: 8,
-          testsFailed: 0,
-          addedAt: Date.now() - 200000000,
-        },
-        {
-          id: 'f5',
-          name: 'Context Window',
-          description: 'Sliding window for conversations',
-          files: ['context.ts'],
-          status: 'approved',
-          testsPassed: 6,
-          testsFailed: 0,
-          addedAt: Date.now() - 150000000,
-        },
-      ],
-    },
-  ];
+  const applyFeatureUpdate = (
+    sandboxId: string,
+    featureId: string,
+    patch: Partial<SandboxFeature>
+  ) => {
+    setSandboxes((prev) =>
+      prev.map((s) =>
+        s.id === sandboxId
+          ? {
+              ...s,
+              features: s.features.map((f) =>
+                f.id === featureId ? { ...f, ...patch } : f
+              ),
+            }
+          : s
+      )
+    );
+  };
 
   const handleApprove = async (sandboxId: string, featureId: string) => {
     setActionLoading(`${sandboxId}-${featureId}-approve`);
+    setActionError(null);
     try {
-      await fetch(`/api/sandboxes/${sandboxId}/features/${featureId}/approve`, {
-        method: 'POST',
-      });
-      setSandboxes((prev) =>
-        prev.map((s) =>
-          s.id === sandboxId
-            ? {
-                ...s,
-                features: s.features.map((f) =>
-                  f.id === featureId ? { ...f, status: 'approved' as const } : f
-                ),
-              }
-            : s
-        )
+      const res = await fetch(
+        `/api/sandboxes/${sandboxId}/features/${featureId}/approve`,
+        { method: 'POST' }
       );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Approve failed');
+      }
+      if (data.feature) {
+        applyFeatureUpdate(sandboxId, featureId, data.feature);
+      } else {
+        applyFeatureUpdate(sandboxId, featureId, { status: 'approved' });
+      }
+      // Confirm from server so refresh matches
+      await fetchSandboxes();
     } catch (error) {
-      setSandboxes((prev) =>
-        prev.map((s) =>
-          s.id === sandboxId
-            ? {
-                ...s,
-                features: s.features.map((f) =>
-                  f.id === featureId ? { ...f, status: 'approved' as const } : f
-                ),
-              }
-            : s
-        )
+      setActionError(
+        error instanceof Error ? error.message : 'Approve failed'
       );
     }
     setActionLoading(null);
@@ -201,34 +150,25 @@ export function SandboxManager({
 
   const handleReject = async (sandboxId: string, featureId: string) => {
     setActionLoading(`${sandboxId}-${featureId}-reject`);
+    setActionError(null);
     try {
-      await fetch(`/api/sandboxes/${sandboxId}/features/${featureId}/reject`, {
-        method: 'POST',
-      });
-      setSandboxes((prev) =>
-        prev.map((s) =>
-          s.id === sandboxId
-            ? {
-                ...s,
-                features: s.features.map((f) =>
-                  f.id === featureId ? { ...f, status: 'rejected' as const } : f
-                ),
-              }
-            : s
-        )
+      const res = await fetch(
+        `/api/sandboxes/${sandboxId}/features/${featureId}/reject`,
+        { method: 'POST' }
       );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Reject failed');
+      }
+      if (data.feature) {
+        applyFeatureUpdate(sandboxId, featureId, data.feature);
+      } else {
+        applyFeatureUpdate(sandboxId, featureId, { status: 'rejected' });
+      }
+      await fetchSandboxes();
     } catch (error) {
-      setSandboxes((prev) =>
-        prev.map((s) =>
-          s.id === sandboxId
-            ? {
-                ...s,
-                features: s.features.map((f) =>
-                  f.id === featureId ? { ...f, status: 'rejected' as const } : f
-                ),
-              }
-            : s
-        )
+      setActionError(
+        error instanceof Error ? error.message : 'Reject failed'
       );
     }
     setActionLoading(null);
@@ -236,15 +176,71 @@ export function SandboxManager({
 
   const handleRunTests = async (sandboxId: string, featureId: string) => {
     setActionLoading(`${sandboxId}-${featureId}-test`);
+    setActionError(null);
     try {
-      await fetch(`/api/sandboxes/${sandboxId}/features/${featureId}/test`, {
-        method: 'POST',
-      });
+      const res = await fetch(
+        `/api/sandboxes/${sandboxId}/features/${featureId}/test`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ testType: 'unit' }),
+        }
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || 'Test failed');
+      }
+      if (data.feature) {
+        applyFeatureUpdate(sandboxId, featureId, data.feature);
+      }
+      // Surface honest result (structural vs real — never random theater)
+      const result = data.result || data;
+      const mode = result.mode || 'structural';
+      const passed = result.passed;
+      const detail = result.details || '';
+      if (passed) {
+        setActionError(null);
+        // brief success via error banner slot is wrong color — use console + optional
+        console.log(`[Sandbox Test] ${mode} PASS: ${detail}`);
+      } else {
+        setActionError(
+          `Check ${mode}: failed — ${detail || 'see feature details'}`
+        );
+      }
+      // Stash last test message on a toast-like line
+      setLastTestSummary(
+        `${passed ? 'PASS' : 'FAIL'} (${mode}): ${detail.slice(0, 180)}`
+      );
       await fetchSandboxes();
     } catch (error) {
-      console.log('Test initiated');
+      setActionError(error instanceof Error ? error.message : 'Test failed');
     }
     setActionLoading(null);
+  };
+
+  const handleView = async (sandboxId: string, featureId: string) => {
+    setViewLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(
+        `/api/sandboxes/${sandboxId}/features/${featureId}`
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Could not load feature');
+      }
+      setViewDetail({
+        sandbox: data.sandbox,
+        feature: data.feature,
+        testResults: data.testResults || [],
+        resolvedFiles: data.resolvedFiles || [],
+      });
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : 'View failed'
+      );
+    }
+    setViewLoading(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -395,6 +391,36 @@ export function SandboxManager({
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1rem' }}>
+          {actionError && (
+            <div
+              style={{
+                marginBottom: '0.75rem',
+                padding: '0.625rem 0.75rem',
+                borderRadius: '0.5rem',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.4)',
+                color: '#fca5a5',
+                fontSize: '0.8125rem',
+              }}
+            >
+              {actionError}
+            </div>
+          )}
+          {lastTestSummary && !actionError && (
+            <div
+              style={{
+                marginBottom: '0.75rem',
+                padding: '0.625rem 0.75rem',
+                borderRadius: '0.5rem',
+                background: 'rgba(34, 211, 238, 0.12)',
+                border: '1px solid rgba(34, 211, 238, 0.35)',
+                color: '#a5f3fc',
+                fontSize: '0.8125rem',
+              }}
+            >
+              {lastTestSummary}
+            </div>
+          )}
           {loading ? (
             <div
               style={{
@@ -734,7 +760,7 @@ export function SandboxManager({
                                               }}
                                             />
                                           )}
-                                          Test
+                                          Check
                                         </button>
                                         <button
                                           onClick={() =>
@@ -853,6 +879,10 @@ export function SandboxManager({
                                     </button>
                                   )}
                                   <button
+                                    onClick={() =>
+                                      handleView(sandbox.id, feature.id)
+                                    }
+                                    disabled={viewLoading}
                                     style={{
                                       padding: '0.375rem 0.625rem',
                                       borderRadius: '0.375rem',
@@ -868,12 +898,22 @@ export function SandboxManager({
                                       fontWeight: 500,
                                     }}
                                   >
-                                    <Eye
-                                      style={{
-                                        width: '0.75rem',
-                                        height: '0.75rem',
-                                      }}
-                                    />
+                                    {viewLoading ? (
+                                      <Loader2
+                                        style={{
+                                          width: '0.75rem',
+                                          height: '0.75rem',
+                                          animation: 'spin 1s linear infinite',
+                                        }}
+                                      />
+                                    ) : (
+                                      <Eye
+                                        style={{
+                                          width: '0.75rem',
+                                          height: '0.75rem',
+                                        }}
+                                      />
+                                    )}
                                     View
                                   </button>
                                 </div>
@@ -923,6 +963,266 @@ export function SandboxManager({
           </button>
         </div>
       </div>
+
+      {/* Feature View Detail */}
+      {viewDetail && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.55)',
+          }}
+          onClick={() => setViewDetail(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 'min(640px, 92vw)',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              background: 'rgba(12, 12, 18, 0.98)',
+              border: '1px solid rgba(139, 92, 246, 0.4)',
+              borderRadius: '0.75rem',
+              padding: '1.25rem',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: '1rem',
+                marginBottom: '1rem',
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    margin: 0,
+                    color: '#fff',
+                    fontSize: '1.0625rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {viewDetail.feature.name}
+                </h3>
+                <p
+                  style={{
+                    margin: '0.35rem 0 0',
+                    color: '#9ca3af',
+                    fontSize: '0.8125rem',
+                  }}
+                >
+                  {viewDetail.sandbox.name} · {viewDetail.sandbox.branchName}
+                </p>
+              </div>
+              <button
+                onClick={() => setViewDetail(null)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#9ca3af',
+                  cursor: 'pointer',
+                }}
+              >
+                <X style={{ width: '1.125rem', height: '1.125rem' }} />
+              </button>
+            </div>
+
+            <div
+              style={{
+                marginBottom: '0.75rem',
+                display: 'flex',
+                gap: '0.5rem',
+                flexWrap: 'wrap',
+              }}
+            >
+              <span
+                style={{
+                  padding: '0.125rem 0.5rem',
+                  borderRadius: '0.25rem',
+                  fontSize: '0.6875rem',
+                  textTransform: 'capitalize',
+                  background: 'rgba(139, 92, 246, 0.2)',
+                  color: '#c4b5fd',
+                  border: '1px solid rgba(139, 92, 246, 0.4)',
+                }}
+              >
+                {viewDetail.feature.status}
+              </span>
+              <span style={{ color: '#22c55e', fontSize: '0.75rem' }}>
+                Passed: {viewDetail.feature.testsPassed}
+              </span>
+              <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>
+                Failed: {viewDetail.feature.testsFailed}
+              </span>
+            </div>
+
+            <p
+              style={{
+                color: '#d1d5db',
+                fontSize: '0.875rem',
+                lineHeight: 1.5,
+                marginBottom: '1rem',
+              }}
+            >
+              {viewDetail.feature.description}
+            </p>
+
+            <h4
+              style={{
+                margin: '0 0 0.5rem',
+                color: '#e5e7eb',
+                fontSize: '0.8125rem',
+              }}
+            >
+              Files ({viewDetail.resolvedFiles.length})
+            </h4>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                marginBottom: '1rem',
+              }}
+            >
+              {viewDetail.resolvedFiles.map((file) => (
+                <div
+                  key={file.path}
+                  style={{
+                    background: 'rgba(0,0,0,0.35)',
+                    borderRadius: '0.5rem',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: '0.375rem 0.625rem',
+                      color: '#22d3ee',
+                      fontSize: '0.75rem',
+                      borderBottom: '1px solid rgba(255,255,255,0.06)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <span>{file.path}</span>
+                    <span style={{ color: '#6b7280' }}>{file.source}</span>
+                  </div>
+                  <pre
+                    style={{
+                      margin: 0,
+                      padding: '0.625rem',
+                      color: '#d1d5db',
+                      fontSize: '0.7rem',
+                      maxHeight: '160px',
+                      overflow: 'auto',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {file.content.slice(0, 4000)}
+                    {file.content.length > 4000 ? '\n…' : ''}
+                  </pre>
+                </div>
+              ))}
+            </div>
+
+            {viewDetail.testResults.length > 0 && (
+              <>
+                <h4
+                  style={{
+                    margin: '0 0 0.5rem',
+                    color: '#e5e7eb',
+                    fontSize: '0.8125rem',
+                  }}
+                >
+                  Recent tests
+                </h4>
+                <ul
+                  style={{
+                    margin: '0 0 1rem',
+                    paddingLeft: '1.1rem',
+                    color: '#9ca3af',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  {viewDetail.testResults
+                    .slice(-8)
+                    .reverse()
+                    .map((t) => (
+                      <li key={t.id} style={{ marginBottom: '0.25rem' }}>
+                        <span
+                          style={{
+                            color: t.passed ? '#22c55e' : '#ef4444',
+                          }}
+                        >
+                          {t.passed ? 'PASS' : 'FAIL'}
+                        </span>{' '}
+                        {t.testType} — {t.details} (
+                        {Math.round(t.duration)}ms)
+                      </li>
+                    ))}
+                </ul>
+              </>
+            )}
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.5rem',
+                justifyContent: 'flex-end',
+              }}
+            >
+              {onOpenIDE && (
+                <button
+                  onClick={() => {
+                    const sid = viewDetail.sandbox.id;
+                    const fid = viewDetail.feature.id;
+                    setViewDetail(null);
+                    onOpenIDE(sid, fid);
+                  }}
+                  style={{
+                    padding: '0.5rem 0.875rem',
+                    borderRadius: '0.5rem',
+                    background: 'rgba(34, 211, 238, 0.2)',
+                    border: '1px solid rgba(34, 211, 238, 0.4)',
+                    color: '#22d3ee',
+                    cursor: 'pointer',
+                    fontSize: '0.8125rem',
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <Code style={{ width: '0.875rem', height: '0.875rem' }} />
+                  Open in IDE
+                </button>
+              )}
+              <button
+                onClick={() => setViewDetail(null)}
+                style={{
+                  padding: '0.5rem 0.875rem',
+                  borderRadius: '0.5rem',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#e5e7eb',
+                  cursor: 'pointer',
+                  fontSize: '0.8125rem',
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin {

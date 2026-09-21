@@ -1,0 +1,85 @@
+name: PR Backlog Nightly Scoring
+
+on:
+  schedule:
+    - cron: '15 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  score-and-triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Score and triage PR backlog
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const labels = [
+              {name: 'ready-to-merge', color: '0E8A16', description: 'PR is clean, current, and safe to merge'},
+              {name: 'needs-rebase', color: 'D93F0B', description: 'PR is behind main or has merge conflicts'},
+              {name: 'superseded', color: '6A737D', description: 'Replaced by a newer canonical PR'},
+              {name: 'stale-draft', color: 'C2E0C6', description: 'Draft is stale and inactive'},
+              {name: 'security-review', color: 'B60205', description: 'Requires explicit security review'},
+              {name: 'large-feature', color: '5319E7', description: 'Large feature PR that should be split or deeply reviewed'}
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: label.name });
+              } catch {
+                await github.rest.issues.createLabel({ owner, repo, ...label });
+              }
+            }
+
+            const prs = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: 'open', per_page: 100
+            });
+
+            const workflowLike = prs.filter(pr => {
+              const text = `${pr.title} ${pr.head.ref}`.toLowerCase();
+              return text.includes('daily empire') || text.includes('daily-empire') || text.includes('workflow');
+            });
+
+            const canonicalWorkflowPr = workflowLike
+              .filter(pr => pr.number !== 520)
+              .sort((a, b) => b.number - a.number)[0];
+
+            const now = Date.now();
+            for (const pr of prs) {
+              const ageDays = Math.floor((now - Date.parse(pr.created_at)) / 86400000);
+              const text = `${pr.title} ${pr.body || ''} ${pr.head.ref}`.toLowerCase();
+
+              if ((pr.mergeable_state === 'dirty' || pr.mergeable_state === 'behind') && !pr.labels.some(l => l.name === 'needs-rebase')) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['needs-rebase'] });
+              }
+
+              if (pr.changed_files > 30 && !pr.labels.some(l => l.name === 'large-feature')) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['large-feature'] });
+              }
+
+              if ((text.includes('security') || text.includes('ssrf') || text.includes('alert-autofix') || text.includes('code scanning')) && !pr.labels.some(l => l.name === 'security-review')) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['security-review'] });
+              }
+
+              if (pr.draft && ageDays >= 21 && !pr.labels.some(l => l.name === 'stale-draft')) {
+                await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['stale-draft'] });
+              }
+
+              if (pr.draft && ageDays >= 45) {
+                await github.rest.pulls.update({ owner, repo, pull_number: pr.number, state: 'closed' });
+              }
+
+              const isWorkflowSwarm = /daily empire|daily-empire|workflow/.test(text);
+              if (isWorkflowSwarm && pr.number !== 520 && canonicalWorkflowPr && pr.number < canonicalWorkflowPr.number) {
+                if (!pr.labels.some(l => l.name === 'superseded')) {
+                  await github.rest.issues.addLabels({ owner, repo, issue_number: pr.number, labels: ['superseded'] });
+                }
+              }
+            }

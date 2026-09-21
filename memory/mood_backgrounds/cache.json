@@ -1,0 +1,27 @@
+{
+  "calm": {
+    "imageUrl": "/assets/scenes/mood-calm.jpg",
+    "generatedAt": 1786188227239,
+    "prompt": "serene peaceful landscape, soft pastel colors, gentle flowing water, minimalist zen garden, tranquil atmosphere, soft morning light, misty mountains in distance, calm blue sky, peaceful nature scene, 4k high quality"
+  },
+  "energetic": {
+    "imageUrl": "/assets/scenes/mood-energetic.jpg",
+    "generatedAt": 1784443444505,
+    "prompt": "energetic"
+  },
+  "romantic": {
+    "imageUrl": "/assets/scenes/mood-romantic.jpg",
+    "generatedAt": 1784443444505,
+    "prompt": "romantic"
+  },
+  "mysterious": {
+    "imageUrl": "/assets/scenes/mood-mysterious.jpg",
+    "generatedAt": 1784443444505,
+    "prompt": "mysterious"
+  },
+  "playful": {
+    "imageUrl": "/assets/scenes/mood-playful.jpg",
+    "generatedAt": 1784443444505,
+    "prompt": "playful"
+  }
+}

@@ -26,8 +26,6 @@
   "plugin": [],
   "lightHighlightTheme": "light-plus",
   "darkHighlightTheme": "dark-plus",
-  "customCss": "",
-  "markedOptions": {},
   "githubPages": true,
   "hideGenerator": false,
   "searchInComments": true,

@@ -21,16 +21,58 @@ export function registerGoogleRoutes(app: Express) {
       const { code } = req.query;
       if (!code) return res.status(400).send('Code is required');
 
-      const result = await loginOrRegisterWithGoogle(code as string);
-      if (!result.success) return res.status(401).send(result.error);
+      try {
+        const { exchangeCodeForToken, storeOAuthToken } = await import('../oauthService');
 
-      res.cookie('session_token', result.sessionToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+        // Exchange code for tokens
+        const tokenData = await exchangeCodeForToken(code as string);
 
-      res.redirect('/');
+        // Fetch user info
+        const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.accessToken}` },
+        });
+
+        if (!userRes.ok) {
+          return res.status(401).send('Failed to fetch user info from Google');
+        }
+
+        const profile = await userRes.json();
+
+        // Login or register user
+        const result = await loginOrRegisterWithGoogle(
+          profile.email,
+          profile.id,
+          profile.name || profile.email.split('@')[0]
+        );
+
+        if (!result.success || !result.user) {
+          return res.status(401).send(result.error || 'Authentication failed');
+        }
+
+        // Store OAuth token
+        if (result.user.id) {
+            await storeOAuthToken(
+            result.user.id,
+            'google',
+            tokenData.accessToken,
+            tokenData.refreshToken,
+            tokenData.expiresIn,
+            tokenData.scope
+            );
+        }
+
+        res.cookie('session_token', result.sessionToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.redirect('/');
+      } catch (error) {
+        console.error('Google callback error:', error);
+        res.status(500).send('Internal server error during authentication');
+      }
     })
   );
 

@@ -17,10 +17,14 @@ import {
   Code,
   Loader2,
   Image,
+  LayoutDashboard,
 } from 'lucide-react';
+import { Link } from 'wouter';
 import { YoutubePlayerCyberpunk } from '../components/YoutubePlayerCyberpunk';
 import { SandboxManager } from '../components/SandboxManager';
 import { Sandbox } from '../components/Sandbox';
+import { AdaptiveSceneManager } from '../components/scene/AdaptiveSceneManager';
+import { SceneSettingsPanel } from '../components/scene/SceneSettingsPanel';
 
 interface ChatMessage {
   id: string;
@@ -46,6 +50,10 @@ export default function Chat() {
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showSandboxManager, setShowSandboxManager] = useState(false);
   const [showIDE, setShowIDE] = useState(false);
+  const [ideContext, setIdeContext] = useState<{
+    sandboxId?: string;
+    featureId?: string;
+  } | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeNav, setActiveNav] = useState('chat');
   const [showMemoryPanel, setShowMemoryPanel] = useState(false);
@@ -277,6 +285,8 @@ export default function Chat() {
 
   return (
     <div className="milla-container">
+      <div className="scene-fallback-bg" />
+      <AdaptiveSceneManager region="full" />
       <div className="bg-gradient-1" />
       <div className="bg-gradient-2" />
 
@@ -306,9 +316,18 @@ export default function Chat() {
             />
           </div>
 
+          <Link
+            href="/dashboard"
+            className="nav-btn settings-btn"
+            title="Control Room (dashboard / more settings)"
+          >
+            <LayoutDashboard style={{ width: '1.25rem', height: '1.25rem' }} />
+          </Link>
+
           <button
             onClick={() => setShowSettingsPanel(true)}
             className="nav-btn settings-btn"
+            title="Chat settings"
           >
             <Settings style={{ width: '1.25rem', height: '1.25rem' }} />
           </button>
@@ -324,12 +343,22 @@ export default function Chat() {
               </div>
               <span className="mobile-title">MILLA.AI</span>
             </div>
-            <button
-              onClick={() => setShowSettingsPanel(true)}
-              className="mobile-settings-btn"
-            >
-              <Settings style={{ width: '1.25rem', height: '1.25rem' }} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Link
+                href="/dashboard"
+                className="mobile-settings-btn"
+                title="Control Room"
+              >
+                <LayoutDashboard style={{ width: '1.25rem', height: '1.25rem' }} />
+              </Link>
+              <button
+                onClick={() => setShowSettingsPanel(true)}
+                className="mobile-settings-btn"
+                title="Chat settings"
+              >
+                <Settings style={{ width: '1.25rem', height: '1.25rem' }} />
+              </button>
+            </div>
           </header>
 
           <div className="chat-area">
@@ -521,6 +550,14 @@ export default function Chat() {
 
             <div className="settings-section">
               <h3 className="section-title">
+                <Sparkles style={{ width: '1rem', height: '1rem' }} /> Adaptive
+                Background
+              </h3>
+              <SceneSettingsPanel />
+            </div>
+
+            <div className="settings-section">
+              <h3 className="section-title">
                 <Zap style={{ width: '1rem', height: '1rem' }} /> Proactive
                 Enhancements
               </h3>
@@ -586,14 +623,23 @@ export default function Chat() {
       <SandboxManager
         isOpen={showSandboxManager}
         onClose={() => setShowSandboxManager(false)}
-        onOpenIDE={() => {
+        onOpenIDE={(sandboxId, featureId) => {
+          setIdeContext({ sandboxId, featureId });
           setShowSandboxManager(false);
           setShowIDE(true);
         }}
       />
 
-      {/* IDE Sandbox */}
-      <Sandbox isOpen={showIDE} onClose={() => setShowIDE(false)} />
+      {/* IDE Sandbox — loads feature enhancement when opened from manager */}
+      <Sandbox
+        isOpen={showIDE}
+        onClose={() => {
+          setShowIDE(false);
+          setIdeContext(null);
+        }}
+        sandboxId={ideContext?.sandboxId}
+        featureId={ideContext?.featureId}
+      />
 
       {/* Memory Panel */}
       {showMemoryPanel && (
@@ -617,32 +663,40 @@ export default function Chat() {
             </div>
             <div className="panel-content">
               <div className="memory-section">
-                <h3>Recent Memories</h3>
+                <h3>Memory Core</h3>
+                <p style={{ fontSize: '0.85rem', opacity: 0.75, marginBottom: '0.75rem' }}>
+                  Built as a place to browse continuity / spine memories and
+                  related context (including media you care about). Right now
+                  this panel is still a <strong>UI shell</strong> — placeholders,
+                  not live Memory Agent search yet. Real memory still lands via
+                  chat + house Continuity Spine. Slash:{' '}
+                  <code>/remember</code> opens this panel.
+                </p>
+                <h3>Example layout (not live data)</h3>
                 <div className="memory-list">
                   <div className="memory-item">
-                    <span className="memory-date">Today</span>
+                    <span className="memory-date">Placeholder</span>
                     <p>
-                      Discussed AI video recommendations and YouTube integration
+                      Future: pull recent spine notes / personal lane from Memory
+                      Agent
                     </p>
                   </div>
                   <div className="memory-item">
-                    <span className="memory-date">Yesterday</span>
-                    <p>Configured cyberpunk UI theme preferences</p>
-                  </div>
-                  <div className="memory-item">
-                    <span className="memory-date">3 days ago</span>
-                    <p>Set up sandbox development environment</p>
+                    <span className="memory-date">Placeholder</span>
+                    <p>
+                      Future: search memories + optional YouTube / knowledge hits
+                    </p>
                   </div>
                 </div>
               </div>
               <div className="memory-stats">
                 <div className="stat-item">
-                  <span className="stat-value">247</span>
-                  <span className="stat-label">Total Memories</span>
+                  <span className="stat-value">—</span>
+                  <span className="stat-label">Live count TBD</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-value">12</span>
-                  <span className="stat-label">Topics</span>
+                  <span className="stat-value">Shell</span>
+                  <span className="stat-label">Not wired</span>
                 </div>
               </div>
             </div>
@@ -780,10 +834,20 @@ export default function Chat() {
         .milla-container {
           min-height: 100vh;
           height: 100vh;
-          background: #000;
+          background: transparent;
           position: relative;
           overflow: hidden;
           font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Opaque fallback so the page is never blank-white if the adaptive
+           scene background is disabled or hasn't mounted yet. Sits behind
+           the scene layer (which paints at z-index -10). */
+        .scene-fallback-bg {
+          position: fixed;
+          inset: 0;
+          background: #000;
+          z-index: -20;
         }
         
         .bg-gradient-1 {

@@ -1,23 +1,67 @@
 version: 2
 updates:
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 5
-    commit-message:
-      prefix: 'deps(npm)'
+  # Python dependencies
   - package-ecosystem: 'pip'
     directory: '/'
     schedule:
       interval: 'weekly'
-    open-pull-requests-limit: 3
+      day: 'monday'
+      time: '09:00'
+    open-pull-requests-limit: 5
     commit-message:
-      prefix: 'deps(pip)'
+      prefix: 'chore(deps): '
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+    rebase-strategy: 'auto'
+    reviewers:
+      - 'mrdannyclark82'
+    labels:
+      - 'dependencies'
+      - 'python'
+    allow:
+      - dependency-type: 'all'
+    ignore:
+      # Add any packages you want to ignore (e.g., - dependency-name: 'package-name')
+
+  # npm dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '10:00'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps): '
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+    rebase-strategy: 'auto'
+    reviewers:
+      - 'mrdannyclark82'
+    labels:
+      - 'dependencies'
+      - 'javascript'
+    allow:
+      - dependency-type: 'all'
+
+  # GitHub Actions
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       interval: 'weekly'
+      day: 'monday'
+      time: '11:00'
     open-pull-requests-limit: 3
     commit-message:
-      prefix: 'deps(actions)'
+      prefix: 'chore(ci): '
+      include: 'scope'
+    pull-request-branch-name:
+      separator: '/'
+    rebase-strategy: 'auto'
+    reviewers:
+      - 'mrdannyclark82'
+    labels:
+      - 'ci'
+      - 'github-actions'

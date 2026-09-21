@@ -9,8 +9,10 @@ import { registerMonitoringRoutes } from './monitoring.routes';
 import { registerSandboxRoutes } from './sandbox.routes';
 import { registerGoogleRoutes } from './google.routes';
 import { registerGoogleTtsRoutes } from './google-tts.routes';
+import { registerTTSRoutes } from './tts.routes';
 import { registerPersonalTaskRoutes } from './personalTask.routes';
 import { registerMerchRoutes } from './merch.routes';
+import { registerProactiveRoutes } from '../proactiveRoutes';
 
 /**
  * Main router that aggregates all modular routes
@@ -39,10 +41,15 @@ export function registerModularRoutes(app: Express) {
   registerSandboxRoutes(app);
   registerGoogleRoutes(app);
   registerGoogleTtsRoutes(app);
+  registerTTSRoutes(app);
   registerPersonalTaskRoutes(app);
 
   // Merch routes
   registerMerchRoutes(app);
+
+  // Proactive ownership + token rewards (also available on optional :5001 server).
+  // Mounted on main app so same-origin client calls work without a second process.
+  registerProactiveRoutes(app);
 
   return app;
 }

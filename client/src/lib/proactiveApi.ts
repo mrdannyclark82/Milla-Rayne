@@ -1,25 +1,23 @@
 /**
  * Proactive API Client
- * Handles API calls to the proactive features server (port 5001)
+ *
+ * Default: same-origin (main app on :5000 mounts proactive routes).
+ * Optional split-server: set VITE_PROACTIVE_BASE_URL (e.g. http://localhost:5001).
  */
 
-const PROACTIVE_PORT = import.meta.env.VITE_PROACTIVE_PORT || '5001';
-const PROACTIVE_BASE_URL =
-  import.meta.env.VITE_PROACTIVE_BASE_URL ||
-  `http://localhost:${PROACTIVE_PORT}`;
+const PROACTIVE_BASE_URL = (
+  import.meta.env.VITE_PROACTIVE_BASE_URL ?? ''
+).replace(/\/$/, '');
 
 /**
- * Make a request to the proactive features server
+ * Make a request to the proactive features API
  */
 export async function proactiveApiRequest(
   endpoint: string,
   options?: RequestInit
 ): Promise<Response> {
-  // Remove leading slash if present
-  const path = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-
-  // Construct full URL
-  const url = `${PROACTIVE_BASE_URL}/${path}`;
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = PROACTIVE_BASE_URL ? `${PROACTIVE_BASE_URL}${path}` : path;
 
   return fetch(url, {
     ...options,
@@ -59,11 +57,15 @@ export async function proactivePost<T = any>(
 }
 
 /**
- * Check if the proactive server is available
+ * Check if the proactive API is available
  */
 export async function checkProactiveServerHealth(): Promise<boolean> {
   try {
-    const response = await proactiveApiRequest('/health');
+    // Split-server exposes /health; main app exposes the rewards route instead.
+    const probe = PROACTIVE_BASE_URL
+      ? '/health'
+      : '/api/milla/tokens/rewards';
+    const response = await proactiveApiRequest(probe);
     return response.ok;
   } catch (error) {
     console.error('Proactive server health check failed:', error);

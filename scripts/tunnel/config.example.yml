@@ -1,0 +1,12 @@
+tunnel: YOUR_TUNNEL_UUID
+credentials-file: /home/milla/.cloudflared/credentials.json
+no-autoupdate: true
+
+ingress:
+  - hostname: milla-rayne.com
+    service: http://127.0.0.1:5000
+  - hostname: www.milla-rayne.com
+    service: http://127.0.0.1:5000
+  - hostname: milla.milla-rayne.com
+    service: http://127.0.0.1:5000
+  - service: http_status:404

@@ -6,8 +6,9 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
+import { randomUUID } from 'crypto';
 import { streamAIResponse, streamToWebSocket } from './ai-sdk-integration';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 
 interface OptimizedConnection {
   ws: WebSocket;
@@ -19,7 +20,7 @@ interface OptimizedConnection {
 
 interface StreamingMessage {
   type: 'chat' | 'voice' | 'system';
-  messages: CoreMessage[];
+  messages: ModelMessage[];
   provider?: 'openai' | 'anthropic';
   model?: string;
   requestId: string;
@@ -246,7 +247,7 @@ function sendMessage(ws: WebSocket, data: any): void {
  * Generate unique user ID
  */
 function generateUserId(): string {
-  return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `user_${randomUUID()}`;
 }
 
 /**

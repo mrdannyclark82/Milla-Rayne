@@ -1,6 +1,6 @@
 [
   {
-    "taskId": "57a5ff36-621a-48af-98e8-63d5393bd47c",
+    "taskId": "1d7b9089-8c04-47ad-940c-401dfa0befd4",
     "supervisor": "MillaAgent",
     "agent": "TestAgent",
     "action": "dangerous_action",
@@ -13,8 +13,8 @@
       "approved": true
     },
     "status": "completed",
-    "createdAt": "2026-02-07T16:20:34.909Z",
-    "updatedAt": "2026-02-07T16:20:34.913Z",
+    "createdAt": "2026-08-10T17:30:17.829Z",
+    "updatedAt": "2026-08-10T17:30:17.831Z",
     "result": {
       "success": true
     }

@@ -104,11 +104,12 @@ export function generateZKProof(
     .digest('hex');
 
   // Mock proof generation (simulating a zkSNARK)
+  const now = Date.now();
   const proofData = {
     commitment,
     claim,
     publicInput,
-    timestamp: Date.now(),
+    timestamp: now,
     nonce, // Include nonce to ensure different proofs
   };
 
@@ -117,8 +118,8 @@ export function generateZKProof(
     claim,
     proof: Buffer.from(JSON.stringify(proofData)).toString('base64'),
     publicInput,
-    timestamp: Date.now(),
-    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
+    timestamp: now,
+    expiresAt: now + 30 * 24 * 60 * 60 * 1000, // 30 days
   };
 
   zkProofStore.set(proofId, proof);

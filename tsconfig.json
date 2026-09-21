@@ -6,6 +6,10 @@
     "dist",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "server/api/hoodie-api.ts",
+    "server/routes/hoodie-api.ts",
+    "server/poly-dispatcher.ts",
+    "server/shared/dispatcher-fallback.ts",
     "client/src/lib/MillaCore (copy).ts"
   ],
   "compilerOptions": {

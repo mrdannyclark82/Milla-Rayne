@@ -230,14 +230,8 @@ export async function saveInsightToMemory(
     relevance: insight.relevance,
   };
 
-  await updateMemories(
-    userId,
-    `youtube_insight_${videoId}_${insight.timestamp}`,
-    {
-      insights: [memoryEntry],
-      lastUpdated: new Date().toISOString(),
-    }
-  );
+  const memoryContent = `[YouTube Insight] ${videoTitle}: ${insight.content} (Category: ${insight.category})`;
+  await updateMemories(memoryContent, userId);
 
   console.log('💾 Saved insight to memory:', memoryEntry);
 }
