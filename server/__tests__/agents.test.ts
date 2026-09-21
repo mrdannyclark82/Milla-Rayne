@@ -4,15 +4,19 @@ import { millaAgent } from '../agents/millaAgent.js';
 import {
   readTasks,
   writeTasks,
+  addTask,
   AgentTask,
   updateTask,
   getTask,
+  withAgentTasksFile,
 } from '../agents/taskStorage.js';
 import { logAuditEvent, getTaskAuditTrail } from '../agents/auditLog.js';
 import { runTask } from '../agents/worker.js';
 import * as googleCalendarService from '../googleCalendarService.js';
 import * as registry from '../agents/registry.js';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('CalendarAgent', () => {
@@ -134,17 +138,30 @@ describe('CalendarAgent', () => {
 });
 
 describe('MillaAgent', () => {
-  beforeEach(() => {
+  let tasksFile: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
-    // Clear tasks before each test
-    writeTasks([]);
+    tasksFile = path.join(
+      os.tmpdir(),
+      `milla-agent-tasks-${uuidv4()}.json`
+    );
   });
 
   afterEach(() => {
+    if (tasksFile && fs.existsSync(tasksFile)) {
+      try {
+        fs.unlinkSync(tasksFile);
+      } catch {
+        /* ignore */
+      }
+    }
     vi.restoreAllMocks();
   });
 
   it('should create task from JSON instructions', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockGetAgent = vi.spyOn(registry, 'getAgent').mockReturnValue({
       name: 'EmailAgent',
       description: 'Email agent',
@@ -170,9 +187,12 @@ describe('MillaAgent', () => {
     expect(task.action).toBe('draft');
     // getAgent is called during task creation in MillaAgent
     // but we can't easily assert it since it's internal
+    });
   });
 
   it('should auto-run low-safety tasks', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'EmailAgent',
       description: 'Email agent',
@@ -197,9 +217,12 @@ describe('MillaAgent', () => {
     const tasks = await readTasks();
     const task = tasks[tasks.length - 1];
     expect(task.status).toBe('completed');
+    });
   });
 
   it('should create enhancement search task for unclear instructions', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const instructions = 'Tell me a joke';
 
     const result = await millaAgent.execute(instructions);
@@ -211,20 +234,35 @@ describe('MillaAgent', () => {
     expect(task).toBeTruthy();
     expect(task.agent).toBe('enhancement');
     expect(task.action).toBe('search');
+    });
   });
 });
 
 describe('Task Approval Workflow', () => {
-  beforeEach(() => {
+  let tasksFile: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
-    writeTasks([]);
+    tasksFile = path.join(
+      os.tmpdir(),
+      `milla-agent-tasks-${uuidv4()}.json`
+    );
   });
 
   afterEach(() => {
+    if (tasksFile && fs.existsSync(tasksFile)) {
+      try {
+        fs.unlinkSync(tasksFile);
+      } catch {
+        /* ignore */
+      }
+    }
     vi.restoreAllMocks();
   });
 
   it('should block execution of unapproved high-safety tasks', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'TestAgent',
       description: 'Test',
@@ -244,18 +282,19 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
-
-    // Try to run without approval - should fail
+    // Do not pre-write the task: the approval path upserts on deny, so a
+    // single writer owns the file (avoids RMW races under coverage parallel).
     await expect(runTask(task)).rejects.toThrow('requires user approval');
 
     const updatedTask = await getTask(task.taskId);
-    expect(updatedTask?.status).toBe('failed');
+    expect(updatedTask).not.toBeNull();
+    expect(updatedTask!.status).toBe('failed');
+    });
   });
 
   it('should allow execution after approval', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'TestAgent',
       description: 'Test',
@@ -275,9 +314,7 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    const tasks = await readTasks();
-    tasks.push(task);
-    await writeTasks(tasks);
+    await addTask(task);
 
     // Approve the task first
     const approvedTask = await updateTask(task.taskId, {
@@ -290,6 +327,7 @@ describe('Task Approval Workflow', () => {
     const updatedTask = await getTask(task.taskId);
     expect(updatedTask?.status).toBe('completed');
     expect(mockAgent.handleTask).toHaveBeenCalled();
+    });
   });
 });
 

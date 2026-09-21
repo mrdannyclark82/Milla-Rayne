@@ -1,5 +1,5 @@
 import { getAgent } from './registry';
-import { AgentTask, updateTask } from './taskStorage';
+import { AgentTask, updateTask, upsertTask } from './taskStorage';
 import { logAuditEvent } from './auditLog';
 import {
   monitorTaskAlignment,
@@ -13,24 +13,27 @@ import {
  * by Redis / a proper queue.
  */
 export async function runTask(task: AgentTask): Promise<void> {
-  try {
-    // Check if task requires approval
-    if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
-      const errorMsg = 'Task requires user approval before running';
-      await updateTask(task.taskId, {
-        status: 'failed',
-        result: { error: errorMsg },
-      });
-      await logAuditEvent(
-        task.taskId,
-        task.agent,
-        task.action,
-        'failed',
-        errorMsg
-      );
-      throw new Error(errorMsg);
-    }
+  // Approval gate lives outside the execution try/catch so a deny upsert is
+  // not followed by an outer updateTask that can miss the row under parallel
+  // vitest file races (and so we do not double-write / double-audit).
+  if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
+    const errorMsg = 'Task requires user approval before running';
+    await upsertTask({
+      ...task,
+      status: 'failed',
+      result: { error: errorMsg },
+    });
+    await logAuditEvent(
+      task.taskId,
+      task.agent,
+      task.action,
+      'failed',
+      errorMsg
+    );
+    throw new Error(errorMsg);
+  }
 
+  try {
     // Log start
     await logAuditEvent(task.taskId, task.agent, task.action, 'started');
 
@@ -100,7 +103,9 @@ export async function runTask(task: AgentTask): Promise<void> {
   } catch (err: any) {
     console.error('Worker error running task', task.taskId, err);
     const errorMsg = err?.message || String(err);
-    await updateTask(task.taskId, {
+    // Upsert so failure is recorded even if the task was never addTask'd.
+    await upsertTask({
+      ...task,
       status: 'failed',
       result: { error: errorMsg },
     });

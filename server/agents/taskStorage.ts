@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { AsyncLocalStorage } from 'async_hooks';
 
 export interface AgentTask {
   taskId: string;
@@ -14,31 +15,81 @@ export interface AgentTask {
   result?: any;
 }
 
-const TASK_FILE = join(process.cwd(), 'memory', 'agent_tasks.json');
+/**
+ * Per-async-context override so parallel vitest workers/files cannot clobber
+ * each other's AGENT_TASKS_FILE via shared process.env.
+ */
+const tasksFileContext = new AsyncLocalStorage<string>();
+
+export function withAgentTasksFile<T>(
+  filePath: string,
+  fn: () => T | Promise<T>
+): T | Promise<T> {
+  return tasksFileContext.run(filePath, fn);
+}
+
+function taskFilePath(): string {
+  return (
+    tasksFileContext.getStore() ||
+    process.env.AGENT_TASKS_FILE ||
+    join(process.cwd(), 'memory', 'agent_tasks.json')
+  );
+}
 
 async function ensureFile(): Promise<void> {
+  const TASK_FILE = taskFilePath();
   try {
     await fs.access(TASK_FILE);
   } catch (err) {
+    await fs.mkdir(dirname(TASK_FILE), { recursive: true }).catch(() => {});
     await fs.writeFile(TASK_FILE, '[]', 'utf-8');
   }
 }
 
 export async function readTasks(): Promise<AgentTask[]> {
   await ensureFile();
+  const TASK_FILE = taskFilePath();
   const raw = await fs.readFile(TASK_FILE, 'utf-8');
   try {
     return JSON.parse(raw || '[]');
   } catch (err) {
-    console.warn('Failed to parse task file, resetting', err);
-    await fs.writeFile(TASK_FILE, '[]', 'utf-8');
+    // Don't wipe the file on parse errors — concurrent readers can see torn
+    // writes; resetting here races with writers and loses tasks.
+    console.warn('Failed to parse task file', err);
     return [];
   }
 }
 
 export async function writeTasks(tasks: AgentTask[]): Promise<void> {
   await ensureFile();
-  await fs.writeFile(TASK_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+  const TASK_FILE = taskFilePath();
+  const payload = JSON.stringify(tasks, null, 2);
+  const tmp = `${TASK_FILE}.${process.pid}.${Date.now()}.tmp`;
+  await fs.writeFile(tmp, payload, 'utf-8');
+  try {
+    await fs.rename(tmp, TASK_FILE);
+  } catch {
+    // rename can ENOENT on some runners if the dest vanishes mid-flight;
+    // fall back to a direct write so tests stay deterministic.
+    await fs.writeFile(TASK_FILE, payload, 'utf-8');
+    await fs.unlink(tmp).catch(() => undefined);
+  }
+}
+
+export async function upsertTask(task: AgentTask): Promise<AgentTask> {
+  const all = await readTasks();
+  const idx = all.findIndex((t) => t.taskId === task.taskId);
+  const saved = {
+    ...task,
+    updatedAt: new Date().toISOString(),
+  };
+  if (idx === -1) {
+    all.push(saved);
+  } else {
+    all[idx] = { ...all[idx], ...saved };
+  }
+  await writeTasks(all);
+  return idx === -1 ? saved : all[idx];
 }
 
 export async function addTask(task: AgentTask): Promise<void> {
