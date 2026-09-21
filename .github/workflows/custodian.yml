@@ -41,7 +41,7 @@ jobs:
 
       - name: Recent workflow failures
         id: ci
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data } = await github.rest.actions.listWorkflowRunsForRepo({
@@ -64,7 +64,7 @@ jobs:
 
       - name: Open issues snapshot
         id: issues
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const open = await github.paginate(github.rest.issues.listForRepo, {
@@ -81,7 +81,7 @@ jobs:
           FAILED_COUNT: ${{ steps.ci.outputs.failed_count }}
           FAILED_LIST: ${{ steps.ci.outputs.failed_list }}
           OPEN_ISSUES: ${{ steps.issues.outputs.open_issues }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");
