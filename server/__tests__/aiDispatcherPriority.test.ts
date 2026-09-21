@@ -33,7 +33,7 @@ vi.mock('../xaiTracker', () => ({
 }));
 vi.mock('../storage', () => ({
   storage: {
-    getUserById: vi.fn().mockResolvedValue({ id: 'test-user', preferredAiModel: null }),
+    getUserById: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
