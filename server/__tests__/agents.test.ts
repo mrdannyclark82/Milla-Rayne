@@ -274,13 +274,13 @@ describe('Task Approval Workflow', () => {
       createdAt: new Date().toISOString(),
     };
 
-    await addTask(task);
-
-    // Try to run without approval - should fail
+    // Do not pre-write the task: the approval path upserts on deny, so a
+    // single writer owns the file (avoids RMW races under coverage parallel).
     await expect(runTask(task)).rejects.toThrow('requires user approval');
 
     const updatedTask = await getTask(task.taskId);
-    expect(updatedTask?.status).toBe('failed');
+    expect(updatedTask).not.toBeNull();
+    expect(updatedTask!.status).toBe('failed');
   });
 
   it('should allow execution after approval', async () => {
