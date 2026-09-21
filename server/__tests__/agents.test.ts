@@ -13,6 +13,8 @@ import { runTask } from '../agents/worker.js';
 import * as googleCalendarService from '../googleCalendarService.js';
 import * as registry from '../agents/registry.js';
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 describe('CalendarAgent', () => {
@@ -136,11 +138,24 @@ describe('CalendarAgent', () => {
 describe('MillaAgent', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    process.env.AGENT_TASKS_FILE = path.join(
+      os.tmpdir(),
+      `milla-agent-tasks-${uuidv4()}.json`
+    );
     // Clear tasks before each test
     await writeTasks([]);
   });
 
   afterEach(() => {
+    const f = process.env.AGENT_TASKS_FILE;
+    if (f && fs.existsSync(f)) {
+      try {
+        fs.unlinkSync(f);
+      } catch {
+        /* ignore */
+      }
+    }
+    delete process.env.AGENT_TASKS_FILE;
     vi.restoreAllMocks();
   });
 
@@ -217,10 +232,24 @@ describe('MillaAgent', () => {
 describe('Task Approval Workflow', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
+    process.env.AGENT_TASKS_FILE = path.join(
+      os.tmpdir(),
+      `milla-agent-tasks-${uuidv4()}.json`
+    );
+    // Clear tasks before each test
     await writeTasks([]);
   });
 
   afterEach(() => {
+    const f = process.env.AGENT_TASKS_FILE;
+    if (f && fs.existsSync(f)) {
+      try {
+        fs.unlinkSync(f);
+      } catch {
+        /* ignore */
+      }
+    }
+    delete process.env.AGENT_TASKS_FILE;
     vi.restoreAllMocks();
   });
 
