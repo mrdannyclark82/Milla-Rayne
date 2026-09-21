@@ -8,6 +8,7 @@ import {
   AgentTask,
   updateTask,
   getTask,
+  withAgentTasksFile,
 } from '../agents/taskStorage.js';
 import { logAuditEvent, getTaskAuditTrail } from '../agents/auditLog.js';
 import { runTask } from '../agents/worker.js';
@@ -137,30 +138,30 @@ describe('CalendarAgent', () => {
 });
 
 describe('MillaAgent', () => {
+  let tasksFile: string;
+
   beforeEach(async () => {
     vi.clearAllMocks();
-    process.env.AGENT_TASKS_FILE = path.join(
+    tasksFile = path.join(
       os.tmpdir(),
       `milla-agent-tasks-${uuidv4()}.json`
     );
-    // Clear tasks before each test
-    await writeTasks([]);
   });
 
   afterEach(() => {
-    const f = process.env.AGENT_TASKS_FILE;
-    if (f && fs.existsSync(f)) {
+    if (tasksFile && fs.existsSync(tasksFile)) {
       try {
-        fs.unlinkSync(f);
+        fs.unlinkSync(tasksFile);
       } catch {
         /* ignore */
       }
     }
-    delete process.env.AGENT_TASKS_FILE;
     vi.restoreAllMocks();
   });
 
   it('should create task from JSON instructions', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockGetAgent = vi.spyOn(registry, 'getAgent').mockReturnValue({
       name: 'EmailAgent',
       description: 'Email agent',
@@ -186,9 +187,12 @@ describe('MillaAgent', () => {
     expect(task.action).toBe('draft');
     // getAgent is called during task creation in MillaAgent
     // but we can't easily assert it since it's internal
+    });
   });
 
   it('should auto-run low-safety tasks', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'EmailAgent',
       description: 'Email agent',
@@ -213,9 +217,12 @@ describe('MillaAgent', () => {
     const tasks = await readTasks();
     const task = tasks[tasks.length - 1];
     expect(task.status).toBe('completed');
+    });
   });
 
   it('should create enhancement search task for unclear instructions', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const instructions = 'Tell me a joke';
 
     const result = await millaAgent.execute(instructions);
@@ -227,34 +234,35 @@ describe('MillaAgent', () => {
     expect(task).toBeTruthy();
     expect(task.agent).toBe('enhancement');
     expect(task.action).toBe('search');
+    });
   });
 });
 
 describe('Task Approval Workflow', () => {
+  let tasksFile: string;
+
   beforeEach(async () => {
     vi.clearAllMocks();
-    process.env.AGENT_TASKS_FILE = path.join(
+    tasksFile = path.join(
       os.tmpdir(),
       `milla-agent-tasks-${uuidv4()}.json`
     );
-    // Clear tasks before each test
-    await writeTasks([]);
   });
 
   afterEach(() => {
-    const f = process.env.AGENT_TASKS_FILE;
-    if (f && fs.existsSync(f)) {
+    if (tasksFile && fs.existsSync(tasksFile)) {
       try {
-        fs.unlinkSync(f);
+        fs.unlinkSync(tasksFile);
       } catch {
         /* ignore */
       }
     }
-    delete process.env.AGENT_TASKS_FILE;
     vi.restoreAllMocks();
   });
 
   it('should block execution of unapproved high-safety tasks', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'TestAgent',
       description: 'Test',
@@ -281,9 +289,12 @@ describe('Task Approval Workflow', () => {
     const updatedTask = await getTask(task.taskId);
     expect(updatedTask).not.toBeNull();
     expect(updatedTask!.status).toBe('failed');
+    });
   });
 
   it('should allow execution after approval', async () => {
+    await withAgentTasksFile(tasksFile, async () => {
+      await writeTasks([]);
     const mockAgent = {
       name: 'TestAgent',
       description: 'Test',
@@ -316,6 +327,7 @@ describe('Task Approval Workflow', () => {
     const updatedTask = await getTask(task.taskId);
     expect(updatedTask?.status).toBe('completed');
     expect(mockAgent.handleTask).toHaveBeenCalled();
+    });
   });
 });
 
