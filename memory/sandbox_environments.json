@@ -15,17 +15,6 @@
           "description": "Has real content for structural checks to pass",
           "files": [],
           "status": "testing",
-          "testsPassed": 6,
-          "testsFailed": 5,
-          "addedAt": 1769578714591
-        },
-        {
-          "id": "feat_1770000243679_seszmrtr2",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
-          "testsPassed": 0,
           "testsPassed": 8,
           "testsFailed": 0,
           "addedAt": 1784578767390,
@@ -34,49 +23,6 @@
         {
           "id": "feat_1784578767390_w5zv0s4kd",
           "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770006439823
-        },
-        {
-          "id": "feat_1770137349157_i5t4rfm96",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770137349157
-        },
-        {
-          "id": "feat_1770137475677_fx5itnlth",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770137475677
-        },
-        {
-          "id": "feat_1770480408206_lq1c0ctj8",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
-          "testsPassed": 0,
-          "testsFailed": 0,
-          "addedAt": 1770480408206
-        },
-        {
-          "id": "feat_1770480982865_6n70twmbw",
-          "name": "Test Feature",
-          "description": "Testing feature addition",
-          "files": ["test.ts"],
-          "status": "draft",
           "description": "short",
           "files": [],
           "status": "rejected",
@@ -88,7 +34,9 @@
           "id": "feat_1786383017412_5aby2kp09",
           "name": "Test Feature",
           "description": "Testing feature addition",
-          "files": ["test.ts"],
+          "files": [
+            "test.ts"
+          ],
           "status": "draft",
           "testsPassed": 0,
           "testsFailed": 0,
@@ -591,7 +539,5 @@
       "readyForProduction": false
     }
   },
-  "lastUpdated": 1770481236469
-}
   "lastUpdated": 1786383017414
 }
