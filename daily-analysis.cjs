@@ -11,6 +11,12 @@ const GENERATED_DIR = path.join(REPO_ROOT, 'generated');
 const REPORT_PATH = path.join(REPO_ROOT, 'report.md');
 const ZIP_PATH = path.join(REPO_ROOT, 'updates.zip');
 
+const HTTP_HEADERS = {
+  'User-Agent':
+    'Milla-Rayne-Empire-Bot/1.0 (+https://github.com/mrdannyclark82/Milla-Rayne)',
+  Accept: 'application/rss+xml, application/xml, text/xml, application/json, */*',
+};
+
 const config = {
   githubToken: process.env.GITHUB_TOKEN || '',
   repoOwner: 'milla-rayne',
@@ -184,58 +190,185 @@ class DailyAnalyzer {
     });
   }
 
+  decodeXml(text) {
+    return String(text || '')
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/'/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  extractSourceFromTitle(title) {
+    const parts = String(title || '').split(' - ');
+    if (parts.length > 1) return parts.pop().trim();
+    return '';
+  }
+
+  formatHttpError(error) {
+    if (error.response) {
+      return `${error.message} (HTTP ${error.response.status})`;
+    }
+    return error.message;
+  }
+
+  async fetchRss(url, sourceName) {
+    const response = await axios.get(url, {
+      headers: HTTP_HEADERS,
+      timeout: 15000,
+      responseType: 'text',
+      maxRedirects: 5,
+      validateStatus: (status) => status >= 200 && status < 400,
+    });
+
+    const $ = cheerio.load(response.data, { xmlMode: true });
+    const items = [];
+
+    $('item').each((_, elem) => {
+      const $item = $(elem);
+      const rawTitle = this.decodeXml($item.find('title').first().text());
+      const link = this.decodeXml(
+        $item.find('link').first().text() || $item.find('guid').first().text()
+      );
+      const pubDate = this.decodeXml($item.find('pubDate').first().text());
+      const source =
+        this.decodeXml($item.find('source').first().text()) ||
+        this.extractSourceFromTitle(rawTitle) ||
+        sourceName;
+
+      if (!rawTitle || rawTitle.length < 8) return;
+
+      items.push({
+        title: rawTitle,
+        source,
+        link: link || null,
+        published: pubDate || null,
+        relevance: this.calculateRelevance(rawTitle),
+      });
+    });
+
+    return items;
+  }
+
+  async fetchHackerNews() {
+    const url =
+      'https://hn.algolia.com/api/v1/search_by_date?query=' +
+      encodeURIComponent('LLM OR "local LLM" OR "AI assistant" OR "open source AI"') +
+      '&tags=story&hitsPerPage=15';
+
+    const response = await axios.get(url, {
+      headers: HTTP_HEADERS,
+      timeout: 15000,
+    });
+
+    return (response.data.hits || [])
+      .filter((hit) => hit && hit.title)
+      .map((hit) => ({
+        title: hit.title,
+        source: 'Hacker News',
+        link: hit.url || `https://news.ycombinator.com/item?id=${hit.objectID}`,
+        published: hit.created_at || null,
+        relevance: this.calculateRelevance(hit.title) + 1,
+      }));
+  }
+
+  dedupeNews(items) {
+    const seen = new Set();
+    const unique = [];
+
+    for (const item of items) {
+      const key = String(item.title || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .trim();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      unique.push(item);
+    }
+
+    unique.sort((a, b) => {
+      const rel = (b.relevance || 0) - (a.relevance || 0);
+      if (rel !== 0) return rel;
+      return String(b.published || '').localeCompare(String(a.published || ''));
+    });
+
+    return unique;
+  }
+
   async gatherNews() {
     console.log('📰 Gathering news intelligence...');
 
-    const newsItems = [];
+    // Google News HTML is JS-rendered and blocked from Actions.
+    // Use RSS + public JSON APIs that return real markup from ubuntu runners.
+    const sources = [
+      {
+        name: 'Google News RSS',
+        run: () =>
+          this.fetchRss(
+            'https://news.google.com/rss/search?q=' +
+              encodeURIComponent(
+                '("AI assistant" OR "local LLM" OR "large language model" OR "conversational AI")'
+              ) +
+              '&hl=en-US&gl=US&ceid=US:en',
+            'Google News'
+          ),
+      },
+      { name: 'Hacker News', run: () => this.fetchHackerNews() },
+      {
+        name: 'TechCrunch AI',
+        run: () =>
+          this.fetchRss(
+            'https://techcrunch.com/tag/artificial-intelligence/feed/',
+            'TechCrunch'
+          ),
+      },
+      {
+        name: 'The Verge AI',
+        run: () =>
+          this.fetchRss(
+            'https://www.theverge.com/rss/ai-artificial-intelligence/index.xml',
+            'The Verge'
+          ),
+      },
+    ];
 
-    try {
-      // Fetch Google News for AI-related topics
-      const searchQuery = encodeURIComponent('AI assistant conversational');
-      const newsUrl = `https://news.google.com/search?q=${searchQuery}&hl=en-US&gl=US&ceid=US:en`;
+    const collected = [];
+    const failures = [];
 
-      const response = await axios.get(newsUrl, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-        timeout: 10000,
-      });
+    for (const source of sources) {
+      try {
+        const items = await source.run();
+        console.log(`  ✓ ${source.name}: ${items.length} items`);
+        collected.push(...items);
+      } catch (error) {
+        const msg = this.formatHttpError(error);
+        console.log(`  ⚠️  ${source.name} failed: ${msg}`);
+        failures.push(`${source.name}: ${msg}`);
+      }
+    }
 
-      const $ = cheerio.load(response.data);
+    const unique = this.dedupeNews(collected);
+    const top = unique.slice(0, 10);
 
-      // Parse news articles (structure may vary)
-      $('article, .xrnccd')
-        .slice(0, 10)
-        .each((i, elem) => {
-          const $elem = $(elem);
-          const title = $elem.find('h3, h4, a').first().text().trim();
-          const link = $elem.find('a').first().attr('href');
-          const source = $elem.find('.wEwyrc, .vr1PYe').text().trim();
-
-          if (title && title.length > 10) {
-            newsItems.push({
-              title,
-              source: source || 'Unknown',
-              link: link ? `https://news.google.com${link}` : null,
-              relevance: this.calculateRelevance(title),
-            });
-          }
-        });
-
-      console.log(`  ✓ Found ${newsItems.length} news items`);
-    } catch (error) {
-      console.log(`  ⚠️  News gathering failed: ${error.message}`);
-      newsItems.push({
+    if (top.length === 0) {
+      top.push({
         title: 'News scraping temporarily unavailable',
-        error: error.message,
+        error: failures.join('; ') || 'No headlines returned from any source',
       });
+    } else if (failures.length) {
+      console.log(`  ⚠️  Partial source failures: ${failures.join(' | ')}`);
     }
 
     this.report.sections.push({
       title: 'News Intelligence',
-      data: newsItems.slice(0, 10),
-      summary: `Gathered ${newsItems.length} relevant news items from the AI ecosystem.`,
+      data: top,
+      summary: `Gathered ${unique.length} unique headlines from ${
+        sources.length - failures.length
+      }/${sources.length} sources.`,
     });
   }
 
@@ -248,10 +381,12 @@ class DailyAnalyzer {
       'GPT',
       'machine learning',
       'conversational',
+      'open source',
+      'local',
+      'model',
     ];
-    const lowerTitle = title.toLowerCase();
-    return keywords.filter((kw) => lowerTitle.includes(kw.toLowerCase()))
-      .length;
+    const lowerTitle = String(title || '').toLowerCase();
+    return keywords.filter((kw) => lowerTitle.includes(kw.toLowerCase())).length;
   }
 
   async generateCodeSamples() {
@@ -493,11 +628,14 @@ Customize as needed for your empire building operations.
           const item = topNews[i];
           if (item.error) {
             markdown += `${i + 1}. ⚠️ ${item.title}\n`;
+            markdown += `   - Detail: ${item.error}\n`;
           } else {
             markdown += `${i + 1}. **${item.title}**\n`;
             if (item.source) markdown += `   - Source: ${item.source}\n`;
+            if (item.link) markdown += `   - Link: ${item.link}\n`;
+            if (item.published) markdown += `   - Published: ${item.published}\n`;
             if (item.relevance)
-              markdown += `   - Relevance Score: ${item.relevance}/5\n`;
+              markdown += `   - Relevance Score: ${item.relevance}\n`;
           }
           markdown += `\n`;
         }
