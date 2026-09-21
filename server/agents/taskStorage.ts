@@ -48,9 +48,17 @@ export async function readTasks(): Promise<AgentTask[]> {
 export async function writeTasks(tasks: AgentTask[]): Promise<void> {
   await ensureFile();
   const TASK_FILE = taskFilePath();
+  const payload = JSON.stringify(tasks, null, 2);
   const tmp = `${TASK_FILE}.${process.pid}.${Date.now()}.tmp`;
-  await fs.writeFile(tmp, JSON.stringify(tasks, null, 2), 'utf-8');
-  await fs.rename(tmp, TASK_FILE);
+  await fs.writeFile(tmp, payload, 'utf-8');
+  try {
+    await fs.rename(tmp, TASK_FILE);
+  } catch {
+    // rename can ENOENT on some runners if the dest vanishes mid-flight;
+    // fall back to a direct write so tests stay deterministic.
+    await fs.writeFile(TASK_FILE, payload, 'utf-8');
+    await fs.unlink(tmp).catch(() => undefined);
+  }
 }
 
 export async function upsertTask(task: AgentTask): Promise<AgentTask> {
