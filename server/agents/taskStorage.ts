@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
 
 export interface AgentTask {
   taskId: string;
@@ -14,31 +14,56 @@ export interface AgentTask {
   result?: any;
 }
 
-const TASK_FILE = join(process.cwd(), 'memory', 'agent_tasks.json');
+function taskFilePath(): string {
+  return (
+    process.env.AGENT_TASKS_FILE ||
+    join(process.cwd(), 'memory', 'agent_tasks.json')
+  );
+}
 
 async function ensureFile(): Promise<void> {
+  const TASK_FILE = taskFilePath();
   try {
     await fs.access(TASK_FILE);
   } catch (err) {
+    await fs.mkdir(dirname(TASK_FILE), { recursive: true }).catch(() => {});
     await fs.writeFile(TASK_FILE, '[]', 'utf-8');
   }
 }
 
 export async function readTasks(): Promise<AgentTask[]> {
   await ensureFile();
+  const TASK_FILE = taskFilePath();
   const raw = await fs.readFile(TASK_FILE, 'utf-8');
   try {
     return JSON.parse(raw || '[]');
   } catch (err) {
     console.warn('Failed to parse task file, resetting', err);
-    await fs.writeFile(TASK_FILE, '[]', 'utf-8');
+    await fs.writeFile(taskFilePath(), '[]', 'utf-8');
     return [];
   }
 }
 
 export async function writeTasks(tasks: AgentTask[]): Promise<void> {
   await ensureFile();
+  const TASK_FILE = taskFilePath();
   await fs.writeFile(TASK_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+}
+
+export async function upsertTask(task: AgentTask): Promise<AgentTask> {
+  const all = await readTasks();
+  const idx = all.findIndex((t) => t.taskId === task.taskId);
+  const saved = {
+    ...task,
+    updatedAt: new Date().toISOString(),
+  };
+  if (idx === -1) {
+    all.push(saved);
+  } else {
+    all[idx] = { ...all[idx], ...saved };
+  }
+  await writeTasks(all);
+  return idx === -1 ? saved : all[idx];
 }
 
 export async function addTask(task: AgentTask): Promise<void> {
