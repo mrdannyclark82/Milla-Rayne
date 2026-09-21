@@ -6,7 +6,6 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server } from 'http';
-import { randomUUID } from 'crypto';
 import { streamAIResponse, streamToWebSocket } from './ai-sdk-integration';
 import type { ModelMessage } from 'ai';
 
@@ -247,7 +246,7 @@ function sendMessage(ws: WebSocket, data: any): void {
  * Generate unique user ID
  */
 function generateUserId(): string {
-  return `user_${randomUUID()}`;
+  return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**

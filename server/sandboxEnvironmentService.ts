@@ -7,11 +7,10 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { exec, execFile } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
-const execFileAsync = promisify(execFile);
 
 export interface SandboxEnvironment {
   id: string;
@@ -121,21 +120,22 @@ class SandboxEnvironmentService {
    * Create a git branch for the sandbox
    */
   private async createGitBranch(branchName: string): Promise<void> {
+    const execAsync = promisify(exec);
+
     try {
       // Get current branch
-      const { stdout: currentBranch } = await execFileAsync(
-        'git',
-        ['rev-parse', '--abbrev-ref', 'HEAD']
+      const { stdout: currentBranch } = await execAsync(
+        'git rev-parse --abbrev-ref HEAD'
       );
 
       // Create and checkout new branch
-      await execFileAsync('git', ['checkout', '-b', branchName]);
+      await execAsync(`git checkout -b ${branchName}`);
 
       // Push to remote
-      await execFileAsync('git', ['push', '-u', 'origin', branchName]);
+      await execAsync(`git push -u origin ${branchName}`);
 
       // Switch back to original branch
-      await execFileAsync('git', ['checkout', currentBranch.trim()]);
+      await execAsync(`git checkout ${currentBranch.trim()}`);
     } catch (error) {
       throw new Error(
         `Failed to create git branch: ${error instanceof Error ? error.message : 'Unknown error'}`
