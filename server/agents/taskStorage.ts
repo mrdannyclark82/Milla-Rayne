@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
+import { AsyncLocalStorage } from 'async_hooks';
 
 export interface AgentTask {
   taskId: string;
@@ -14,8 +15,22 @@ export interface AgentTask {
   result?: any;
 }
 
+/**
+ * Per-async-context override so parallel vitest workers/files cannot clobber
+ * each other's AGENT_TASKS_FILE via shared process.env.
+ */
+const tasksFileContext = new AsyncLocalStorage<string>();
+
+export function withAgentTasksFile<T>(
+  filePath: string,
+  fn: () => T | Promise<T>
+): T | Promise<T> {
+  return tasksFileContext.run(filePath, fn);
+}
+
 function taskFilePath(): string {
   return (
+    tasksFileContext.getStore() ||
     process.env.AGENT_TASKS_FILE ||
     join(process.cwd(), 'memory', 'agent_tasks.json')
   );
