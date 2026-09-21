@@ -15,6 +15,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'gradle'
+      - uses: android-actions/setup-android@v4
       - name: Grant execute permission
         run: chmod +x android/gradlew
       - name: Build Debug

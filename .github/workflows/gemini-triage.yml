@@ -160,9 +160,7 @@ jobs:
       - name: 'Mint identity token'
         id: 'mint_identity_token'
         uses: ./.github/actions/mint-token
-        with:
-          app-id: '${{ vars.APP_ID }}'
-          private-key: '${{ secrets.APP_PRIVATE_KEY }}'
+
       - name: 'Apply labels'
         env:
           ISSUE_NUMBER: '${{ github.event.issue.number }}'

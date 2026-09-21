@@ -1,5 +1,5 @@
 {
-  "tokenBalance": 11700,
+  "tokenBalance": 11400,
   "transactions": [
     {
       "id": "txn_1769156078158_ohrhabd1d",
@@ -7949,38 +7949,6 @@
       "type": "earn",
       "category": "feature_development",
       "description": "Developed feature: Implemented test feature"
-    },
-    {
-      "id": "txn_1789657660113_dvd96qihx",
-      "timestamp": 1789657660113,
-      "amount": 50,
-      "type": "earn",
-      "category": "bug_fix",
-      "description": "Fixed bug: Fixed test bug"
-    },
-    {
-      "id": "txn_1789657660120_t4dy6zcgs",
-      "timestamp": 1789657660120,
-      "amount": 100,
-      "type": "earn",
-      "category": "feature_development",
-      "description": "Developed feature: Implemented test feature"
-    },
-    {
-      "id": "txn_1789658376486_3n5awevw7",
-      "timestamp": 1789658376486,
-      "amount": 50,
-      "type": "earn",
-      "category": "bug_fix",
-      "description": "Fixed bug: Fixed test bug"
-    },
-    {
-      "id": "txn_1789658376493_mphx8yblh",
-      "timestamp": 1789658376493,
-      "amount": 100,
-      "type": "earn",
-      "category": "feature_development",
-      "description": "Developed feature: Implemented test feature"
     }
   ],
   "goals": [
@@ -8039,5 +8007,5 @@
     "UNLOCK_PERFORMANCE_PROFILING",
     "UNLOCK_PERSONALITY_CUSTOMIZATION"
   ],
-  "lastUpdated": 1789658376493
+  "lastUpdated": 1786383017432
 }
