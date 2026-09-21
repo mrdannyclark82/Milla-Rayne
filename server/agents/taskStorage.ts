@@ -38,8 +38,9 @@ export async function readTasks(): Promise<AgentTask[]> {
   try {
     return JSON.parse(raw || '[]');
   } catch (err) {
-    console.warn('Failed to parse task file, resetting', err);
-    await fs.writeFile(taskFilePath(), '[]', 'utf-8');
+    // Don't wipe the file on parse errors — concurrent readers can see torn
+    // writes; resetting here races with writers and loses tasks.
+    console.warn('Failed to parse task file', err);
     return [];
   }
 }
@@ -47,7 +48,9 @@ export async function readTasks(): Promise<AgentTask[]> {
 export async function writeTasks(tasks: AgentTask[]): Promise<void> {
   await ensureFile();
   const TASK_FILE = taskFilePath();
-  await fs.writeFile(TASK_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+  const tmp = `${TASK_FILE}.${process.pid}.${Date.now()}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify(tasks, null, 2), 'utf-8');
+  await fs.rename(tmp, TASK_FILE);
 }
 
 export async function upsertTask(task: AgentTask): Promise<AgentTask> {
