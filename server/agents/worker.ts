@@ -21,10 +21,9 @@ export async function runTask(task: AgentTask): Promise<void> {
         status: 'failed' as const,
         result: { error: errorMsg },
       };
-      const updated = await updateTask(task.taskId, failedPatch);
-      if (!updated) {
-        await upsertTask({ ...task, ...failedPatch });
-      }
+      // Always upsert so persistence does not depend on a prior addTask /
+      // RMW race against other writers.
+      await upsertTask({ ...task, ...failedPatch });
       await logAuditEvent(
         task.taskId,
         task.agent,
