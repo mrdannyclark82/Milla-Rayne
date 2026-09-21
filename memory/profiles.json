@@ -2,10 +2,7 @@
   {
     "id": "test-user",
     "name": "John Doe",
-    "interests": [
-      "AI",
-      "coding"
-    ],
+    "interests": ["AI", "coding"],
     "preferences": {}
   }
 ]
