@@ -1,5 +1,5 @@
 import { getAgent } from './registry';
-import { AgentTask, updateTask } from './taskStorage';
+import { AgentTask, updateTask, upsertTask } from './taskStorage';
 import { logAuditEvent } from './auditLog';
 import {
   monitorTaskAlignment,
@@ -17,10 +17,14 @@ export async function runTask(task: AgentTask): Promise<void> {
     // Check if task requires approval
     if (task.metadata?.requireUserApproval && !task.metadata?.approved) {
       const errorMsg = 'Task requires user approval before running';
-      await updateTask(task.taskId, {
-        status: 'failed',
+      const failedPatch = {
+        status: 'failed' as const,
         result: { error: errorMsg },
-      });
+      };
+      const updated = await updateTask(task.taskId, failedPatch);
+      if (!updated) {
+        await upsertTask({ ...task, ...failedPatch });
+      }
       await logAuditEvent(
         task.taskId,
         task.agent,
