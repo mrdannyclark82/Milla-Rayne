@@ -27,9 +27,6 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-
       - name: Grant execute permission for gradlew
         run: chmod +x android/gradlew
 
@@ -52,9 +49,9 @@ jobs:
           if [ -f app/release.keystore ]; then
             ./gradlew assembleRelease \
               -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
-              -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+              -Pandroid.injected.signing.store.****** \
               -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-              -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+              -Pandroid.injected.signing.key.****** \
               --no-daemon --stacktrace
           else
             echo "No keystore found, building unsigned"
