@@ -123,6 +123,7 @@ export class SceneDetectionModel {
    * Train the model with provided data
    */
   async train(data: TrainingData[], epochs: number = 50): Promise<tf.History> {
+    tf.random.setSeed(42);
     console.log(
       `[SceneModel] Starting training with ${data.length} samples...`
     );
