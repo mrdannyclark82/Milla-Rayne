@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import * as tf from '@tensorflow/tfjs';
 import { SceneDetectionModel } from '../sceneDetectionModel';
 import { generateSyntheticData } from '../utils/sceneDataGenerator';
 import { SmartHomeSensorData } from '../smartHomeService';
@@ -12,8 +11,6 @@ describe('SceneDetectionModel', () => {
   let model: SceneDetectionModel;
 
   beforeAll(() => {
-    // Deterministic weights so CI confidence checks stay stable.
-    tf.random.setSeed(42);
     model = new SceneDetectionModel();
     if (!fs.existsSync(TEST_MODEL_DIR)) {
       fs.mkdirSync(TEST_MODEL_DIR);
