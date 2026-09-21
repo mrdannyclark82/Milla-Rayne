@@ -1,13 +1,5 @@
 name: 'Mint Identity Token'
 description: 'Mints a GitHub App token'
-inputs:
-  app-id:
-    description: 'The GitHub App ID'
-    required: true
-  private-key:
-    description: 'The GitHub App private key'
-    required: true
-
 outputs:
   token:
     description: 'The minted GitHub App token'
@@ -18,11 +10,11 @@ runs:
     - name: 'Mint identity token'
       id: 'mint_identity_token'
       if: |-
-        ${{ inputs.app-id }}
+        ${{ vars.APP_ID }}
       uses: 'actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b' # ratchet:actions/create-github-app-token@v2
       with:
-        app-id: '${{ inputs.app-id }}'
-        private-key: '${{ inputs.private-key }}'
+        app-id: '${{ vars.APP_ID }}'
+        private-key: '${{ secrets.APP_PRIVATE_KEY }}'
         permission-contents: 'read'
         permission-issues: 'write'
         permission-pull-requests: 'write'
